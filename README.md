@@ -1,12 +1,43 @@
-#  **Daily-DeepLearning** 
+# Daily-DeepLearning
 
-欢迎来到 **Daily-DearnLearning**，涵盖[计算机基础课程](07-BaseClass/)、[Python快速入门](01-Python/)、[数据科学包的使用](05-Machine-Learning-Code/数据分析工具/)、[机器学习](02-Machine-Learning/)、[深度学习](03-Deep-Learning/)、[自然语言处理](04-NLP/)、[LLM](08-LLM/)等。
+![GitHub Stars](https://img.shields.io/github/stars/zkywanhing/Daily-DeepLearning)
+![GitHub Forks](https://img.shields.io/github/forks/zkywanhing/Daily-DeepLearning)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+
+欢迎来到 **Daily-DeepLearning**，涵盖[计算机基础课程](07-BaseClass/)、[Python快速入门](01-Python/)、[数据科学包的使用](05-Machine-Learning-Code/数据分析工具/)、[机器学习](02-Machine-Learning/)、[深度学习](03-Deep-Learning/)、[自然语言处理](04-NLP/)、[LLM](08-LLM/)等。
+
+## Quick Start
+
+### Prerequisites / 前置要求
+- Python 3.8+
+- Jupyter Notebook
+
+### Installation / 安装
+```bash
+git clone https://github.com/zkywanhing/Daily-DeepLearning.git
+cd Daily-DeepLearning
+```
+
+### Learning Path / 学习路径
+1. Start with [Python Basics](01-Python/)
+2. Learn [Data Science Tools](05-Machine-Learning-Code/数据分析工具/)
+3. Study [Machine Learning Theory](02-Machine-Learning/)
+4. Dive into [Deep Learning](03-Deep-Learning/)
+5. Explore [Large Language Models](08-LLM/)
+
+## Project Status / 项目状态
+
+🟢 **Active Development / 活跃开发**
+
+This project is actively maintained and updated. Phase 1 focuses on content audit and basic fixes. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
+
+本项目正在积极维护和更新中。第一阶段专注于内容审核和基础修复。查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解如何参与贡献。
 
 ## 2017年：Attention is All you need
 
 **Background**
 
-在《Attention is all you need》之前，因为李飞飞教授推动的ImageNet数据集、GPU算力的提升，像CNN刚刚开始流行起来，如用Tensoflow或者Theano写一个手写数字识别。后来开始有人在NLP领域，用word2vec和LSTM的组合，在很多领域里做到SOTA的效果。后来就是2017年，由Google团队提出的这篇里程碑式的论文。
+在《Attention is all you need》之前，因为李飞飞教授推动的ImageNet数据集、GPU算力的提升，像CNN刚刚开始流行起来，如用TensorFlow或者Theano写一个手写数字识别。后来开始有人在NLP领域，用word2vec和LSTM的组合，在很多领域里做到SOTA的效果。后来就是2017年，由Google团队提出的这篇里程碑式的论文。
 
 [核心解析](08-LLM/Attentionisallyouneed/核心解析.md) | [论文链接](08-LLM/Attentionisallyouneed/attentionisallyouneed.pdf)  | [简单例子](08-LLM/Attentionisallyouneed/example.md) | [自注意力机制](08-LLM/Attentionisallyouneed/selfattention.md) | [多头注意力](08-LLM/Attentionisallyouneed/multihead.md) | [位置编码](08-LLM/Attentionisallyouneed/positionalencoding.md) | [Harvard NLP PyTorch实现Transformer](https://nlp.seas.harvard.edu/2018/04/03/attention.html) | [Transformer复现](08-LLM/Attentionisallyouneed/Transformer_code.md)
 
@@ -14,17 +45,17 @@
 
 **Background**
 
-Bert比较特殊的地方在于采用了双向上下文建模，通过掩码语言模型（Masked language Model），同时利用左右两侧上下文，解决传统模型中的单向性问题。还有很重要的一点，从Bert看来是，形成了“预训练+微调”的新范式，统一了多种NLP任务的框架，仅需在预训练模型基础上添加简单任务头即可适配下游任务。当时在11项NLP任务上刷新SOTA，开启了大规模预训练模型（Pre-trained Language Model, PLM）时代。
+BERT比较特殊的地方在于采用了双向上下文建模，通过掩码语言模型（Masked language Model），同时利用左右两侧上下文，解决传统模型中的单向性问题。还有很重要的一点，从BERT看来是，形成了“预训练+微调”的新范式，统一了多种NLP任务的框架，仅需在预训练模型基础上添加简单任务头即可适配下游任务。当时在11项NLP任务上刷新SOTA，开启了大规模预训练模型（Pre-trained Language Model, PLM）时代。
 
-[Bert解析](08-LLM/Bert/核心解析.md) | [论文链接](https://arxiv.org/abs/1810.04805) | [Bert复现](08-LLM/Bert/Bert_code.md)
+[BERT解析](08-LLM/BERT/核心解析.md) | [论文链接](https://arxiv.org/abs/1810.04805) | [BERT复现](08-LLM/BERT/BERT_code.md)
 
-## 2018年 GPT1：Generative Pre-trained Transformer
+## 2018年 GPT-1：Generative Pre-trained Transformer
 
 **Background**
 
 在NLP任务依赖定制化模型、传统单向语言模型（如LSTM）难以建模长距离上下文的背景下，GPT-1首次将Transformer解码器架构与无监督预训练结合，提出“生成式预训练+微调”范式。通过自回归预训练（预测下一个词）学习通用文本表示，仅需简单微调即可适配分类、推理等任务，在12项NLP任务中9项达到SOTA，验证了大模型规模化训练的潜力，为后续GPT系列奠定了基础。
 
-## 2018年  ELMo：Embeddings from Language Models
+## 2018年 ELMo：Embeddings from Language Models
 
 **Background**
 
@@ -81,7 +112,7 @@ More....
 ### 🏊‍♀️ **深度学习理论与实战**  
 **理论**  
 
-[Word2Vec](03-Deep-Learning/Word2Vec.md) | [BatchNorm](03-Deep-Learning/BatchNorm.md) | [Dropout](03-Deep-Learning/Dropout.md) | [CNN](03-Deep-Learning/CNN.md) | [RNN](03-Deep-Learning/RNN.md) | [LSTM](03-Deep-Learning/LSTM.md) | [Attention](03-Deep-Learning/Attention.md) | [ELMo](03-Deep-Learning/ELMo.md) | [Transformer](03-Deep-Learning/Transformer.md) | [BERT](03-Deep-Learning/BERT.md) | [ALBERT](03-Deep-Learning/ALBERT.md) | [XLNet](03-Deep-Learning/XLNet.md)  
+[Word2Vec](03-Deep-Learning/Word2Vec.md) | [BatchNorm](03-Deep-Learning/BatchNorm.md) | [Dropout](03-Deep-Learning/Dropout.md) | [CNN](03-Deep-Learning/Network/01_CNN.md) | [RNN](03-Deep-Learning/RNN.md) | [LSTM](03-Deep-Learning/LSTM.md) | [Attention](03-Deep-Learning/Attention.md) | [ELMo](03-Deep-Learning/ELMo.md) | [Transformer](03-Deep-Learning/Transformer.md) | [BERT](03-Deep-Learning/BERT.md) | [ALBERT](03-Deep-Learning/ALBERT.md) | [XLNet](03-Deep-Learning/XLNet.md)  
 
 **实战**  
 
@@ -104,6 +135,6 @@ More....
 如果你有任何问题或建议，欢迎通过以下方式联系我们：  
 
 - **邮箱**：[lauzanhing@gmail.com](mailto:lauzanhing@gmail.com)  
-- **GitHub Issues**：[https://github.com/yourusername/Daily-DearnLearning/issues](https://github.com/yourusername/Daily-DearnLearning/issues)  
+- **GitHub Issues**：[https://github.com/zkywanhing/Daily-DeepLearning/issues](https://github.com/zkywanhing/Daily-DeepLearning/issues)  
 
 ---
