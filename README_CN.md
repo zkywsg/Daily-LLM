@@ -32,7 +32,7 @@
 ## 📂 知识库结构
 
 ```
-DeepLearning-LLM-Mastery/
+Daily-LLM/
 │
 ├── 01-Foundations/               # 🟢 Phase 1: 基石
 │   ├── machine-learning/         # 算法原理、数学基础、评估指标
@@ -83,8 +83,8 @@ DeepLearning-LLM-Mastery/
 ### 安装
 
 ```bash
-git clone https://github.com/zkywanhing/DeepLearning-LLM-Mastery.git
-cd DeepLearning-LLM-Mastery
+git clone https://github.com/zkywsg/Daily-LLM.git
+cd Daily-LLM
 
 # 安装核心依赖
 pip install -r requirements.txt

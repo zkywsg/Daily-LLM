@@ -32,7 +32,7 @@ The curriculum is organized into **7 Progressive Phases**, designed to build exp
 ## 📂 Repository Structure
 
 ```
-DeepLearning-LLM-Mastery/
+Daily-LLM/
 │
 ├── 01-Foundations/               # 🟢 Phase 1: The Bedrock
 │   ├── machine-learning/         # Algorithms, Math, Evaluation
@@ -83,8 +83,8 @@ DeepLearning-LLM-Mastery/
 ### Installation
 
 ```bash
-git clone https://github.com/zkywanhing/DeepLearning-LLM-Mastery.git
-cd DeepLearning-LLM-Mastery
+git clone https://github.com/zkywsg/Daily-LLM.git
+cd Daily-LLM
 
 # Install core dependencies
 pip install -r requirements.txt
