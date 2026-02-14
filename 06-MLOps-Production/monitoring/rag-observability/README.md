@@ -1,18 +1,20 @@
-# RAG可观测性 (RAG Observability)
+# RAG可观测性
+
+[English](README_EN.md) | [中文](README.md)
 
 ## 目录
 
-1. [背景 (Why RAG Observability?)](#1-背景-why-rag-observability)
-2. [核心概念 (Tracing, Metrics, Logging)](#2-核心概念-tracing-metrics-logging)
-3. [数学原理 (Query Analysis, Relevance Scoring)](#3-数学原理-query-analysis-relevance-scoring)
-4. [代码实现 (Observability Stack)](#4-代码实现-observability-stack)
-5. [实验对比 (Monitoring Impact)](#5-实验对比-monitoring-impact)
+1. [背景](#1-背景)
+2. [核心概念](#2-核心概念)
+3. [数学原理](#3-数学原理)
+4. [代码实现](#4-代码实现)
+5. [实验对比](#5-实验对比)
 6. [最佳实践与常见陷阱](#6-最佳实践与常见陷阱)
 7. [总结](#7-总结)
 
 ---
 
-## 1. 背景 (Why RAG Observability?)
+## 1. 背景
 
 ### 1.1 RAG系统的复杂性
 
@@ -34,7 +36,7 @@ RAG系统包含多个组件：
 
 ---
 
-## 2. 核心概念 (Tracing, Metrics, Logging)
+## 2. 核心概念
 
 ### 2.1 三大支柱
 
@@ -66,7 +68,7 @@ RAG系统包含多个组件：
 
 ---
 
-## 3. 数学原理 (Query Analysis, Relevance Scoring)
+## 3. 数学原理
 
 ### 3.1 检索质量评分
 
@@ -86,7 +88,7 @@ $|z| > 3$ 视为异常
 
 ---
 
-## 4. 代码实现 (Observability Stack)
+## 4. 代码实现
 
 ### 4.1 RAG追踪器
 
@@ -105,18 +107,18 @@ class RAGSpan:
     start_time: float
     end_time: float
     metadata: Dict
-    
+
     @property
     def duration(self):
         return self.end_time - self.start_time
 
 class RAGTracer:
     """RAG链路追踪器"""
-    
+
     def __init__(self):
         self.spans: List[RAGSpan] = []
         self.current_trace = None
-    
+
     def start_trace(self, query: str):
         """开始追踪"""
         self.current_trace = {
@@ -126,12 +128,12 @@ class RAGTracer:
             "spans": []
         }
         return self.current_trace["trace_id"]
-    
+
     def start_span(self, operation: str, metadata: Dict = None) -> str:
         """开始一个片段"""
         span_id = str(uuid.uuid4())
         parent_id = self.current_trace["spans"][-1].span_id if self.current_trace["spans"] else None
-        
+
         span = RAGSpan(
             span_id=span_id,
             parent_id=parent_id,
@@ -140,10 +142,10 @@ class RAGTracer:
             end_time=None,
             metadata=metadata or {}
         )
-        
+
         self.current_trace["spans"].append(span)
         return span_id
-    
+
     def end_span(self, span_id: str, metadata: Dict = None):
         """结束片段"""
         for span in self.current_trace["spans"]:
@@ -152,24 +154,24 @@ class RAGTracer:
                 if metadata:
                     span.metadata.update(metadata)
                 break
-    
+
     def end_trace(self, final_answer: str) -> Dict:
         """结束追踪"""
         self.current_trace["end_time"] = time.time()
         self.current_trace["duration"] = self.current_trace["end_time"] - self.current_trace["start_time"]
         self.current_trace["final_answer"] = final_answer
-        
+
         # 计算各阶段耗时
         stage_durations = {}
         for span in self.current_trace["spans"]:
             if span.operation not in stage_durations:
                 stage_durations[span.operation] = 0
             stage_durations[span.operation] += span.duration
-        
+
         self.current_trace["stage_durations"] = stage_durations
-        
+
         return self.current_trace
-    
+
     def get_trace_summary(self, trace: Dict) -> str:
         """获取追踪摘要"""
         summary = f"""
@@ -182,7 +184,7 @@ Stages:
 """
         for stage, duration in trace.get("stage_durations", {}).items():
             summary += f"  {stage}: {duration:.2f}s\n"
-        
+
         return summary
 
 # 使用示例
@@ -214,11 +216,11 @@ from collections import defaultdict
 
 class RAGMetrics:
     """RAG指标收集器"""
-    
+
     def __init__(self):
         self.metrics = defaultdict(list)
         self.lock = threading.Lock()
-    
+
     def record(self, metric_name: str, value: float, labels: Dict = None):
         """记录指标"""
         with self.lock:
@@ -227,19 +229,19 @@ class RAGMetrics:
                 "timestamp": time.time(),
                 "labels": labels or {}
             })
-    
+
     def get_stats(self, metric_name: str, window: int = 3600):
         """获取统计信息"""
         with self.lock:
             data = self.metrics[metric_name]
-            
+
             # 过滤时间窗口
             cutoff = time.time() - window
             recent = [d["value"] for d in data if d["timestamp"] > cutoff]
-            
+
             if not recent:
                 return None
-            
+
             return {
                 "count": len(recent),
                 "mean": sum(recent) / len(recent),
@@ -266,10 +268,10 @@ print(f"平均延迟: {stats['mean']:.3f}s, P95: {stats['p95']:.3f}s")
 ```python
 class RAGDashboard:
     """RAG监控仪表板"""
-    
+
     def __init__(self, metrics: RAGMetrics):
         self.metrics = metrics
-    
+
     def generate_report(self) -> str:
         """生成监控报告"""
         report = """
@@ -284,7 +286,7 @@ class RAGDashboard:
 - P95延迟: {retrieval_stats['p95']:.3f}s
 - 最小/最大: {retrieval_stats['min']:.3f}s / {retrieval_stats['max']:.3f}s
 """
-        
+
         report += """
 ## 生成性能
 """
@@ -294,7 +296,7 @@ class RAGDashboard:
 - 平均Token数: {gen_stats['mean']:.0f}
 - P95 Token数: {gen_stats['p95']:.0f}
 """
-        
+
         return report
 
 # 使用
@@ -304,7 +306,7 @@ print(dashboard.generate_report())
 
 ---
 
-## 5. 实验对比 (Monitoring Impact)
+## 5. 实验对比
 
 ### 5.1 有无监控对比
 

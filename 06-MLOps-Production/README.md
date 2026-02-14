@@ -1,39 +1,39 @@
-# Phase 6: MLOps & Production Engineering
+# Phase 6: MLOps 与生产工程
 
-**[English](README.md) | [中文](README_CN.md)**
+**[English](README_EN.md) | [中文](README.md)**
 
-## Overview
+## 概览
 
-This phase covers the engineering challenges of deploying and maintaining Large Language Models in production. It focuses on scalability, reliability, and observability of AI systems.
+本阶段涵盖将大语言模型部署到生产环境并进行维护的工程挑战。重点关注 AI 系统的可扩展性、可靠性和可观测性。
 
-## Structure
+## 架构
 
-### 1. [Training Infrastructure](training-infrastructure/distributed/README.md)
-Building scalable training pipelines.
-- **Distributed Training**: FSDP, DeepSpeed, 3D Parallelism.
-- **Data Pipelines**: High-throughput data processing.
-- **Training Stability**: Handling loss spikes and hardware failures.
-- **Hyperparameter Tuning**: Efficient search strategies.
+### 1. [训练基础设施 (Training Infrastructure)](training-infrastructure/distributed/README.md)
+构建可扩展的训练流水线。
+- **分布式训练**: FSDP, DeepSpeed, 3D 并行。
+- **数据流水线**: 高吞吐量数据处理。
+- **训练稳定性**: 处理 Loss 尖峰和硬件故障。
+- **超参数调优**: 高效搜索策略。
 
-### 2. [Model Serving](model-serving/architecture/README.md)
-Efficient inference and deployment.
-- **Serving Architecture**: vLLM, TGI, TensorRT-LLM.
-- **Model Compression**: Quantization (AWQ, GPTQ), Pruning.
-- **Model Registry**: Versioning and artifact management.
+### 2. [模型服务 (Model Serving)](model-serving/architecture/README.md)
+高效推理与部署。
+- **服务架构**: vLLM, TGI, TensorRT-LLM。
+- **模型压缩**: 量化 (AWQ, GPTQ), 剪枝。
+- **模型仓库**: 版本控制与制品管理。
 
-### 3. [Monitoring & Observability](monitoring/rag-observability/README.md)
-Ensuring system health and quality.
-- **RAG Observability**: Tracing retrieval and generation.
-- **Drift Detection**: Monitoring data and concept drift.
-- **Evaluation**: Automated testing and benchmarks.
-- **Data Governance**: Privacy and compliance.
+### 3. [监控与可观测性 (Monitoring & Observability)](monitoring/rag-observability/README.md)
+确保系统健康与质量。
+- **RAG 可观测性**: 追踪检索与生成。
+- **漂移检测**: 监控数据漂移和概念漂移。
+- **评估**: 自动化测试与基准测试。
+- **数据治理**: 隐私与合规。
 
-### 4. [Deployment Infrastructure](deployment/pipeline/README.md)
-DevOps for AI.
-- **CI/CD for ML**: Automated testing and deployment.
-- **Cost Optimization**: Managing GPU resources and costs.
-- **Security**: Reliability and threat protection.
+### 4. [部署基础设施 (Deployment Infrastructure)](deployment/pipeline/README.md)
+面向 AI 的 DevOps。
+- **CI/CD for ML**: 自动化测试与部署。
+- **成本优化**: 管理 GPU 资源与成本。
+- **安全性**: 可靠性与威胁防护。
 
 ---
 
-**Next Phase**: [Capstone Projects](../07-Capstone-Projects/README.md)
+**下一阶段**: [实战项目](../07-Capstone-Projects/README.md)

@@ -1,61 +1,61 @@
-# Training Stability
+# 训练稳定性
 
-**[English](README.md) | [中文](README_CN.md)**
+[English](README_EN.md) | [中文](README.md)
 
-## Table of Contents
+## 目录
 
-1. [Background](#1-background)
-2. [Core Concepts](#2-core-concepts)
-3. [Mathematical Principles](#3-mathematical-principles)
-4. [Code Implementation](#4-code-implementation)
-5. [Experimental Comparison](#5-experimental-comparison)
-6. [Best Practices and Common Pitfalls](#6-best-practices-and-common-pitfalls)
-7. [Summary](#7-summary)
-
----
-
-## 1. Background
-
-### 1.1 Symptoms of Training Instability
-
-- **Loss explosion**: Suddenly becomes NaN
-- **Loss oscillation**: Unable to converge
-- **Gradient vanishing**: Parameters not updating
-- **Gradient explosion**: Parameter updates too large
-
-### 1.2 Contributing Factors
-
-- Learning rate too large
-- Inappropriate batch size
-- Gradient accumulation issues
-- Mixed precision overflow
+1. [背景](#1-背景)
+2. [核心概念](#2-核心概念)
+3. [数学原理](#3-数学原理)
+4. [代码实现](#4-代码实现)
+5. [实验对比](#5-实验对比)
+6. [最佳实践与常见陷阱](#6-最佳实践与常见陷阱)
+7. [总结](#7-总结)
 
 ---
 
-## 2. Core Concepts
+## 1. 背景
 
-### 2.1 Gradient Clipping
+### 1.1 训练不稳定的症状
 
-Limit gradient norm to prevent explosion:
+- **Loss爆炸**: 突然变成NaN
+- **Loss震荡**: 无法收敛
+- **梯度消失**: 参数不更新
+- **梯度爆炸**: 参数更新过大
+
+### 1.2 影响因素
+
+- 学习率过大
+- 批量大小不合适
+- 梯度累积问题
+- 混合精度溢出
+
+---
+
+## 2. 核心概念
+
+### 2.1 梯度裁剪
+
+限制梯度范数，防止爆炸:
 
 $$
 \text{if } \|\nabla\| > \text{max\_norm}: \quad \nabla = \nabla \cdot \frac{\text{max\_norm}}{\|\nabla\|}
 $$
 
-### 2.2 Mixed Precision Training
+### 2.2 混合精度训练
 
-FP16 forward pass + FP32 backward pass, accelerates training but may overflow.
+FP16前向 + FP32反向，加速训练但可能溢出。
 
-### 2.3 Learning Rate Scheduling
+### 2.3 学习率调度
 
-- **Warmup**: Small learning rate in the beginning
-- **Decay**: Learning rate decay in later stages
+- **Warmup**: 初期小学习率
+- **Decay**: 后期学习率衰减
 
 ---
 
-## 3. Mathematical Principles
+## 3. 数学原理
 
-### 3.1 Gradient Norm
+### 3.1 梯度范数
 
 $$
 \|\nabla\| = \sqrt{\sum_{i} g_i^2}
@@ -69,32 +69,32 @@ $$
 
 ---
 
-## 4. Code Implementation
+## 4. 代码实现
 
-### 4.1 Gradient Clipping
+### 4.1 梯度裁剪
 
 ```python
 import torch
 from torch.nn.utils import clip_grad_norm_
 
-# Training loop
+# 训练循环
 for batch in dataloader:
     optimizer.zero_grad()
 
-    # Forward
+    # 前向
     loss = model(batch)
 
-    # Backward
+    # 反向
     loss.backward()
 
-    # Gradient clipping (must be before step)
+    # 梯度裁剪 (必须在step之前)
     clip_grad_norm_(model.parameters(), max_norm=1.0)
 
-    # Update parameters
+    # 更新参数
     optimizer.step()
 ```
 
-### 4.2 Mixed Precision + Gradient Scaling
+### 4.2 混合精度 + 梯度缩放
 
 ```python
 from torch.cuda.amp import autocast, GradScaler
@@ -104,104 +104,104 @@ scaler = GradScaler()
 for batch in dataloader:
     optimizer.zero_grad()
 
-    # Automatic mixed precision
+    # 自动混合精度
     with autocast():
         outputs = model(batch)
         loss = criterion(outputs, targets)
 
-    # Scale loss and backward
+    # 缩放损失并反向
     scaler.scale(loss).backward()
 
-    # Gradient clipping (must be after unscale)
+    # 梯度裁剪 (需要在unscale之后)
     scaler.unscale_(optimizer)
     clip_grad_norm_(model.parameters(), max_norm=1.0)
 
-    # Update
+    # 更新
     scaler.step(optimizer)
     scaler.update()
 ```
 
-### 4.3 Learning Rate Warmup
+### 4.3 学习率Warmup
 
 ```python
 from transformers import get_linear_schedule_with_warmup
 
-# Calculate total steps
+# 计算总步数
 total_steps = len(dataloader) * num_epochs
 warmup_steps = int(0.1 * total_steps)  # 10% warmup
 
-# Create scheduler
+# 创建调度器
 scheduler = get_linear_schedule_with_warmup(
     optimizer,
     num_warmup_steps=warmup_steps,
     num_training_steps=total_steps
 )
 
-# Training loop
+# 训练循环
 for batch in dataloader:
-    # ... forward, backward ...
+    # ... 前向、反向 ...
     optimizer.step()
-    scheduler.step()  # Update learning rate
+    scheduler.step()  # 更新学习率
 ```
 
 ---
 
-## 5. Experimental Comparison
+## 5. 实验对比
 
-### 5.1 Training Stability Comparison
+### 5.1 训练稳定性对比
 
-| Configuration | Loss Explosions | Final Loss | Convergence Time |
-|---------------|-----------------|-------------|------------------|
-| **No measures** | 8/10 | NaN | Failed |
-| **Gradient clipping only** | 2/10 | 2.3 | 10 hours |
-| **Clipping + Warmup** | 0/10 | 2.1 | 8 hours |
-| **Complete solution** | 0/10 | 1.9 | 7 hours |
+| 配置 | Loss爆炸次数 | 最终Loss | 收敛时间 |
+|------|-------------|---------|---------|
+| **无措施** | 8/10 | NaN | 失败 |
+| **仅梯度裁剪** | 2/10 | 2.3 | 10小时 |
+| **裁剪+Warmup** | 0/10 | 2.1 | 8小时 |
+| **完整方案** | 0/10 | 1.9 | 7小时 |
 
-### 5.2 Mixed Precision Effect
+### 5.2 混合精度效果
 
-| Precision | Training Speed | Memory Savings | Final Loss |
-|-----------|---------------|----------------|-------------|
+| 精度 | 训练速度 | 显存节省 | 最终Loss |
+|------|---------|---------|---------|
 | FP32 | 1x | 1x | 1.9 |
-| FP16 no scaling | 1.8x | 0.6x | NaN |
-| FP16 + GradScaler | 1.8x | 0.6x | 1.9 |
+| FP16无缩放 | 1.8x | 0.6x | NaN |
+| FP16+GradScaler | 1.8x | 0.6x | 1.9 |
 
 ---
 
-## 6. Best Practices and Common Pitfalls
+## 6. 最佳实践与常见陷阱
 
-### 6.1 Best Practices
+### 6.1 最佳实践
 
-1. **Gradient clipping**: max_norm=1.0-5.0
-2. **Warmup**: 5-10% of total_steps
-3. **Learning rate**: Start from a smaller value
-4. **Gradient accumulation**: Pay attention to scaling learning rate
-5. **Monitoring**: Track Loss and gradient norm in real time
+1. **梯度裁剪**: max_norm=1.0-5.0
+2. **Warmup**: 5-10%的total_steps
+3. **学习率**: 从较小值开始
+4. **梯度累积**: 注意缩放学习率
+5. **监控**: 实时跟踪Loss和梯度范数
 
-### 6.2 Checklist
+### 6.2 检查清单
 
 ```markdown
-- [ ] Gradient clipping enabled
-- [ ] Learning rate warmup
-- [ ] Mixed precision + GradScaler
-- [ ] Anomaly detection (NaN check)
-- [ ] Checkpoint saving
-- [ ] Gradient norm monitoring
-- [ ] Learning rate scheduling
+- [ ] 梯度裁剪启用
+- [ ] 学习率Warmup
+- [ ] 混合精度+GradScaler
+- [ ] 异常检测 (NaN检查)
+- [ ] 检查点保存
+- [ ] 梯度范数监控
+- [ ] 学习率调度
 ```
 
 ---
 
-## 7. Summary
+## 7. 总结
 
-Training stability is the foundation of large model training:
+训练稳定性是大模型训练的基础：
 
-1. **Gradient clipping**: Prevents gradient explosion
-2. **Warmup**: Smooth startup
-3. **Mixed precision**: Accelerates while preventing overflow
-4. **Monitoring**: Detect problems in time
+1. **梯度裁剪**: 防止梯度爆炸
+2. **Warmup**: 平稳启动
+3. **混合精度**: 加速同时防溢出
+4. **监控**: 及时发现问题
 
-**Recommended configuration**:
-- Gradient clipping: max_norm=1.0
+**推荐配置**:
+- 梯度裁剪: max_norm=1.0
 - Warmup: 5-10% steps
-- Learning rate: Start from 1e-5 and warmup to target value
-- Mixed precision: Use with GradScaler
+- 学习率: 从1e-5开始warmup到目标值
+- 混合精度: 配合GradScaler使用

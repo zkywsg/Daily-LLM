@@ -1,6 +1,8 @@
+**[English](README_EN.md) | [中文](README.md)**
+
 # Rerank策略 (Rerank Strategies)
 
-本文件系统性梳理 Rerank (重排序) 在检索增强生成 (RAG) 与搜索系统中的角色、原理与工程落地。内容按“背景 → 核心概念 → 数学原理 → 代码实现 → 实验对比 → 最佳实践与常见陷阱 → 总结”组织，覆盖两阶段检索 (two-stage retrieval)、交叉编码器 (cross-encoder)、ColBERT (late interaction)、常见 reranker (bge-reranker, Cohere Rerank) 以及性能权衡与延迟分析。
+本文件系统性梳理 Rerank (重排序) 在检索增强生成 (RAG) 与搜索系统中的角色、原理与工程落地。内容按"背景 → 核心概念 → 数学原理 → 代码实现 → 实验对比 → 最佳实践与常见陷阱 → 总结"组织，覆盖两阶段检索 (two-stage retrieval)、交叉编码器 (cross-encoder)、ColBERT (late interaction)、常见 reranker (bge-reranker, Cohere Rerank) 以及性能权衡与延迟分析。
 
 ## 目录
 

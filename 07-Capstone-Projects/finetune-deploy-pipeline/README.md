@@ -1,55 +1,55 @@
-# Capstone 2: Fine-Tuning + Deployment Pipeline
+# Capstone 2: 微调+部署一体化项目
 
-**[English](README.md) | [中文](README_CN.md)**
+**[English](README_EN.md) | [中文](README.md)**
 
-## Project Overview
+## 项目概述
 
-Complete the full MLops pipeline from domain data preparation, model fine-tuning, evaluation, compression to deployment and launch.
+完成从领域数据准备、模型微调、评估、压缩到部署上线的完整MLops流程。
 
-## Project Objectives
+## 项目目标
 
-Build a vertical domain LLM (using the legal domain as an example) and deploy it as a low-cost API service.
+构建一个垂直领域LLM (以法律领域为例)，并部署为低成本的API服务。
 
-## Complete Pipeline
+## 完整流程
 
 ```
-1. Data Preparation → 2. Model Fine-tuning → 3. Evaluation & Testing
-→ 4. Model Compression → 5. Deployment & Launch → 6. Monitoring & Operations
+1. 数据准备 → 2. 模型微调 → 3. 评估测试
+→ 4. 模型压缩 → 5. 部署上线 → 6. 监控运营
 ```
 
-## Phase 1: Data Preparation (1 week)
+## Phase 1: 数据准备 (1周)
 
-### Data Collection
-- Legal provisions, case law, contract templates
-- Legal consultation conversation records
-- Legal document samples
+### 数据收集
+- 法律条文、案例、合同模板
+- 法律咨询对话记录
+- 法律文书样本
 
-### Data Processing
+### 数据处理
 ```python
-# Data cleaning pipeline
-Raw Data → Deduplication → Filtering → Formatting → Quality Check → Train/Validation Sets
+# 数据清洗流程
+原始数据 → 去重 → 过滤 → 格式化 → 质量检查 → 训练集/验证集
 ```
 
-### Data Format
+### 数据格式
 ```json
 {
-  "instruction": "Explain what contract breach means",
+  "instruction": "解释什么是合同违约",
   "input": "",
-  "output": "Contract breach refers to the act where one or both parties to a contract fail to fulfill or incompletely fulfill their contractual obligations...",
-  "source": "Legal Encyclopedia",
-  "category": "Contract Law"
+  "output": "合同违约是指合同当事人一方或双方不履行或不完全履行合同义务的行为...",
+  "source": "法律百科",
+  "category": "合同法"
 }
 ```
 
-## Phase 2: Model Fine-tuning (2 weeks)
+## Phase 2: 模型微调 (2周)
 
-### Base Model Selection
-- **Primary**: LLaMA-2-7B-Chinese (Chinese optimized)
-- **Alternative**: ChatGLM3-6B (Domestic-friendly)
+### 基础模型选择
+- **主选**: LLaMA-2-7B-Chinese (中文优化)
+- **备选**: ChatGLM3-6B (国内友好)
 
-### Fine-tuning Configuration
+### 微调配置
 ```python
-# LoRA configuration
+# LoRA配置
 lora_config = {
     "r": 16,
     "lora_alpha": 32,
@@ -63,9 +63,9 @@ lora_config = {
 }
 ```
 
-### Training Implementation
+### 训练实施
 ```bash
-# Train using LLaMA-Factory
+# 使用LLaMA-Factory训练
 llamafactory-cli train \
   --stage sft \
   --model_name_or_path llama-2-7b-chinese \
@@ -79,26 +79,26 @@ llamafactory-cli train \
   --learning_rate 2e-4
 ```
 
-## Phase 3: Evaluation & Testing (1 week)
+## Phase 3: 评估测试 (1周)
 
-### Evaluation Dimensions
-- **General Capabilities**: C-Eval, CMMLU
-- **Domain Capabilities**: Legal exam questions, case analysis
-- **Safety**: Refusal of harmful requests
-- **Baseline Comparison**: Comparison with original model
+### 评估维度
+- **通用能力**: C-Eval、CMMLU
+- **领域能力**: 法律考试题、案例分析
+- **安全性**: 拒绝有害请求
+- **对比基线**: 与原始模型对比
 
-### Example Evaluation Results
-| Metric | Original Model | Fine-tuned | Improvement |
-|--------|----------------|-------------|-------------|
+### 评估结果示例
+| 指标 | 原始模型 | 微调后 | 提升 |
+|------|---------|--------|------|
 | C-Eval | 45% | 42% | -3% |
-| Legal Exam | 55% | 78% | +23% |
-| Case Analysis | 60% | 82% | +22% |
+| 法律考试 | 55% | 78% | +23% |
+| 案例分析 | 60% | 82% | +22% |
 
-## Phase 4: Model Compression (1 week)
+## Phase 4: 模型压缩 (1周)
 
-### Quantization Scheme
+### 量化方案
 ```python
-# GPTQ 4-bit quantization
+# GPTQ 4-bit量化
 from auto_gptq import AutoGPTQForCausalLM
 
 model = AutoGPTQForCausalLM.from_quantized(
@@ -112,25 +112,25 @@ model = AutoGPTQForCausalLM.from_quantized(
 )
 ```
 
-### Compression Results
-| Model | Size | VRAM Required | Quality Loss |
-|-------|------|---------------|--------------|
+### 压缩效果
+| 模型 | 大小 | 显存需求 | 效果损失 |
+|------|------|---------|---------|
 | FP16 | 14GB | 16GB | 0% |
 | GPTQ-4bit | 4GB | 6GB | <5% |
 | GGUF-Q4 | 4GB | 4GB | <8% |
 
-## Phase 5: Deployment & Launch (1 week)
+## Phase 5: 部署上线 (1周)
 
-### Deployment Architecture
+### 部署架构
 ```
-User Request → Nginx → vLLM Inference Service → Response
-                 ↓
-            Monitoring/Logging
+用户请求 → Nginx → vLLM推理服务 → 响应
+                ↓
+           监控/日志
 ```
 
-### vLLM Deployment
+### vLLM部署
 ```python
-# Start service
+# 启动服务
 from vllm import LLM, SamplingParams
 
 llm = LLM(
@@ -140,67 +140,67 @@ llm = LLM(
     gpu_memory_utilization=0.9
 )
 
-# API service
+# API服务
 from vllm.entrypoints.api_server import app
 ```
 
-### Cost Analysis
-| Configuration | Cost/Month | QPS | Use Case |
-|---------------|------------|-----|----------|
-| A100 40GB | ¥8000 | 50 | High Concurrency |
-| RTX 4090 | ¥2000 | 30 | Medium-Small Scale |
-| T4 16GB | ¥800 | 10 | Low Cost |
+### 成本分析
+| 配置 | 成本/月 | QPS | 适用场景 |
+|------|---------|-----|---------|
+| A100 40GB | ¥8000 | 50 | 高并发 |
+| RTX 4090 | ¥2000 | 30 | 中小规模 |
+| T4 16GB | ¥800 | 10 | 低成本 |
 
-## Phase 6: Monitoring & Operations (Ongoing)
+## Phase 6: 监控运营 (持续)
 
-### Monitoring Metrics
-- Inference Latency (P50/P95/P99)
-- Token Throughput
-- GPU Utilization
-- Error Rate
-- User Feedback
+### 监控指标
+- 推理延迟 (P50/P95/P99)
+- Token吞吐量
+- GPU利用率
+- 错误率
+- 用户反馈
 
-### Continuous Optimization
-- Collect user feedback data
-- Periodic retraining (monthly/quarterly)
-- A/B testing new models
+### 持续优化
+- 收集用户反馈数据
+- 定期重训练 (每月/每季度)
+- A/B测试新模型
 
-## Tech Stack
+## 技术栈
 
-| Stage | Tools |
-|-------|-------|
-| Data | Pandas, HuggingFace Datasets |
-| Training | LLaMA-Factory, PEFT, DeepSpeed |
-| Evaluation | lm-evaluation-harness |
-| Compression | AutoGPTQ, llama.cpp |
-| Deployment | vLLM, TGI, Docker |
-| Monitoring | Prometheus, Grafana |
+| 环节 | 工具 |
+|------|------|
+| 数据 | Pandas, HuggingFace Datasets |
+| 训练 | LLaMA-Factory, PEFT, DeepSpeed |
+| 评估 | lm-evaluation-harness |
+| 压缩 | AutoGPTQ, llama.cpp |
+| 部署 | vLLM, TGI, Docker |
+| 监控 | Prometheus, Grafana |
 
-## Deliverables
+## 交付物
 
-1. **Fine-tuned Model**: LoRA weights + quantized model
-2. **Training Code**: Complete training scripts
-3. **Dataset**: Cleaned training data
-4. **Evaluation Report**: Detailed test results
-5. **Deployment Documentation**: Deployment and operations guide
-6. **API Service**: Runnable inference service
-7. **Cost Analysis**: Deployment cost estimation
+1. **微调模型**: LoRA权重 + 量化模型
+2. **训练代码**: 完整训练脚本
+3. **数据集**: 清洗后的训练数据
+4. **评估报告**: 详细测试结果
+5. **部署文档**: 部署和运维指南
+6. **API服务**: 可运行的推理服务
+7. **成本分析**: 部署成本估算
 
-## Success Criteria
+## 成功标准
 
-- [x] Domain accuracy > 75%
-- [x] P95 latency < 1s
-- [x] Single-card deployment cost < ¥2000/month
-- [x] API availability > 99%
+- [x] 领域准确率 > 75%
+- [x] P95延迟 < 1s
+- [x] 单卡部署成本 < ¥2000/月
+- [x] API可用性 > 99%
 
-## Summary
+## 总结
 
-This project practices the complete LLM engineering pipeline from data to deployment, with key takeaways:
+本项目完整实践了从数据到部署的LLM工程化流程，核心收获：
 
-1. **Data quality** determines the upper bound of fine-tuning
-2. **LoRA** is the most cost-effective fine-tuning method
-3. **Quantization compression** makes large models accessible
-4. **vLLM** significantly improves inference efficiency
-5. **Continuous monitoring** ensures service quality
+1. **数据质量**决定微调上限
+2. **LoRA**是性价比最高的微调方式
+3. **量化压缩**让大模型平民化
+4. **vLLM**大幅提升推理效率
+5. **持续监控**保障服务质量
 
-**Key Experience**: Vertical domain models don't need to pursue general capabilities—focus on domain effectiveness.
+**关键经验**: 垂直领域模型不需要追求通用能力，专注领域效果即可。

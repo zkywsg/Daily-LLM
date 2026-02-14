@@ -1,15 +1,15 @@
-# Multimodal QA
+[English](README_EN.md) | [中文](README.md)
 
-**[English](README.md) | [中文](README_CN.md)**
+# 多模态问答 (Multimodal QA)
 
-## Overview
-Multimodal question answering handles questions about images, videos, and text together.
+## 概述
+多模态问答系统处理涉及图像、视频和文本的综合问题。
 
-## Key Features
-- Image understanding
-- Video analysis
-- Cross-modal retrieval
-- Unified reasoning
+## 核心功能
+- 图像理解 (Image understanding)
+- 视频分析 (Video analysis)
+- 跨模态检索 (Cross-modal retrieval)
+- 统一推理 (Unified reasoning)
 
-## Implementation
-Uses CLIP for image-text alignment and LLM for reasoning.
+## 实现方式
+使用 CLIP 进行图像-文本对齐，使用大语言模型进行推理。

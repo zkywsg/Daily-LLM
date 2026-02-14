@@ -1,4 +1,4 @@
-# Chunking策略 (Chunking Strategies)
+# 分块策略 (Chunking Strategies)
 
 ## 目录
 

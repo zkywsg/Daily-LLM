@@ -1,18 +1,20 @@
-# Agent安全与对齐 (Agent Security and Alignment)
+# Agent安全与对齐
+
+[English](README_EN.md) | [中文](README.md)
 
 ## 目录
 
-1. [背景 (Agent Security Challenges)](#1-背景-agent-security-challenges)
-2. [核心概念 (Attack Vectors, Defenses)](#2-核心概念-attack-vectors-defenses)
-3. [数学原理 (Safety Metrics, Robustness)](#3-数学原理-safety-metrics-robustness)
-4. [代码实现 (Security Framework)](#4-代码实现-security-framework)
-5. [实验对比 (Attack Success Rates)](#5-实验对比-attack-success-rates)
+1. [背景](#1-背景)
+2. [核心概念](#2-核心概念)
+3. [数学原理](#3-数学原理)
+4. [代码实现](#4-代码实现)
+5. [实验对比](#5-实验对比)
 6. [最佳实践与常见陷阱](#6-最佳实践与常见陷阱)
 7. [总结](#7-总结)
 
 ---
 
-## 1. 背景 (Agent Security Challenges)
+## 1. 背景
 
 ### 1.1 Agent的特殊风险
 
@@ -26,14 +28,14 @@
 
 | 攻击 | 描述 | 示例 |
 |------|------|------|
-| **Prompt Injection** | 通过输入控制Agent | "忽略之前指令" |
-| **Tool Hijacking** | 诱导调用错误工具 | 误导使用删除工具 |
+| **Prompt注入** | 通过输入控制Agent | "忽略之前指令" |
+| **工具劫持** | 诱导调用错误工具 | 误导使用删除工具 |
 | **权限提升** | 多步操作获取权限 | 逐步获取管理员权限 |
 | **信息提取** | 通过查询泄露信息 | 查询其他用户数据 |
 
 ---
 
-## 2. 核心概念 (Attack Vectors, Defenses)
+## 2. 核心概念
 
 ### 2.1 攻击向量
 
@@ -71,7 +73,7 @@
 
 ---
 
-## 3. 数学原理 (Safety Metrics, Robustness)
+## 3. 数学原理
 
 ### 3.1 安全评分
 
@@ -87,7 +89,7 @@ $$
 
 ---
 
-## 4. 代码实现 (Security Framework)
+## 4. 代码实现
 
 ### 4.1 安全检查器
 
@@ -97,20 +99,20 @@ from typing import List, Tuple
 
 class SecurityChecker:
     """Agent安全检查器"""
-    
+
     # 危险工具列表
     DANGEROUS_TOOLS = ["delete", "drop", "exec", "eval"]
-    
+
     # 敏感信息模式
     SENSITIVE_PATTERNS = [
         r"password\s*=\s*\S+",
         r"api_key\s*=\s*\S+",
         r"token\s*=\s*\S+"
     ]
-    
+
     def __init__(self):
         self.patterns = [re.compile(p, re.IGNORECASE) for p in self.SENSITIVE_PATTERNS]
-    
+
     def check_input(self, user_input: str) -> Tuple[bool, str]:
         """检查用户输入"""
         # 检查注入攻击
@@ -119,41 +121,41 @@ class SecurityChecker:
             r"ignore.*previous",
             r"你是.*(DAN|无限制)"
         ]
-        
+
         for pattern in injection_patterns:
             if re.search(pattern, user_input, re.IGNORECASE):
                 return False, "检测到潜在的注入攻击"
-        
+
         return True, "通过"
-    
+
     def check_tool_call(self, tool_name: str, arguments: dict, user_role: str = "user") -> Tuple[bool, str]:
         """检查工具调用权限"""
         # 检查危险工具
         if tool_name in self.DANGEROUS_TOOLS and user_role != "admin":
             return False, f"工具 {tool_name} 需要管理员权限"
-        
+
         # 检查敏感信息泄露
         args_str = json.dumps(arguments)
         for pattern in self.patterns:
             if pattern.search(args_str):
                 return False, "检测到敏感信息"
-        
+
         return True, "通过"
-    
+
     def check_trajectory(self, trajectory: List[dict]) -> Tuple[bool, str]:
         """检查执行轨迹"""
         # 检查异常模式
         tool_calls = [step for step in trajectory if step.get("type") == "tool_call"]
-        
+
         # 检查重复调用
         if len(tool_calls) > 10:
             return False, "工具调用次数过多，可能存在循环"
-        
+
         # 检查敏感工具组合
         tool_names = [step.get("tool") for step in tool_calls]
         if "query_database" in tool_names and "send_email" in tool_names:
             return False, "检测到敏感操作组合 (查询+发送)"
-        
+
         return True, "通过"
 
 # 使用
@@ -173,39 +175,39 @@ print(f"工具检查: {is_safe}, {msg}")
 ```python
 class PermissionManager:
     """权限管理器"""
-    
+
     def __init__(self):
         self.role_permissions = {
             "guest": ["search", "read"],
             "user": ["search", "read", "write", "calculate"],
             "admin": ["search", "read", "write", "delete", "execute", "admin"]
         }
-        
+
         self.sensitive_tools = {
             "delete": {"require_confirmation": True, "log": True},
             "send_email": {"require_confirmation": True, "log": True},
             "transfer_money": {"require_confirmation": True, "log": True, "require_2fa": True}
         }
-    
+
     def can_execute(self, user_role: str, tool_name: str) -> bool:
         """检查是否有权限"""
         allowed_tools = self.role_permissions.get(user_role, [])
         return tool_name in allowed_tools
-    
+
     def requires_confirmation(self, tool_name: str) -> bool:
         """是否需要确认"""
         return self.sensitive_tools.get(tool_name, {}).get("require_confirmation", False)
-    
+
     def execute_with_guard(self, tool_name: str, arguments: dict, user_role: str, user_confirmed: bool = False):
         """带保护的工具执行"""
         # 1. 权限检查
         if not self.can_execute(user_role, tool_name):
             return {"error": "Permission denied", "success": False}
-        
+
         # 2. 确认检查
         if self.requires_confirmation(tool_name) and not user_confirmed:
             return {"requires_confirmation": True, "tool": tool_name, "arguments": arguments}
-        
+
         # 3. 执行 (实际执行代码)
         return {"success": True, "result": f"Executed {tool_name}"}
 
@@ -223,7 +225,7 @@ print(result)
 
 ---
 
-## 5. 实验对比 (Attack Success Rates)
+## 5. 实验对比
 
 ### 5.1 攻击成功率对比
 

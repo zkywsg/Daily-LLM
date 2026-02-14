@@ -1,15 +1,15 @@
-# Multilingual Applications
+[English](README_EN.md) | [中文](README.md)
 
-**[English](README.md) | [中文](README_CN.md)**
+# 多语言应用 (Multilingual Applications)
 
-## Overview
-LLM applications supporting multiple languages and cross-lingual capabilities.
+## 概述
+支持多语言和跨语言能力的大语言模型应用。
 
-## Key Features
-- Language detection
-- Cross-lingual retrieval
-- Cultural adaptation
-- Translation quality
+## 核心功能
+- 语言检测 (Language detection)
+- 跨语言检索 (Cross-lingual retrieval)
+- 文化适应 (Cultural adaptation)
+- 翻译质量 (Translation quality)
 
-## Implementation
-Uses multilingual embeddings and language-specific fine-tuning.
+## 实现方式
+使用多语言嵌入和特定语言的微调技术。

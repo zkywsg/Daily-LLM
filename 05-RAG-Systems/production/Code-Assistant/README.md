@@ -1,15 +1,15 @@
-# Code Assistant
+[English](README_EN.md) | [中文](README.md)
 
-**[English](README.md) | [中文](README_CN.md)**
+# 代码助手 (Code Assistant)
 
-## Overview
-Code assistants use LLMs to help developers write, understand, and debug code.
+## 概述
+代码助手使用大语言模型帮助开发者编写、理解和调试代码。
 
-## Key Features
-- Code completion
-- Code generation from descriptions
-- Bug detection
-- Code explanation
+## 核心功能
+- 代码补全 (Code completion)
+- 从描述生成代码 (Code generation from descriptions)
+- Bug 检测 (Bug detection)
+- 代码解释 (Code explanation)
 
-## Implementation
-Uses RAG to retrieve similar code snippets and LLM for generation.
+## 实现方式
+使用 RAG 检索相似代码片段并使用大语言模型生成代码。

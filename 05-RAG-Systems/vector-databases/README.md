@@ -1,3 +1,5 @@
+**[English](README_EN.md) | [中文](README.md)**
+
 # 向量数据库与索引 (Vector Databases and Indexing)
 
 ## 1. 背景 (Vector DB Landscape)

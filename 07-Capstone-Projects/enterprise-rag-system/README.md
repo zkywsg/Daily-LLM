@@ -1,138 +1,138 @@
-# Capstone 1: Enterprise RAG + Agent System
+# Capstone 1: 企业级RAG+Agent系统
 
-**[English](README.md) | [中文](README_CN.md)**
+**[English](README_EN.md) | [中文](README.md)**
 
-## Project Overview
+## 项目概述
 
-Build a complete, production-ready enterprise knowledge assistant system, integrating RAG retrieval augmentation and Agent tool calling capabilities.
+构建一个完整的、可上线的企业级知识助手系统，整合RAG检索增强和Agent工具调用能力。
 
-## System Architecture
-
-```
-User Interface Layer (Web/APP/API)
-    ↓
-API Gateway (Authentication/Rate Limiting/Routing)
-    ↓
-Agent Orchestration Layer (Task Planning/Tool Selection)
-    ↓
-├── RAG Retrieval Module (Vector Retrieval + Reranking)
-├── Tool Calling Module (API/Database/Search)
-└── Memory Management Module (Context/History)
-    ↓
-LLM Generation Layer (GPT-4/Claude)
-    ↓
-Response Post-processing (Security Filtering/Formatization)
-```
-
-## Core Features
-
-### 1. Hybrid Retrieval System
-- Vector Retrieval (Dense): Milvus + BGE Embedding
-- Keyword Retrieval (Sparse): Elasticsearch + BM25
-- Reranking: bge-reranker-large
-- Multi-path recall fusion
-
-### 2. Agent Tool Chain
-- Enterprise Search: Internal documents, knowledge base
-- Data Query: SQL Database, BI System
-- External Search: Real-time web information
-- Computation Tools: Calculator, code execution
-
-### 3. Memory System
-- Short-term Memory: Conversation context
-- Long-term Memory: User preferences, history queries
-- Vector Memory: Similar question reuse
-
-### 4. Security and Governance
-- Input Filtering: Prompt injection detection
-- Output Moderation: Content safety filtering
-- Access Control: Role-based document access
-- Audit Logging: Complete operation records
-
-## Tech Stack
-
-| Component | Selection | Reason |
-|-----------|----------|--------|
-| Vector Database | Milvus 2.3 | Distributed, high performance |
-| Embedding Model | BGE-large-zh-v1.5 | Chinese optimized |
-| Reranking | bge-reranker | Open source效果好 |
-| LLM | GPT-4 + Claude 3 | Hybrid deployment |
-| Agent Framework | LangChain/LlamaIndex | Ecosystem complete |
-| Cache | Redis Cluster | Low latency |
-| Deployment | Kubernetes | Elastic scaling |
-
-## Data Flow
+## 系统架构
 
 ```
-1. User Query → 2. Query Understanding/Rewrite → 3. Intent Recognition
-→ 4. Tool Selection/RAG Decision → 5. Parallel Execution Retrieval + Tool Calling
-→ 6. Result Fusion/Reranking → 7. Prompt Assembly
-→ 8. LLM Generation → 9. Post-processing/Filtering → 10. Return User
+用户接口层 (Web/APP/API)
+    ↓
+API网关 (认证/限流/路由)
+    ↓
+Agent编排层 (任务规划/工具选择)
+    ↓
+├── RAG检索模块 (向量检索+重排序)
+├── 工具调用模块 (API/数据库/搜索)
+└── 记忆管理模块 (上下文/历史)
+    ↓
+LLM生成层 (GPT-4/Claude)
+    ↓
+响应后处理 (安全过滤/格式化)
 ```
 
-## Key Metrics
+## 核心功能
 
-| Metric | Target | Actual |
-|--------|--------|--------|
-| Answer Accuracy | > 85% | 88% |
-| Retrieval Recall@10 | > 90% | 92% |
-| P95 Latency | < 2s | 1.5s |
-| Tool Call Success Rate | > 95% | 97% |
-| User Satisfaction | > 4.0/5 | 4.5/5 |
+### 1. 混合检索系统
+- 向量检索 (Dense): Milvus + BGE嵌入
+- 关键词检索 (Sparse): Elasticsearch + BM25
+- 重排序: bge-reranker-large
+- 多路召回融合
 
-## Implementation Steps
+### 2. Agent工具链
+- 企业搜索: 内部文档、知识库
+- 数据查询: SQL数据库、BI系统
+- 外部搜索: 实时网络信息
+- 计算工具: 计算器、代码执行
 
-### Phase 1: Basic RAG (2 weeks)
-- [ ] Document parsing and chunking
-- [ ] Vector index construction
-- [ ] Basic retrieval implementation
-- [ ] Simple Q&A testing
+### 3. 记忆系统
+- 短期记忆: 对话上下文
+- 长期记忆: 用户偏好、历史查询
+- 向量记忆: 相似问题复用
 
-### Phase 2: Advanced RAG (2 weeks)
-- [ ] Hybrid retrieval implementation
-- [ ] Reranking integration
-- [ ] Query rewrite optimization
-- [ ] Caching strategy
+### 4. 安全与治理
+- 输入过滤: 提示注入检测
+- 输出审核: 内容安全过滤
+- 权限控制: 基于角色的文档访问
+- 审计日志: 完整操作记录
 
-### Phase 3: Agent Integration (2 weeks)
-- [ ] Tool definition and registration
-- [ ] ReAct Agent implementation
-- [ ] Multi-tool coordination
-- [ ] Memory system integration
+## 技术栈
 
-### Phase 4: Security and Optimization (2 weeks)
-- [ ] Security filtering implementation
-- [ ] Access control
-- [ ] Performance optimization
-- [ ] Monitoring and alerting
+| 组件 | 选型 | 原因 |
+|------|------|------|
+| 向量数据库 | Milvus 2.3 | 分布式、高性能 |
+| 嵌入模型 | BGE-large-zh-v1.5 | 中文优化 |
+| 重排序 | bge-reranker | 开源效果好 |
+| LLM | GPT-4 + Claude 3 | 混合部署 |
+| Agent框架 | LangChain/LlamaIndex | 生态完善 |
+| 缓存 | Redis Cluster | 低延迟 |
+| 部署 | Kubernetes | 弹性扩缩 |
 
-### Phase 5: Deployment (1 week)
-- [ ] K8s deployment
-- [ ] Load testing
-- [ ] Canary release
-- [ ] Full production launch
+## 数据流
 
-## Deliverables
+```
+1. 用户Query → 2. Query理解/改写 → 3. 意图识别
+→ 4. 工具选择/RAG决策 → 5. 并行执行检索+工具调用
+→ 6. 结果融合/重排序 → 7. Prompt组装
+→ 8. LLM生成 → 9. 后处理/过滤 → 10. 返回用户
+```
 
-1. **Source Code**: Complete project code
-2. **Architecture Documentation**: System design and data flow
-3. **Deployment Configuration**: K8s YAML, Dockerfile
-4. **API Documentation**: OpenAPI specification
-5. **Test Report**: Functionality and performance testing
-6. **Operations Manual**: Deployment, monitoring, troubleshooting
-7. **Demo**: Core function demonstration
+## 关键指标
 
-## Success Criteria
+| 指标 | 目标 | 实测 |
+|------|------|------|
+| 回答准确率 | > 85% | 88% |
+| 检索Recall@10 | > 90% | 92% |
+| P95延迟 | < 2s | 1.5s |
+| 工具调用成功率 | > 95% | 97% |
+| 用户满意度 | > 4.0/5 | 4.5/5 |
 
-- [x] System stable online
-- [x] Daily query volume > 1000
-- [x] User satisfaction > 4.0
-- [x] P95 latency < 2s
-- [x] Zero security incidents
+## 实施步骤
 
-## Extension Directions
+### Phase 1: 基础RAG (2周)
+- [ ] 文档解析与切分
+- [ ] 向量索引构建
+- [ ] 基础检索实现
+- [ ] 简单问答测试
 
-1. Multi-modal support (image, document understanding)
-2. Multi-agent collaboration
-3. Personalized recommendations
-4. Voice interaction
+### Phase 2: 高级RAG (2周)
+- [ ] 混合检索实现
+- [ ] 重排序集成
+- [ ] Query改写优化
+- [ ] 缓存策略
+
+### Phase 3: Agent集成 (2周)
+- [ ] 工具定义与注册
+- [ ] ReAct Agent实现
+- [ ] 多工具协调
+- [ ] 记忆系统集成
+
+### Phase 4: 安全与优化 (2周)
+- [ ] 安全过滤实现
+- [ ] 权限控制
+- [ ] 性能优化
+- [ ] 监控告警
+
+### Phase 5: 部署上线 (1周)
+- [ ] K8s部署
+- [ ] 负载测试
+- [ ] 灰度发布
+- [ ] 全量上线
+
+## 交付物
+
+1. **源代码**: 完整项目代码
+2. **架构文档**: 系统设计与数据流
+3. **部署配置**: K8s YAML、Dockerfile
+4. **API文档**: OpenAPI规范
+5. **测试报告**: 功能与性能测试
+6. **运维手册**: 部署、监控、故障处理
+7. **演示Demo**: 核心功能演示
+
+## 成功标准
+
+- [x] 系统上线稳定运行
+- [x] 日均查询量 > 1000
+- [x] 用户满意度 > 4.0
+- [x] P95延迟 < 2s
+- [x] 零安全事件
+
+## 扩展方向
+
+1. 多模态支持 (图片、文档理解)
+2. 多Agent协作
+3. 个性化推荐
+4. 语音交互

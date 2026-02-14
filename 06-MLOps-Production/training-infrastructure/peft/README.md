@@ -1,113 +1,113 @@
-# PEFT Fine-tuning
+# 模型微调PEFT
 
-**[English](README.md) | [中文](README_CN.md)**
+[English](README_EN.md) | [中文](README.md)
 
-## Table of Contents
+## 目录
 
-1. [Background](#1-background)
-2. [Core Concepts](#2-core-concepts)
-3. [Mathematical Principles](#3-mathematical-principles)
-4. [Code Implementation](#4-code-implementation)
-5. [Experimental Comparison](#5-experimental-comparison)
-6. [Best Practices and Common Pitfalls](#6-best-practices-and-common-pitfalls)
-7. [Summary](#7-summary)
-
----
-
-## 1. Background
-
-### 1.1 Problems with Full Fine-tuning
-
-- **Memory Requirements**: Need to store complete gradients
-- **Training Time**: Many parameters, slow training
-- **Catastrophic Forgetting**: Easy to forget pre-trained knowledge
-- **Storage Cost**: One complete model per task
-
-### 1.2 PEFT Advantages
-
-- **Parameter Efficient**: Only train small number of parameters
-- **Memory Savings**: 70%+ memory savings
-- **Fast Training**: 3-5x training speed improvement
-- **Avoid Forgetting**: Preserve pre-trained knowledge
+1. [背景](#1-背景)
+2. [核心概念](#2-核心概念)
+3. [数学原理](#3-数学原理)
+4. [代码实现](#4-代码实现)
+5. [实验对比](#5-实验对比)
+6. [最佳实践与常见陷阱](#6-最佳实践与常见陷阱)
+7. [总结](#7-总结)
 
 ---
 
-## 2. Core Concepts
+## 1. 背景
+
+### 1.1 全量微调的问题
+
+- **显存需求**: 需要存储完整梯度
+- **训练时间**: 参数多训练慢
+- **灾难遗忘**: 容易忘记预训练知识
+- **存储成本**: 每个任务一个完整模型
+
+### 1.2 PEFT优势
+
+- **参数高效**: 只训练少量参数
+- **显存节省**: 70%+显存节省
+- **快速训练**: 训练速度提升3-5x
+- **避免遗忘**: 保留预训练知识
+
+---
+
+## 2. 核心概念
 
 ### 2.1 LoRA (Low-Rank Adaptation)
 
-**Core Idea**: Approximate weight updates with low-rank matrices
+**核心思想**: 用低秩矩阵近似权重更新
 
-**Formula**: $W = W_0 + \Delta W = W_0 + BA$
+**公式**: $W = W_0 + \Delta W = W_0 + BA$
 
-- $W_0$: Pre-trained weights (frozen)
-- $B, A$: Trainable low-rank matrices
+- $W_0$: 预训练权重 (冻结)
+- $B, A$: 可训练的低秩矩阵
 
 ### 2.2 QLoRA
 
-LoRA + 4-bit quantization, further saves memory:
-- 65B models can be trained on 48GB GPU memory
+LoRA + 4-bit量化，进一步节省显存:
+- 65B模型可在48GB显存训练
 
 ### 2.3 Adapter
 
-Insert small adapter modules in Transformer layers.
+在Transformer层插入小型适配器模块。
 
 ---
 
-## 3. Mathematical Principles
+## 3. 数学原理
 
-### 3.1 Low-Rank Decomposition
+### 3.1 低秩分解
 
 $$
 \Delta W = B \cdot A, \quad B \in \mathbb{R}^{d \times r}, A \in \mathbb{R}^{r \times k}
 $$
 
-Where $r \ll \min(d, k)$ is the low-rank dimension.
+其中 $r \ll \min(d, k)$ 是低秩维度。
 
-### 3.2 Parameter Count Comparison
+### 3.2 参数量对比
 
-**Full Fine-tuning**:
+**全量微调**:
 $$N_{\text{full}} = d \times k$$
 
 **LoRA**:
 $$N_{\text{lora}} = d \times r + r \times k = r(d + k)$$
 
-**Savings Ratio**:
-$$\frac{N_{\text{lora}}}{N_{\text{full}}} = \frac{r(d+k)}{dk} \approx \frac{2r}{k} \quad (\text{when } d \approx k)$$
+**节省比例**:
+$$\frac{N_{\text{lora}}}{N_{\text{full}}} = \frac{r(d+k)}{dk} \approx \frac{2r}{k} \quad (\text{当 } d \approx k)$$
 
 ---
 
-## 4. Code Implementation
+## 4. 代码实现
 
-### 4.1 LoRA Fine-tuning
+### 4.1 LoRA微调
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import LoraConfig, get_peft_model, TaskType
 
-# Load base model
+# 加载基础模型
 model = AutoModelForCausalLM.from_pretrained(
     "meta-llama/Llama-2-7b-hf",
     torch_dtype=torch.float16,
     device_map="auto"
 )
 
-# LoRA configuration
+# LoRA配置
 lora_config = LoraConfig(
     task_type=TaskType.CAUSAL_LM,
-    r=16,  # Low-rank dimension
+    r=16,  # 低秩维度
     lora_alpha=32,
     target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
     lora_dropout=0.05,
     bias="none"
 )
 
-# Apply LoRA
+# 应用LoRA
 model = get_peft_model(model, lora_config)
 model.print_trainable_parameters()
-# Output: trainable params: 33M || all params: 7B || trainable%: 0.47
+# 输出: trainable params: 33M || all params: 7B || trainable%: 0.47
 
-# Training
+# 训练
 from trl import SFTTrainer
 from transformers import TrainingArguments
 
@@ -126,20 +126,20 @@ trainer = SFTTrainer(
 
 trainer.train()
 
-# Save LoRA weights
+# 保存LoRA权重
 model.save_pretrained("./lora_weights")
 
-# Merge weights at inference (optional)
+# 推理时合并权重 (可选)
 # model = model.merge_and_unload()
 ```
 
-### 4.2 QLoRA Fine-tuning
+### 4.2 QLoRA微调
 
 ```python
 from transformers import BitsAndBytesConfig
 from peft import prepare_model_for_kbit_training
 
-# 4-bit quantization configuration
+# 4-bit量化配置
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_use_double_quant=True,
@@ -147,97 +147,97 @@ bnb_config = BitsAndBytesConfig(
     bnb_4bit_compute_dtype=torch.bfloat16
 )
 
-# Load quantized model
+# 加载量化模型
 model = AutoModelForCausalLM.from_pretrained(
     "meta-llama/Llama-2-7b-hf",
     quantization_config=bnb_config,
     device_map="auto"
 )
 
-# Prepare model for training
+# 准备模型用于训练
 model = prepare_model_for_kbit_training(model)
 
-# Apply LoRA
+# 应用LoRA
 model = get_peft_model(model, lora_config)
 
-# Training (same as LoRA)
+# 训练 (与LoRA相同)
 trainer = SFTTrainer(model=model, ...)
 trainer.train()
 ```
 
 ---
 
-## 5. Experimental Comparison
+## 5. 实验对比
 
-### 5.1 Performance Comparison
+### 5.1 性能对比
 
-| Method | Trainable Params | Memory Requirement | Training Time | Effect |
-|--------|-----------------|-------------------|----------------|--------|
-| **Full Fine-tuning** | 100% | 100% | 100% | 100% |
+| 方法 | 可训练参数 | 显存需求 | 训练时间 | 效果 |
+|------|-----------|---------|---------|------|
+| **全量微调** | 100% | 100% | 100% | 100% |
 | **LoRA (r=16)** | 0.5% | 30% | 25% | 98% |
 | **QLoRA** | 0.5% | 18% | 30% | 97% |
 | **Adapter** | 1% | 35% | 30% | 96% |
 
-### 5.2 Different Rank Effects
+### 5.2 不同rank效果
 
-| Rank | Param Ratio | Downstream Task Effect |
-|------|-------------|---------------------|
+| Rank | 参数占比 | 下游任务效果 |
+|------|---------|-------------|
 | 4 | 0.12% | 92% |
 | 8 | 0.24% | 95% |
 | 16 | 0.47% | 98% |
 | 32 | 0.94% | 99% |
 | 64 | 1.88% | 99.5% |
 
-**Recommended**: r=16 is the best cost-effectiveness point
+**推荐**: r=16是性价比最佳点
 
 ---
 
-## 6. Best Practices and Common Pitfalls
+## 6. 最佳实践与常见陷阱
 
-### 6.1 Best Practices
+### 6.1 最佳实践
 
-1. **Choose appropriate rank**: Generally r=8-32
-2. **Target modules**: Prioritize q_proj, v_proj
-3. **Learning rate**: LoRA typically needs higher learning rate (1e-4 to 2e-4)
-4. **Alpha**: Usually set to 2*rank
-5. **Data quality**: PEFT is more sensitive to data quality
+1. **选择合适rank**: 一般r=8-32
+2. **目标模块**: 优先q_proj, v_proj
+3. **学习率**: LoRA通常需要更高学习率 (1e-4 to 2e-4)
+4. **alpha**: 通常设置为2*rank
+5. **数据质量**: PEFT对数据质量更敏感
 
-### 6.2 Common Pitfalls
+### 6.2 常见陷阱
 
-1. **Rank too low**: Insufficient expressive power
-2. **Improper module selection**: Not all layers need LoRA
-3. **Learning rate too small**: Insufficient training
-4. **Data imbalance**: Some classes overfitting
+1. **rank过低**: 表达能力不足
+2. **模块选择不当**: 不是所有层都需要LoRA
+3. **学习率过小**: 训练不充分
+4. **数据不平衡**: 某些类别过拟合
 
-### 6.3 Module Selection Recommendations
+### 6.3 模块选择建议
 
 ```markdown
-Recommended target modules:
-- ✓ q_proj, v_proj (required)
-- ✓ k_proj, o_proj (recommended)
-- ? gate_proj, up_proj, down_proj (MLP layers, optional)
-- ✗ embed_tokens, lm_head (usually not needed)
+推荐目标模块:
+- ✓ q_proj, v_proj (必须)
+- ✓ k_proj, o_proj (推荐)
+- ? gate_proj, up_proj, down_proj (MLP层，可选)
+- ✗ embed_tokens, lm_head (通常不需要)
 ```
 
 ---
 
-## 7. Summary
+## 7. 总结
 
-PEFT makes large model fine-tuning efficient and feasible:
+PEFT让大模型微调变得高效可行：
 
-1. **LoRA**: Most commonly used, balances effect and efficiency
-2. **QLoRA**: Use when GPU memory is extremely limited
-3. **Adapter**: Multi-task scenarios
-4. **Prompt Tuning**: Ultra-lightweight
+1. **LoRA**: 最常用，效果与效率平衡
+2. **QLoRA**: 显存极度受限时使用
+3. **Adapter**: 多任务场景
+4. **Prompt Tuning**: 极轻量级
 
-**Selection Guidelines**:
-- Single GPU / limited memory → QLoRA
-- Pursue best effect → LoRA (r=16-32)
-- Multi-task scenarios → Adapter
-- Quick experiments → Prompt Tuning
+**选择建议**:
+- 单卡/有限显存 → QLoRA
+- 追求最佳效果 → LoRA (r=16-32)
+- 多任务场景 → Adapter
+- 快速实验 → Prompt Tuning
 
-**Key Parameters**:
+**关键参数**:
 - r=16, alpha=32
-- Target modules: q_proj, v_proj
-- Learning rate: 2e-4
-- Dropout: 0.05
+- 目标模块: q_proj, v_proj
+- 学习率: 2e-4
+- dropout: 0.05

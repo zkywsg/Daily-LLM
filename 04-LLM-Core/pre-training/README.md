@@ -1,16 +1,16 @@
-# LLM Pre-training
+# LLM 预训练
 
-**[English](README.md) | [中文](README_CN.md)**
+[English](README_EN.md) | [中文](README.md)
 
-## Overview
+## 概述
 
-Pre-training is the process of training large language models on vast amounts of text data to learn general language representations. This foundational phase determines the model's capabilities and knowledge before task-specific fine-tuning.
+预训练是在海量文本数据上训练大型语言模型以学习通用语言表示的过程。这个基础阶段决定了模型在特定任务微调之前的能力和知识。
 
-## Pre-training Objectives
+## 预训练目标
 
-### 1. Causal Language Modeling (CLM)
+### 1. 因果语言建模 (Causal Language Modeling, CLM)
 
-**GPT-style**: Predict next token given previous tokens
+**GPT 风格**: 基于前文预测下一个 token
 
 ```
 Context: The cat sat
@@ -18,7 +18,7 @@ Target: on
 Probability: P(on | The cat sat)
 ```
 
-**Objective Function**:
+**目标函数**:
 ```
 L_CLM = -Σ_t log P(x_t | x_{<t}; θ)
 ```
@@ -28,98 +28,98 @@ import torch
 import torch.nn as nn
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
-# Causal LM pre-training objective
+# 因果 LM 预训练目标
 def causal_lm_loss(model, input_ids):
     """
-    Standard causal language modeling loss
+    标准因果语言建模损失
     """
-    # Shift for next-token prediction
+    # 为下个 token 预测进行平移
     labels = input_ids.clone()
-    
-    # Forward pass
+
+    # 前向传播
     outputs = model(input_ids, labels=labels)
     loss = outputs.loss
-    
+
     return loss
 
-# Implementation with custom loss
+# 使用自定义损失函数实现
 def compute_clm_loss(logits, targets, ignore_index=-100):
     """
-    Compute causal LM loss manually
+    手动计算因果 LM 损失
     """
-    # Shift logits and targets
+    # 平移 logits 和 targets
     shift_logits = logits[..., :-1, :].contiguous()
     shift_targets = targets[..., 1:].contiguous()
-    
-    # Flatten
+
+    # 展平
     loss_fct = nn.CrossEntropyLoss(ignore_index=ignore_index)
     loss = loss_fct(
         shift_logits.view(-1, shift_logits.size(-1)),
         shift_targets.view(-1)
     )
-    
+
     return loss
 ```
 
-### 2. Masked Language Modeling (MLM)
+### 2. 掩码语言建模 (Masked Language Modeling, MLM)
 
-**BERT-style**: Predict masked tokens from bidirectional context
+**BERT 风格**: 从双向上下文预测被掩码的 token
 
 ```
 Input:  The [MASK] sat on the [MASK].
 Target: [cat, mat]
 ```
 
-**Masking Strategy**:
-- 80%: Replace with [MASK] token
-- 10%: Replace with random token
-- 10%: Keep original token
+**掩码策略**:
+- 80%: 替换为 [MASK] token
+- 10%: 替换为随机 token
+- 10%: 保持原始 token
 
 ```python
 def create_mlm_mask(inputs, tokenizer, mlm_prob=0.15):
     """
-    Create masked language modeling labels
+    创建掩码语言建模标签
     """
     labels = inputs.clone()
-    
-    # Create probability matrix
+
+    # 创建概率矩阵
     prob_matrix = torch.full(labels.shape, mlm_prob)
-    
-    # Don't mask special tokens
+
+    # 不掩码特殊 token
     special_tokens_mask = [
-        tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True) 
+        tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True)
         for val in labels.tolist()
     ]
     prob_matrix.masked_fill_(torch.tensor(special_tokens_mask, dtype=torch.bool), value=0.0)
-    
-    # Sample masked indices
+
+    # 采样掩码索引
     masked_indices = torch.bernoulli(prob_matrix).bool()
-    labels[~masked_indices] = -100  # Only compute loss on masked tokens
-    
-    # 80% mask, 10% random, 10% unchanged
+    labels[~masked_indices] = -100  # 仅在掩码 token 上计算损失
+
+    # 80% 掩码, 10% 随机, 10% 不变
     indices_replaced = torch.bernoulli(torch.full(labels.shape, 0.8)).bool() & masked_indices
     inputs[indices_replaced] = tokenizer.mask_token_id
-    
+
     indices_random = torch.bernoulli(torch.full(labels.shape, 0.5)).bool() & masked_indices & ~indices_replaced
     random_words = torch.randint(len(tokenizer), labels.shape, dtype=torch.long)
     inputs[indices_random] = random_words[indices_random]
-    
+
     return inputs, labels
 ```
 
-### 3. Prefix Language Modeling (Prefix LM)
+### 3. 前缀语言建模 (Prefix Language Modeling, Prefix LM)
 
-**T5-style**: Use bidirectional attention on prefix, causal on suffix
+**T5 风格**: 在前缀上使用双向注意力,在后续上使用因果注意力
 
 ```
 Input:  Translate to French: Hello world
-Prefix (bidirectional): Translate to French: 
+Prefix (bidirectional): Translate to French:
 Suffix (causal): Hello world
 ```
 
-### 4. Mixture of Objectives
+### 4. 混合目标
 
-**Modern approaches** combine multiple objectives:
+**现代方法**结合多个目标:
 
 | Model | Primary Objective | Secondary |
 |-------|------------------|-----------|
@@ -130,9 +130,9 @@ Suffix (causal): Hello world
 | T5 | Span Corruption | - |
 | UL2 | Mixture of Denoisers | Multiple |
 
-## Data Preparation
+## 数据准备
 
-### 1. Data Sources
+### 1. 数据来源
 
 | Source | Proportion | Examples |
 |--------|-----------|----------|
@@ -143,7 +143,7 @@ Suffix (causal): Hello world
 | **Academic** | 5% | ArXiv, PubMed |
 
 ```python
-# Data mixing configuration
+# 数据混合配置
 data_weights = {
     'common_crawl': 0.67,
     'c4': 0.15,
@@ -155,7 +155,7 @@ data_weights = {
 }
 ```
 
-### 2. Data Processing Pipeline
+### 2. 数据处理流水线
 
 ```python
 import re
@@ -166,105 +166,105 @@ class DataProcessor:
     def __init__(self, min_length=100, max_length=100000):
         self.min_length = min_length
         self.max_length = max_length
-    
+
     def clean_text(self, text: str) -> str:
-        """Basic text cleaning"""
-        # Remove excessive whitespace
+        """基础文本清理"""
+        # 移除多余空白
         text = re.sub(r'\s+', ' ', text)
-        
-        # Remove control characters
+
+        # 移除控制字符
         text = re.sub(r'[\x00-\x08\x0b-\x0c\x0e-\x1f]', '', text)
-        
-        # Normalize unicode
+
+        # 规范化 unicode
         text = text.strip()
-        
+
         return text
-    
+
     def quality_filter(self, text: str) -> bool:
-        """Filter low-quality documents"""
-        # Length check
+        """过滤低质量文档"""
+        # 长度检查
         if len(text) < self.min_length or len(text) > self.max_length:
             return False
-        
-        # Character ratio checks
+
+        # 字符比例检查
         alpha_ratio = sum(c.isalpha() for c in text) / len(text)
         if alpha_ratio < 0.5:
             return False
-        
-        # Repetition check
+
+        # 重复检查
         lines = text.split('\n')
         if len(lines) != len(set(lines)):
             return False
-        
+
         return True
-    
+
     def deduplicate(self, texts: List[str]) -> List[str]:
-        """Remove near-duplicate documents"""
+        """移除近重复文档"""
         from datasketch import MinHashLSH, MinHash
-        
+
         lsh = MinHashLSH(threshold=0.9, num_perm=128)
         unique_texts = []
-        
+
         for text in texts:
             m = MinHash(num_perm=128)
-            for word in text.split()[:100]:  # Sample first 100 words
+            for word in text.split()[:100]:  # 采样前 100 个词
                 m.update(word.encode('utf8'))
-            
-            # Check if similar document exists
+
+            # 检查是否已存在相似文档
             if not lsh.query(m):
                 lsh.insert(text, m)
                 unique_texts.append(text)
-        
+
         return unique_texts
-    
+
     def tokenize_batch(self, texts: List[str], tokenizer) -> Iterator[List[int]]:
-        """Tokenize with chunking for long documents"""
+        """分词并分块长文档"""
         for text in texts:
-            # Tokenize
+            # 分词
             tokens = tokenizer.encode(text, add_special_tokens=False)
-            
-            # Chunk into sequences
+
+            # 分块为序列
             max_seq_length = 2048
             for i in range(0, len(tokens), max_seq_length):
                 chunk = tokens[i:i + max_seq_length]
-                if len(chunk) > 10:  # Minimum length
+                if len(chunk) > 10:  # 最小长度
                     yield chunk
 ```
 
-### 3. Data Format
+### 3. 数据格式
 
-**Common formats**:
+**常用格式**:
 - **JSONL**: `{"text": "...", "metadata": {...}}`
-- **Arrow**: Columnar format for efficient loading
-- **TFRecord/Parquet**: Binary formats for large-scale training
+- **Arrow**: 高效加载的列式格式
+- **TFRecord/Parquet**: 大规模训练的二进制格式
 
 ```python
 import pyarrow as pa
 import pyarrow.parquet as pq
 
 def save_to_parquet(examples, output_path):
-    """Save tokenized data to parquet"""
+    """保存分词数据到 parquet"""
     table = pa.table({
         'input_ids': pa.array(examples, type=pa.list_(pa.int64()))
     })
     pq.write_table(table, output_path)
 ```
 
-## Scaling Laws
+## 缩放定律
 
-### 1. Chinchilla Scaling Laws
+### 1. Chinchilla 缩放定律
 
-**Optimal model size given compute budget**:
+**给定计算预算下的最优模型大小**:
 
 ```
-Given compute C (in FLOPs):
-- Optimal parameters: N_opt ∝ C^0.50
-- Optimal tokens: D_opt ∝ C^0.50
+给定计算 C (以 FLOPs 为单位):
+- 最优参数: N_opt ∝ C^0.50
+- 最优 tokens: D_opt ∝ C^0.50
 
-Training FLOPs ≈ 6ND
-Where:
-- N: number of parameters
-- D: number of tokens
+训练 FLOPs ≈ 6ND
+其中:
+- N: 参数数量
+- D: token 数量
 ```
 
 | Compute (FLOPs) | Optimal Params | Optimal Tokens |
@@ -276,66 +276,66 @@ Where:
 | 1e22 | 40B | 800B |
 | 1e23 | 130B | 2.6T |
 
-### 2. Loss Prediction
+### 2. 损失预测
 
-**Loss as function of parameters and data**:
+**损失作为参数和数据的函数**:
 
 ```
 L(N, D) = E + A/N^α + B/D^β
 
-Where:
-- E: irreducible entropy
-- A, B: scaling coefficients
+其中:
+- E: 不可约熵
+- A, B: 缩放系数
 - α ≈ 0.34, β ≈ 0.28
 ```
 
 ```python
-def estimate_loss(num_params, num_tokens, 
-                  E=1.69, A=406.4, B=410.7, 
+def estimate_loss(num_params, num_tokens,
+                  E=1.69, A=406.4, B=410.7,
                   alpha=0.34, beta=0.28):
     """
-    Estimate pre-training loss based on scaling laws
+    基于缩放定律估计预训练损失
     """
     N = num_params
     D = num_tokens
-    
+
     loss = E + A / (N ** alpha) + B / (D ** beta)
     return loss
 
-# Example: 7B model with 1T tokens
+# 示例: 7B 模型使用 1T tokens
 loss = estimate_loss(7e9, 1e12)
 print(f"Estimated loss: {loss:.2f}")
 ```
 
-### 3. Compute Estimation
+### 3. 计算量估计
 
-**Training compute formula**:
+**训练计算公式**:
 
 ```
 FLOPs ≈ 6 × N × D
 
-Where 6N accounts for:
-- 2N for forward pass (matrix multiplies)
-- 4N for backward pass (gradients)
+其中 6N 包括:
+- 2N 用于前向传播 (矩阵乘法)
+- 4N 用于反向传播 (梯度)
 ```
 
 ```python
-def estimate_training_compute(params, tokens, hardware_flops=312e12, 
+def estimate_training_compute(params, tokens, hardware_flops=312e12,
                                utilization=0.3, num_gpus=1024):
     """
-    Estimate training time and cost
+    估计训练时间和成本
     """
-    # Total FLOPs
+    # 总 FLOPs
     total_flops = 6 * params * tokens
-    
-    # GPU-hours needed
+
+    # 所需 GPU 时数
     gpu_flops_per_second = hardware_flops * utilization
     total_seconds = total_flops / (gpu_flops_per_second * num_gpus)
     gpu_hours = total_seconds * num_gpus / 3600
-    
-    # Cost estimation (at $2/GPU-hour)
+
+    # 成本估计 (按 $2/GPU-hour)
     cost = gpu_hours * 2
-    
+
     return {
         'total_flops': total_flops,
         'gpu_hours': gpu_hours,
@@ -343,7 +343,7 @@ def estimate_training_compute(params, tokens, hardware_flops=312e12,
         'estimated_cost_usd': cost
     }
 
-# LLaMA-2 7B example
+# LLaMA-2 7B 示例
 result = estimate_training_compute(
     params=7e9,
     tokens=2e12,
@@ -356,19 +356,19 @@ print(f"GPU-hours: {result['gpu_hours']:,.0f}")
 print(f"Estimated cost: ${result['estimated_cost_usd']:,.0f}")
 ```
 
-## Distributed Training for Pre-training
+## 预训练的分布式训练
 
-### 1. Parallelism Strategies
+### 1. 并行策略
 
 | Strategy | What is Split | When to Use |
 |----------|--------------|-------------|
-| **Data Parallel (DP)** | Data batch across GPUs | < 1B params |
-| **Tensor Parallel (TP)** | Layer weights across GPUs | 1-10B params |
-| **Pipeline Parallel (PP)** | Layers across GPUs | > 10B params |
-| **FSDP** | Parameters, gradients, optimizer states | 1-100B params |
+| **Data Parallel (DP)** | 数据 batch 跨 GPU | < 1B params |
+| **Tensor Parallel (TP)** | 层权重跨 GPU | 1-10B params |
+| **Pipeline Parallel (PP)** | 层跨 GPU | > 10B params |
+| **FSDP** | 参数、梯度、优化器状态 | 1-100B params |
 | **3D Parallel** | DP + TP + PP | > 100B params |
 
-### 2. PyTorch FSDP for Large Models
+### 2. 大模型的 PyTorch FSDP
 
 ```python
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
@@ -377,14 +377,14 @@ import torch.distributed as dist
 
 def setup_fsdp_model(model, world_size):
     """
-    Setup FSDP for large model training
+    为大模型训练设置 FSDP
     """
-    # Auto-wrap policy for transformer layers
+    # Transformer 层的自动包裹策略
     auto_wrap_policy = transformer_auto_wrap_policy(
         transformer_layer_cls={TransformerBlock}
     )
-    
-    # FSDP configuration
+
+    # FSDP 配置
     model = FSDP(
         model,
         auto_wrap_policy=auto_wrap_policy,
@@ -394,21 +394,21 @@ def setup_fsdp_model(model, world_size):
         forward_prefetch=True,
         backward_prefetch=True,
     )
-    
+
     return model
 
-# Training with FSDP
+# 使用 FSDP 训练
 for step, batch in enumerate(dataloader):
     loss = model(input_ids=batch['input_ids'])
     loss.backward()
-    
-    # Gradient clipping
+
+    # 梯度裁剪
     model.clip_grad_norm_(max_norm=1.0)
-    
+
     optimizer.step()
     optimizer.zero_grad()
-    
-    # Checkpoint periodically
+
+    # 定期检查点
     if step % checkpoint_interval == 0:
         state_dict = model.state_dict()
         if dist.get_rank() == 0:
@@ -420,12 +420,12 @@ for step, batch in enumerate(dataloader):
 ```python
 from deepspeed import DeepSpeedEngine
 
-# DeepSpeed configuration for 70B model training
+# 70B 模型训练的 DeepSpeed 配置
 ds_config = {
-    "train_batch_size": 512,  # Global batch size
+    "train_batch_size": 512,  # 全局 batch size
     "train_micro_batch_size_per_gpu": 1,
     "gradient_accumulation_steps": 16,
-    
+
     "optimizer": {
         "type": "AdamW",
         "params": {
@@ -435,7 +435,7 @@ ds_config = {
             "weight_decay": 0.1
         }
     },
-    
+
     "scheduler": {
         "type": "WarmupDecayLR",
         "params": {
@@ -445,9 +445,9 @@ ds_config = {
             "total_num_steps": 100000
         }
     },
-    
+
     "zero_optimization": {
-        "stage": 3,  # ZeRO-3 for largest models
+        "stage": 3,  # 最大模型使用 ZeRO-3
         "offload_optimizer": {
             "device": "cpu",
             "pin_memory": True
@@ -462,16 +462,16 @@ ds_config = {
         "stage3_prefetch_bucket_size": 5e8,
         "stage3_param_persistence_threshold": 1e6
     },
-    
+
     "gradient_clipping": 1.0,
-    
+
     "fp16": {
         "enabled": True,
         "loss_scale": 0,
         "loss_scale_window": 1000,
         "initial_scale_power": 16
     },
-    
+
     "activation_checkpointing": {
         "partition_activations": True,
         "cpu_checkpointing": True,
@@ -479,21 +479,21 @@ ds_config = {
     }
 }
 
-# Initialize DeepSpeed
+# 初始化 DeepSpeed
 model_engine, optimizer, _, _ = deepspeed.initialize(
     model=model,
     model_parameters=model.parameters(),
     config=ds_config
 )
 
-# Training loop
+# 训练循环
 for step, batch in enumerate(dataloader):
     loss = model_engine(batch)
     model_engine.backward(loss)
     model_engine.step()
 ```
 
-### 4. Checkpointing Strategy
+### 4. 检查点策略
 
 ```python
 class CheckpointManager:
@@ -501,9 +501,9 @@ class CheckpointManager:
         self.checkpoint_dir = Path(checkpoint_dir)
         self.keep_last_n = keep_last_n
         self.checkpoints = []
-    
+
     def save_checkpoint(self, model, optimizer, scheduler, step, loss):
-        """Save training checkpoint"""
+        """保存训练检查点"""
         checkpoint = {
             'step': step,
             'model_state_dict': model.state_dict(),
@@ -512,49 +512,49 @@ class CheckpointManager:
             'loss': loss,
             'rng_state': torch.get_rng_state(),
         }
-        
+
         if torch.distributed.is_initialized():
             checkpoint_path = self.checkpoint_dir / f'checkpoint_step_{step}_rank_{dist.get_rank()}.pt'
         else:
             checkpoint_path = self.checkpoint_dir / f'checkpoint_step_{step}.pt'
-        
+
         torch.save(checkpoint, checkpoint_path)
         self.checkpoints.append(checkpoint_path)
-        
-        # Clean old checkpoints
+
+        # 清理旧检查点
         if len(self.checkpoints) > self.keep_last_n:
             old_checkpoint = self.checkpoints.pop(0)
             old_checkpoint.unlink(missing_ok=True)
-    
+
     def load_checkpoint(self, model, optimizer, scheduler, checkpoint_path):
-        """Resume from checkpoint"""
+        """从检查点恢复"""
         checkpoint = torch.load(checkpoint_path)
-        
+
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
         torch.set_rng_state(checkpoint['rng_state'])
-        
+
         return checkpoint['step'], checkpoint['loss']
 ```
 
-## Training Stability
+## 训练稳定性
 
-### 1. Loss Spikes
+### 1. 损失尖峰
 
-**Causes and Solutions**:
+**原因和解决方案**:
 | Cause | Solution |
 |-------|----------|
-| Bad data points | Gradient clipping, data cleaning |
-| Numerical instability | Mixed precision check, loss scaling |
-| Learning rate too high | Reduce LR, use warmup |
-| Bad initialization | Use proper weight init |
+| 坏数据点 | 梯度裁剪、数据清理 |
+| 数值不稳定 | 混合精度检查、损失缩放 |
+| 学习率过高 | 降低 LR、使用 warmup |
+| 初始化不当 | 使用适当的权重初始化 |
 
 ```python
-# Gradient clipping
+# 梯度裁剪
 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
-# Loss scaling for mixed precision
+# 混合精度的损失缩放
 from torch.cuda.amp import autocast, GradScaler
 
 scaler = GradScaler()
@@ -568,12 +568,12 @@ scaler.step(optimizer)
 scaler.update()
 ```
 
-### 2. Learning Rate Schedule
+### 2. 学习率调度
 
 ```python
 from transformers import get_cosine_schedule_with_warmup
 
-# Cosine with linear warmup
+# 余弦 warmup
 num_warmup_steps = 2000
 num_training_steps = 100000
 
@@ -581,37 +581,37 @@ scheduler = get_cosine_schedule_with_warmup(
     optimizer,
     num_warmup_steps=num_warmup_steps,
     num_training_steps=num_training_steps,
-    num_cycles=0.5,  # Half cosine
-    min_lr_ratio=0.1  # End at 10% of max LR
+    num_cycles=0.5,  # 半余弦
+    min_lr_ratio=0.1  # 结束时为最大 LR 的 10%
 )
 ```
 
-## Best Practices
+## 最佳实践
 
-### 1. Data
-- Deduplicate aggressively
-- Filter low-quality content
-- Balance data sources
-- Monitor data distribution
+### 1. 数据
+- 积极去重
+- 过滤低质量内容
+- 平衡数据来源
+- 监控数据分布
 
-### 2. Training
-- Use cosine LR schedule with warmup
-- Gradient clipping (norm=1.0)
-- Mixed precision (BF16 preferred over FP16)
-- Checkpoint frequently
-- Monitor loss curves
+### 2. 训练
+- 使用带 warmup 的余弦 LR 调度
+- 梯度裁剪 (norm=1.0)
+- 混合精度 (BF16 优于 FP16)
+- 频繁检查点
+- 监控损失曲线
 
-### 3. Hardware
-- Start with data parallel for < 1B
-- Use FSDP for 1-70B
-- Use 3D parallel for > 100B
-- Optimize communication
+### 3. 硬件
+- < 1B 模型使用数据并行
+- 1-70B 模型使用 FSDP
+- > 100B 模型使用 3D 并行
+- 优化通信
 
-### 4. Evaluation
-- Perplexity on held-out data
-- Downstream task performance
-- Human evaluation samples
+### 4. 评估
+- 保留数据的困惑度
+- 下游任务性能
+- 人工评估样本
 
 ---
 
-**Previous**: [Pre-trained Models](../../03-NLP-Transformers/pretrained-models/README.md) | **Next**: [PEFT](../peft/README.md)
+**上一节**: [预训练模型](../../03-NLP-Transformers/pretrained-models/README.md) | **下一节**: [PEFT](../peft/README.md)

@@ -1,3 +1,5 @@
+[English](README_EN.md) | [中文](README.md)
+
 # Query改写与扩展 (Query Rewriting and Expansion)
 
 ## 目录
@@ -14,17 +16,17 @@
 
 ## 1. 背景 (Why Query Rewriting?)
 
-### 1.1 现实检索中的“查询鸿沟”
+### 1.1 现实检索中的"查询鸿沟"
 
 Query改写与扩展（Query Rewriting and Expansion）是连接用户语言与知识库语言的桥梁。现实场景中，查询鸿沟通常来自以下几类偏差：
 
-- **词汇鸿沟 (Vocabulary Gap)**: 用户用“车”搜索，文档里写“车辆”。
-- **语义鸿沟 (Semantic Gap)**: 用户写“续航焦虑”，文档只出现“电池容量不足”。
-- **上下文缺失 (Context Loss)**: 对话场景里“它有什么特点？”缺乏指代对象。
-- **意图不清 (Intent Uncertainty)**: “苹果”可能是水果、公司或品牌。
-- **复杂需求 (Complex Needs)**: “Python创始人创立的公司有哪些？”需要多跳检索。
+- **词汇鸿沟 (Vocabulary Gap)**: 用户用"车"搜索，文档里写"车辆"。
+- **语义鸿沟 (Semantic Gap)**: 用户写"续航焦虑"，文档只出现"电池容量不足"。
+- **上下文缺失 (Context Loss)**: 对话场景里"它有什么特点？"缺乏指代对象。
+- **意图不清 (Intent Uncertainty)**: "苹果"可能是水果、公司或品牌。
+- **复杂需求 (Complex Needs)**: "Python创始人创立的公司有哪些？"需要多跳检索。
 
-这些问题导致：召回率（Recall）降低、结果偏离意图、用户体验下降。Query改写通过**理解 (Understanding)**、**扩展 (Expansion)**、**分解 (Decomposition)**、**多跳检索 (Multi-hop Retrieval)** 与 **伪相关反馈 (Pseudo-Relevance Feedback, PRF)**，让检索系统“听懂人话”。
+这些问题导致：召回率（Recall）降低、结果偏离意图、用户体验下降。Query改写通过**理解 (Understanding)**、**扩展 (Expansion)**、**分解 (Decomposition)**、**多跳检索 (Multi-hop Retrieval)** 与 **伪相关反馈 (Pseudo-Relevance Feedback, PRF)**，让检索系统"听懂人话"。
 
 ### 1.2 Query改写的价值
 
@@ -67,13 +69,13 @@ Query改写与扩展（Query Rewriting and Expansion）是连接用户语言与�
 
 ### 1.6 Query改写与扩展的边界
 
-Query改写与扩展并非“越多越好”，需要明确边界：
+Query改写与扩展并非"越多越好"，需要明确边界：
 
 - **改写 (Rewriting)**: 侧重纠正、规范与语义澄清。
 - **扩展 (Expansion)**: 侧重增加候选词以提升召回。
 - **重排 (Rerank)**: 侧重在召回结果中调整排序。
 
-当扩展导致噪声显著增加时，应转向“重排策略”而非继续扩展。
+当扩展导致噪声显著增加时，应转向"重排策略"而非继续扩展。
 
 | 目标 | 适合方法 | 不适合方法 |
 |------|---------|------------|
@@ -99,11 +101,11 @@ Query改写与扩展并非“越多越好”，需要明确边界：
 
 | 类型 | 示例 | 典型问题 | 处理策略 |
 |------|------|---------|---------|
-| **简单查询** | “Python教程” | 词汇缺失 | 同义词扩展 |
-| **歧义查询** | “苹果” | 意图不清 | 意图识别 + 多路检索 |
-| **复杂查询** | “比较Python和Java优缺点” | 多维度需求 | 查询分解 |
-| **多跳查询** | “Python创始人创立的公司” | 需中间实体 | 多跳检索 |
-| **对话查询** | “它有什么特点？” | 上下文缺失 | 指代消解 + 上下文补全 |
+| **简单查询** | "Python教程" | 词汇缺失 | 同义词扩展 |
+| **歧义查询** | "苹果" | 意图不清 | 意图识别 + 多路检索 |
+| **复杂查询** | "比较Python和Java优缺点" | 多维度需求 | 查询分解 |
+| **多跳查询** | "Python创始人创立的公司" | 需中间实体 | 多跳检索 |
+| **对话查询** | "它有什么特点？" | 上下文缺失 | 指代消解 + 上下文补全 |
 
 ### 2.2 Query理解与意图识别 (Query Understanding & Intent Classification)
 
@@ -116,7 +118,7 @@ Query改写与扩展并非“越多越好”，需要明确边界：
 
 示例：
 
-查询：“苹果 2023 财报”
+查询："苹果 2023 财报"
 
 - 意图：财务信息查询
 - 实体：苹果公司 (Apple Inc.)
@@ -128,9 +130,9 @@ Query改写通常包含以下方法，并可组合使用：
 
 #### 2.3.1 词面级改写 (Lexical Rewriting)
 
-- **拼写纠错 (Spell Correction)**: “pyhton” → “python”
-- **大小写与格式规范化 (Normalization)**: “iPhone 15” → “iphone 15”
-- **缩写扩展 (Abbreviation Expansion)**: “NLP” → “自然语言处理 (Natural Language Processing)”
+- **拼写纠错 (Spell Correction)**: "pyhton" → "python"
+- **大小写与格式规范化 (Normalization)**: "iPhone 15" → "iphone 15"
+- **缩写扩展 (Abbreviation Expansion)**: "NLP" → "自然语言处理 (Natural Language Processing)"
 
 #### 2.3.2 同义词扩展 (Synonym Expansion)
 
@@ -144,7 +146,7 @@ Query改写通常包含以下方法，并可组合使用：
 
 示例：
 
-- “Python和Java优缺点比较” → [“Python 优点 缺点”, “Java 优点 缺点”]
+- "Python和Java优缺点比较" → ["Python 优点 缺点", "Java 优点 缺点"]
 
 #### 2.3.4 多跳检索 (Multi-hop Retrieval)
 
@@ -152,12 +154,12 @@ Query改写通常包含以下方法，并可组合使用：
 
 示例：
 
-- Q1: “Python 创始人” → “Guido van Rossum”
-- Q2: “Guido van Rossum 创建的公司” → “Dropbox”
+- Q1: "Python 创始人" → "Guido van Rossum"
+- Q2: "Guido van Rossum 创建的公司" → "Dropbox"
 
 #### 2.3.5 伪相关反馈 (Pseudo-Relevance Feedback, PRF)
 
-利用检索出的Top-K文档作为“伪相关”样本，自动扩展查询。
+利用检索出的Top-K文档作为"伪相关"样本，自动扩展查询。
 
 #### 2.3.6 HyDE (Hypothetical Document Embedding)
 
@@ -165,15 +167,15 @@ Query改写通常包含以下方法，并可组合使用：
 
 ### 2.4 Query变换技术 (Transformation Techniques)
 
-Query改写不仅仅是“加词”，还包括**结构化变换**：
+Query改写不仅仅是"加词"，还包括**结构化变换**：
 
 - **标准化 (Normalization)**: 全角转半角、大小写统一、空格处理。
 - **拼写纠错 (Spell Correction)**: 编辑距离或统计模型纠错。
-- **缩写扩展 (Abbreviation Expansion)**: “RAG” → “检索增强生成 (Retrieval-Augmented Generation)”。
-- **实体对齐 (Entity Linking)**: “苹果” → “Apple Inc.”。
+- **缩写扩展 (Abbreviation Expansion)**: "RAG" → "检索增强生成 (Retrieval-Augmented Generation)"。
+- **实体对齐 (Entity Linking)**: "苹果" → "Apple Inc."。
 - **字段增强 (Field Boosting)**: 对标题或摘要字段权重提升。
-- **布尔结构化 (Boolean Rewriting)**: “A B” → “A AND B”。
-- **时间与范围约束 (Time/Range Constraints)**: “2020-2023”解析为时间过滤。
+- **布尔结构化 (Boolean Rewriting)**: "A B" → "A AND B"。
+- **时间与范围约束 (Time/Range Constraints)**: "2020-2023"解析为时间过滤。
 
 ### 2.5 扩展来源 (Expansion Sources)
 
@@ -302,7 +304,7 @@ $$
 
 ### 3.5 HyDE原理 (Hypothetical Document Embedding)
 
-HyDE的核心思想是使用LLM生成“假设答案”文本 $H$，再用其Embedding检索：
+HyDE的核心思想是使用LLM生成"假设答案"文本 $H$，再用其Embedding检索：
 
 $$
 \text{Score}_{\text{HyDE}}(Q, D) = \cos(\mathbf{e}(H), \mathbf{e}(D))
@@ -312,7 +314,7 @@ $$
 
 ### 3.5.1 翻译模型 (Translation Model) 用于Query扩展
 
-将Query扩展视为“翻译问题”：
+将Query扩展视为"翻译问题"：
 
 $$
 P(w|Q) = \sum_{t \in Q} P(w|t) P(t|Q)
@@ -1003,7 +1005,7 @@ LLM可以用于复杂Query的结构化拆解，常见Prompt模板如下：
 
 示例输出：
 
-- 输入：“比较Python和Java在Web开发中的优缺点”
+- 输入："比较Python和Java在Web开发中的优缺点"
 - 输出：
   1) Python在Web开发中的优缺点
   2) Java在Web开发中的优缺点
@@ -1119,9 +1121,9 @@ print(recall_at_k(retrieved, relevant, k=2))
 
 | 查询类型 | 单跳Recall@5 | 多跳Recall@5 | 提升 |
 |---------|-------------|-------------|------|
-| “人物-公司” | 0.41 | 0.70 | +29% |
-| “事件-时间” | 0.50 | 0.68 | +18% |
-| “政策-影响” | 0.38 | 0.60 | +22% |
+| "人物-公司" | 0.41 | 0.70 | +29% |
+| "事件-时间" | 0.50 | 0.68 | +18% |
+| "政策-影响" | 0.38 | 0.60 | +22% |
 
 ### 5.4 Query理解的贡献（示例）
 
@@ -1133,7 +1135,7 @@ print(recall_at_k(retrieved, relevant, k=2))
 
 ### 5.5 实验设计与数据集说明
 
-为了避免“离线指标很好但线上体验差”的问题，实验应同时覆盖离线与线上：
+为了避免"离线指标很好但线上体验差"的问题，实验应同时覆盖离线与线上：
 
 - **离线评估 (Offline)**: 使用标注的检索相关性数据集。
 - **线上评估 (Online)**: A/B测试关注点击率、转化率与停留时长。
@@ -1258,7 +1260,7 @@ Query改写可能引入安全与合规风险：
 
 ### 6.7 Debug与迭代优化
 
-调试Query改写时建议建立“改写链路日志”以追踪每一步：
+调试Query改写时建议建立"改写链路日志"以追踪每一步：
 
 ```
 原始Query

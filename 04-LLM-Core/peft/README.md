@@ -1,67 +1,67 @@
-# Parameter-Efficient Fine-Tuning (PEFT)
+# 参数高效微调 (Parameter-Efficient Fine-Tuning, PEFT)
 
-**[English](README.md) | [中文](README_CN.md)**
+[English](README_EN.md) | [中文](README.md)
 
-## Overview
+## 概述
 
-PEFT methods adapt large pre-trained models to downstream tasks by training only a small number of parameters, dramatically reducing memory requirements and training costs while maintaining competitive performance.
+PEFT 方法通过仅训练少量参数来调整大型预训练模型以适应下游任务,大幅降低内存需求和训练成本,同时保持竞争力性能。
 
-## Why PEFT?
+## 为什么需要 PEFT?
 
-### Full Fine-tuning Challenges
+### 全量微调的挑战
 
 | Challenge | Impact |
 |-----------|--------|
-| **Memory** | Store gradients for all parameters |
-| **Storage** | Each task requires a full model copy |
-| **Catastrophic Forgetting** | Lose pre-trained knowledge |
-| **Compute** | Long training times for large models |
+| **内存** | 存储所有参数的梯度 |
+| **存储** | 每个任务需要完整的模型副本 |
+| **灾难性遗忘** | 丢失预训练知识 |
+| **计算** | 大模型训练时间长 |
 
-**Example: LLaMA-2 70B Full Fine-tuning**
-- Model parameters: 140GB (FP16)
-- Gradients: 140GB
-- Optimizer states (Adam): 280GB
-- **Total: ~560GB GPU memory**
+**示例: LLaMA-2 70B 全量微调**
+- 模型参数: 140GB (FP16)
+- 梯度: 140GB
+- 优化器状态 (Adam): 280GB
+- **总计: ~560GB GPU 内存**
 
-### PEFT Benefits
+### PEFT 的优势
 
 | Benefit | Improvement |
 |---------|-------------|
-| **Memory** | 70-90% reduction |
-| **Storage** | Only save small adapter weights |
-| **Training Speed** | 3-5x faster |
-| **Knowledge Retention** | Base model frozen |
+| **内存** | 减少 70-90% |
+| **存储** | 仅保存小型适配器权重 |
+| **训练速度** | 快 3-5 倍 |
+| **知识保留** | 基础模型冻结 |
 
-## LoRA (Low-Rank Adaptation)
+## LoRA (Low-Rank Adaptation, 低秩适应)
 
-### Core Concept
+### 核心概念
 
-Instead of updating full weight matrices $W \in \mathbb{R}^{d \times k}$, LoRA decomposes the update into low-rank matrices:
+不是更新完整的权重矩阵 $W \in \mathbb{R}^{d \times k}$,LoRA 将更新分解为低秩矩阵:
 
 ```
 W = W_0 + ΔW = W_0 + BA
 
-Where:
-- W_0: Frozen pre-trained weights (d × k)
-- B: Trainable matrix (d × r)
-- A: Trainable matrix (r × k)
-- r: Low-rank dimension (r ≪ min(d, k))
+其中:
+- W_0: 冻结的预训练权重 (d × k)
+- B: 可训练矩阵 (d × r)
+- A: 可训练矩阵 (r × k)
+- r: 低秩维度 (r ≪ min(d, k))
 ```
 
-**Forward Pass**:
+**前向传播**:
 ```
 h = W_0·x + ΔW·x = W_0·x + B·A·x
 ```
 
-### Mathematical Analysis
+### 数学分析
 
-**Parameter Count**:
+**参数数量**:
 
 | Method | Formula | Example (d=k=4096, r=16) |
 |--------|---------|------------------------|
-| Full Fine-tuning | d × k | 16.8M |
+| 全量微调 | d × k | 16.8M |
 | LoRA | r × (d + k) | 131K |
-| **Savings** | - | **99.2%** |
+| **节省** | - | **99.2%** |
 
 ```python
 import torch
@@ -71,78 +71,78 @@ import math
 class LoRALayer(nn.Module):
     def __init__(self, in_features, out_features, rank=16, lora_alpha=32):
         super().__init__()
-        
+
         self.rank = rank
         self.lora_alpha = lora_alpha
         self.scaling = lora_alpha / rank
-        
-        # LoRA matrices - initialized with specific strategy
+
+        # LoRA 矩阵 - 使用特定策略初始化
         self.lora_A = nn.Parameter(torch.zeros(in_features, rank))
         self.lora_B = nn.Parameter(torch.zeros(rank, out_features))
-        
-        # Initialize A with kaiming uniform, B with zeros
-        # This ensures ΔW is zero at initialization
+
+        # A 用 kaiming uniform 初始化,B 用零初始化
+        # 这确保 ΔW 在初始化时为零
         nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
         nn.init.zeros_(self.lora_B)
-    
+
     def forward(self, x, base_output):
         """
-        x: input tensor
-        base_output: output from frozen base layer
+        x: 输入张量
+        base_output: 来自冻结基础层的输出
         """
-        # LoRA path: x @ A @ B
+        # LoRA 路径: x @ A @ B
         lora_output = (x @ self.lora_A @ self.lora_B) * self.scaling
-        
+
         return base_output + lora_output
 
-# Complete LoRA Linear layer
+# 完整的 LoRA 线性层
 class LoRALinear(nn.Module):
     def __init__(self, base_layer, rank=16, lora_alpha=32, dropout=0.0):
         super().__init__()
-        
+
         self.base_layer = base_layer
-        # Freeze base layer
+        # 冻结基础层
         for param in self.base_layer.parameters():
             param.requires_grad = False
-        
-        # Add LoRA
+
+        # 添加 LoRA
         in_features = base_layer.in_features
         out_features = base_layer.out_features
-        
+
         self.lora = LoRALayer(in_features, out_features, rank, lora_alpha)
         self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
-    
+
     def forward(self, x):
-        # Base output (frozen)
+        # 基础输出 (冻结)
         base_output = self.base_layer(x)
-        
-        # LoRA adaptation
+
+        # LoRA 适应
         x_dropped = self.dropout(x)
         return self.lora(x_dropped, base_output)
 ```
 
-### LoRA Configuration
+### LoRA 配置
 
 ```python
 from peft import LoraConfig, get_peft_model, TaskType
 
-# Standard LoRA configuration
+# 标准 LoRA 配置
 lora_config = LoraConfig(
     task_type=TaskType.CAUSAL_LM,
-    r=16,                    # Low-rank dimension
-    lora_alpha=32,          # Scaling factor (usually 2*r)
-    target_modules=[        # Which layers to adapt
-        "q_proj",           # Query projection
-        "k_proj",           # Key projection  
-        "v_proj",           # Value projection
-        "o_proj",           # Output projection
+    r=16,                    # 低秩维度
+    lora_alpha=32,          # 缩放因子 (通常 2*r)
+    target_modules=[        # 要适应的层
+        "q_proj",           # Query 投影
+        "k_proj",           # Key 投影
+        "v_proj",           # Value 投影
+        "o_proj",           # 输出投影
     ],
-    lora_dropout=0.05,      # Dropout for regularization
-    bias="none",            # Bias training strategy
-    modules_to_save=None,   # Additional modules to train
+    lora_dropout=0.05,      # Dropout 用于正则化
+    bias="none",            # 偏置训练策略
+    modules_to_save=None,   # 额外要训练的模块
 )
 
-# Apply to model
+# 应用于模型
 from transformers import AutoModelForCausalLM
 
 model = AutoModelForCausalLM.from_pretrained(
@@ -151,56 +151,56 @@ model = AutoModelForCausalLM.from_pretrained(
     device_map="auto"
 )
 
-# Convert to PEFT model
+# 转换为 PEFT 模型
 peft_model = get_peft_model(model, lora_config)
 peft_model.print_trainable_parameters()
-# Output: trainable params: 33,554,432 || all params: 6,771,970,048 || 
+# 输出: trainable params: 33,554,432 || all params: 6,771,970,048 ||
 #         trainable%: 0.4956
 ```
 
-### Target Module Selection
+### 目标模块选择
 
 | Module | Recommendation | Reason |
 |--------|---------------|--------|
-| **q_proj, v_proj** | ✓ Required | Most important for attention |
-| **k_proj, o_proj** | ✓ Recommended | Improves performance |
-| **gate_proj, up_proj, down_proj** | ? Optional | MLP layers, more params |
-| **embed_tokens** | ✗ Usually skip | Large vocab dimension |
-| **lm_head** | ✗ Usually skip | Output layer |
+| **q_proj, v_proj** | ✓ 必需 | 对注意力最重要 |
+| **k_proj, o_proj** | ✓ 推荐 | 提高性能 |
+| **gate_proj, up_proj, down_proj** | ? 可选 | MLP 层,更多参数 |
+| **embed_tokens** | ✗ 通常跳过 | 大词表维度 |
+| **lm_head** | ✗ 通常跳过 | 输出层 |
 
-## QLoRA (Quantized LoRA)
+## QLoRA (Quantized LoRA, 量化 LoRA)
 
-### 4-bit Quantization + LoRA
+### 4-bit 量化 + LoRA
 
-QLoRA enables fine-tuning 65B models on single 48GB GPU by:
-1. Quantizing base model to 4-bit
-2. Computing LoRA updates in higher precision
-3. Dequantizing on-the-fly during forward pass
+QLoRA 通过以下方式在单张 48GB GPU 上微调 65B 模型:
+1. 将基础模型量化为 4-bit
+2. 在更高精度下计算 LoRA 更新
+3. 在前向传播期间即时去量化
 
 ```python
 from transformers import AutoModelForCausalLM, BitsAndBytesConfig
 from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model
 
-# 4-bit quantization configuration
+# 4-bit 量化配置
 bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,                          # Use 4-bit quantization
-    bnb_4bit_use_double_quant=True,             # Nested quantization
+    load_in_4bit=True,                          # 使用 4-bit 量化
+    bnb_4bit_use_double_quant=True,             # 嵌套量化
     bnb_4bit_quant_type="nf4",                  # 4-bit normal float
-    bnb_4bit_compute_dtype=torch.bfloat16       # Compute dtype
+    bnb_4bit_compute_dtype=torch.bfloat16       # 计算数据类型
 )
 
-# Load quantized model
+# 加载量化模型
 model = AutoModelForCausalLM.from_pretrained(
     "meta-llama/Llama-2-7b-hf",
     quantization_config=bnb_config,
-    device_map="auto",                          # Auto-distribute layers
+    device_map="auto",                          # 自动分发层
     trust_remote_code=True
 )
 
-# Prepare for training
+# 准备训练
 model = prepare_model_for_kbit_training(model)
 
-# Apply LoRA
+# 应用 LoRA
 lora_config = LoraConfig(
     r=16,
     lora_alpha=32,
@@ -212,13 +212,13 @@ lora_config = LoraConfig(
 
 model = get_peft_model(model, lora_config)
 
-# Memory comparison
+# 内存对比
 print("QLoRA enables training 65B models on 48GB GPU")
 print("Standard LoRA requires ~80GB for 65B model")
 print("Full fine-tuning requires ~780GB for 65B model")
 ```
 
-### Memory Savings Breakdown
+### 内存节省分解
 
 | Model Size | Full FT | LoRA | QLoRA |
 |------------|---------|------|-------|
@@ -226,16 +226,16 @@ print("Full fine-tuning requires ~780GB for 65B model")
 | 13B | 52GB | 26GB | 14GB |
 | 70B | 280GB | 140GB | 48GB |
 
-## Adapters
+## Adapters (适配器)
 
-### Architecture
+### 架构
 
-Small bottleneck modules inserted between transformer layers:
+在 transformer 层之间插入的小型瓶颈模块:
 
 ```
 Input → [LayerNorm → Adapter → Residual] → Output
 
-Adapter structure:
+Adapter 结构:
 x → Linear(down) → Activation → Linear(up) → Output
 ```
 
@@ -247,133 +247,133 @@ class Adapter(nn.Module):
         self.activation = nn.GELU()
         self.up_project = nn.Linear(adapter_size, hidden_size)
         self.dropout = nn.Dropout(dropout)
-        
-        # Initialize
+
+        # 初始化
         nn.init.xavier_uniform_(self.down_project.weight)
         nn.init.xavier_uniform_(self.up_project.weight)
         nn.init.zeros_(self.down_project.bias)
         nn.init.zeros_(self.up_project.bias)
-    
+
     def forward(self, x):
         residual = x
         x = self.down_project(x)
         x = self.activation(x)
         x = self.dropout(x)
         x = self.up_project(x)
-        return x + residual  # Residual connection
+        return x + residual  # 残差连接
 
-# Adapter configuration
+# Adapter 配置
 from peft import AdapterConfig
 
 adapter_config = AdapterConfig(
-    adapter_dim=64,          # Bottleneck dimension
-    hidden_act="gelu",       # Activation function
+    adapter_dim=64,          # 瓶颈维度
+    hidden_act="gelu",       # 激活函数
     adapter_dropout=0.1,
     target_modules=["attention", "mlp"]
 )
 ```
 
-## Prompt Tuning
+## Prompt Tuning (提示词微调)
 
-### Soft Prompts
+### Soft Prompts (软提示词)
 
-Instead of discrete text prompts, learn continuous embeddings:
+学习连续嵌入而非离散文本提示词:
 
 ```python
 class PromptTuning(nn.Module):
     def __init__(self, num_tokens, token_dim, initialize_from_vocab=True):
         super().__init__()
-        
-        # Initialize soft prompt tokens
+
+        # 初始化软提示词 tokens
         if initialize_from_vocab:
-            # Initialize from existing vocabulary
+            # 从现有词表初始化
             self.soft_prompt = nn.Parameter(
                 torch.randn(num_tokens, token_dim) * 0.01
             )
         else:
-            # Random initialization
+            # 随机初始化
             self.soft_prompt = nn.Parameter(
                 torch.randn(num_tokens, token_dim)
             )
-    
+
     def forward(self, input_embeds):
         batch_size = input_embeds.size(0)
-        
-        # Expand soft prompt for batch
+
+        # 扩展软提示词以适应 batch
         soft_prompt_embeds = self.soft_prompt.unsqueeze(0).expand(
             batch_size, -1, -1
         )
-        
-        # Concatenate: [soft prompt] + [input]
+
+        # 拼接: [soft prompt] + [input]
         return torch.cat([soft_prompt_embeds, input_embeds], dim=1)
 
-# Usage with transformer
+# 与 transformer 一起使用
 class PromptTunedTransformer(nn.Module):
     def __init__(self, base_model, num_prompt_tokens=20):
         super().__init__()
         self.base_model = base_model
-        
-        # Freeze base model
+
+        # 冻结基础模型
         for param in self.base_model.parameters():
             param.requires_grad = False
-        
-        # Learnable soft prompts
+
+        # 可学习的软提示词
         self.prompt_tuning = PromptTuning(
             num_tokens=num_prompt_tokens,
             token_dim=self.base_model.config.hidden_size
         )
-    
+
     def forward(self, input_ids):
-        # Get input embeddings
+        # 获取输入嵌入
         input_embeds = self.base_model.embeddings(input_ids)
-        
-        # Add soft prompts
+
+        # 添加软提示词
         prompted_embeds = self.prompt_tuning(input_embeds)
-        
-        # Pass through frozen transformer
+
+        # 通过冻结的 transformer
         return self.base_model(inputs_embeds=prompted_embeds)
 ```
 
 ## P-tuning v2
 
-### Deep Prompt Tuning
+### 深度提示词微调
 
-Add trainable prompts at every layer, not just input:
+在每一层添加可训练提示词,不仅仅是输入:
 
 ```python
 class PTuningV2(nn.Module):
     def __init__(self, num_layers, num_tokens, hidden_size):
         super().__init__()
-        
-        # Prompt embeddings for each layer
+
+        # 每层的提示词嵌入
         self.prompt_embeddings = nn.ParameterList([
             nn.Parameter(torch.randn(num_tokens, hidden_size) * 0.01)
             for _ in range(num_layers)
         ])
-        
-        # MLP for prompt generation (optional)
+
+        # 提示词生成的 MLP (可选)
         self.prompt_encoder = nn.Sequential(
             nn.Linear(hidden_size, hidden_size // 2),
             nn.Tanh(),
             nn.Linear(hidden_size // 2, hidden_size)
         )
-    
+
     def forward(self, hidden_states, layer_idx):
-        """Add prompts to hidden states at specific layer"""
+        """在特定层将提示词添加到隐藏状态"""
         batch_size = hidden_states.size(0)
-        
-        # Get prompts for this layer
+
+        # 获取该层的提示词
         prompts = self.prompt_embeddings[layer_idx]
         prompts = self.prompt_encoder(prompts)
-        
-        # Expand for batch
+
+        # 扩展以适应 batch
         prompts = prompts.unsqueeze(0).expand(batch_size, -1, -1)
-        
-        # Concatenate
+
+        # 拼接
         return torch.cat([prompts, hidden_states], dim=1)
 ```
 
-## Comparison
+## 对比
 
 | Method | Trainable Params | Memory | Speed | Performance |
 |--------|-----------------|--------|-------|-------------|
@@ -384,19 +384,19 @@ class PTuningV2(nn.Module):
 | **Prompt Tuning** | <0.1% | 15-20% | 5x | 90% |
 | **P-tuning v2** | 0.2-0.5% | 20-25% | 4x | 94% |
 
-## Hyperparameter Tuning
+## 超参数调优
 
-### LoRA Rank Selection
+### LoRA 秩选择
 
 | Rank | Parameters | Performance | Use Case |
 |------|-----------|-------------|----------|
-| 4 | 0.12% | 92% | Quick experiments |
-| 8 | 0.24% | 95% | Limited resources |
-| 16 | 0.47% | 98% | **Recommended** |
-| 32 | 0.94% | 99% | High performance |
-| 64 | 1.88% | 99.5% | Maximum quality |
+| 4 | 0.12% | 92% | 快速实验 |
+| 8 | 0.24% | 95% | 资源受限 |
+| 16 | 0.47% | 98% | **推荐** |
+| 32 | 0.94% | 99% | 高性能 |
+| 64 | 1.88% | 99.5% | 最大质量 |
 
-### Learning Rate Guidelines
+### 学习率指南
 
 | Model Size | LoRA LR | Full FT LR |
 |------------|---------|------------|
@@ -405,25 +405,25 @@ class PTuningV2(nn.Module):
 | 13B | 1e-4 | 1e-5 |
 | 70B+ | 5e-5 | 5e-6 |
 
-## Best Practices
+## 最佳实践
 
-### 1. Module Selection
+### 1. 模块选择
 
 ```python
-# Minimal configuration (fastest)
+# 最小配置 (最快)
 target_modules = ["q_proj", "v_proj"]
 
-# Recommended (best balance)
+# 推荐 (最佳平衡)
 target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
 
-# Comprehensive (highest quality)
+# 全面 (最高质量)
 target_modules = [
     "q_proj", "k_proj", "v_proj", "o_proj",
     "gate_proj", "up_proj", "down_proj"
 ]
 ```
 
-### 2. Training Configuration
+### 2. 训练配置
 
 ```python
 from trl import SFTTrainer
@@ -434,14 +434,14 @@ training_args = TrainingArguments(
     num_train_epochs=3,
     per_device_train_batch_size=4,
     gradient_accumulation_steps=4,
-    learning_rate=2e-4,           # Higher than full FT
+    learning_rate=2e-4,           # 比全量微调高
     warmup_ratio=0.03,
     lr_scheduler_type="cosine",
     logging_steps=10,
     save_strategy="epoch",
     fp16=True,
-    optim="paged_adamw_8bit",     # For QLoRA
-    group_by_length=True,        # Efficiency
+    optim="paged_adamw_8bit",     # 用于 QLoRA
+    group_by_length=True,        # 效率
 )
 
 trainer = SFTTrainer(
@@ -455,35 +455,35 @@ trainer = SFTTrainer(
 trainer.train()
 ```
 
-### 3. Inference and Deployment
+### 3. 推理和部署
 
 ```python
-# Load base model
+# 加载基础模型
 base_model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf")
 
-# Load LoRA weights
+# 加载 LoRA 权重
 from peft import PeftModel
 
 model = PeftModel.from_pretrained(base_model, "./lora_weights")
 
-# Option 1: Merge weights (faster inference, no PEFT dependency)
+# 选项 1: 合并权重 (推理更快,无需 PEFT 依赖)
 model = model.merge_and_unload()
 model.save_pretrained("./merged_model")
 
-# Option 2: Keep separate (memory efficient, easy to swap adapters)
-# Just use model for inference directly
+# 选项 2: 保持分离 (内存高效,易于交换适配器)
+# 直接使用模型进行推理
 ```
 
-## Common Pitfalls
+## 常见陷阱
 
 | Issue | Symptom | Solution |
 |-------|---------|----------|
-| **Rank too low** | Poor performance | Increase r to 16+ |
-| **Wrong modules** | No improvement | Use q_proj, v_proj at minimum |
-| **Learning rate too low** | Slow convergence | Use 10-100x full FT LR |
-| **Overfitting** | High train loss, low val | Add dropout, reduce epochs |
-| **Instability** | Loss spikes | Gradient clipping, warmup |
+| **秩太低** | 性能差 | 将 r 增加到 16+ |
+| **错误的模块** | 无改进 | 至少使用 q_proj, v_proj |
+| **学习率太低** | 收敛慢 | 使用全量微调的 10-100x LR |
+| **过拟合** | 训练损失高,验证损失低 | 添加 dropout,减少 epochs |
+| **不稳定** | 损失尖峰 | 梯度裁剪,warmup |
 
 ---
 
-**Previous**: [Pre-training](../pre-training/README.md) | **Next**: [Alignment](../alignment/README.md)
+**上一节**: [预训练](../pre-training/README.md) | **下一节**: [对齐](../alignment/README.md)

@@ -1,40 +1,40 @@
-# Transformer Architecture
+[English](README_EN.md) | [中文](README.md)
 
-**[English](README.md) | [中文](README_CN.md)**
+# Transformer 架构
 
-## Overview
+## 概述
 
-The Transformer is a revolutionary architecture introduced in "Attention Is All You Need" (2017) that replaced recurrence with attention, enabling parallelization and superior performance on sequence tasks.
+Transformer 是 2017 年在《Attention Is All You Need》论文中引入的革命性架构，它用注意力机制替代了循环，实现了并行化并在序列任务上取得了优越的性能。
 
-## Architecture
+## 架构
 
-### High-Level Structure
+### 高层结构
 
 ```
-Input Embedding + Positional Encoding
+输入嵌入 + 位置编码
     ↓
-[Encoder Stack × N]
+[编码器堆栈 × N]
     ↓
-[Decoder Stack × N] ← (for seq2seq)
+[解码器堆栈 × N] ← (用于 seq2seq)
     ↓
-Output Projection + Softmax
+输出投影 + Softmax
 ```
 
-### Encoder-Decoder Structure
+### 编码器-解码器结构
 
-**Encoder**: Processes input sequence
-- Multi-Head Self-Attention
-- Feed-Forward Network
-- Layer Normalization & Residuals
+**编码器 (Encoder)**：处理输入序列
+- 多头自注意力
+- 前馈网络
+- 层归一化与残差连接
 
-**Decoder**: Generates output sequence
-- Masked Multi-Head Self-Attention
-- Cross-Attention (to encoder)
-- Feed-Forward Network
+**解码器 (Decoder)**：生成输出序列
+- 掩码多头自注意力
+- 交叉注意力（到编码器）
+- 前馈网络
 
-## Core Components
+## 核心组件
 
-### 1. Encoder Layer
+### 1. 编码器层
 
 ```python
 class TransformerEncoderLayer(nn.Module):
@@ -50,20 +50,20 @@ class TransformerEncoderLayer(nn.Module):
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
-    
+
     def forward(self, x, mask=None):
-        # Self-attention with residual
+        # 自注意力与残差连接
         attn_output = self.self_attn(x, x, x, mask)[0]
         x = self.norm1(x + self.dropout(attn_output))
-        
-        # Feed-forward with residual
+
+        # 前馈与残差连接
         ff_output = self.feed_forward(x)
         x = self.norm2(x + self.dropout(ff_output))
-        
+
         return x
 ```
 
-### 2. Decoder Layer
+### 2. 解码器层
 
 ```python
 class TransformerDecoderLayer(nn.Module):
@@ -80,81 +80,81 @@ class TransformerDecoderLayer(nn.Module):
         self.norm2 = nn.LayerNorm(d_model)
         self.norm3 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
-    
+
     def forward(self, x, encoder_output, src_mask=None, tgt_mask=None):
-        # Masked self-attention
+        # 掩码自注意力
         attn1 = self.masked_self_attn(x, x, x, tgt_mask)[0]
         x = self.norm1(x + self.dropout(attn1))
-        
-        # Cross-attention to encoder
+
+        # 到编码器的交叉注意力
         attn2 = self.cross_attn(x, encoder_output, encoder_output, src_mask)[0]
         x = self.norm2(x + self.dropout(attn2))
-        
-        # Feed-forward
+
+        # 前馈网络
         ff = self.feed_forward(x)
         x = self.norm3(x + self.dropout(ff))
-        
+
         return x
 ```
 
-## Complete Transformer
+## 完整 Transformer
 
 ```python
 class Transformer(nn.Module):
-    def __init__(self, src_vocab_size, tgt_vocab_size, d_model=512, 
-                 num_heads=8, num_encoder_layers=6, num_decoder_layers=6, 
+    def __init__(self, src_vocab_size, tgt_vocab_size, d_model=512,
+                 num_heads=8, num_encoder_layers=6, num_decoder_layers=6,
                  d_ff=2048, dropout=0.1):
         super().__init__()
-        
+
         self.d_model = d_model
-        
-        # Embeddings
+
+        # 嵌入层
         self.src_embedding = nn.Embedding(src_vocab_size, d_model)
         self.tgt_embedding = nn.Embedding(tgt_vocab_size, d_model)
         self.pos_encoding = PositionalEncoding(d_model)
-        
-        # Encoder stack
+
+        # 编码器堆栈
         self.encoder_layers = nn.ModuleList([
             TransformerEncoderLayer(d_model, num_heads, d_ff, dropout)
             for _ in range(num_encoder_layers)
         ])
-        
-        # Decoder stack
+
+        # 解码器堆栈
         self.decoder_layers = nn.ModuleList([
             TransformerDecoderLayer(d_model, num_heads, d_ff, dropout)
             for _ in range(num_decoder_layers)
         ])
-        
-        # Output projection
+
+        # 输出投影
         self.output_projection = nn.Linear(d_model, tgt_vocab_size)
-        
+
         self.dropout = nn.Dropout(dropout)
-    
+
     def forward(self, src, tgt, src_mask=None, tgt_mask=None):
-        # Embed and add positional encoding
+        # 嵌入并添加位置编码
         src = self.dropout(self.pos_encoding(self.src_embedding(src) * math.sqrt(self.d_model)))
         tgt = self.dropout(self.pos_encoding(self.tgt_embedding(tgt) * math.sqrt(self.d_model)))
-        
-        # Encode
+
+        # 编码
         for layer in self.encoder_layers:
             src = layer(src, src_mask)
-        
-        # Decode
+
+        # 解码
         for layer in self.decoder_layers:
             tgt = layer(tgt, src, src_mask, tgt_mask)
-        
-        # Project to vocabulary
+
+        # 投影到词汇表
         output = self.output_projection(tgt)
         return output
 ```
 
-## Key Design Decisions
+## 关键设计决策
 
-### 1. Layer Normalization vs Batch Normalization
+### 1. 层归一化 vs 批归一化
 
-**LayerNorm**: Normalizes across features
-- More stable for sequences
-- Independent of batch size
+**LayerNorm**：在特征维度归一化
+- 对序列更稳定
+- 与批次大小无关
 
 ```python
 # LayerNorm
@@ -163,25 +163,25 @@ std = x.std(-1, keepdim=True)
 output = (x - mean) / (std + eps) * gamma + beta
 ```
 
-### 2. Residual Connections
+### 2. 残差连接
 
-Enable gradient flow through deep networks:
+使梯度能够流过深层网络：
 ```
 output = LayerNorm(x + Sublayer(x))
 ```
 
-### 3. Position-wise FFN
+### 3. 逐位置前馈网络
 
-Two linear transformations with ReLU:
+使用 ReLU 的两个线性变换：
 ```
 FFN(x) = max(0, xW₁ + b₁)W₂ + b₂
 ```
 
-## Variants
+## 变体
 
-### 1. Encoder-Only (BERT-style)
+### 1. 仅编码器 (BERT 风格)
 
-**Use Cases**: Classification, tagging, representation
+**应用场景**：分类、标注、表示学习
 
 ```python
 class EncoderOnlyTransformer(nn.Module):
@@ -194,18 +194,18 @@ class EncoderOnlyTransformer(nn.Module):
             for _ in range(num_layers)
         ])
         self.pooler = nn.Linear(d_model, d_model)
-    
+
     def forward(self, x):
         x = self.pos_encoding(self.embedding(x))
         for layer in self.layers:
             x = layer(x)
-        # Use [CLS] token or mean pooling
+        # 使用 [CLS] token 或平均池化
         return self.pooler(x[:, 0])
 ```
 
-### 2. Decoder-Only (GPT-style)
+### 2. 仅解码器 (GPT 风格)
 
-**Use Cases**: Text generation, language modeling
+**应用场景**：文本生成、语言建模
 
 ```python
 class DecoderOnlyTransformer(nn.Module):
@@ -213,39 +213,39 @@ class DecoderOnlyTransformer(nn.Module):
         super().__init__()
         self.token_embedding = nn.Embedding(vocab_size, d_model)
         self.pos_encoding = PositionalEncoding(d_model)
-        
-        # Masked self-attention layers
+
+        # 掩码自注意力层
         self.layers = nn.ModuleList([
-            TransformerEncoderLayer(d_model, 12, 3072)  # Same as encoder but with causal mask
+            TransformerEncoderLayer(d_model, 12, 3072)  # 与编码器相同但使用因果掩码
             for _ in range(num_layers)
         ])
         self.lm_head = nn.Linear(d_model, vocab_size, bias=False)
-    
+
     def forward(self, x):
-        # Causal mask
+        # 因果掩码
         mask = torch.tril(torch.ones(x.size(1), x.size(1)))
-        
+
         x = self.pos_encoding(self.token_embedding(x))
         for layer in self.layers:
             x = layer(x, mask)
         return self.lm_head(x)
 ```
 
-## Hyperparameters
+## 超参数
 
-| Parameter | Typical Value | Description |
+| 参数 | 典型值 | 描述 |
 |-----------|--------------|-------------|
-| d_model | 512-2048 | Model dimension |
-| num_heads | 8-16 | Attention heads |
-| num_layers | 6-24 | Encoder/decoder layers |
-| d_ff | 2048-8192 | FFN hidden dimension |
-| dropout | 0.1 | Regularization |
+| d_model | 512-2048 | 模型维度 |
+| num_heads | 8-16 | 注意力头数 |
+| num_layers | 6-24 | 编码器/解码器层数 |
+| d_ff | 2048-8192 | 前馈网络隐藏层维度 |
+| dropout | 0.1 | 正则化 |
 
-## Training Tips
+## 训练技巧
 
-### 1. Learning Rate Schedule
+### 1. 学习率调度
 
-**Warmup + Decay**:
+**预热 + 衰减**：
 ```python
 def lr_schedule(step, warmup_steps, d_model):
     if step < warmup_steps:
@@ -253,40 +253,40 @@ def lr_schedule(step, warmup_steps, d_model):
     return (d_model ** -0.5) * min(step ** -0.5, step * (warmup_steps ** -1.5))
 ```
 
-### 2. Label Smoothing
+### 2. 标签平滑
 
-Prevent overconfidence:
+防止过度自信：
 ```python
 criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
 ```
 
-### 3. Gradient Accumulation
+### 3. 梯度累积
 
-Simulate large batch sizes:
+模拟大批次：
 ```python
 accumulation_steps = 4
 for i, batch in enumerate(dataloader):
     loss = model(batch) / accumulation_steps
     loss.backward()
-    
+
     if (i + 1) % accumulation_steps == 0:
         optimizer.step()
         optimizer.zero_grad()
 ```
 
-## Efficiency Improvements
+## 效率优化
 
-### 1. KV Cache
+### 1. KV 缓存
 
-For autoregressive generation:
+用于自回归生成：
 ```python
-# Cache previous keys and values
+# 缓存之前的键和值
 past_key_values = None
 for token in sequence:
     output, past_key_values = model(token, past_key_values)
 ```
 
-### 2. Mixed Precision
+### 2. 混合精度
 
 ```python
 from torch.cuda.amp import autocast, GradScaler
@@ -303,25 +303,25 @@ scaler.update()
 
 ### 3. Flash Attention
 
-Memory-efficient attention implementation
+内存高效的注意力实现
 
-## Applications
+## 应用
 
-| Task | Architecture | Example |
+| 任务 | 架构 | 示例 |
 |------|-------------|---------|
-| Translation | Encoder-Decoder | Original Transformer |
-| Classification | Encoder-only | BERT |
-| Generation | Decoder-only | GPT |
-| Summarization | Encoder-Decoder | BART |
-| QA | Encoder-only | RoBERTa |
+| 翻译 | 编码器-解码器 | 原始 Transformer |
+| 分类 | 仅编码器 | BERT |
+| 生成 | 仅解码器 | GPT |
+| 摘要 | 编码器-解码器 | BART |
+| 问答 | 仅编码器 | RoBERTa |
 
-## Common Pitfalls
+## 常见陷阱
 
-1. **Wrong masking**: Causal mask for decoder
-2. **Scaling**: Forget √d_k in attention
-3. **Position encoding**: Not adding before first layer
-4. **LayerNorm placement**: Pre-LN vs Post-LN
+1. **掩码错误**：解码器需要因果掩码
+2. **缩放**：忘记注意力中的 √d_k
+3. **位置编码**：未在第一层之前添加
+4. **LayerNorm 位置**：Pre-LN vs Post-LN
 
 ---
 
-**Previous**: [Attention Mechanisms](../attention-mechanisms/README.md) | **Next**: [Pre-trained Models](../pretrained-models/README.md)
+**上一章**: [注意力机制](../attention-mechanisms/README.md) | **下一章**: [预训练模型](../pretrained-models/README.md)

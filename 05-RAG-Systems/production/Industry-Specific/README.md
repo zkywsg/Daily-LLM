@@ -1,15 +1,15 @@
-# Industry-Specific Applications
+[English](README_EN.md) | [中文](README.md)
 
-**[English](README.md) | [中文](README_CN.md)**
+# 行业特定应用 (Industry-Specific Applications)
 
-## Overview
-LLM applications tailored for specific industries like legal, medical, and finance.
+## 概述
+为特定行业（如法律、医疗和金融）定制的大语言模型应用。
 
-## Key Features
-- Domain-specific knowledge
-- Compliance requirements
-- Specialized terminology
-- Regulatory constraints
+## 核心功能
+- 领域特定知识 (Domain-specific knowledge)
+- 合规要求 (Compliance requirements)
+- 专业术语 (Specialized terminology)
+- 监管约束 (Regulatory constraints)
 
-## Implementation
-Uses domain-specific fine-tuning and retrieval systems.
+## 实现方式
+使用领域特定的微调和检索系统。

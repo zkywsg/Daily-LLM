@@ -1,3 +1,5 @@
+**[English](README_EN.md) | [中文](README.md)**
+
 # 记忆系统设计 (Memory System Design)
 
 ## 目录

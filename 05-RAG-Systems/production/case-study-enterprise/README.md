@@ -1,4 +1,6 @@
-# 生产案例：企业知识助手 (Enterprise RAG Case Study)
+# 生产案例：企业知识助手
+
+[English](README_EN.md) | [中文](README.md)
 
 ## 目录
 
@@ -110,24 +112,24 @@
 # 简化的文档处理流程
 class DocumentPipeline:
     """文档处理流水线"""
-    
+
     def __init__(self):
         self.parser = DocumentParser()
         self.chunker = SmartChunker()
         self.embedder = BGEEmbedder()
-    
+
     def process(self, file_path: str) -> bool:
         """处理单个文档"""
         try:
             # 1. 解析
             content = self.parser.parse(file_path)
-            
+
             # 2. 切分
             chunks = self.chunker.chunk(content, strategy="semantic")
-            
+
             # 3. 向量化
             embeddings = self.embedder.encode([c.text for c in chunks])
-            
+
             # 4. 入库
             for chunk, emb in zip(chunks, embeddings):
                 milvus_client.insert({
@@ -137,7 +139,7 @@ class DocumentPipeline:
                     "source": file_path,
                     "metadata": chunk.metadata
                 })
-            
+
             return True
         except Exception as e:
             logger.error(f"处理失败 {file_path}: {e}")
@@ -149,18 +151,18 @@ class DocumentPipeline:
 ```python
 class PermissionFilter:
     """权限过滤器"""
-    
+
     def __init__(self):
         self.user_permissions = UserPermissionCache()
-    
+
     def filter_by_permission(self, user_id: str, results: List[Dict]) -> List[Dict]:
         """根据用户权限过滤结果"""
         # 获取用户可见文档集合
         allowed_docs = self.user_permissions.get_allowed_docs(user_id)
-        
+
         # 过滤
         filtered = [r for r in results if r["source"] in allowed_docs]
-        
+
         return filtered
 ```
 
@@ -169,20 +171,20 @@ class PermissionFilter:
 ```python
 class QueryOptimizer:
     """查询优化器"""
-    
+
     def optimize(self, query: str, user_history: List[str]) -> str:
         """优化用户查询"""
         # 1. 指代消解
         if self._has_reference(query):
             query = self._resolve_reference(query, user_history)
-        
+
         # 2. 扩展同义词
         query = self._expand_synonyms(query)
-        
+
         # 3. 添加上下文
         if user_history:
             query = f"上下文: {user_history[-1]}\n查询: {query}"
-        
+
         return query
 ```
 

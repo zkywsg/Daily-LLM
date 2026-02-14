@@ -1,15 +1,15 @@
-# Structured Data QA
+[English](README_EN.md) | [中文](README.md)
 
-**[English](README.md) | [中文](README_CN.md)**
+# 结构化数据问答 (Structured Data QA)
 
-## Overview
-Query structured databases using natural language instead of SQL.
+## 概述
+使用自然语言而非 SQL 查询结构化数据库。
 
-## Key Features
-- Text-to-SQL conversion
-- Schema understanding
-- Query validation
-- Result explanation
+## 核心功能
+- 文本到 SQL 转换 (Text-to-SQL conversion)
+- 模式理解 (Schema understanding)
+- 查询验证 (Query validation)
+- 结果解释 (Result explanation)
 
-## Implementation
-Uses LLM to generate SQL from natural language with schema context.
+## 实现方式
+使用大语言模型结合模式上下文从自然语言生成 SQL。

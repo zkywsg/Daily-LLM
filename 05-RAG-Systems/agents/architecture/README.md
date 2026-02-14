@@ -1,3 +1,5 @@
+**[English](README_EN.md) | [中文](README.md)**
+
 # Agent架构模式 (Agent Architecture Patterns)
 
 ## 目录
