@@ -22,9 +22,9 @@ The curriculum is organized into **7 Progressive Phases**, designed to build exp
 | **01** | **Foundations** | Classical ML Algorithms, Deep Learning Basics |
 | **02** | **Neural Networks** | CNNs, Sequence Models (RNN/LSTM), Optimization |
 | **03** | **NLP & Transformers** | Attention Mechanisms, BERT, GPT, T5 Architecture |
-| **04** | **LLM Core** | Pre-training, PEFT (LoRA), Alignment (RLHF/DPO), Multimodal |
+| **04** | **LLM Core** | Pre-training, PEFT (LoRA), Alignment (RLHF/DPO), Prompt Engineering, Frameworks, Multimodal |
 | **05** | **RAG & Agents** | Vector DBs, Advanced RAG, Agentic Patterns, Production Systems |
-| **06** | **MLOps & Production** | Distributed Training, Serving, Monitoring, Deployment Infrastructure |
+| **06** | **MLOps & Production** | Distributed Training, Serving, Monitoring, Benchmarks, Deployment Infrastructure |
 | **07** | **Capstone Projects** | End-to-End Enterprise RAG & Fine-tuning Pipelines |
 
 ---
@@ -52,6 +52,8 @@ Daily-LLM/
 │   ├── pre-training/             # Data Pipelines, Scaling Laws
 │   ├── peft/                     # Parameter-Efficient Fine-Tuning
 │   ├── alignment/                # RLHF, DPO, Safety
+│   ├── prompt-engineering/       # Prompt Design, CoT, Advanced Patterns
+│   ├── frameworks/               # HuggingFace, LangChain, LlamaIndex, vLLM
 │   └── multimodal/               # Vision-Language Models (CLIP, LLaVA)
 │
 ├── 05-RAG-Systems/               # 🟣 Phase 5: RAG & Agents
@@ -63,7 +65,7 @@ Daily-LLM/
 ├── 06-MLOps-Production/          # 🔵 Phase 6: Engineering at Scale
 │   ├── training-infrastructure/  # Distributed (FSDP/Deepspeed), Data Pipelines
 │   ├── model-serving/            # vLLM, Optimization, Registry
-│   ├── monitoring/               # Observability, Drift, Evaluation
+│   ├── monitoring/               # Observability, Drift, Evaluation, Benchmarks
 │   └── deployment/               # K8s, CI/CD, Cost Optimization
 │
 └── 07-Capstone-Projects/         # ⚫ Phase 7: Real-World Implementation
@@ -86,8 +88,14 @@ Daily-LLM/
 git clone https://github.com/zkywsg/Daily-LLM.git
 cd Daily-LLM
 
-# Install core dependencies
+# Install all dependencies
 pip install -r requirements.txt
+
+# Or install by learning phase:
+# Phase 1-2: pip install torch numpy scikit-learn matplotlib
+# Phase 3-4: pip install transformers datasets peft trl sentence-transformers
+# Phase 5:   pip install sentence-transformers faiss-cpu chromadb langchain
+# Phase 6-7: pip install vllm fastapi mlflow wandb
 ```
 
 ---

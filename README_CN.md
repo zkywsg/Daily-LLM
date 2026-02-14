@@ -22,9 +22,9 @@
 | **01** | **基础篇 (Foundations)** | 经典 ML 算法、深度学习基础数学 |
 | **02** | **神经网络 (Neural Networks)** | CNN、序列模型 (RNN/LSTM)、优化技术 |
 | **03** | **NLP 与 Transformer** | 注意力机制、BERT、GPT、T5 架构 |
-| **04** | **大模型核心 (LLM Core)** | 预训练、高效微调 (PEFT)、对齐 (RLHF/DPO)、多模态 |
+| **04** | **大模型核心 (LLM Core)** | 预训练、高效微调 (PEFT)、对齐 (RLHF/DPO)、提示工程、框架与工具、多模态 |
 | **05** | **RAG 与 Agent** | 向量数据库、高级 RAG、Agent 模式、生产级应用 |
-| **06** | **MLOps 与生产工程** | 分布式训练、模型服务、监控观测、基础设施部署 |
+| **06** | **MLOps 与生产工程** | 分布式训练、模型服务、监控观测、评测基准、基础设施部署 |
 | **07** | **实战项目 (Capstone)** | 端到端企业级 RAG 与微调流水线 |
 
 ---
@@ -52,6 +52,8 @@ Daily-LLM/
 │   ├── pre-training/             # 数据流水线、Scaling Laws
 │   ├── peft/                     # 参数高效微调 (LoRA/QLoRA)
 │   ├── alignment/                # 对齐技术 (RLHF, DPO, 安全性)
+│   ├── prompt-engineering/       # 提示工程、思维链、高级模式
+│   ├── frameworks/               # HuggingFace、LangChain、LlamaIndex、vLLM
 │   ├── multimodal/               # 视觉语言模型 (CLIP, LLaVA)
 │
 ├── 05-RAG-Systems/               # 🟣 Phase 5: RAG 与 智能体
@@ -63,7 +65,7 @@ Daily-LLM/
 ├── 06-MLOps-Production/          # 🔵 Phase 6: 大规模工程化
 │   ├── training-infrastructure/  # 分布式训练 (FSDP/Deepspeed)
 │   ├── model-serving/            # 推理服务 (vLLM)、优化、模型仓库
-│   ├── monitoring/               # 可观测性、漂移检测、评估
+│   ├── monitoring/               # 可观测性、漂移检测、评估、评测基准
 │   ├── deployment/               # K8s、CI/CD、成本优化
 │
 └── 07-Capstone-Projects/         # ⚫ Phase 7: 实战落地
@@ -86,8 +88,14 @@ Daily-LLM/
 git clone https://github.com/zkywsg/Daily-LLM.git
 cd Daily-LLM
 
-# 安装核心依赖
+# 安装所有依赖
 pip install -r requirements.txt
+
+# 或按学习阶段选择性安装:
+# Phase 1-2: pip install torch numpy scikit-learn matplotlib
+# Phase 3-4: pip install transformers datasets peft trl sentence-transformers
+# Phase 5:   pip install sentence-transformers faiss-cpu chromadb langchain
+# Phase 6-7: pip install vllm fastapi mlflow wandb
 ```
 
 ---

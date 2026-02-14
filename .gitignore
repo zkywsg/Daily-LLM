@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+._*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ML artifacts
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+wandb/
+mlruns/
+
+# Data
+data/
+
+# Environment variables
+.env
