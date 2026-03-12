@@ -1,0 +1,141 @@
+<svg width="1600" height="560" viewBox="0 0 1600 560" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Daily-LLM banner</title>
+  <desc id="desc">A premium banner for the Daily-LLM repository, highlighting a roadmap from machine learning foundations to production-grade AI systems.</desc>
+  <defs>
+    <linearGradient id="bg" x1="88" y1="32" x2="1504" y2="544" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1220"/>
+      <stop offset="0.52" stop-color="#0A1630"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <radialGradient id="glowLeft" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(278 174) rotate(38.6) scale(310 220)">
+      <stop stop-color="#22C55E" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#22C55E" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowRight" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1240 156) rotate(134.3) scale(420 260)">
+      <stop stop-color="#38BDF8" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowBottom" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1120 484) rotate(180) scale(420 220)">
+      <stop stop-color="#A855F7" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#A855F7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0F172A" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#111C33" stop-opacity="0.76"/>
+    </linearGradient>
+    <linearGradient id="roadmap" x1="1010" y1="118" x2="1450" y2="438" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4ADE80"/>
+      <stop offset="0.22" stop-color="#22D3EE"/>
+      <stop offset="0.48" stop-color="#60A5FA"/>
+      <stop offset="0.7" stop-color="#A78BFA"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#020617" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="8" y="8" width="1584" height="544" rx="32" fill="url(#bg)"/>
+  <rect x="8.5" y="8.5" width="1583" height="543" rx="31.5" stroke="rgba(148,163,184,0.18)"/>
+  <rect x="24" y="24" width="1552" height="512" rx="24" fill="url(#glowLeft)"/>
+  <rect x="24" y="24" width="1552" height="512" rx="24" fill="url(#glowRight)"/>
+  <rect x="24" y="24" width="1552" height="512" rx="24" fill="url(#glowBottom)"/>
+
+  <g opacity="0.16">
+    <path d="M80 92H1520" stroke="#94A3B8"/>
+    <path d="M80 156H1520" stroke="#94A3B8"/>
+    <path d="M80 220H1520" stroke="#94A3B8"/>
+    <path d="M80 284H1520" stroke="#94A3B8"/>
+    <path d="M80 348H1520" stroke="#94A3B8"/>
+    <path d="M80 412H1520" stroke="#94A3B8"/>
+    <path d="M80 476H1520" stroke="#94A3B8"/>
+    <path d="M152 56V504" stroke="#94A3B8"/>
+    <path d="M280 56V504" stroke="#94A3B8"/>
+    <path d="M408 56V504" stroke="#94A3B8"/>
+    <path d="M536 56V504" stroke="#94A3B8"/>
+    <path d="M664 56V504" stroke="#94A3B8"/>
+    <path d="M792 56V504" stroke="#94A3B8"/>
+    <path d="M920 56V504" stroke="#94A3B8"/>
+    <path d="M1048 56V504" stroke="#94A3B8"/>
+    <path d="M1176 56V504" stroke="#94A3B8"/>
+    <path d="M1304 56V504" stroke="#94A3B8"/>
+    <path d="M1432 56V504" stroke="#94A3B8"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="76" y="76" width="748" height="408" rx="28" fill="url(#panel)" stroke="rgba(148,163,184,0.18)"/>
+  </g>
+
+  <rect x="108" y="110" width="198" height="34" rx="17" fill="#0B2136" stroke="#1E3A5F"/>
+  <circle cx="132" cy="127" r="5" fill="#4ADE80"/>
+  <text x="148" y="132" fill="#D6E4FF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2.4">BILINGUAL KNOWLEDGE BASE</text>
+
+  <text x="108" y="204" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="64" font-weight="800">Deep Learning</text>
+  <text x="108" y="276" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="64" font-weight="800">&amp; LLM Mastery</text>
+  <text x="108" y="330" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="25" font-weight="500">
+    From ML fundamentals to production-grade LLM, RAG,
+  </text>
+  <text x="108" y="364" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="25" font-weight="500">
+    agent systems, and MLOps engineering.
+  </text>
+
+  <g>
+    <rect x="108" y="408" width="132" height="42" rx="21" fill="#0C2233" stroke="#164E63"/>
+    <text x="132" y="434" fill="#CFFAFE" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">7 PHASES</text>
+
+    <rect x="254" y="408" width="146" height="42" rx="21" fill="#10213F" stroke="#1D4ED8"/>
+    <text x="278" y="434" fill="#DBEAFE" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">24 MODULES</text>
+
+    <rect x="414" y="408" width="172" height="42" rx="21" fill="#25143A" stroke="#7C3AED"/>
+    <text x="438" y="434" fill="#F3E8FF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">ENG + ZH DOCS</text>
+
+    <rect x="600" y="408" width="184" height="42" rx="21" fill="#2C180E" stroke="#EA580C"/>
+    <text x="624" y="434" fill="#FFEDD5" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">PRODUCTION FOCUS</text>
+  </g>
+
+  <path d="M1018 144C1092 118 1142 162 1188 208C1234 254 1296 286 1366 298C1416 306 1458 334 1472 384" stroke="url(#roadmap)" stroke-width="4" stroke-linecap="round"/>
+
+  <g filter="url(#softShadow)">
+    <rect x="1018" y="114" width="182" height="68" rx="22" fill="#0D1A2B" stroke="#28486B"/>
+    <rect x="1029" y="126" width="42" height="44" rx="14" fill="#0F2D30"/>
+    <text x="1042" y="154" fill="#4ADE80" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">01</text>
+    <text x="1084" y="146" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Foundations</text>
+    <text x="1084" y="165" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13">Math, ML, evaluation</text>
+
+    <rect x="1230" y="146" width="182" height="68" rx="22" fill="#0D1A2B" stroke="#28486B"/>
+    <rect x="1241" y="158" width="42" height="44" rx="14" fill="#11264A"/>
+    <text x="1253" y="186" fill="#60A5FA" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">02</text>
+    <text x="1296" y="178" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Neural Nets</text>
+    <text x="1296" y="197" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13">CNNs, sequence models</text>
+
+    <rect x="1080" y="232" width="182" height="68" rx="22" fill="#0D1A2B" stroke="#28486B"/>
+    <rect x="1091" y="244" width="42" height="44" rx="14" fill="#0F2946"/>
+    <text x="1103" y="272" fill="#38BDF8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">03</text>
+    <text x="1146" y="264" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Transformers</text>
+    <text x="1146" y="283" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13">Attention, BERT, GPT</text>
+
+    <rect x="1290" y="266" width="182" height="68" rx="22" fill="#0D1A2B" stroke="#28486B"/>
+    <rect x="1301" y="278" width="42" height="44" rx="14" fill="#241845"/>
+    <text x="1312" y="306" fill="#A78BFA" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">04</text>
+    <text x="1356" y="298" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">LLM Core</text>
+    <text x="1356" y="317" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13">Pre-train, PEFT, alignment</text>
+
+    <rect x="1046" y="340" width="182" height="68" rx="22" fill="#0D1A2B" stroke="#28486B"/>
+    <rect x="1057" y="352" width="42" height="44" rx="14" fill="#341A0D"/>
+    <text x="1068" y="380" fill="#F59E0B" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">05</text>
+    <text x="1112" y="372" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">RAG Systems</text>
+    <text x="1112" y="391" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13">Retrieval, agents, tools</text>
+
+    <rect x="1260" y="374" width="182" height="68" rx="22" fill="#0D1A2B" stroke="#28486B"/>
+    <rect x="1271" y="386" width="42" height="44" rx="14" fill="#262235"/>
+    <text x="1283" y="414" fill="#F472B6" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">06</text>
+    <text x="1326" y="406" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">MLOps</text>
+    <text x="1326" y="425" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13">Serving, eval, deployment</text>
+
+    <rect x="1112" y="430" width="206" height="68" rx="22" fill="#0D1A2B" stroke="#28486B"/>
+    <rect x="1123" y="442" width="42" height="44" rx="14" fill="#102B23"/>
+    <text x="1134" y="470" fill="#34D399" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="800">07</text>
+    <text x="1178" y="462" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Capstone Projects</text>
+    <text x="1178" y="481" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13">Enterprise-grade implementations</text>
+  </g>
+</svg>

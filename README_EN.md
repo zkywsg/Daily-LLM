@@ -1,120 +1,226 @@
+<div align="center">
+
+<img src=".github/assets/readme-banner.svg" alt="Daily-LLM banner" width="100%" />
+
 # Deep Learning & LLM Mastery
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)]()
-[![Bilingual](https://img.shields.io/badge/Languages-EN%20%7C%20中文-blue.svg)]()
+### A complete engineering roadmap from ML fundamentals to production-grade LLM systems
 
-> **The Complete Engineering Guide: From ML Fundamentals to Production LLM Systems**
+<p>
+  Built for engineers, researchers, and technical leaders who want more than scattered notes.<br/>
+  This is a bilingual knowledge base focused on architecture, implementation, evaluation, and real-world deployment.
+</p>
 
-A professional, production-focused knowledge base designed for engineers, researchers, and technical leaders. This repository provides a structured path from classical machine learning to cutting-edge Large Language Model (LLM) engineering, Retrieval-Augmented Generation (RAG), and MLOps.
+<p>
+  <a href="README.md"><strong>中文</strong></a>
+  ·
+  <a href="#highlights"><strong>Highlights</strong></a>
+  ·
+  <a href="#why-this-repo"><strong>Why This Repo</strong></a>
+  ·
+  <a href="#learning-map"><strong>Learning Map</strong></a>
+  ·
+  <a href="#quick-start"><strong>Quick Start</strong></a>
+  ·
+  <a href="CONTRIBUTING.md"><strong>Contributing</strong></a>
+</p>
 
-**🌐 Documentation**: [**English**](README_EN.md) | [**中文**](README.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-0F172A.svg?style=flat-square)](LICENSE)
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-2563EB.svg?style=flat-square)](https://www.python.org/downloads/)
+[![Phases](https://img.shields.io/badge/Phases-7-059669.svg?style=flat-square)](./)
+[![Modules](https://img.shields.io/badge/Core%20Modules-24-7C3AED.svg?style=flat-square)](./)
+[![Bilingual](https://img.shields.io/badge/Docs-English%20%7C%20%E4%B8%AD%E6%96%87-D97706.svg?style=flat-square)](README.md)
 
----
+</div>
 
-## 🗺️ Learning Roadmap
+> [!TIP]
+> If this repository saves you research time or helps you build faster, consider leaving a star.
 
-The curriculum is organized into **7 Progressive Phases**, designed to build expertise layer by layer.
+<a id="highlights"></a>
 
-| Phase | Domain | Key Topics |
-|-------|--------|------------|
-| **01** | **Foundations** | Classical ML Algorithms, Deep Learning Basics |
-| **02** | **Neural Networks** | CNNs, Sequence Models (RNN/LSTM), Optimization |
-| **03** | **NLP & Transformers** | Attention Mechanisms, BERT, GPT, T5 Architecture |
-| **04** | **LLM Core** | Pre-training, PEFT (LoRA), Alignment (RLHF/DPO), Prompt Engineering, Frameworks, Multimodal |
-| **05** | **RAG & Agents** | Vector DBs, Advanced RAG, Agentic Patterns, Production Systems |
-| **06** | **MLOps & Production** | Distributed Training, Serving, Monitoring, Benchmarks, Deployment Infrastructure |
-| **07** | **Capstone Projects** | End-to-End Enterprise RAG & Fine-tuning Pipelines |
+## Highlights
 
----
+<table>
+  <tr>
+    <td width="25%" align="center" valign="top">
+      <strong><sub>PHASES</sub></strong><br/>
+      <strong>7</strong><br/>
+      Progressive stages
+    </td>
+    <td width="25%" align="center" valign="top">
+      <strong><sub>MODULES</sub></strong><br/>
+      <strong>24</strong><br/>
+      Core first-level modules
+    </td>
+    <td width="25%" align="center" valign="top">
+      <strong><sub>COVERAGE</sub></strong><br/>
+      <strong>ML → LLM → RAG → MLOps</strong><br/>
+      From fundamentals to production
+    </td>
+    <td width="25%" align="center" valign="top">
+      <strong><sub>DOCS</sub></strong><br/>
+      <strong>English + 中文</strong><br/>
+      Built for long-term reference
+    </td>
+  </tr>
+</table>
 
-## 📂 Repository Structure
+> One continuous engineering roadmap connecting principles, architecture, implementation, evaluation, and deployment.
 
-```
+<a id="why-this-repo"></a>
+
+## Why This Repo
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <strong>Structured, not fragmented</strong><br/>
+      The roadmap moves from classical ML to neural networks, Transformers, LLMs, RAG, agents, MLOps, and capstone systems in one connected sequence.
+    </td>
+    <td width="33%" valign="top">
+      <strong>Engineering-first, not theory-only</strong><br/>
+      The content emphasizes system design, implementation tradeoffs, evaluation, serving, observability, deployment, and production concerns.
+    </td>
+    <td width="33%" valign="top">
+      <strong>Bilingual and built to revisit</strong><br/>
+      Core documentation is available in both English and Chinese, making it useful for learning, team sharing, and long-term reference.
+    </td>
+  </tr>
+</table>
+
+## At A Glance
+
+| Dimension | Summary |
+| --- | --- |
+| Learning path | 7 progressive phases from fundamentals to production |
+| Core modules | 24 first-level modules organized by topic |
+| Focus | Principles + engineering + architecture + practical implementation |
+| Audience | ML engineers, software engineers, researchers, technical leaders |
+| Language | English / 中文 |
+
+## What You Get From This Repository
+
+- A coherent path from classical machine learning to Transformers, LLMs, RAG, agents, and production systems.
+- A stronger intuition for when to use which techniques, frameworks, and architectures.
+- Practical building blocks for fine-tuning, retrieval, serving, evaluation, observability, and deployment.
+- A knowledge base that is easier to return to than a pile of disconnected articles and videos.
+
+<a id="learning-map"></a>
+
+## Learning Map
+
+| Phase | Focus | What You Will Learn | Entry |
+| --- | --- | --- | --- |
+| **01** | Foundations | Classical ML, math basics, evaluation, deep learning fundamentals | [Open Phase 01](01-Foundations/) |
+| **02** | Neural Networks | CNNs, sequence models, optimization, modern training patterns | [Open Phase 02](02-Neural-Networks/) |
+| **03** | NLP & Transformers | Attention, Transformer architecture, BERT/GPT/T5 families | [Open Phase 03](03-NLP-Transformers/) |
+| **04** | LLM Core | Pre-training, PEFT, alignment, prompt engineering, frameworks, multimodal | [Open Phase 04](04-LLM-Core/) |
+| **05** | RAG & Agents | Retrieval systems, vector databases, tool use, multi-agent patterns | [Open Phase 05](05-RAG-Systems/README_EN.md) |
+| **06** | MLOps & Production | Training infra, serving, monitoring, benchmarking, deployment | [Open Phase 06](06-MLOps-Production/README_EN.md) |
+| **07** | Capstone Projects | Enterprise-grade RAG and fine-tuning/deployment pipelines | [Open Phase 07](07-Capstone-Projects/) |
+
+## Pick A Starting Path
+
+| Your goal | Recommended sequence |
+| --- | --- |
+| Build from fundamentals | `01 -> 02 -> 03 -> 04 -> 05 -> 06 -> 07` |
+| Ship RAG / agent systems fast | `03 -> 04 -> 05 -> 06 -> 07` |
+| Focus on training and fine-tuning | `02 -> 03 -> 04 -> 06 -> 07` |
+| Lead AI architecture and delivery | `04 -> 05 -> 06 -> 07` |
+
+<a id="structure"></a>
+
+## Repository Structure
+
+<details>
+<summary><strong>Expand directory overview</strong></summary>
+
+```text
 Daily-LLM/
-│
-├── 01-Foundations/               # 🟢 Phase 1: The Bedrock
-│   ├── machine-learning/         # Algorithms, Math, Evaluation
-│   └── deep-learning-basics/     # MLP, Backprop, Loss Functions
-│
-├── 02-Neural-Networks/           # 🟡 Phase 2: Deep Learning Patterns
-│   ├── cnn-architectures/        # Computer Vision Architectures
-│   ├── sequence-models/          # Sequence & Time-Series
-│   └── training/                 # Modern Training Techniques
-│
-├── 03-NLP-Transformers/          # 🟠 Phase 3: The Transformer Revolution
-│   ├── attention-mechanisms/     # Self-Attention Deep Dive
-│   ├── transformer-architecture/ # Encoder-Decoder, Positional Encoding
-│   └── pretrained-models/        # Model Families (BERT, GPT, T5)
-│
-├── 04-LLM-Core/                  # 🔴 Phase 4: Large Language Models
-│   ├── pre-training/             # Data Pipelines, Scaling Laws
-│   ├── peft/                     # Parameter-Efficient Fine-Tuning
-│   ├── alignment/                # RLHF, DPO, Safety
-│   ├── prompt-engineering/       # Prompt Design, CoT, Advanced Patterns
-│   ├── frameworks/               # HuggingFace, LangChain, LlamaIndex, vLLM
-│   └── multimodal/               # Vision-Language Models (CLIP, LLaVA)
-│
-├── 05-RAG-Systems/               # 🟣 Phase 5: RAG & Agents
-│   ├── rag-foundations/          # Chunking, Embedding, Reranking
-│   ├── vector-databases/         # Indexing, Retrieval
-│   ├── agents/                   # ReAct, Planning, Tool Use
-│   └── production/               # Industry Applications (Code, Search, etc.)
-│
-├── 06-MLOps-Production/          # 🔵 Phase 6: Engineering at Scale
-│   ├── training-infrastructure/  # Distributed (FSDP/Deepspeed), Data Pipelines
-│   ├── model-serving/            # vLLM, Optimization, Registry
-│   ├── monitoring/               # Observability, Drift, Evaluation, Benchmarks
-│   └── deployment/               # K8s, CI/CD, Cost Optimization
-│
-└── 07-Capstone-Projects/         # ⚫ Phase 7: Real-World Implementation
-    ├── enterprise-rag-system/    # Production RAG with Agents
-    └── finetune-deploy-pipeline/ # Automated Fine-tuning Pipeline
+├── 01-Foundations/          # ML and deep learning fundamentals
+├── 02-Neural-Networks/      # CNNs, sequence models, training and optimization
+├── 03-NLP-Transformers/     # Attention and Transformer systems
+├── 04-LLM-Core/             # Pre-training, PEFT, alignment, prompting, multimodal
+├── 05-RAG-Systems/          # RAG, vector retrieval, agents, production patterns
+├── 06-MLOps-Production/     # Infra, serving, monitoring, deployment
+├── 07-Capstone-Projects/    # End-to-end enterprise projects
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── README.md
+└── README_EN.md
 ```
 
----
+</details>
 
-## 🚀 Quick Start
+## Typical Topics Covered Here
 
-### Prerequisites
-- **Python**: 3.8+
-- **PyTorch**: 2.0+
-- **Hardware**: CUDA-capable GPU recommended for LLM phases.
+- **Model fundamentals**: algorithms, backpropagation, optimization, evaluation metrics.
+- **Transformer systems**: self-attention, encoder-decoder design, pretrained model families.
+- **LLM engineering**: pre-training pipelines, LoRA/QLoRA, RLHF, DPO, prompting, multimodal stacks.
+- **RAG and agents**: chunking, embeddings, reranking, query rewriting, tool use, memory, multi-agent systems.
+- **Production systems**: vLLM, model serving, observability, benchmarks, CI/CD, Kubernetes, cost optimization.
+- **Capstone applications**: enterprise search, code assistants, conversational systems, automated fine-tuning pipelines.
 
-### Installation
+<a id="quick-start"></a>
+
+## Quick Start
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/zkywsg/Daily-LLM.git
 cd Daily-LLM
-
-# Install all dependencies
-pip install -r requirements.txt
-
-# Or install by learning phase:
-# Phase 1-2: pip install torch numpy scikit-learn matplotlib
-# Phase 3-4: pip install transformers datasets peft trl sentence-transformers
-# Phase 5:   pip install sentence-transformers faiss-cpu chromadb langchain
-# Phase 6-7: pip install vllm fastapi mlflow wandb
 ```
 
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+<details>
+<summary><strong>Install by phase</strong></summary>
+
+```bash
+# Phase 1-2
+pip install torch numpy scikit-learn matplotlib
+
+# Phase 3-4
+pip install transformers datasets peft trl sentence-transformers
+
+# Phase 5
+pip install sentence-transformers faiss-cpu chromadb langchain
+
+# Phase 6-7
+pip install vllm fastapi mlflow wandb
+```
+
+</details>
+
+### 3. Start where it matters most to you
+
+- Want fundamentals first: start with [01-Foundations](01-Foundations/).
+- Want to move directly into LLM engineering: start with [04-LLM-Core](04-LLM-Core/).
+- Want retrieval and agent systems: start with [05-RAG-Systems](05-RAG-Systems/README_EN.md).
+- Want production delivery and operations: start with [06-MLOps-Production](06-MLOps-Production/README_EN.md).
+
+## Who This Is For
+
+- **ML Engineers**: moving from traditional ML into LLM and GenAI systems.
+- **Software Engineers**: building AI products, not just calling an API.
+- **Researchers**: connecting intuition, architecture, and implementation detail.
+- **Technical Leaders**: designing scalable, observable, maintainable AI platforms.
+
+## Contributing
+
+Contributions are welcome. If you want to improve content, add examples, or refine the structure, start with [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+This project is released under the [MIT License](LICENSE).
+
 ---
 
-## 🎯 Target Audience
-
-- **ML Engineers**: Transitioning from classical ML to LLMs.
-- **Software Engineers**: Building AI-powered applications (RAG/Agents).
-- **Researchers**: Understanding the "Why" behind the "How".
-- **Technical Leaders**: Designing scalable AI infrastructure.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+<div align="center">
+  If this repository is useful, a star helps prioritize future curation and expansion.
+</div>

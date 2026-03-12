@@ -4,505 +4,209 @@
 
 ## 概述
 
-训练深度神经网络涉及优化算法、正则化技术和精细的超参数调优。本指南涵盖了有效训练模型的关键组件。
+神经网络训练是“优化问题 + 泛化问题”的组合：你不仅要让训练集 loss 降下去，还要让模型在未见数据上表现稳定。本章面向已有机器学习基础的读者，重点是建立一条可复用的训练闭环，并给出排障优先级。
 
-## 优化算法
+## 学习目标
 
-### 1. 随机梯度下降（SGD）
+完成本章后，你应能回答：
 
-**基本更新规则**：
+1. 训练循环的关键步骤与顺序是什么？
+2. 优化器、学习率调度、正则化分别影响什么？
+3. 当训练异常时，先查哪三件事最有效？
+
+## 1. 训练闭环先建立
+
+一个完整训练周期最小包含：
+
+1. 前向计算得到 loss
+2. 反向传播得到梯度
+3. 参数更新
+4. 在验证集评估并记录指标
+5. 保存最佳检查点
+
+你要记住：训练工程的第一优先级不是“更复杂技巧”，而是“闭环稳定可复现”。
+
+## 2. 优化器怎么选
+
+### 2.1 SGD 与 Momentum
+
+$$
+\theta_{t+1}=\theta_t-\eta\nabla L(\theta_t)
+$$
+
+加入动量后：
+
+$$
+v_t=\beta v_{t-1}+\nabla L(\theta_t),\quad
+\theta_{t+1}=\theta_t-\eta v_t
+$$
+
+特点：泛化常较好，但对学习率更敏感。
+
+### 2.2 Adam 与 AdamW
+
+Adam 使用一阶/二阶矩自适应缩放梯度，收敛快、开箱即用。  
+AdamW 把权重衰减与梯度更新解耦，通常是现代默认选择。
+
+| 优化器 | 起步建议 | 适用场景 |
+|--------|----------|----------|
+| SGD + Momentum | `lr=0.1`（需配调度） | 大规模视觉训练、追求泛化 |
+| Adam | `lr=1e-3` | 快速原型 |
+| AdamW | `lr=1e-3, wd=1e-2` | 通用默认、Transformer/CNN |
+
+你要记住：不确定时先 AdamW，目标是先跑出稳定基线。
+
+## 3. 学习率调度决定收敛轨迹
+
+常用策略：
+
+- StepLR：规则简单，适合传统流程
+- CosineAnnealing：平滑衰减，现代常用
+- ReduceLROnPlateau：验证集停滞时自适应降 LR
+- Warmup + Cosine：大模型高频配置
+
+```python
+from torch.optim.lr_scheduler import LinearLR, CosineAnnealingLR, SequentialLR
+
+warmup = LinearLR(optimizer, start_factor=0.01, end_factor=1.0, total_iters=warmup_steps)
+cosine = CosineAnnealingLR(optimizer, T_max=total_steps - warmup_steps, eta_min=1e-6)
+scheduler = SequentialLR(optimizer, schedulers=[warmup, cosine], milestones=[warmup_steps])
 ```
-θ_{t+1} = θ_t - η · ∇L(θ_t)
+
+你要记住：学习率往往比“换模型”更影响收敛与最终精度。
+
+## 4. 正则化与归一化
+
+### 4.1 Dropout
+
+- 训练时随机失活神经元，抑制共适应
+- 常见范围：`0.1 ~ 0.5`
+- 推理阶段自动关闭（`model.eval()`）
+
+### 4.2 BatchNorm 与 LayerNorm
+
+- BatchNorm：依赖 batch 统计，CNN 常用
+- LayerNorm：按样本特征归一化，RNN/Transformer 常用
+
+### 4.3 数据增强
+
+图像任务中，增广通常是提升泛化最划算的手段之一。  
+推荐最小组合：随机裁剪 + 翻转 + 归一化；再视情况加入 Mixup/CutMix。
+
+你要记住：过拟合时先从数据增强和权重衰减入手，再考虑增大模型复杂度。
+
+## 5. 初始化策略
+
+| 方法 | 推荐激活函数/场景 |
+|------|-------------------|
+| Xavier/Glorot | Tanh/Sigmoid |
+| Kaiming/He | ReLU/LeakyReLU |
+| Orthogonal | RNN 循环权重 |
+
+```python
+def init_weights(m):
+    if isinstance(m, (nn.Conv2d, nn.Linear)):
+        nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
+    elif isinstance(m, nn.BatchNorm2d):
+        nn.init.constant_(m.weight, 1)
+        nn.init.constant_(m.bias, 0)
 ```
 
-其中：
-- θ：模型参数
-- η：学习率
-- ∇L：损失函数的梯度
+你要记住：初始化出错会直接让训练“看起来像超参问题”。
 
-**动量（Momentum）**（加速收敛）：
-```
-v_t = β · v_{t-1} + ∇L(θ_t)
-θ_{t+1} = θ_t - η · v_t
-```
-
-| 超参数 | 典型范围 | 效果 |
-|---------------|---------------|---------|
-| 学习率（η） | 0.001 - 0.1 | 步长，对收敛至关重要 |
-| 动量（β） | 0.9 - 0.99 | 平滑更新，减少震荡 |
-| 权重衰减 | 1e-4 - 1e-2 | L2 正则化强度 |
+## 6. 可复用训练模板（PyTorch）
 
 ```python
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-# 带动量的 SGD
-optimizer = optim.SGD(
-    model.parameters(),
-    lr=0.01,
-    momentum=0.9,
-    weight_decay=1e-4
-)
+def run_epoch(model, loader, criterion, optimizer=None, device="cuda"):
+    is_train = optimizer is not None
+    model.train() if is_train else model.eval()
+    total_loss, total_correct, total = 0.0, 0, 0
+
+    for x, y in loader:
+        x, y = x.to(device), y.to(device)
+        with torch.set_grad_enabled(is_train):
+            logits = model(x)
+            loss = criterion(logits, y)
+            if is_train:
+                optimizer.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+                optimizer.step()
+
+        total_loss += loss.item() * y.size(0)
+        total_correct += (logits.argmax(dim=1) == y).sum().item()
+        total += y.size(0)
+
+    return total_loss / total, total_correct / total
+
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
 ```
 
-### 2. Adam（自适应矩估计）
-
-**算法**：
-```
-m_t = β₁ · m_{t-1} + (1-β₁) · ∇L(θ_t)
-v_t = β₂ · v_{t-1} + (1-β₂) · ∇L(θ_t)²
-m̂_t = m_t / (1-β₁^t)
-v̂_t = v_t / (1-β₂^t)
-θ_{t+1} = θ_t - η · m̂_t / (√v̂_t + ε)
-```
-
-| 变体 | 最适合 | 说明 |
-|---------|----------|-------|
-| **Adam** | 通用场景 | 多数任务的默认选择 |
-| **AdamW** | 更好的正则化 | 解耦权重衰减 |
-| **Adamax** | 大规模嵌入 | 对稀疏梯度更稳定 |
+## 7. 检查点与早停
 
 ```python
-# Adam 优化器
-optimizer = optim.Adam(
-    model.parameters(),
-    lr=1e-3,
-    betas=(0.9, 0.999),
-    eps=1e-8,
-    weight_decay=0
-)
-
-# AdamW（推荐）
-optimizer = optim.AdamW(
-    model.parameters(),
-    lr=1e-3,
-    weight_decay=0.01
-)
-```
-
-### 3. 学习率调度
-
-| 调度器 | 使用场景 | 行为 |
-|-----------|-------------|----------|
-| **StepLR** | 标准训练 | 每 N 个 epoch 按因子衰减 |
-| **CosineAnnealingLR** | 现代架构 | 平滑余弦衰减 |
-| **ReduceLROnPlateau** | 不确定最优学习率 | 基于验证损失自适应调整 |
-| **Warmup + Cosine** | 大模型 | 先预热再余弦衰减 |
-| **CyclicLR** | 寻找最优学习率 | 在边界之间循环 |
-
-```python
-# 带预热的余弦退火
-from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR
-from torch.optim.lr_scheduler import SequentialLR
-
-# 预热调度器
-warmup_scheduler = LinearLR(
-    optimizer,
-    start_factor=0.01,
-    end_factor=1.0,
-    total_iters=warmup_steps
-)
-
-# 主调度器
-cosine_scheduler = CosineAnnealingLR(
-    optimizer,
-    T_max=total_steps - warmup_steps,
-    eta_min=1e-6
-)
-
-# 组合
-scheduler = SequentialLR(
-    optimizer,
-    schedulers=[warmup_scheduler, cosine_scheduler],
-    milestones=[warmup_steps]
-)
-```
-
-## 正则化技术
-
-### 1. Dropout
-
-**概念**：训练期间随机将神经元置零
-
-```
-训练时：Output = mask ⊙ x，其中 mask ~ Bernoulli(p)
-推理时：Output = x · p（反向 Dropout）
-```
-
-| Dropout 率 | 层类型 | 效果 |
-|--------------|------------|---------|
-| 0.1 - 0.3 | 输入层 | 轻微正则化 |
-| 0.3 - 0.5 | 隐藏层 | 标准正则化 |
-| 0.5 - 0.8 | 大型全连接层 | 强正则化 |
-
-```python
-class NetWithDropout(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.fc1 = nn.Linear(784, 256)
-        self.dropout1 = nn.Dropout(0.2)   # 输入层 Dropout
-        self.fc2 = nn.Linear(256, 128)
-        self.dropout2 = nn.Dropout(0.5)   # 隐藏层 Dropout
-        self.fc3 = nn.Linear(128, 10)
-
-    def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = self.dropout1(x)
-        x = torch.relu(self.fc2(x))
-        x = self.dropout2(x)
-        x = self.fc3(x)
-        return x
-```
-
-### 2. 批归一化（Batch Normalization）
-
-**优势**：
-- 减少内部协变量偏移
-- 允许更高的学习率
-- 充当正则化
-- 对初始化不敏感
-
-**实现**：
-```python
-# 二维数据（CNN）
-nn.BatchNorm2d(num_features)
-
-# 一维数据（NLP、时间序列）
-nn.BatchNorm1d(num_features)
-
-# 网络中的使用
-class NetWithBN(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 32, 3)
-        self.bn1 = nn.BatchNorm2d(32)
-        self.conv2 = nn.Conv2d(32, 64, 3)
-        self.bn2 = nn.BatchNorm2d(64)
-
-    def forward(self, x):
-        x = torch.relu(self.bn1(self.conv1(x)))
-        x = torch.relu(self.bn2(self.conv2(x)))
-        return x
-```
-
-### 3. 层归一化（Layer Normalization）
-
-**使用场景**：RNN、Transformer（不依赖批次）
-
-```
-LayerNorm(x) = γ · (x - μ) / √(σ² + ε) + β
-
-其中 μ, σ² 在特征维度上按样本计算
-```
-
-```python
-# 带有 LayerNorm 的 Transformer 块
-class TransformerBlock(nn.Module):
-    def __init__(self, d_model):
-        super().__init__()
-        self.attn = nn.MultiheadAttention(d_model, num_heads=8)
-        self.norm1 = nn.LayerNorm(d_model)
-        self.ffn = nn.Sequential(
-            nn.Linear(d_model, d_model * 4),
-            nn.GELU(),
-            nn.Linear(d_model * 4, d_model)
-        )
-        self.norm2 = nn.LayerNorm(d_model)
-
-    def forward(self, x):
-        # Pre-norm 架构（现代）
-        x = x + self.attn(self.norm1(x), self.norm1(x), self.norm1(x))[0]
-        x = x + self.ffn(self.norm2(x))
-        return x
-```
-
-### 4. 数据增强
-
-**计算机视觉**：
-| 技术 | 实现 | 效果 |
-|-----------|---------------|---------|
-| **随机裁剪** | `transforms.RandomCrop` | 平移不变性 |
-| **随机翻转** | `transforms.RandomHorizontalFlip` | 镜像增强 |
-| **颜色抖动** | `transforms.ColorJitter` | 颜色鲁棒性 |
-| **自动增强** | `transforms.AutoAugment` | 学习到的增强 |
-| **Mixup/CutMix** | 自定义实现 | 正则化 |
-
-```python
-from torchvision import transforms
-
-# 标准增强流水线
-train_transform = transforms.Compose([
-    transforms.RandomCrop(32, padding=4),
-    transforms.RandomHorizontalFlip(p=0.5),
-    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))
-])
-
-# Mixup 实现
-def mixup_data(x, y, alpha=1.0):
-    """返回混合输入、目标对和 lambda"""
-    if alpha > 0:
-        lam = np.random.beta(alpha, alpha)
-    else:
-        lam = 1
-
-    batch_size = x.size()[0]
-    index = torch.randperm(batch_size)
-
-    mixed_x = lam * x + (1 - lam) * x[index]
-    y_a, y_b = y, y[index]
-    return mixed_x, y_a, y_b, lam
-
-def mixup_criterion(criterion, pred, y_a, y_b, lam):
-    return lam * criterion(pred, y_a) + (1 - lam) * criterion(pred, y_b)
-```
-
-## 权重初始化
-
-### 常用策略
-
-| 方法 | 使用场景 | 公式 |
-|--------|----------|---------|
-| **Xavier (Glorot)** | Tanh, Sigmoid | W ~ U[-√(6/(fan_in+fan_out)), √(6/(fan_in+fan_out))] |
-| **Kaiming (He)** | ReLU, LeakyReLU | W ~ N(0, √(2/fan_in)) |
-| **正交** | RNN | W = QR 分解 |
-| **正态** | 通用 | W ~ N(0, 0.02) |
-
-```python
-# 手动初始化
-def init_weights(m):
-    if isinstance(m, nn.Linear):
-        nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-        if m.bias is not None:
-            nn.init.constant_(m.bias, 0)
-    elif isinstance(m, nn.Conv2d):
-        nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-    elif isinstance(m, nn.BatchNorm2d):
-        nn.init.constant_(m.weight, 1)
-        nn.init.constant_(m.bias, 0)
-
-model.apply(init_weights)
-```
-
-## 超参数调优
-
-### 1. 学习率查找
-
-**学习率范围测试**：
-```python
-def lr_range_test(model, train_loader, optimizer, criterion,
-                  start_lr=1e-7, end_lr=10, num_iter=100):
-    """查找最优学习率范围"""
-    lrs = np.logspace(np.log10(start_lr), np.log10(end_lr), num_iter)
-    losses = []
-
-    model.train()
-    iter_loader = iter(train_loader)
-
-    for lr in lrs:
-        # 更新学习率
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
-
-        try:
-            inputs, targets = next(iter_loader)
-        except StopIteration:
-            iter_loader = iter(train_loader)
-            inputs, targets = next(iter_loader)
-
-        optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = criterion(outputs, targets)
-        loss.backward()
-        optimizer.step()
-
-        losses.append(loss.item())
-
-    return lrs, losses
-
-# 绘图以找到最优范围（通常是最陡下降处）
-import matplotlib.pyplot as plt
-lrs, losses = lr_range_test(model, train_loader, optimizer, criterion)
-plt.plot(lrs, losses)
-plt.xscale('log')
-plt.xlabel('Learning Rate')
-plt.ylabel('Loss')
-plt.show()
-```
-
-### 2. 网格搜索 vs 随机搜索
-
-```python
-from sklearn.model_selection import ParameterGrid, ParameterSampler
-
-# 网格搜索（穷举但昂贵）
-param_grid = {
-    'lr': [0.001, 0.01, 0.1],
-    'batch_size': [32, 64, 128],
-    'dropout': [0.2, 0.5]
-}
-
-# 随机搜索（更高效）
-param_distributions = {
-    'lr': [0.0001, 0.001, 0.01, 0.1],
-    'batch_size': [16, 32, 64, 128, 256],
-    'dropout': [0.1, 0.2, 0.3, 0.4, 0.5]
-}
-
-# Optuna（贝叶斯优化）
-import optuna
-
-def objective(trial):
-    lr = trial.suggest_float('lr', 1e-5, 1e-1, log=True)
-    batch_size = trial.suggest_categorical('batch_size', [32, 64, 128])
-    dropout = trial.suggest_float('dropout', 0.1, 0.5)
-
-    # 使用这些超参数训练模型
-    model = create_model(dropout=dropout)
-    val_acc = train_and_validate(model, lr=lr, batch_size=batch_size)
-
-    return val_acc
-
-study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=100)
-print(f"Best params: {study.best_params}")
-```
-
-## 训练循环最佳实践
-
-### 1. 完整训练函数
-
-```python
-def train_epoch(model, train_loader, criterion, optimizer, device):
-    model.train()
-    total_loss = 0
-    correct = 0
-    total = 0
-
-    for batch_idx, (inputs, targets) in enumerate(train_loader):
-        inputs, targets = inputs.to(device), targets.to(device)
-
-        # 前向传播
-        outputs = model(inputs)
-        loss = criterion(outputs, targets)
-
-        # 反向传播
-        optimizer.zero_grad()
-        loss.backward()
-
-        # 梯度裁剪（可选）
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-
-        optimizer.step()
-
-        # 统计
-        total_loss += loss.item()
-        _, predicted = outputs.max(1)
-        total += targets.size(0)
-        correct += predicted.eq(targets).sum().item()
-
-    return total_loss / len(train_loader), 100. * correct / total
-
-def validate(model, val_loader, criterion, device):
-    model.eval()
-    total_loss = 0
-    correct = 0
-    total = 0
-
-    with torch.no_grad():
-        for inputs, targets in val_loader:
-            inputs, targets = inputs.to(device), targets.to(device)
-            outputs = model(inputs)
-            loss = criterion(outputs, targets)
-
-            total_loss += loss.item()
-            _, predicted = outputs.max(1)
-            total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
-
-    return total_loss / len(val_loader), 100. * correct / total
-
-# 带早停的完整训练
-best_acc = 0
-patience = 10
-patience_counter = 0
+best_val = -1.0
+patience, bad_epochs = 10, 0
 
 for epoch in range(num_epochs):
-    train_loss, train_acc = train_epoch(model, train_loader, criterion, optimizer, device)
-    val_loss, val_acc = validate(model, val_loader, criterion, device)
+    train_loss, train_acc = run_epoch(model, train_loader, criterion, optimizer, device)
+    val_loss, val_acc = run_epoch(model, val_loader, criterion, optimizer=None, device=device)
     scheduler.step()
 
-    print(f"Epoch {epoch}: Train Loss={train_loss:.4f}, Train Acc={train_acc:.2f}%, "
-          f"Val Loss={val_loss:.4f}, Val Acc={val_acc:.2f}%")
-
-    # 早停
-    if val_acc > best_acc:
-        best_acc = val_acc
-        torch.save(model.state_dict(), 'best_model.pth')
-        patience_counter = 0
+    if val_acc > best_val:
+        best_val, bad_epochs = val_acc, 0
+        torch.save({"epoch": epoch, "model": model.state_dict()}, "best_model.pth")
     else:
-        patience_counter += 1
-        if patience_counter >= patience:
-            print(f"Early stopping at epoch {epoch}")
+        bad_epochs += 1
+        if bad_epochs >= patience:
             break
 ```
 
-### 2. 检查点保存
+你要记住：没有检查点的长训练，等于没有容错。
 
-```python
-# 保存检查点
-checkpoint = {
-    'epoch': epoch,
-    'model_state_dict': model.state_dict(),
-    'optimizer_state_dict': optimizer.state_dict(),
-    'scheduler_state_dict': scheduler.state_dict(),
-    'best_acc': best_acc,
-}
-torch.save(checkpoint, 'checkpoint.pth')
+## 8. 排障优先级（先查这五项）
 
-# 加载检查点
-checkpoint = torch.load('checkpoint.pth')
-model.load_state_dict(checkpoint['model_state_dict'])
-optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-start_epoch = checkpoint['epoch'] + 1
-```
+1. 学习率是否合理（过大震荡、过小不收敛）
+2. 数据与标签是否错位（最常见隐藏错误）
+3. `model.train()/eval()` 是否在正确阶段切换
+4. 损失函数与输出层是否匹配（如 logits + CrossEntropy）
+5. 梯度是否异常（爆炸/消失/NaN）
 
-## 故障排查指南
+常见症状速查：
 
-| 症状 | 可能原因 | 解决方案 |
-|---------|--------------|----------|
-| **损失不下降** | 学习率过高/过低 | 使用 LR 查找器，调整学习率 |
-| **验证损失 >> 训练损失** | 过拟合 | 增加 Dropout，添加正则化，更多数据 |
-| **训练损失 >> 验证损失** | 欠拟合 | 增加模型容量，训练更长时间 |
-| **损失突然上升** | 梯度爆炸 | 梯度裁剪，降低学习率 |
-| **损失为 NaN** | 数值不稳定 | 检查数据，使用梯度裁剪，降低学习率 |
-| **收敛很慢** | 初始化不当 | 使用 He/Xavier 初始化，检查数据归一化 |
+| 症状 | 高概率原因 | 首选动作 |
+|------|------------|----------|
+| loss 不降 | LR 不合适 | 做 LR 范围测试或直接降 10 倍 |
+| val 远差于 train | 过拟合 | 增强 + wd + 早停 |
+| loss 突升或 NaN | 数值不稳定 | 降 LR + 梯度裁剪 |
+| 收敛慢 | 调度或初始化不佳 | 改 warmup/cosine + 检查初始化 |
 
-## 最佳实践
+## 9. 超参搜索建议
 
-### 1. 优化
-- 从 Adam (lr=1e-3) 或 AdamW (lr=1e-3, wd=0.01) 开始
-- 大模型使用带预热的余弦学习率调度
-- 同时监控训练和验证指标
+执行顺序建议：
 
-### 2. 正则化
-- 在全连接层使用 Dropout (0.2-0.5)
-- 应用适合您领域的数据增强
-- 使用早停防止过拟合
+1. 手工建立可靠 baseline（固定随机种子）
+2. 单变量扫学习率和权重衰减
+3. 再调 batch size 与模型容量
+4. 最后再上随机搜索/Optuna
 
-### 3. 初始化
-- ReLU 网络使用 Kaiming 初始化
-- tanh/sigmoid 网络使用 Xavier 初始化
-- 批归一化权重初始化为 1，偏置为 0
+你要记住：超参搜索只会放大好流程，不会拯救坏流程。
 
-### 4. 验证
-- 始终使用预留的验证集
-- 基于验证指标实现早停
-- 保存最佳模型检查点
+## 10. 训练前检查清单
+
+1. 训练/验证集严格隔离
+2. 数据预处理在 train/val 一致且可追溯
+3. 指标、日志、检查点路径已配置
+4. 随机种子、环境版本、配置已记录
+5. 首个 epoch 能正常跑通并保存结果
 
 ---
 
-**上一篇**：[CNN 架构](../cnn-architectures/README.md) | **下一篇**：[序列模型](../sequence-models/README.md)
+**上一篇**：[序列模型](../sequence-models/README.md) | **下一篇**：[注意力机制](../../03-NLP-Transformers/attention-mechanisms/README.md)

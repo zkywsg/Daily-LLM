@@ -4,212 +4,173 @@
 
 ## 概述
 
-序列模型用于处理文本、时间序列和语音等序列数据。本指南涵盖了 RNN、LSTM、GRU，以及向注意力机制的过渡。
+序列模型用于处理文本、语音、日志、时间序列等“有顺序关系”的数据。与 CNN 的局部空间归纳不同，序列模型的核心是建模“当前位置与历史上下文”的依赖。本章面向已有机器学习基础的读者，重点解释 RNN 家族为什么出现、解决了什么、又为什么被注意力机制逐步替代。
 
-## 循环神经网络（RNN）
+## 学习目标
 
-### 1. 基本 RNN
+完成本章后，你应能回答：
 
-**循环连接**：
-```
-h_t = tanh(W_h · h_{t-1} + W_x · x_t + b)
-```
+1. RNN 的状态传递机制是什么，训练难点是什么？
+2. LSTM/GRU 如何通过门控缓解长期依赖问题？
+3. 实战里何时继续用 RNN，何时切换到 Transformer？
 
-**展开视图**：
-```
-x_1 → [RNN] → h_1 → [RNN] → h_2 → ... → h_T → Output
-     ↑_________↑_________↑
-```
+## 1. RNN 的基本机制与瓶颈
 
-### 2. 基本 RNN 的问题
+基本 RNN 在每个时间步更新隐藏状态：
 
-**梯度消失（Vanishing Gradients）**：
-- 梯度在时间步上呈指数级缩小
-- 无法捕捉长期依赖关系
+$$
+h_t=\tanh(W_hh_{t-1}+W_xx_t+b)
+$$
 
-**梯度爆炸（Exploding Gradients）**：
-- 梯度呈指数级增长
-- 导致训练不稳定
+展开后可以看成同一组参数在时间维上重复使用，因此天然适配变长输入。  
+但它有两个经典问题：
 
-## 长短期记忆网络（LSTM）
+1. 梯度消失：跨长时间步反传时，梯度逐步衰减，难以学习远距离依赖。
+2. 梯度爆炸：梯度累乘过大，训练不稳定。
 
-### 单元结构
+你要记住：RNN 的能力瓶颈不是表达力不够，而是“长链路优化困难”。
 
-**门控信息流**：
+## 2. LSTM：通过显式记忆通道保留长期信息
 
-1. **遗忘门（Forget Gate）**：决定丢弃什么
-   ```
-   f_t = σ(W_f · [h_{t-1}, x_t] + b_f)
-   ```
+LSTM 引入细胞状态 $C_t$ 与门控机制：
 
-2. **输入门（Input Gate）**：决定存储什么
-   ```
-   i_t = σ(W_i · [h_{t-1}, x_t] + b_i)
-   C̃_t = tanh(W_C · [h_{t-1}, x_t] + b_C)
-   ```
+- 遗忘门：保留多少旧记忆
+- 输入门：写入多少新信息
+- 输出门：暴露多少记忆到隐藏状态
 
-3. **更新单元状态**：
-   ```
-   C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
-   ```
+核心更新：
 
-4. **输出门（Output Gate）**：决定输出什么
-   ```
-   o_t = σ(W_o · [h_{t-1}, x_t] + b_o)
-   h_t = o_t ⊙ tanh(C_t)
-   ```
+$$
+C_t=f_t\odot C_{t-1}+i_t\odot \tilde{C}_t,\quad
+h_t=o_t\odot\tanh(C_t)
+$$
 
-### LSTM 变体
+设计直觉：给网络一条“相对线性”的记忆路径，让梯度不必每步都经过强非线性变换。
 
-| 变体 | 修改 | 优势 |
-|---------|-------------|---------|
-| **Peephole** | 门控可见单元状态 | 更好的时序控制 |
-| **Coupled** | 遗忘门和输入门合并 | 参数更少 |
-| **BiLSTM** | 双向处理 | 获取未来上下文 |
+你要记住：LSTM 的关键收益是优化稳定性，而不只是多几个门。
 
-## 门控循环单元（GRU）
+## 3. GRU：更轻量的门控方案
 
-### 简化架构
+GRU 用更新门和重置门合并了 LSTM 的部分功能：
 
-**两个门控**（相比 LSTM 的三个）：
+$$
+z_t=\sigma(W_z[h_{t-1},x_t]),\quad
+r_t=\sigma(W_r[h_{t-1},x_t])
+$$
 
-1. **更新门（Update Gate）**：平衡新旧信息
-   ```
-   z_t = σ(W_z · [h_{t-1}, x_t])
-   ```
+$$
+\tilde{h}_t=\tanh(W[r_t\odot h_{t-1},x_t]),\quad
+h_t=(1-z_t)\odot h_{t-1}+z_t\odot \tilde{h}_t
+$$
 
-2. **重置门（Reset Gate）**：决定遗忘多少过去的信息
-   ```
-   r_t = σ(W_r · [h_{t-1}, x_t])
-   ```
+对比经验：
 
-3. **候选激活**：
-   ```
-   h̃_t = tanh(W · [r_t ⊙ h_{t-1}, x_t])
-   ```
+- GRU 参数更少、训练更快
+- LSTM 在超长依赖任务中有时更稳
+- 两者最终效果通常接近，需任务验证
 
-4. **最终更新**：
-   ```
-   h_t = (1 - z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t
-   ```
+你要记住：GRU 常是默认起点，LSTM 是长依赖场景的稳健备选。
 
-### LSTM vs GRU
+## 4. LSTM vs GRU 选型表
 
-| 方面 | LSTM | GRU |
-|--------|------|-----|
-| 门控数量 | 3 | 2 |
-| 参数量 | 较多 | 较少（少 25%） |
-| 性能 | 相近 | 相近 |
-| 速度 | 较慢 | 较快 |
-| 适用场景 | 长序列 | 通用场景 |
+| 维度 | LSTM | GRU |
+|------|------|-----|
+| 门控结构 | 3 门 + 细胞状态 | 2 门 |
+| 参数量 | 较大 | 较小 |
+| 训练速度 | 较慢 | 较快 |
+| 长序列稳定性 | 通常更好 | 通常够用 |
+| 工程默认 | 复杂场景 | 通用场景起点 |
 
-## 实现
+## 5. PyTorch 最小实现
 
 ```python
 import torch
 import torch.nn as nn
 
-# LSTM
 lstm = nn.LSTM(
-    input_size=100,    # 嵌入维度
-    hidden_size=128,   # 隐藏状态维度
-    num_layers=2,      # 堆叠 LSTM
-    batch_first=True,  # 输入格式：(batch, seq, feature)
-    dropout=0.3,       # 层间 Dropout
-    bidirectional=True # 双向处理
+    input_size=100,
+    hidden_size=128,
+    num_layers=2,
+    batch_first=True,
+    dropout=0.3,
+    bidirectional=True,
 )
 
-# 前向传播
-input_seq = torch.randn(32, 50, 100)  # (batch, seq_len, features)
-output, (hidden, cell) = lstm(input_seq)
-# output: (32, 50, 256) - 拼接的前向+后向输出
-
-# GRU（更简单，参数更少）
 gru = nn.GRU(
     input_size=100,
     hidden_size=128,
     num_layers=2,
     batch_first=True,
-    bidirectional=True
+    dropout=0.3,
+    bidirectional=True,
 )
 
-output, hidden = gru(input_seq)
+x = torch.randn(32, 50, 100)  # (batch, seq_len, feat_dim)
+lstm_out, (h_n, c_n) = lstm(x)  # lstm_out: (32, 50, 256)
+gru_out, h_n_gru = gru(x)       # gru_out:  (32, 50, 256)
 ```
 
-## 应用
+## 6. 变长序列与文本分类实战
 
-### 1. 文本分类
 ```python
-class TextClassifier(nn.Module):
-    def __init__(self, vocab_size, embed_dim, hidden_dim, num_classes):
-        super().__init__()
-        self.embedding = nn.Embedding(vocab_size, embed_dim)
-        self.lstm = nn.LSTM(embed_dim, hidden_dim, bidirectional=True)
-        self.fc = nn.Linear(hidden_dim * 2, num_classes)
-
-    def forward(self, x):
-        embedded = self.embedding(x)
-        lstm_out, _ = self.lstm(embedded)
-        # 使用最后的隐藏状态
-        final_hidden = lstm_out[:, -1, :]
-        return self.fc(final_hidden)
-```
-
-### 2. 序列到序列（Sequence to Sequence）
-用于机器翻译的编码器-解码器架构
-
-### 3. 时间序列预测
-金融预测、天气预报
-
-## 局限性与过渡
-
-### RNN 的不足之处
-
-1. **串行处理**：无法并行化
-2. **长期依赖**：信息瓶颈
-3. **训练缓慢**：逐步计算
-
-### 解决方案：注意力机制与 Transformer
-
-**注意力机制**：
-- 任意位置之间的直接连接
-- 无串行依赖
-- 并行计算
-
-详见 [注意力机制](../../03-NLP-Transformers/attention-mechanisms/README.md) 了解 RNN 之后的演进。
-
-## 最佳实践
-
-### 1. 处理变长序列
-```python
-# 填充和打包
+import torch
+import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-# 按长度排序
-lengths = [len(seq) for seq in sequences]
-packed = pack_padded_sequence(padded_seqs, lengths, batch_first=True)
-output, _ = lstm(packed)
-output, _ = pad_packed_sequence(output, batch_first=True)
+class BiLSTMClassifier(nn.Module):
+    def __init__(self, vocab_size, embed_dim, hidden_dim, num_classes):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0)
+        self.encoder = nn.LSTM(
+            embed_dim, hidden_dim, num_layers=1, batch_first=True, bidirectional=True
+        )
+        self.fc = nn.Linear(hidden_dim * 2, num_classes)
+
+    def forward(self, tokens, lengths):
+        x = self.embedding(tokens)
+        packed = pack_padded_sequence(x, lengths.cpu(), batch_first=True, enforce_sorted=False)
+        packed_out, _ = self.encoder(packed)
+        out, _ = pad_packed_sequence(packed_out, batch_first=True)
+        idx = (lengths - 1).clamp(min=0)
+        final = out[torch.arange(out.size(0)), idx]
+        return self.fc(final)
 ```
 
-### 2. 正则化
-- **Dropout**：层间使用（不在循环连接上）
-- **权重衰减**：L2 正则化
-- **梯度裁剪**：防止梯度爆炸
+要点：
 
-### 3. 初始化
-- 权重使用 Xavier/Glorot 初始化
-- 循环权重使用正交初始化
+- `enforce_sorted=False` 让 DataLoader 不必手动排序
+- 取最后有效时间步而非直接 `out[:, -1, :]`
+- 训练时配合梯度裁剪可显著提升稳定性
 
-## 如何选择
+你要记住：RNN 项目里，变长序列处理细节往往比“换模型”更影响结果。
+
+## 7. 为什么会过渡到注意力与 Transformer
+
+RNN 家族的结构性限制：
+
+1. 时序串行，难并行加速
+2. 信息需跨步传递，长依赖仍有瓶颈
+3. 长序列训练吞吐低
+
+注意力机制直接建模任意位置依赖，天然并行，更适合现代大规模训练。  
+详见 [注意力机制](../../03-NLP-Transformers/attention-mechanisms/README.md)。
+
+## 8. 调参与排障优先级
+
+1. 先检查 padding/mask/lengths 是否一致
+2. 学习率过大时先降学习率再调模型
+3. 使用 `clip_grad_norm_` 防梯度爆炸
+4. 序列很长时优先尝试截断或分块
+5. 评估时区分 token-level 与 sequence-level 指标
+
+## 9. 何时用 RNN，何时用 Transformer
 
 | 场景 | 推荐 |
-|----------|---------------|
-| **短序列（<50）** | GRU（更快） |
-| **长序列（>100）** | LSTM（更好的记忆能力） |
-| **需要双向处理** | BiLSTM/BiGRU |
-| **追求最高精度** | Transformer（见下一章） |
-| **资源受限** | GRU 或 CNN |
+|------|------|
+| 中小数据、低延迟、模型需轻量 | GRU / LSTM |
+| 超长上下文、SOTA 精度优先 | Transformer |
+| 强时序先验且样本不大 | BiLSTM/BiGRU |
+| 资源受限边缘设备 | 小型 GRU 或 1D-CNN |
 
 ---
 

@@ -4,270 +4,188 @@
 
 ## 概述
 
-注意力机制是使模型能够在生成输出时专注于输入相关部分的基础机制。它彻底改变了序列建模，并促成了 Transformer 架构的诞生。
+注意力机制让模型在生成某个位置表示时，动态选择“当前最相关的上下文”。它是 Transformer 的核心操作，也是现代 NLP/多模态模型的基础。本章面向已有机器学习基础的读者，重点讲清注意力的计算逻辑、工程细节和复杂度约束。
 
-## 直觉理解
+## 学习目标
 
-### 人类注意力类比
+完成本章后，你应能回答：
 
-阅读时，你不会平等地处理每个单词——你会专注于与任务相关的关键部分。
+1. Query/Key/Value 各自承担什么角色？
+2. 自注意力、交叉注意力、多头注意力分别解决什么问题？
+3. 训练不稳定或显存爆炸时，优先排查哪些点？
 
-**示例**：
-```
+## 1. 直觉先行：为什么注意力有效
+
+人阅读句子时并不会平均处理每个词，而是根据当前任务有选择地聚焦。  
+注意力机制把这种“聚焦”变成可学习的权重分配。
+
+示例：
+
+```text
 句子: "The cat sat on the mat and looked at the bird"
 问题: "猫在哪里?"
-注意力: 聚焦于 "sat on the mat"
+注意力会更集中在: "sat on the mat"
 ```
 
-## 核心概念
+你要记住：注意力本质是“按相关性做加权聚合”。
 
-### 1. 注意力分数
+## 2. 核心公式与三要素
 
-衡量查询和键之间的相关性：
+缩放点积注意力：
 
-```
-Score(Q, K) = Q · K^T / √d_k
-```
+$$
+\text{Attention}(Q,K,V)=\text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
+$$
 
-### 2. 注意力权重
-
-Softmax 归一化分数：
-
-```
-Attention(Q, K, V) = softmax(QK^T / √d_k)V
-```
+三要素角色：
 
 | 组件 | 作用 | 类比 |
-|-----------|------|---------|
-| **Query (查询)** | 你在寻找什么 | 问题 |
-| **Key (键)** | 可能匹配的内容 | 索引条目 |
-| **Value (值)** | 实际信息 | 内容 |
+|------|------|------|
+| Query | 当前要找的信息 | 检索请求 |
+| Key | 可匹配的索引 | 倒排索引项 |
+| Value | 被汇聚的内容 | 真实文档内容 |
 
-## 注意力类型
+缩放项 $\sqrt{d_k}$ 的作用：避免维度高时内积分布过大导致 softmax 过于尖锐、梯度变差。
 
-### 1. 自注意力 (Self-Attention)
+你要记住：`QK^T` 给相关性，`softmax` 给权重，`@V` 给上下文聚合结果。
 
-每个位置关注同一序列中的所有位置。
+## 3. 三类注意力机制
 
-```python
-# 自注意力计算
-scores = Q @ K.T / sqrt(dim)  # (seq, seq)
-weights = softmax(scores)      # 注意力分布
-output = weights @ V           # 加权求和
-```
+### 3.1 自注意力（Self-Attention）
 
-**应用场景**：
-- 捕获句子内部关系
-- 理解序列内的上下文
-- Transformer 的基础
+同一序列内部建模任意位置关系，是 Transformer 编码器/解码器块的核心。
 
-### 2. 交叉注意力 (Cross-Attention)
+### 3.2 交叉注意力（Cross-Attention）
 
-查询来自一个序列，键/值来自另一个序列。
+`Q` 来自目标序列，`K/V` 来自源序列。  
+典型于机器翻译、图文对齐、检索增强生成（RAG）中的“查询对文档”对齐。
 
-**示例**：机器翻译
-```
-源语言 (英语): "I love machine learning"
-目标语言 (法语):   "J'adore l'apprentissage automatique"
-                    ↓
-法语单词 "apprentissage" 关注 "learning"
-```
+### 3.3 多头注意力（Multi-Head Attention）
 
-### 3. 多头注意力 (Multi-Head Attention)
+把表示空间拆为多个子空间并行计算，再拼接投影。  
+不同头可关注不同关系模式（语法、语义、位置）。
 
-并行关注不同方面的注意力机制。
+你要记住：多头不是重复计算，而是“分子空间并行建模不同关系”。
 
-```python
-# 分割为 h 个头
-Q_split = split(Q, h)  # (batch, h, seq, d_k)
-K_split = split(K, h)
-V_split = split(V, h)
+## 4. 复杂度与瓶颈
 
-# 计算每个头的注意力
-head_outputs = [attention(q, k, v) for q, k, v in zip(Q_split, K_split, V_split)]
+设序列长度为 `n`，隐藏维为 `d`：
 
-# 拼接并投影
-output = concat(head_outputs) @ W_o
-```
+- 时间复杂度：`O(n^2 * d)`
+- 注意力矩阵显存：`O(n^2)`
 
-**为什么需要多个头？**：
-- 头 1：语法关系
-- 头 2：语义关系
-- 头 3：位置模式
-- ...
+这就是长序列任务中的主要瓶颈。工程上常用：
 
-## 数学表述
+1. 更短上下文窗口或分块
+2. 高效 kernel（如 Flash Attention 实现）
+3. 稀疏/线性注意力近似（按任务权衡精度）
 
-### 缩放点积注意力
+你要记住：长序列问题通常先是显存问题，再是计算速度问题。
 
-```
-Attention(Q, K, V) = softmax(QK^T / √d_k)V
-
-其中:
-- Q ∈ R^(n×d_k)  (查询)
-- K ∈ R^(m×d_k)  (键)
-- V ∈ R^(m×d_v)  (值)
-```
-
-**缩放因子 (√d_k)**：
-防止当 d_k 较大时 softmax 进入梯度较小的区域。
-
-### 复杂度
-
-| 操作 | 时间复杂度 | 空间复杂度 |
-|-----------|------|-------|
-| 注意力 | O(n²·d) | O(n²) |
-| 线性层 | O(n·d²) | O(d²) |
-
-## 实现
+## 5. PyTorch 多头注意力最小实现
 
 ```python
+import math
 import torch
 import torch.nn as nn
-import math
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, d_model, num_heads):
+    def __init__(self, d_model: int, num_heads: int):
         super().__init__()
         assert d_model % num_heads == 0
-
         self.d_model = d_model
         self.num_heads = num_heads
         self.d_k = d_model // num_heads
 
-        self.W_q = nn.Linear(d_model, d_model)
-        self.W_k = nn.Linear(d_model, d_model)
-        self.W_v = nn.Linear(d_model, d_model)
-        self.W_o = nn.Linear(d_model, d_model)
+        self.w_q = nn.Linear(d_model, d_model)
+        self.w_k = nn.Linear(d_model, d_model)
+        self.w_v = nn.Linear(d_model, d_model)
+        self.w_o = nn.Linear(d_model, d_model)
 
-    def forward(self, query, key, value, mask=None):
-        batch_size = query.size(0)
+    def forward(self, query, key, value, attn_mask=None):
+        bsz = query.size(0)
 
-        # 线性投影
-        Q = self.W_q(query).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
-        K = self.W_k(key).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
-        V = self.W_v(value).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
+        q = self.w_q(query).view(bsz, -1, self.num_heads, self.d_k).transpose(1, 2)
+        k = self.w_k(key).view(bsz, -1, self.num_heads, self.d_k).transpose(1, 2)
+        v = self.w_v(value).view(bsz, -1, self.num_heads, self.d_k).transpose(1, 2)
 
-        # 注意力计算
-        scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.d_k)
+        scores = (q @ k.transpose(-2, -1)) / math.sqrt(self.d_k)
+        if attn_mask is not None:
+            scores = scores.masked_fill(attn_mask == 0, float("-inf"))
 
-        if mask is not None:
-            scores = scores.masked_fill(mask == 0, -1e9)
-
-        attention_weights = torch.softmax(scores, dim=-1)
-        context = torch.matmul(attention_weights, V)
-
-        # 拼接头
-        context = context.transpose(1, 2).contiguous().view(batch_size, -1, self.d_model)
-
-        return self.W_o(context), attention_weights
-
-# 使用示例
-mha = MultiHeadAttention(d_model=512, num_heads=8)
-x = torch.randn(2, 100, 512)  # (batch, seq_len, d_model)
-output, weights = mha(x, x, x)  # 自注意力
-print(f"输出形状: {output.shape}")  # (2, 100, 512)
-print(f"注意力权重形状: {weights.shape}")  # (2, 8, 100, 100)
+        weights = torch.softmax(scores, dim=-1)
+        context = weights @ v
+        context = context.transpose(1, 2).contiguous().view(bsz, -1, self.d_model)
+        out = self.w_o(context)
+        return out, weights
 ```
 
-## 可视化注意力
+## 6. 掩码与位置编码
 
-```python
-import matplotlib.pyplot as plt
-import seaborn as sns
+### 6.1 掩码（Mask）
 
-def plot_attention(attention_weights, tokens):
-    """
-    attention_weights: (seq_len, seq_len)
-    tokens: 字符串 token 列表
-    """
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(attention_weights, xticklabels=tokens, yticklabels=tokens, cmap='YlOrRd')
-    plt.title('注意力热力图')
-    plt.show()
+必须区分两类：
 
-# 示例：显示哪些单词相互关注
-tokens = ['The', 'cat', 'sat', 'on', 'the', 'mat']
-plot_attention(weights[0, 0].detach().numpy(), tokens)
-```
+1. Padding Mask：避免模型关注填充 token
+2. Causal Mask：自回归任务禁止看到未来 token
 
-## 位置编码
+掩码错误会直接造成“信息泄露”或训练失效。
 
-注意力机制没有位置概念——位置编码添加此信息。
+### 6.2 位置编码（Positional Encoding）
+
+注意力本身不含位置信号，需要显式注入。经典正弦位置编码：
 
 ```python
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_len=5000):
         super().__init__()
-
         pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() *
-                           (-math.log(10000.0) / d_model))
-
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-
-        self.register_buffer('pe', pe.unsqueeze(0))
+        pos = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(pos * div)
+        pe[:, 1::2] = torch.cos(pos * div)
+        self.register_buffer("pe", pe.unsqueeze(0))
 
     def forward(self, x):
         return x + self.pe[:, :x.size(1)]
 ```
 
-## 从注意力到 Transformer
+你要记住：没有位置编码，模型只会“看内容”，不会“看顺序”。
 
-**关键洞察**：仅凭注意力机制就足够了——无需循环或卷积。
+## 7. 注意力可视化与解释
 
-**优势**：
-1. **并行化**：同时处理所有位置
-2. **长程依赖**：任意位置之间的直接连接
-3. **可解释性**：注意力权重显示模型关注的内容
+注意力热力图可以帮助定位模型关注模式，但不要把它当作唯一解释依据。  
+实践中可用于：
 
-## 应用
+1. 发现掩码错误（出现不该关注的位置）
+2. 检查是否过度关注标点/特殊 token
+3. 辅助分析失败样本
 
-### 1. 机器翻译
-源语言和目标语言之间的交叉注意力
+## 8. 从注意力到 Transformer
 
-### 2. 文本摘要
-自注意力识别关键句子
+关键转折点：仅靠注意力和前馈层就能构建高性能序列模型，且可并行训练。  
+相比 RNN，Transformer 更容易扩展到大数据和大模型训练流程。
 
-### 3. 图像描述生成
-图像特征和文本之间的交叉注意力
+## 9. 常见陷阱与排障优先级
 
-### 4. 语音识别
-注意力将音频帧与文本对齐
+1. 忘记缩放项 `sqrt(d_k)` -> softmax 过尖、训练不稳
+2. 掩码形状或语义错误 -> 泄露未来信息/忽略有效 token
+3. 序列过长导致 OOM -> 优先降序列长度或启用高效注意力
+4. 未正确 `train()/eval()` -> Dropout 行为错误
+5. 混合精度下数值异常 -> 检查 loss scaling 与 `-inf` 掩码处理
 
-## 最佳实践
+## 10. 应用场景速览
 
-### 1. 掩码
-- **填充掩码 (Padding Mask)**：忽略填充位置
-- **因果掩码 (Causal Mask)**：防止关注未来（用于自回归）
+| 任务 | 典型注意力模式 |
+|------|----------------|
+| 机器翻译 | 编码器-解码器交叉注意力 |
+| 文本摘要 | 编码器自注意力 + 解码器因果注意力 |
+| 图文生成/理解 | 图像 token 与文本 token 交叉注意力 |
+| 语音识别 | 声学帧与文本 token 对齐注意力 |
 
-### 2. 初始化
-- 权重矩阵使用 Xavier/Glorot 初始化
-- 对残差连接要特别注意
+## 下一步学习
 
-### 3. 优化
-- 使用梯度裁剪保持稳定性
-- 学习率预热
-
-## 常见陷阱
-
-1. **未进行缩放**：忘记 √d_k 会导致训练不稳定
-2. **掩码错误**：错误的掩码导致信息泄露
-3. **内存问题**：O(n²) 复杂度对长序列有问题
-
-## 高级主题
-
-### 稀疏注意力
-- **局部注意力**：仅关注附近的位置
-- **步进注意力**：关注每隔 k 个位置
-- **Linformer**：通过低秩近似实现线性复杂度
-
-### 高效 Transformer
-- **Flash Attention**：内存高效的实现
-- **多查询注意力**：跨头共享 K/V
+继续进入 [Transformer 架构](../transformer-architecture/README.md)，把注意力放进完整网络块（残差、归一化、前馈层）中理解。
 
 ---
 
