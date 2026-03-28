@@ -49,6 +49,37 @@ $$
 
 你要记住：`QK^T` 给相关性，`softmax` 给权重，`@V` 给上下文聚合结果。
 
+### 计算图
+
+```mermaid
+graph TD
+    X["输入序列 X\nbatch, seq, d_model"]
+    Proj["线性投影\nW_Q · W_K · W_V"]
+    QKV["Q / K / V\nbatch, heads, seq, d_k"]
+    Scores["相关性矩阵 QKᵀ ÷ √d_k\nbatch, heads, seq, seq"]
+    Mask["掩码 Mask\nPadding / Causal（可选）"]
+    Softmax["Softmax → 注意力权重\nbatch, heads, seq, seq"]
+    Context["加权聚合 @ V\nbatch, heads, seq, d_v"]
+    Out["输出投影 W_O\nbatch, seq, d_model"]
+
+    X --> Proj
+    Proj --> QKV
+    QKV --> Scores
+    Mask --> Scores
+    Scores --> Softmax
+    Softmax --> Context
+    Context --> Out
+
+    style X fill:#EFF6FF,stroke:#2563EB,color:#1E40AF
+    style Proj fill:#F8FAFC,stroke:#94A3B8,color:#475569
+    style QKV fill:#EFF6FF,stroke:#2563EB,color:#1E40AF
+    style Scores fill:#F0FDF4,stroke:#16A34A,color:#14532D
+    style Mask fill:#FEF2F2,stroke:#DC2626,color:#7F1D1D
+    style Softmax fill:#F0FDF4,stroke:#16A34A,color:#14532D
+    style Context fill:#FAF5FF,stroke:#7C3AED,color:#4C1D95
+    style Out fill:#FEF9C3,stroke:#CA8A04,color:#78350F
+```
+
 ## 3. 三类注意力机制
 
 ### 3.1 自注意力（Self-Attention）
