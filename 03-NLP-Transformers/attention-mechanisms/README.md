@@ -1,64 +1,61 @@
-[English](README_EN.md) | [中文](README.md)
+# 为什么 RNN 的"记忆"撑不住长句子？—— 注意力机制
 
-# 注意力机制
+## 这个问题从哪来
 
-## 概述
-
-注意力机制让模型在生成某个位置表示时，动态选择“当前最相关的上下文”。它是 Transformer 的核心操作，也是现代 NLP/多模态模型的基础。本章面向已有机器学习基础的读者，重点讲清注意力的计算逻辑、工程细节和复杂度约束。
+> 2014 年，Sutskever 等人用 Seq2Seq 做机器翻译，编码器把整段输入压缩成**一个**固定长度的向量，再由解码器生成译文。句子短的时候还好，句子一长，那个向量就装不下全部信息了——早期词的语义被后来的词覆盖，翻译质量随句子长度急速下滑。Bahdanau 注意到：翻译每个词时，解码器其实只需要关注输入的某几个位置，不需要把所有信息塞进一个瓶子。这就是注意力机制的起点。
 
 ## 学习目标
 
-完成本章后，你应能回答：
+完成后你应能回答：
 
-1. Query/Key/Value 各自承担什么角色？
+1. Query / Key / Value 各自承担什么角色？为什么要除以 √d_k？
 2. 自注意力、交叉注意力、多头注意力分别解决什么问题？
-3. 训练不稳定或显存爆炸时，优先排查哪些点？
+3. 训练出现 NaN、推理显存爆炸时，优先排查哪几个点？
 
-## 1. 直觉先行：为什么注意力有效
+---
 
-人阅读句子时并不会平均处理每个词，而是根据当前任务有选择地聚焦。  
-注意力机制把这种“聚焦”变成可学习的权重分配。
+## 1. 直觉
 
-示例：
+想象你在一堆文档里检索信息：
 
-```text
-句子: "The cat sat on the mat and looked at the bird"
-问题: "猫在哪里?"
-注意力会更集中在: "sat on the mat"
-```
+- **Query**：你的检索请求（"猫在哪里"）
+- **Key**：每份文档的索引标签（"sat on the mat"、"looked at the bird"……）
+- **Value**：文档的真实内容
 
-你要记住：注意力本质是“按相关性做加权聚合”。
+你先拿 Query 和每个 Key 比对相关性，得到一组权重，再按权重把 Value 加权混合——高度相关的文档贡献多，不相关的贡献接近零。
 
-## 2. 核心公式与三要素
+注意力机制做的就是这件事，只不过 Query、Key、Value 都是向量，"相关性"是点积。
 
-缩放点积注意力：
+> 你要记住：`QKᵀ` 算相关性，`softmax` 归一化成权重，`@ V` 做加权聚合。三步，缺一不可。
 
-$$
-\text{Attention}(Q,K,V)=\text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
-$$
+---
 
-三要素角色：
+## 2. 机制
 
-| 组件 | 作用 | 类比 |
-|------|------|------|
-| Query | 当前要找的信息 | 检索请求 |
-| Key | 可匹配的索引 | 倒排索引项 |
-| Value | 被汇聚的内容 | 真实文档内容 |
+### 2.1 核心公式
 
-缩放项 $\sqrt{d_k}$ 的作用：避免维度高时内积分布过大导致 softmax 过于尖锐、梯度变差。
+$$\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V$$
 
-你要记住：`QK^T` 给相关性，`softmax` 给权重，`@V` 给上下文聚合结果。
+除以 √d_k 的原因：d_k 大时点积值方差随维度增大，softmax 进入饱和区，梯度消失，训练变慢。缩放把方差钉在 1 附近。
 
-### 计算图
+### 2.2 三类注意力
+
+| 类型 | Q 来自 | K/V 来自 | 用在哪 |
+|------|--------|----------|--------|
+| 自注意力 | 本序列 | 本序列 | Encoder 内部建模上下文 |
+| 因果自注意力 | 本序列 | 本序列（masked）| Decoder 自回归生成 |
+| 交叉注意力 | Decoder | Encoder 输出 | Decoder 关注输入序列 |
+
+### 2.3 计算流图
 
 ```mermaid
 graph TD
     X["输入序列 X\nbatch, seq, d_model"]
-    Proj["线性投影\nW_Q · W_K · W_V"]
+    Proj["线性投影 W_Q · W_K · W_V"]
     QKV["Q / K / V\nbatch, heads, seq, d_k"]
-    Scores["相关性矩阵 QKᵀ ÷ √d_k\nbatch, heads, seq, seq"]
-    Mask["掩码 Mask\nPadding / Causal（可选）"]
-    Softmax["Softmax → 注意力权重\nbatch, heads, seq, seq"]
+    Scores["相关性 QKᵀ ÷ √d_k\nbatch, heads, seq, seq"]
+    Mask["Mask\nPadding / Causal（可选）"]
+    Softmax["Softmax → 注意力权重"]
     Context["加权聚合 @ V\nbatch, heads, seq, d_v"]
     Out["输出投影 W_O\nbatch, seq, d_model"]
 
@@ -70,154 +67,120 @@ graph TD
     Softmax --> Context
     Context --> Out
 
-    style X fill:#EFF6FF,stroke:#2563EB,color:#1E40AF
-    style Proj fill:#F8FAFC,stroke:#94A3B8,color:#475569
-    style QKV fill:#EFF6FF,stroke:#2563EB,color:#1E40AF
-    style Scores fill:#F0FDF4,stroke:#16A34A,color:#14532D
-    style Mask fill:#FEF2F2,stroke:#DC2626,color:#7F1D1D
-    style Softmax fill:#F0FDF4,stroke:#16A34A,color:#14532D
-    style Context fill:#FAF5FF,stroke:#7C3AED,color:#4C1D95
-    style Out fill:#FEF9C3,stroke:#CA8A04,color:#78350F
+    style X fill:#fef3c7,stroke:#d97706,color:#92400e
+    style Proj fill:#fef3c7,stroke:#d97706,color:#92400e
+    style QKV fill:#fef3c7,stroke:#d97706,color:#92400e
+    style Scores fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style Mask fill:#fff7ed,stroke:#ea580c,color:#9a3412
+    style Softmax fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style Context fill:#ecfdf5,stroke:#059669,color:#065f46
+    style Out fill:#ecfdf5,stroke:#059669,color:#065f46
 ```
 
-## 3. 三类注意力机制
+### 2.4 渐进式实现
 
-### 3.1 自注意力（Self-Attention）
-
-同一序列内部建模任意位置关系，是 Transformer 编码器/解码器块的核心。
-
-### 3.2 交叉注意力（Cross-Attention）
-
-`Q` 来自目标序列，`K/V` 来自源序列。  
-典型于机器翻译、图文对齐、检索增强生成（RAG）中的“查询对文档”对齐。
-
-### 3.3 多头注意力（Multi-Head Attention）
-
-把表示空间拆为多个子空间并行计算，再拼接投影。  
-不同头可关注不同关系模式（语法、语义、位置）。
-
-你要记住：多头不是重复计算，而是“分子空间并行建模不同关系”。
-
-## 4. 复杂度与瓶颈
-
-设序列长度为 `n`，隐藏维为 `d`：
-
-- 时间复杂度：`O(n^2 * d)`
-- 注意力矩阵显存：`O(n^2)`
-
-这就是长序列任务中的主要瓶颈。工程上常用：
-
-1. 更短上下文窗口或分块
-2. 高效 kernel（如 Flash Attention 实现）
-3. 稀疏/线性注意力近似（按任务权衡精度）
-
-你要记住：长序列问题通常先是显存问题，再是计算速度问题。
-
-## 5. PyTorch 多头注意力最小实现
+**Step 1：最小可运行版**（验证 QKV 计算流程）
 
 ```python
-import math
-import torch
+# 按相关性做加权聚合
+# softmax(QK^T / √d_k) @ V
+# 时间 O(n²d)，空间 O(n²)
+import math, torch
+
+def attention(q, k, v):
+    """
+    Args:
+        q, k, v: (batch, seq, d_k)
+    Returns:
+        context: (batch, seq, d_k)
+        weights: (batch, seq, seq)
+    """
+    d_k = q.size(-1)
+    scores = q @ k.transpose(-2, -1) / math.sqrt(d_k)
+    weights = torch.softmax(scores, dim=-1)
+    return weights @ v, weights
+```
+
+**Step 2：加 Mask**（防止 Decoder 看到未来 token，防止关注 padding 位置）
+
+```python
+def attention(q, k, v, mask=None):
+    d_k = q.size(-1)
+    scores = q @ k.transpose(-2, -1) / math.sqrt(d_k)
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, float("-inf"))
+    weights = torch.softmax(scores, dim=-1)
+    return weights @ v, weights
+```
+
+**Step 3：多头注意力**（单头只能建模一种关系，多头并行建模不同子空间——语法、语义、位置……）
+
+```python
 import torch.nn as nn
 
 class MultiHeadAttention(nn.Module):
+    # 将 d_model 切分为 num_heads 个子空间，各自独立计算注意力
+    # MultiHead(Q,K,V) = Concat(head_1,...,head_h) W_O
+    # 时间 O(n²d)，与单头相同；头数不改变总计算量
     def __init__(self, d_model: int, num_heads: int):
         super().__init__()
         assert d_model % num_heads == 0
-        self.d_model = d_model
-        self.num_heads = num_heads
+        self.h = num_heads
         self.d_k = d_model // num_heads
+        self.w_q = nn.Linear(d_model, d_model, bias=False)
+        self.w_k = nn.Linear(d_model, d_model, bias=False)
+        self.w_v = nn.Linear(d_model, d_model, bias=False)
+        self.w_o = nn.Linear(d_model, d_model, bias=False)
 
-        self.w_q = nn.Linear(d_model, d_model)
-        self.w_k = nn.Linear(d_model, d_model)
-        self.w_v = nn.Linear(d_model, d_model)
-        self.w_o = nn.Linear(d_model, d_model)
-
-    def forward(self, query, key, value, attn_mask=None):
+    def forward(self, query, key, value, mask=None):
+        """
+        Args:
+            query, key, value: (batch, seq, d_model)
+            mask: (batch, 1, 1, seq_k) 或 None
+        Returns:
+            out:     (batch, seq, d_model)
+            weights: (batch, heads, seq_q, seq_k)
+        """
         bsz = query.size(0)
-
-        q = self.w_q(query).view(bsz, -1, self.num_heads, self.d_k).transpose(1, 2)
-        k = self.w_k(key).view(bsz, -1, self.num_heads, self.d_k).transpose(1, 2)
-        v = self.w_v(value).view(bsz, -1, self.num_heads, self.d_k).transpose(1, 2)
-
-        scores = (q @ k.transpose(-2, -1)) / math.sqrt(self.d_k)
-        if attn_mask is not None:
-            scores = scores.masked_fill(attn_mask == 0, float("-inf"))
-
-        weights = torch.softmax(scores, dim=-1)
-        context = weights @ v
-        context = context.transpose(1, 2).contiguous().view(bsz, -1, self.d_model)
-        out = self.w_o(context)
-        return out, weights
+        q = self.w_q(query).view(bsz, -1, self.h, self.d_k).transpose(1, 2)
+        k = self.w_k(key).view(bsz, -1, self.h, self.d_k).transpose(1, 2)
+        v = self.w_v(value).view(bsz, -1, self.h, self.d_k).transpose(1, 2)
+        ctx, weights = attention(q, k, v, mask)
+        ctx = ctx.transpose(1, 2).contiguous().view(bsz, -1, self.h * self.d_k)
+        return self.w_o(ctx), weights
 ```
 
-## 6. 掩码与位置编码
-
-### 6.1 掩码（Mask）
-
-必须区分两类：
-
-1. Padding Mask：避免模型关注填充 token
-2. Causal Mask：自回归任务禁止看到未来 token
-
-掩码错误会直接造成“信息泄露”或训练失效。
-
-### 6.2 位置编码（Positional Encoding）
-
-注意力本身不含位置信号，需要显式注入。经典正弦位置编码：
+**Step 4：生产级**（标准实现显存 O(n²)，Flash Attention 用分块计算降到 O(n)）
 
 ```python
-class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, max_len=5000):
-        super().__init__()
-        pe = torch.zeros(max_len, d_model)
-        pos = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(pos * div)
-        pe[:, 1::2] = torch.cos(pos * div)
-        self.register_buffer("pe", pe.unsqueeze(0))
-
-    def forward(self, x):
-        return x + self.pe[:, :x.size(1)]
+# PyTorch 2.0+ 内置 Flash Attention，直接调用：
+out = torch.nn.functional.scaled_dot_product_attention(
+    q, k, v,
+    attn_mask=mask,
+    dropout_p=0.1 if self.training else 0.0,
+    is_causal=False,  # 自回归生成时设为 True，自动构建 Causal Mask
+)
+# 等价于手写版，显存从 O(n²) 降至 O(n)，速度快 2–4×
 ```
-
-你要记住：没有位置编码，模型只会“看内容”，不会“看顺序”。
-
-## 7. 注意力可视化与解释
-
-注意力热力图可以帮助定位模型关注模式，但不要把它当作唯一解释依据。  
-实践中可用于：
-
-1. 发现掩码错误（出现不该关注的位置）
-2. 检查是否过度关注标点/特殊 token
-3. 辅助分析失败样本
-
-## 8. 从注意力到 Transformer
-
-关键转折点：仅靠注意力和前馈层就能构建高性能序列模型，且可并行训练。  
-相比 RNN，Transformer 更容易扩展到大数据和大模型训练流程。
-
-## 9. 常见陷阱与排障优先级
-
-1. 忘记缩放项 `sqrt(d_k)` -> softmax 过尖、训练不稳
-2. 掩码形状或语义错误 -> 泄露未来信息/忽略有效 token
-3. 序列过长导致 OOM -> 优先降序列长度或启用高效注意力
-4. 未正确 `train()/eval()` -> Dropout 行为错误
-5. 混合精度下数值异常 -> 检查 loss scaling 与 `-inf` 掩码处理
-
-## 10. 应用场景速览
-
-| 任务 | 典型注意力模式 |
-|------|----------------|
-| 机器翻译 | 编码器-解码器交叉注意力 |
-| 文本摘要 | 编码器自注意力 + 解码器因果注意力 |
-| 图文生成/理解 | 图像 token 与文本 token 交叉注意力 |
-| 语音识别 | 声学帧与文本 token 对齐注意力 |
-
-## 下一步学习
-
-继续进入 [Transformer 架构](../transformer-architecture/README.md)，把注意力放进完整网络块（残差、归一化、前馈层）中理解。
 
 ---
 
-**上一章**: [序列模型](../../02-Neural-Networks/sequence-models/README.md) | **下一章**: [Transformer 架构](../transformer-architecture/README.md)
+## 3. 工程陷阱
+
+1. **d_k 过大、未缩放** → softmax 饱和，梯度消失，loss 停止下降
+2. **Causal mask 方向写反** → 训练时泄露未来 token，推理输出退化
+3. **多头 reshape 顺序错误**（直接 `.view` 代替先 `.transpose` 再 `.view`）→ 头间数据混乱，注意力权重无意义
+4. **长序列用标准注意力** → 显存 OOM，优先换 `scaled_dot_product_attention` 或降序列长度
+5. **推理忘记 `model.eval()`** → Dropout 仍激活，注意力权重随机，输出不稳定
+
+---
+
+## 演进笔记
+
+> 注意力机制解决了 Seq2Seq 的信息瓶颈，但 2017 年 Transformer 把 RNN 整个扔掉之后，Self-Attention 本身成了新的瓶颈——复杂度 O(n²)，序列一长显存爆掉。2019–2022 年，Longformer（稀疏化）、Linformer（低秩近似）、Flash Attention（IO 感知分块）从不同角度尝试突破。Flash Attention 最终成为工业标准，PyTorch 2.0 直接内置。
+
+→ 下一步：[Transformer 架构](../transformer-architecture/README.md) — 看注意力如何和 FFN、归一化、位置编码组成完整的 Transformer Block
+
+---
+
+**上一章**: [序列模型 RNN/LSTM](../../02-Neural-Networks/sequence-models/README.md) | **下一章**: [Transformer 架构](../transformer-architecture/README.md)

@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="1200" height="340" font-family="'Helvetica Neue', Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="1200" height="340" fill="#fffbf7" rx="12"/>
+
+  <!-- Title -->
+  <text x="600" y="36" text-anchor="middle" font-size="17" font-weight="700" fill="#1c1917">深度学习与大模型演进地图</text>
+  <text x="600" y="54" text-anchor="middle" font-size="11" fill="#78716c">每一个技术的出现，背后都有一个"不得不解决"的问题</text>
+
+  <!-- Phase bands (below axis) -->
+  <!-- Phase 01-02: 2012-2016 -->
+  <rect x="60" y="210" width="268" height="22" rx="4" fill="#fef3c7" opacity="0.8"/>
+  <text x="194" y="225" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">01-02 · ML 基础 &amp; 神经网络</text>
+
+  <!-- Phase 03: 2017-2019 -->
+  <rect x="332" y="210" width="200" height="22" rx="4" fill="#fce7f3" opacity="0.8"/>
+  <text x="432" y="225" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="600">03 · NLP &amp; Transformer</text>
+
+  <!-- Phase 04: 2020-2022 -->
+  <rect x="536" y="210" width="264" height="22" rx="4" fill="#ecfdf5" opacity="0.8"/>
+  <text x="668" y="225" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">04 · LLM Core</text>
+
+  <!-- Phase 05-06: 2023-2024 -->
+  <rect x="804" y="210" width="264" height="22" rx="4" fill="#fff7ed" opacity="0.8"/>
+  <text x="936" y="225" text-anchor="middle" font-size="10" fill="#9a3412" font-weight="600">05-06 · RAG &amp; MLOps</text>
+
+  <!-- Phase 07 -->
+  <rect x="1072" y="210" width="96" height="22" rx="4" fill="#eff6ff" opacity="0.8"/>
+  <text x="1120" y="225" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="600">07 · 实战</text>
+
+  <!-- Main axis line -->
+  <line x1="60" y1="190" x2="1160" y2="190" stroke="#d6d3d1" stroke-width="2.5"/>
+  <!-- Arrow -->
+  <polygon points="1160,186 1170,190 1160,194" fill="#d6d3d1"/>
+
+  <!-- ── NODES ── -->
+  <!-- Helper: major node = r10, minor = r7 -->
+
+  <!-- 2012 AlexNet - MAJOR -->
+  <circle cx="80" cy="190" r="11" fill="#d97706" stroke="#92400e" stroke-width="2"/>
+  <circle cx="80" cy="190" r="16" fill="none" stroke="#d97706" stroke-width="1.5" opacity="0.5"/>
+  <line x1="80" y1="174" x2="80" y2="130" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="16" y="108" width="128" height="38" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="80" y="123" text-anchor="middle" font-size="10" font-weight="700" fill="#92400e">2012 · AlexNet</text>
+  <text x="80" y="137" text-anchor="middle" font-size="9" fill="#92400e">深度学习引爆点</text>
+  <text x="80" y="197" text-anchor="middle" font-size="9" fill="#78716c" dy="12">2012</text>
+
+  <!-- 2013 Word2Vec - minor -->
+  <circle cx="170" cy="190" r="7" fill="#fce7f3" stroke="#db2777" stroke-width="1.8"/>
+  <line x1="170" y1="183" x2="170" y2="148" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="112" y="128" width="116" height="34" rx="5" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="170" y="142" text-anchor="middle" font-size="9.5" font-weight="600" fill="#9d174d">2013 · Word2Vec</text>
+  <text x="170" y="154" text-anchor="middle" font-size="9" fill="#9d174d">词语义向量化</text>
+  <text x="170" y="202" text-anchor="middle" font-size="9" fill="#78716c">2013</text>
+
+  <!-- 2014 GAN+Attention - minor -->
+  <circle cx="248" cy="190" r="7" fill="#fce7f3" stroke="#db2777" stroke-width="1.8"/>
+  <line x1="248" y1="183" x2="248" y2="108" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="186" y="88" width="124" height="34" rx="5" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="248" y="103" text-anchor="middle" font-size="9.5" font-weight="600" fill="#9d174d">2014 · GAN + Attention</text>
+  <text x="248" y="115" text-anchor="middle" font-size="9" fill="#9d174d">生成模型 · 注意力雏形</text>
+  <text x="248" y="202" text-anchor="middle" font-size="9" fill="#78716c">2014</text>
+
+  <!-- 2015 ResNet - minor -->
+  <circle cx="328" cy="190" r="7" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+  <line x1="328" y1="183" x2="328" y2="148" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="268" y="128" width="120" height="34" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="328" y="142" text-anchor="middle" font-size="9.5" font-weight="600" fill="#92400e">2015 · ResNet</text>
+  <text x="328" y="154" text-anchor="middle" font-size="9" fill="#92400e">残差连接解放深度</text>
+  <text x="328" y="202" text-anchor="middle" font-size="9" fill="#78716c">2015</text>
+
+  <!-- 2016 AlphaGo - minor -->
+  <circle cx="400" cy="190" r="7" fill="#fff7ed" stroke="#ea580c" stroke-width="1.8"/>
+  <line x1="400" y1="183" x2="400" y2="108" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="338" y="88" width="124" height="34" rx="5" fill="#fff7ed" stroke="#ea580c" stroke-width="1"/>
+  <text x="400" y="103" text-anchor="middle" font-size="9.5" font-weight="600" fill="#9a3412">2016 · AlphaGo</text>
+  <text x="400" y="115" text-anchor="middle" font-size="9" fill="#9a3412">强化学习实战验证</text>
+  <text x="400" y="202" text-anchor="middle" font-size="9" fill="#78716c">2016</text>
+
+  <!-- 2017 Transformer - MAJOR -->
+  <circle cx="490" cy="190" r="11" fill="#db2777" stroke="#9d174d" stroke-width="2"/>
+  <circle cx="490" cy="190" r="16" fill="none" stroke="#db2777" stroke-width="1.5" opacity="0.5"/>
+  <line x1="490" y1="174" x2="490" y2="128" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="420" y="106" width="140" height="38" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+  <text x="490" y="121" text-anchor="middle" font-size="10" font-weight="700" fill="#9d174d">2017 · Transformer</text>
+  <text x="490" y="135" text-anchor="middle" font-size="9" fill="#9d174d">Attention Is All You Need</text>
+  <text x="490" y="202" text-anchor="middle" font-size="9" fill="#78716c">2017</text>
+
+  <!-- 2018 BERT+GPT - minor -->
+  <circle cx="580" cy="190" r="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <line x1="580" y1="183" x2="580" y2="148" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="516" y="128" width="128" height="34" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1"/>
+  <text x="580" y="142" text-anchor="middle" font-size="9.5" font-weight="600" fill="#065f46">2018 · BERT + GPT-1</text>
+  <text x="580" y="154" text-anchor="middle" font-size="9" fill="#065f46">预训练时代开启</text>
+  <text x="580" y="202" text-anchor="middle" font-size="9" fill="#78716c">2018</text>
+
+  <!-- 2019 GPT-2+T5 - minor -->
+  <circle cx="664" cy="190" r="7" fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <line x1="664" y1="183" x2="664" y2="108" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="600" y="88" width="128" height="34" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1"/>
+  <text x="664" y="103" text-anchor="middle" font-size="9.5" font-weight="600" fill="#065f46">2019 · GPT-2 + T5</text>
+  <text x="664" y="115" text-anchor="middle" font-size="9" fill="#065f46">规模化野心显现</text>
+  <text x="664" y="202" text-anchor="middle" font-size="9" fill="#78716c">2019</text>
+
+  <!-- 2020 GPT-3 - MAJOR -->
+  <circle cx="752" cy="190" r="11" fill="#059669" stroke="#065f46" stroke-width="2"/>
+  <circle cx="752" cy="190" r="16" fill="none" stroke="#059669" stroke-width="1.5" opacity="0.5"/>
+  <line x1="752" y1="174" x2="752" y2="128" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="682" y="106" width="140" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+  <text x="752" y="121" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">2020 · GPT-3</text>
+  <text x="752" y="135" text-anchor="middle" font-size="9" fill="#065f46">Scaling Laws · 大力出奇迹</text>
+  <text x="752" y="202" text-anchor="middle" font-size="9" fill="#78716c">2020</text>
+
+  <!-- 2021 CLIP+LoRA - minor -->
+  <circle cx="840" cy="190" r="7" fill="#fff7ed" stroke="#ea580c" stroke-width="1.8"/>
+  <line x1="840" y1="183" x2="840" y2="148" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="776" y="128" width="128" height="34" rx="5" fill="#fff7ed" stroke="#ea580c" stroke-width="1"/>
+  <text x="840" y="142" text-anchor="middle" font-size="9.5" font-weight="600" fill="#9a3412">2021 · CLIP + LoRA</text>
+  <text x="840" y="154" text-anchor="middle" font-size="9" fill="#9a3412">多模态 · 高效微调</text>
+  <text x="840" y="202" text-anchor="middle" font-size="9" fill="#78716c">2021</text>
+
+  <!-- 2022 ChatGPT - MAJOR -->
+  <circle cx="930" cy="190" r="11" fill="#ea580c" stroke="#9a3412" stroke-width="2"/>
+  <circle cx="930" cy="190" r="16" fill="none" stroke="#ea580c" stroke-width="1.5" opacity="0.5"/>
+  <line x1="930" y1="174" x2="930" y2="108" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="858" y="86" width="144" height="38" rx="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="930" y="101" text-anchor="middle" font-size="10" font-weight="700" fill="#9a3412">2022 · ChatGPT</text>
+  <text x="930" y="115" text-anchor="middle" font-size="9" fill="#9a3412">RLHF · AI 走进大众</text>
+  <text x="930" y="202" text-anchor="middle" font-size="9" fill="#78716c">2022</text>
+
+  <!-- 2023 GPT-4+LLaMA - minor -->
+  <circle cx="1014" cy="190" r="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <line x1="1014" y1="183" x2="1014" y2="148" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="950" y="128" width="128" height="34" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1"/>
+  <text x="1014" y="142" text-anchor="middle" font-size="9.5" font-weight="600" fill="#1e40af">2023 · GPT-4 + LLaMA</text>
+  <text x="1014" y="154" text-anchor="middle" font-size="9" fill="#1e40af">开源反击 · RAG 爆发</text>
+  <text x="1014" y="202" text-anchor="middle" font-size="9" fill="#78716c">2023</text>
+
+  <!-- 2024 o1+MoE - minor -->
+  <circle cx="1090" cy="190" r="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <line x1="1090" y1="183" x2="1090" y2="108" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="1026" y="88" width="128" height="34" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1"/>
+  <text x="1090" y="103" text-anchor="middle" font-size="9.5" font-weight="600" fill="#1e40af">2024 · o1 + MoE</text>
+  <text x="1090" y="115" text-anchor="middle" font-size="9" fill="#1e40af">推理模型 · 长上下文</text>
+  <text x="1090" y="202" text-anchor="middle" font-size="9" fill="#78716c">2024</text>
+
+  <!-- 2025 DeepSeek - minor -->
+  <circle cx="1150" cy="190" r="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <line x1="1150" y1="183" x2="1150" y2="148" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="3,2"/>
+  <rect x="1090" y="128" width="116" height="34" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1"/>
+  <text x="1148" y="142" text-anchor="middle" font-size="9.5" font-weight="600" fill="#1e40af">2025 · DeepSeek R1</text>
+  <text x="1148" y="154" text-anchor="middle" font-size="9" fill="#1e40af">开源追平推理能力</text>
+  <text x="1150" y="202" text-anchor="middle" font-size="9" fill="#78716c">2025</text>
+
+  <!-- Legend -->
+  <circle cx="72" cy="290" r="9" fill="#d97706" stroke="#92400e" stroke-width="1.5"/>
+  <circle cx="72" cy="290" r="13" fill="none" stroke="#d97706" stroke-width="1" opacity="0.5"/>
+  <text x="90" y="294" font-size="10" fill="#57534e">重大突破</text>
+  <circle cx="170" cy="290" r="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="184" y="294" font-size="10" fill="#57534e">重要进展</text>
+  <rect x="260" y="283" width="14" height="10" rx="2" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="280" y="294" font-size="10" fill="#57534e">01-02 基础</text>
+  <rect x="360" y="283" width="14" height="10" rx="2" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="380" y="294" font-size="10" fill="#57534e">03 Transformer</text>
+  <rect x="470" y="283" width="14" height="10" rx="2" fill="#ecfdf5" stroke="#059669" stroke-width="1"/>
+  <text x="490" y="294" font-size="10" fill="#57534e">04 LLM</text>
+  <rect x="540" y="283" width="14" height="10" rx="2" fill="#fff7ed" stroke="#ea580c" stroke-width="1"/>
+  <text x="560" y="294" font-size="10" fill="#57534e">05-06 RAG &amp; MLOps</text>
+  <rect x="680" y="283" width="14" height="10" rx="2" fill="#eff6ff" stroke="#2563eb" stroke-width="1"/>
+  <text x="700" y="294" font-size="10" fill="#57534e">07 实战</text>
+
+</svg>
