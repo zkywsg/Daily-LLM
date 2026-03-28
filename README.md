@@ -115,6 +115,7 @@
 
 | Phase | 主题 | 你会掌握什么 | 入口 |
 | --- | --- | --- | --- |
+| **00** | Timeline | 从 2012 到 2025，AI 被"逼出来"的完整历史 | [查看时间线](00-Timeline/) |
 | **01** | Foundations | 经典 ML、数学基础、评估方法、深度学习入门 | [进入 Phase 01](01-Foundations/) |
 | **02** | Neural Networks | CNN、序列模型、训练技巧、优化方法 | [进入 Phase 02](02-Neural-Networks/) |
 | **03** | NLP & Transformers | 注意力机制、Transformer 架构、BERT/GPT/T5 | [进入 Phase 03](03-NLP-Transformers/) |
@@ -141,6 +142,7 @@
 
 ```text
 Daily-LLM/
+├── 00-Timeline/             # 深度学习与大模型演进时间线（2012–2025）
 ├── 01-Foundations/          # 机器学习与深度学习基石
 ├── 02-Neural-Networks/      # CNN、序列模型、训练与优化
 ├── 03-NLP-Transformers/     # 注意力机制与 Transformer 体系
