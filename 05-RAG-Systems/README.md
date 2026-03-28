@@ -36,4 +36,21 @@
 
 ---
 
+## 时间线节点
+
+本模块对应时间线中的以下关键工作：
+
+| 年份 | 工作 | 核心意义 |
+|------|------|---------|
+| 2014 | Neural Turing Machine | 神经网络外挂可读写记忆，早期 Agent 思想雏形 |
+| 2020 | RAG 论文（Lewis et al.） | 检索 + 生成结合正式提出，解决幻觉和知识截止 |
+| 2021 | WebGPT | LLM 使用搜索引擎，早期 Tool Use 实践 |
+| 2023 | ReAct / Chain-of-Thought | 推理 + 行动循环，Agent 工程化的理论基础 |
+| 2023 | AutoGPT | LLM 自主多步任务执行，Agent 进入大众视野 |
+| 2023 | LangChain / LlamaIndex | RAG 与 Agent 工程化框架，应用开发基础设施成型 |
+| 2024 | 长上下文（1M tokens） | 部分替代 RAG，改变检索策略设计 |
+| 2025 | 多模态 Agent 成熟化 | 视觉 + 语言 + 工具调用统一，真实任务可用阶段 |
+
+→ 完整时间线见 [00-Timeline](../00-Timeline/)
+
 **下一阶段**: [MLOps 与生产工程](../06-MLOps-Production/README.md)

@@ -36,4 +36,21 @@
 
 ---
 
+## 时间线节点
+
+本模块对应时间线中的以下关键工作：
+
+| 年份 | 工作 | 核心意义 |
+|------|------|---------|
+| 2019 | Megatron-LM | 模型并行训练框架，大规模分布式训练基础设施确立 |
+| 2021 | Megatron-LM v2 | 支持千亿参数训练，大规模并行训练成熟 |
+| 2021 | GitHub Copilot | Codex 驱动的 AI 工具，开发者工具 AI 化起点 |
+| 2022 | Flash Attention | IO 感知注意力，训练速度 2-4×，显存节省 5-20× |
+| 2023 | vLLM / PagedAttention | LLM 推理吞吐量提升 24×，成为服务基础设施标配 |
+| 2024 | Flash Attention 2/3 | 进一步提升效率，支持更长上下文训练 |
+| 2025 | Speculative Decoding 普及 | 草稿模型加速推理 2-3×，进入工业标配 |
+| 2025 | Benchmark 失效危机 | 传统评测集饱和，新一代评估体系重建 |
+
+→ 完整时间线见 [00-Timeline](../00-Timeline/)
+
 **下一阶段**: [实战项目](../07-Capstone-Projects/README.md)

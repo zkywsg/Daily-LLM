@@ -31,7 +31,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-0F172A.svg?style=flat-square)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-2563EB.svg?style=flat-square)](https://www.python.org/downloads/)
-[![Phases](https://img.shields.io/badge/Phases-7-059669.svg?style=flat-square)](./)
+[![Phases](https://img.shields.io/badge/Phases-7%2BTimeline-059669.svg?style=flat-square)](./)
 [![Modules](https://img.shields.io/badge/Core%20Modules-24-7C3AED.svg?style=flat-square)](./)
 [![Bilingual](https://img.shields.io/badge/Docs-English%20%7C%20%E4%B8%AD%E6%96%87-D97706.svg?style=flat-square)](README_EN.md)
 
@@ -48,7 +48,7 @@
   <tr>
     <td width="25%" align="center" valign="top">
       <strong><sub>PHASES</sub></strong><br/>
-      <strong>7</strong><br/>
+      <strong>7 + Timeline</strong><br/>
       渐进阶段
     </td>
     <td width="25%" align="center" valign="top">
@@ -79,7 +79,7 @@
   <tr>
     <td width="33%" valign="top">
       <strong>系统化，而不是碎片化</strong><br/>
-      用 7 个阶段串起 ML、神经网络、Transformer、LLM、RAG、Agent、MLOps 与项目实战，减少“会调 API 但不懂底层和工程”的断层。
+      用时间线 + 7 个阶段串起 ML、神经网络、Transformer、LLM、RAG、Agent、MLOps 与项目实战，减少“会调 API 但不懂底层和工程”的断层。
     </td>
     <td width="33%" valign="top">
       <strong>工程导向，而不是纯概念导向</strong><br/>
@@ -96,7 +96,7 @@
 
 | 维度 | 内容 |
 | --- | --- |
-| 学习路径 | 7 个渐进阶段，覆盖从基础到生产的完整链路 |
+| 学习路径 | 时间线 + 7 个渐进阶段，覆盖从基础到生产的完整链路 |
 | 核心模块 | 24 个一级模块，按主题拆分清晰 |
 | 内容风格 | 原理 + 工程 + 架构 + 实战，不止是教程索引 |
 | 适合人群 | ML 工程师、软件工程师、研究者、技术负责人 |
@@ -120,18 +120,18 @@
 | **02** | Neural Networks | CNN、序列模型、训练技巧、优化方法 | [进入 Phase 02](02-Neural-Networks/) |
 | **03** | NLP & Transformers | 注意力机制、Transformer 架构、BERT/GPT/T5 | [进入 Phase 03](03-NLP-Transformers/) |
 | **04** | LLM Core | 预训练、PEFT、对齐、提示工程、框架、多模态 | [进入 Phase 04](04-LLM-Core/) |
-| **05** | RAG & Agents | 检索增强生成、向量数据库、工具调用、多智能体 | [进入 Phase 05](05-RAG-Systems/README.md) |
-| **06** | MLOps & Production | 分布式训练、服务化、监控、评测、部署与成本 | [进入 Phase 06](06-MLOps-Production/README.md) |
+| **05** | RAG & Agents | 检索增强生成、向量数据库、工具调用、多智能体 | [进入 Phase 05](05-RAG-Systems/) |
+| **06** | MLOps & Production | 分布式训练、服务化、监控、评测、部署与成本 | [进入 Phase 06](06-MLOps-Production/) |
 | **07** | Capstone Projects | 企业级 RAG、自动化微调与部署流水线 | [进入 Phase 07](07-Capstone-Projects/) |
 
 ## 按你的目标选择起点
 
 | 你的身份 / 目标 | 推荐阅读顺序 |
 | --- | --- |
-| 想系统补全基础的工程师 | `01 -> 02 -> 03 -> 04 -> 05 -> 06 -> 07` |
-| 想尽快做出 RAG / Agent 项目 | `03 -> 04 -> 05 -> 06 -> 07` |
-| 想专注大模型训练与微调 | `02 -> 03 -> 04 -> 06 -> 07` |
-| 负责 AI 架构与团队落地 | `04 -> 05 -> 06 -> 07` |
+| 想系统补全基础的工程师 | `00 -> 01 -> 02 -> 03 -> 04 -> 05 -> 06 -> 07` |
+| 想尽快做出 RAG / Agent 项目 | `00 -> 03 -> 04 -> 05 -> 06 -> 07` |
+| 想专注大模型训练与微调 | `00 -> 02 -> 03 -> 04 -> 06 -> 07` |
+| 负责 AI 架构与团队落地 | `00 -> 04 -> 05 -> 06 -> 07` |
 
 <a id="structure"></a>
 
@@ -207,8 +207,8 @@ pip install vllm fastapi mlflow wandb
 
 - 想打牢基础：从 [01-Foundations](01-Foundations/) 开始。
 - 想快速进入 LLM 工程：从 [04-LLM-Core](04-LLM-Core/) 开始。
-- 想构建检索与智能体系统：从 [05-RAG-Systems](05-RAG-Systems/README.md) 开始。
-- 想关注线上落地与工程化：从 [06-MLOps-Production](06-MLOps-Production/README.md) 开始。
+- 想构建检索与智能体系统：从 [05-RAG-Systems](05-RAG-Systems/) 开始。
+- 想关注线上落地与工程化：从 [06-MLOps-Production](06-MLOps-Production/) 开始。
 
 ## 适合谁
 
