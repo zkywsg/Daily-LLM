@@ -1,288 +1,326 @@
-[English](README_EN.md) | [中文](README.md)
+# 为什么线性模型不够用了？—— 神经网络基础
 
-# 深度学习基础
+## 这个问题从哪来
 
-> 本章解决的真实问题是：当传统特征和线性边界开始不足以描述复杂风险模式时，神经网络为什么能学到更强的表示，以及训练为什么有时会成功、有时会失败。
+> 2012 年，Krizhevsky 等人用深度神经网络在 ImageNet 上把 Top-5 错误率从 26% 压到 15%——靠的不是更好的特征，而是让模型自己学特征。
+> 这一刻标志着手工特征工程时代的终结，也提出了一个新问题：这种"自动学特征"的东西，到底是怎么工作的？
 
 ## 学习目标
 
 完成本章后，你应能回答：
 
-1. 为什么“多层 + 非线性”能表达比线性模型更复杂的关系？
+1. 为什么"多层 + 非线性"能表达比线性模型更复杂的关系？
 2. 反向传播到底在计算什么，它和训练循环是什么关系？
 3. 当训练不稳定、loss 不下降时，优先该查哪些环节？
 
-## 1. 为什么传统机器学习开始不够用了
+---
 
-延续上一章的信用风控案例。
-逻辑回归可以很好地处理很多结构化任务，但当风险信号越来越依赖复杂交互时，人工特征开始变得吃力：
+## 1. 直觉
 
-- 高额度本身不一定危险，但“高额度 + 利用率突增 + 近期收入波动”可能危险
-- 一次逾期不一定说明问题，但“逾期发生的时机 + 消费曲线变化 + 历史还款节奏”组合起来才有意义
-- 你能手工构造一些交叉特征，但很难穷尽所有组合
+想象你在辨别一张照片里有没有猫。
 
-这就是表示学习出现的原因：模型不仅学习一个决策边界，还学习更适合任务的特征表示。
+你不会先算"像素 17 的亮度减去像素 342 的亮度"，然后用一条直线判断。你会先识别出边缘，再识别出圆形轮廓，再识别出耳朵和胡须。这是**分层提取特征**的直觉。
 
-## 2. 从线性模型到神经网络
+线性模型的问题在于，它只能画一条直线（或超平面）来分割空间。两个类别如果不能用直线分开——比如异或问题——线性模型就无能为力。
 
-一个神经元本质上还是“线性变换 + 非线性激活”：
+神经网络解决了这个问题：每一层先做线性变换，再用激活函数扭一下空间，多层叠加后，原本线性不可分的问题就变得可分了。
+
+> 你要记住：神经网络的力量来自"逐层重写表示"，而不只是"参数更多"。
+
+---
+
+## 2. 机制
+
+### 2.1 一个神经元
 
 $$
 a = \phi(w^\top x + b)
 $$
 
-如果只有线性变换，多层叠加依然可以化简成一层线性变换，表达能力不会真正提升。
-关键在于加入非线性后，每一层都能把输入映射到新的表示空间。
+缺了 $\phi$（激活函数），多层叠加等于一层线性变换，表达能力不会真正提升。
 
-多层感知机（MLP）的形式：
+### 2.2 前向传播计算流
 
-$$
-h^{(1)} = \phi(W^{(1)}x+b^{(1)}), \quad
-h^{(2)} = \phi(W^{(2)}h^{(1)}+b^{(2)}), \quad
-\hat{y}=W^{(3)}h^{(2)}+b^{(3)}
-$$
+```mermaid
+graph TD
+    X["输入 x\n(batch, in_dim)"]:::input
+    L1["线性变换 W₁x + b₁\n(batch, hidden)"]:::compute
+    A1["激活 ReLU\n(batch, hidden)"]:::compute
+    L2["线性变换 W₂h + b₂\n(batch, out_dim)"]:::compute
+    Loss["损失函数 L\n标量"]:::output
 
-连续推演可以这样理解：
+    X -->|"前向"| L1
+    L1 --> A1
+    A1 --> L2
+    L2 --> Loss
+    Loss -->|"backward()\n链式法则"| L2
+    L2 -->|"梯度回传"| A1
+    A1 -->|"梯度回传"| L1
 
-1. 第一层组合原始特征，形成局部模式
-2. 第二层再组合这些局部模式，形成更高阶交互
-3. 输出层基于这些表示做最终预测
-
-你要记住：深度网络更强，不是因为“层数多”本身，而是因为它能逐层重写特征表示。
-
-## 3. 前向传播：模型是怎么做出预测的
-
-前向传播就是把输入按网络结构一路计算到输出：
-
-1. 输入特征进入第一层
-2. 每层先做线性变换，再过激活函数
-3. 最后一层输出 logits 或预测值
-4. 用损失函数衡量预测和真实标签的差距
-
-在风控二分类任务里，常见形式是：
-
-$$
-z = W^{(L)}h^{(L-1)} + b^{(L)}, \quad
-\hat{p} = \sigma(z)
-$$
-
-这里的 $\hat{p}$ 可以理解为违约概率。
-
-你要记住：前向传播负责“给出答案”，但模型怎么学到这个答案，要看损失函数和反向传播。
-
-## 4. 损失函数定义了“什么算学得好”
-
-常见配对：
-
-- 回归：线性输出 + MSE
-- 二分类：Sigmoid + BCE
-- 多分类：logits + CrossEntropy
-
-二分类交叉熵的形式：
-
-$$
-L = -\big(y\log(\hat{p}) + (1-y)\log(1-\hat{p})\big)
-$$
-
-如果真实标签是违约用户，但模型给出的违约概率很低，损失就会变大。
-优化器后续做的一切，本质都是在让这个损失下降。
-
-## 5. 反向传播到底在做什么
-
-反向传播不是额外的“黑科技”，而是链式法则在计算图上的系统应用。
-
-以两层网络为例：
-
-$$
-\frac{\partial L}{\partial W^{(2)}}=
-\frac{\partial L}{\partial z^{(2)}}\frac{\partial z^{(2)}}{\partial W^{(2)}},
-\quad
-\frac{\partial L}{\partial W^{(1)}}=
-\frac{\partial L}{\partial z^{(2)}}
-\frac{\partial z^{(2)}}{\partial h^{(1)}}
-\frac{\partial h^{(1)}}{\partial z^{(1)}}
-\frac{\partial z^{(1)}}{\partial W^{(1)}}
-$$
-
-直觉上，它做了两件事：
-
-1. 先看最终误差有多大
-2. 再把这份误差一层层分配回每个参数，问“是谁导致了这次错误”
-
-它和代码训练循环是一一对应的：
-
-- `loss = criterion(logits, y)`：定义误差
-- `loss.backward()`：把误差反向传回去，计算所有梯度
-- `optimizer.step()`：根据梯度更新参数
-
-你要记住：反向传播不是在“找公式答案”，而是在给每个参数分配责任。
-
-## 6. 激活函数怎么选
-
-| 函数 | 常见用途 | 优点 | 风险 |
-| --- | --- | --- | --- |
-| ReLU | 隐藏层默认首选 | 简单、稳定、计算快 | 可能出现神经元死亡 |
-| Leaky ReLU | ReLU 的替代 | 对负半轴保留小梯度 | 多一个超参数 |
-| Sigmoid | 二分类输出层 | 可解释为概率 | 饱和时梯度变小 |
-| Tanh | 早期序列模型常见 | 零中心 | 同样会饱和 |
-| Softmax | 多分类输出层 | 输出归一化概率 | 需注意数值稳定性 |
-
-隐藏层优先考虑 ReLU 系列，输出层按任务定义选。
-如果你把 Sigmoid 用在很深的隐藏层，常见后果就是梯度越来越小，训练越来越慢。
-
-## 7. 优化器与训练循环
-
-| 优化器 | 更新直觉 | 常见场景 |
-| --- | --- | --- |
-| SGD | 沿当前梯度迈一步 | 强基线、大规模训练 |
-| Momentum | 给梯度加惯性 | 减少震荡 |
-| Adam | 为不同参数自适应学习率 | 中小模型快速起步 |
-| AdamW | Adam + 解耦权重衰减 | 现代默认常用 |
-
-标准训练循环：
-
-```python
-for epoch in range(num_epochs):
-    model.train()
-    logits = model(x_batch)
-    loss = criterion(logits, y_batch)
-
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
+    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e
+    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d
+    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46
 ```
 
-这段代码背后的逻辑非常重要：
+### 2.3 反向传播
 
-- `forward` 负责产生预测
-- `criterion` 负责定义偏差
-- `backward` 负责计算责任归属
-- `step` 负责真正调整参数
-
-你要记住：`zero_grad -> backward -> step` 这个顺序是训练循环的骨架。
-
-## 8. 训练稳定性：模型为什么会突然学不动
-
-### 8.1 初始化
-
-- Xavier/Glorot：常用于 Tanh / Sigmoid
-- He 初始化：常用于 ReLU
-
-初始化过大，激活可能爆掉；初始化过小，梯度可能传不动。
-
-### 8.2 归一化
-
-批归一化（BatchNorm）常见形式：
+反向传播不是黑科技，而是链式法则在计算图上的系统应用：
 
 $$
-\hat{x}=\frac{x-\mu_B}{\sqrt{\sigma_B^2+\epsilon}}
+\frac{\partial L}{\partial W^{(1)}} =
+\frac{\partial L}{\partial z^{(2)}}
+\cdot \frac{\partial z^{(2)}}{\partial h^{(1)}}
+\cdot \frac{\partial h^{(1)}}{\partial z^{(1)}}
+\cdot \frac{\partial z^{(1)}}{\partial W^{(1)}}
 $$
 
-它的价值不在于“更高级”，而在于让训练更稳、学习率更容易设。
+直觉：先看最终误差有多大，再把这份误差一层层分配回每个参数，问"是谁导致了这次错误"。
 
-### 8.3 正则化
+> 你要记住：`zero_grad → backward → step` 是训练循环的骨架，顺序不能颠倒。
 
-- Dropout：随机屏蔽部分神经元，抑制共适应
-- Weight Decay：惩罚过大的权重
-- Early Stopping：验证集不再提升时及时停止
+### 2.4 渐进式实现
 
-### 8.4 稳定训练的优先排查顺序
-
-1. 数据和标签是否正确
-2. 学习率是否过大或过小
-3. 初始化是否合理
-4. 输入尺度与归一化是否一致
-5. 正则化是否过强或过弱
-
-你要记住：训练崩掉时，先查输入和学习率，后查网络花样。
-
-## 9. 主线案例升级：从逻辑回归到 MLP
-
-### 9.1 为什么要升级
-
-还是上一章的违约预测任务。
-如果你怀疑“多种行为组合共同决定风险”，就可以尝试用 MLP 自动学习更复杂的特征交互。
-
-但这不意味着深度学习一定更好。
-在纯表格数据上，传统 ML 或树模型经常依然非常强，MLP 值不值得上，要看数据规模、特征类型、维护成本和收益增幅。
-
-### 9.2 最小 PyTorch 示例
+**Step 1 · 最小实现（核心逻辑，可独立运行）**
 
 ```python
+# 验证前向传播和一步反向传播
+# MLP: in_dim → hidden → 1
+# 无任何工程包装，只看数据流
 import torch
 import torch.nn as nn
-import torch.optim as optim
 
-class RiskMLP(nn.Module):
-    def __init__(self, in_dim):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(in_dim, 64),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1),
-        )
+torch.manual_seed(42)
 
-    def forward(self, x):
-        return self.net(x).squeeze(-1)
+x = torch.randn(32, 16)       # (batch, in_dim)
+y = torch.randint(0, 2, (32,)).float()
 
-model = RiskMLP(in_dim=num_features)
-criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+net = nn.Sequential(nn.Linear(16, 32), nn.ReLU(), nn.Linear(32, 1))
+loss_fn = nn.BCEWithLogitsLoss()
 
-for epoch in range(num_epochs):
-    logits = model(x_batch)
-    loss = criterion(logits, y_batch.float())
+logits = net(x).squeeze(-1)
+loss = loss_fn(logits, y)
+loss.backward()
 
-    optimizer.zero_grad()
-    loss.backward()
-    nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-    optimizer.step()
+print(f"loss: {loss.item():.4f}")
 ```
 
-### 9.3 怎么比较它和逻辑回归
+**Step 2 · 边界处理（shape 安全）**
 
-你不应该只问“谁的 loss 更低”，而应该同时比较：
+```python
+# 加入 shape 断言，防止常见的广播 bug
+# squeeze(-1) 在 batch=1 时行为需要确认
+import torch
+import torch.nn as nn
 
-- AUC / Recall 是否真的提升
-- 提升是否稳定出现在验证集和时间外样本
-- 训练和部署成本是否值得
-- 可解释性是否仍能满足业务和合规要求
+torch.manual_seed(42)
 
-这正是工程判断力的核心：性能不是唯一维度。
+BATCH, IN_DIM, HIDDEN = 32, 16, 64
 
-## 10. 排障与常见误区
 
-- 现象 1：loss 一直不降
-  优先查：标签、学习率、输入尺度。
-- 现象 2：训练集很好，验证集变差
-  优先查：过拟合、正则化、训练轮数。
-- 现象 3：梯度爆炸或 NaN
-  优先查：学习率、初始化、数值稳定性、梯度裁剪。
-- 误区 1：网络越深越强
-  正解：模型容量必须和数据规模、任务复杂度匹配。
-- 误区 2：Adam 一定最好
-  正解：最终还是要由验证集表现和目标指标决定。
-- 误区 3：深度学习一定优于传统 ML
-  正解：在结构化表格任务里，这件事经常并不成立。
+class MLP(nn.Module):
+    def __init__(self, in_dim: int, hidden: int):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden),
+            nn.ReLU(),
+            nn.Linear(hidden, 1),
+        )
 
-## 11. 你要记住
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (batch, in_dim) → (batch,)
+        assert x.ndim == 2, f"期望 2D 输入，得到 {x.shape}"
+        return self.net(x).squeeze(-1)
 
-- 深度学习的核心价值是表示学习，而不只是“参数更多”。
-- 反向传播的本质，是把最终误差按链式法则分配回每个参数。
-- 训练成败通常先取决于数据、学习率、初始化和归一化，而不是复杂技巧。
-- 在真实工程里，深度学习是否值得使用，必须和收益、稳定性、解释性一起评估。
 
-## 下一步学习
+x = torch.randn(BATCH, IN_DIM)
+y = torch.randint(0, 2, (BATCH,)).float()
 
-这一章帮你建立了最基本的神经网络直觉，但 MLP 还远不是终点。
-接下来你会看到：为什么图像任务需要 CNN 的结构先验，为什么序列任务需要更适合时序依赖的建模方式。
+model = MLP(IN_DIM, HIDDEN)
+logits = model(x)
+assert logits.shape == (BATCH,), f"输出 shape 错误: {logits.shape}"
 
-- 进入 [CNN 架构](../../02-Neural-Networks/cnn-architectures/README.md)
-- 或继续看 [序列模型](../../02-Neural-Networks/sequence-models/README.md)
+loss = nn.BCEWithLogitsLoss()(logits, y)
+loss.backward()
+print(f"loss: {loss.item():.4f}")
+```
+
+**Step 3 · 工程完善（BatchNorm + Dropout + 权重初始化）**
+
+```python
+# BatchNorm 稳定训练；Dropout 防过拟合；He 初始化匹配 ReLU
+import torch
+import torch.nn as nn
+
+torch.manual_seed(42)
+
+BATCH, IN_DIM, HIDDEN = 32, 16, 64
+
+
+class MLP(nn.Module):
+    """MLP · 00-Prerequisites/deep-learning-basics · 两层分类器 · 依赖: torch"""
+
+    def __init__(self, in_dim: int, hidden: int, dropout: float = 0.2):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden),
+            nn.BatchNorm1d(hidden),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden, 1),
+        )
+        self._init_weights()
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, nonlinearity="relu")
+                nn.init.zeros_(m.bias)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, in_dim)
+        Returns:
+            logits: (batch,)
+        """
+        return self.net(x).squeeze(-1)
+
+
+model = MLP(IN_DIM, HIDDEN)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+loss_fn = nn.BCEWithLogitsLoss()
+
+x = torch.randn(BATCH, IN_DIM)
+y = torch.randint(0, 2, (BATCH,)).float()
+
+model.train()
+logits = model(x)
+loss = loss_fn(logits, y)
+
+optimizer.zero_grad()
+loss.backward()
+optimizer.step()
+
+print(f"loss: {loss.item():.4f}")
+```
+
+**Step 4 · 生产级（梯度裁剪 + 完整训练循环 + 验证）**
+
+```python
+# 梯度裁剪防止爆炸；train/eval 模式切换影响 BatchNorm 和 Dropout
+# 完整的 epoch 循环包含验证集评估
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, TensorDataset
+
+torch.manual_seed(42)
+
+BATCH, IN_DIM, HIDDEN = 32, 16, 64
+MAX_GRAD_NORM = 1.0
+NUM_EPOCHS = 5
+
+
+class MLP(nn.Module):
+    """MLP · 00-Prerequisites/deep-learning-basics · 两层分类器 · 依赖: torch"""
+
+    def __init__(self, in_dim: int, hidden: int, dropout: float = 0.2):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden),
+            nn.BatchNorm1d(hidden),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden, 1),
+        )
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, nonlinearity="relu")
+                nn.init.zeros_(m.bias)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, in_dim)
+        Returns:
+            logits: (batch,)
+        """
+        return self.net(x).squeeze(-1)
+
+
+# 构造数据
+x_all = torch.randn(200, IN_DIM)
+y_all = torch.randint(0, 2, (200,)).float()
+train_loader = DataLoader(TensorDataset(x_all[:160], y_all[:160]), batch_size=BATCH, shuffle=True)
+val_loader   = DataLoader(TensorDataset(x_all[160:], y_all[160:]), batch_size=BATCH)
+
+model = MLP(IN_DIM, HIDDEN)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+loss_fn = nn.BCEWithLogitsLoss()
+
+for epoch in range(NUM_EPOCHS):
+    # --- 训练 ---
+    model.train()
+    for x_batch, y_batch in train_loader:
+        logits = model(x_batch)
+        loss = loss_fn(logits, y_batch)
+        optimizer.zero_grad()
+        loss.backward()
+        nn.utils.clip_grad_norm_(model.parameters(), MAX_GRAD_NORM)
+        optimizer.step()
+
+    # --- 验证 ---
+    model.eval()
+    val_loss = 0.0
+    with torch.no_grad():
+        for x_batch, y_batch in val_loader:
+            val_loss += loss_fn(model(x_batch), y_batch).item()
+
+    print(f"epoch {epoch+1}/{NUM_EPOCHS}  val_loss: {val_loss / len(val_loader):.4f}")
+```
+
+### 2.5 激活函数速查
+
+| 函数 | 常见用途 | 梯度风险 |
+|------|---------|---------|
+| ReLU | 隐藏层默认首选 | 负半轴神经元死亡 |
+| Leaky ReLU | ReLU 的替代 | 极小 |
+| Sigmoid | 二分类输出层 | 饱和区梯度趋零 |
+| Softmax | 多分类输出层 | 需注意数值稳定性 |
 
 ---
 
-**上一章**：[机器学习基础](../machine-learning/README.md) | **下一章**：[CNN 架构](../../02-Neural-Networks/cnn-architectures/README.md)
+## 3. 工程陷阱
+
+优先级从高到低：
+
+1. **学习率设错** → loss 不降（过小）或 loss 爆炸（过大）
+   处置：先试 `1e-3`，观察前 10 个 batch 的 loss 走势
+
+2. **忘记 `zero_grad()`** → 梯度累积，等效学习率越来越大
+   处置：每次 `backward()` 前必须调用
+
+3. **train/eval 模式未切换** → Dropout 在推理时仍生效，BatchNorm 使用 batch 统计而非运行统计
+   处置：推理前调用 `model.eval()`，训练时调用 `model.train()`
+
+4. **初始化不当** → 深层网络激活全零或全饱和，梯度传不动
+   处置：ReLU 用 He 初始化（`kaiming_normal_`），Tanh 用 Xavier（`xavier_uniform_`）
+
+5. **输入未归一化** → 特征尺度差异导致梯度不平衡，训练极不稳定
+   处置：`(x - mean) / std` 先做好再喂给模型
+
+> 你要记住：训练崩掉时，先查学习率和输入尺度，再查网络结构。80% 的问题在这两处。
+
+---
+
+## 演进笔记
+
+> **这一技术的遗产**：MLP 证明了"让模型自己学特征"是可行的，但它对数据结构没有任何假设——图像的每个像素地位平等，序列的前后顺序被忽略。这两个缺陷各自催生了下一代架构。
+>
+> 图像需要平移不变性和局部感受野 → CNN（Phase 01）
+> 序列需要捕捉长程依赖 → RNN → Attention → Transformer（Phase 02）
+
+→ 下一章：[CNN 架构 — 为什么全连接网络处理图像太浪费了？](../../01-Visual-Intelligence/cnn-architectures/README.md)
+
+---
+
+**上一章**：[前置准备概览](../README.md) | **下一章**：[CNN 架构](../../01-Visual-Intelligence/cnn-architectures/README.md)
