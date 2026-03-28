@@ -1,56 +1,64 @@
-# Phase 5: RAG 与 Agent 系统
+# Phase 05 · 系统与生产（2023–2025）
 
-**[English](README_EN.md) | [中文](README.md)**
+从模型能力到真实系统落地。
+RAG、Agent、推理优化、生产监控，这一阶段把前四个 Phase 的知识变成可交付的系统。
 
-## 概览
+## 本阶段内容
 
-本阶段专注于构建高级检索系统和自主智能体。我们超越简单的提示词工程，致力于构建能够推理、检索外部知识并与世界互动的系统。
+### [RAG 基础](rag-foundations/README.md)
+检索增强生成系统的核心组件
+- Chunking 策略、Embedding 模型选型
+- Rerank、Query Rewriting、HyDE
+- 检索评估：MRR、NDCG
 
-## 架构
+### [向量数据库](vector-databases/README.md)
+语义搜索的存储引擎
+- HNSW、IVF、标量量化
+- Milvus、Pinecone、Weaviate、Chroma
 
-### 1. [RAG 基础 (RAG Foundations)](rag-foundations/README.md)
-检索增强生成系统的核心组件。
-- **分块策略 (Chunking Strategies)**: 如何有效地切分文本。
-- **Embedding 模型**: 将文本转换为向量。
-- **重排序 (Rerank)**: 提高检索精度。
-- **检索评估 (Retrieval Evaluation)**: MRR 和 NDCG 等指标。
+### [智能体](agents/README.md)
+构建自主系统
+- ReAct、Plan-and-Solve 框架
+- 工具调用、记忆、多智能体协作
+- LangChain / LlamaIndex 工程化
 
-### 2. [向量数据库 (Vector Databases)](vector-databases/README.md)
-语义搜索的存储引擎。
-- **核心概念**: HNSW, IVF, 标量量化。
-- **工具**: Milvus, Pinecone, Weaviate, Chroma。
+### [生产系统](production/README.md)
+真实世界应用模式
+- 企业搜索、代码助手、对话系统
 
-### 3. [智能体 (Agents)](agents/README.md)
-构建自主系统。
-- **架构**: 规划、记忆、工具。
-- **模式**: ReAct, Plan-and-Solve。
-- **多智能体系统**: 协作模式。
-- **工具使用**: 函数调用与 API 集成。
+### [训练基础设施](training-infrastructure/README.md)
+分布式训练流水线
+- FSDP、DeepSpeed、3D 并行
+- 数据流水线、训练稳定性
 
-### 4. [生产系统 (Production Systems)](production/README.md)
-真实世界的应用模式。
-- **企业搜索**: 安全、可扩展的搜索。
-- **代码助手**: 类 Copilot 系统。
-- **对话式 AI**: 上下文感知的聊天机器人。
-- **质量与安全**: 护栏与治理。
+### [模型服务](model-serving/README.md)
+高效推理与部署
+- vLLM / PagedAttention、TGI、TensorRT-LLM
+- 量化：AWQ、GPTQ
+- Speculative Decoding
 
----
+### [监控与可观测性](monitoring/README.md)
+确保系统健康与质量
+- RAG 可观测性、漂移检测
+- 基准测试、评估体系
+
+### [部署基础设施](deployment/README.md)
+面向 AI 的 DevOps
+- CI/CD for ML、成本优化、Kubernetes
 
 ## 时间线节点
 
-本模块对应时间线中的以下关键工作：
-
 | 年份 | 工作 | 核心意义 |
 |------|------|---------|
-| 2014 | Neural Turing Machine | 神经网络外挂可读写记忆，早期 Agent 思想雏形 |
-| 2020 | RAG 论文（Lewis et al.） | 检索 + 生成结合正式提出，解决幻觉和知识截止 |
-| 2021 | WebGPT | LLM 使用搜索引擎，早期 Tool Use 实践 |
-| 2023 | ReAct / Chain-of-Thought | 推理 + 行动循环，Agent 工程化的理论基础 |
-| 2023 | AutoGPT | LLM 自主多步任务执行，Agent 进入大众视野 |
-| 2023 | LangChain / LlamaIndex | RAG 与 Agent 工程化框架，应用开发基础设施成型 |
-| 2024 | 长上下文（1M tokens） | 部分替代 RAG，改变检索策略设计 |
-| 2025 | 多模态 Agent 成熟化 | 视觉 + 语言 + 工具调用统一，真实任务可用阶段 |
+| 2023 | RAG 生产化 / LangChain | 检索增强系统工程化框架成型 |
+| 2023 | AutoGPT / ReAct | Agent 破圈，多步任务执行 |
+| 2023 | vLLM / PagedAttention | LLM 推理吞吐量提升 24× |
+| 2024 | o1 / 推理模型 | 推理时慢思考，复杂任务准确率飞跃 |
+| 2024 | MoE 主流化 | 激活参数比例下降，推理成本显著降低 |
+| 2024 | Flash Attention 2/3 | 支持更长上下文训练 |
+| 2025 | DeepSeek R1 | 纯 RL 训练推理能力，开源追平闭源 |
+| 2025 | Speculative Decoding 普及 | 草稿模型加速推理 2-3× |
 
 → 完整时间线见 [00-Timeline](../00-Timeline/)
 
-**下一阶段**: [MLOps 与生产工程](../06-MLOps-Production/README.md)
+**下一阶段**: [实战项目 →](../06-Capstone-Projects/)
