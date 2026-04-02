@@ -371,3 +371,143 @@ plt.show()
 ```
 
 运行预期：Adam 最快收敛，SGD+Momentum 次之，纯 SGD 最慢且震荡明显。
+
+### 2.4 训练循环骨架
+
+把前面的所有零件组装起来，就是一个完整的训练循环：
+
+```python
+# 完整训练循环：zero_grad → forward → loss → backward → clip → step
+# 含 CosineAnnealing lr scheduler 和 train/eval 模式切换
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, TensorDataset
+
+torch.manual_seed(42)
+
+BATCH, IN_DIM, HIDDEN = 32, 20, 64
+MAX_GRAD_NORM = 1.0
+NUM_EPOCHS = 20
+
+
+class MLP(nn.Module):
+    """MLP · 00-Prerequisites/backpropagation · 两层分类器 · 依赖: torch"""
+
+    def __init__(self, in_dim: int, hidden: int, dropout: float = 0.1):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden),
+            nn.BatchNorm1d(hidden),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden, 1),
+        )
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, nonlinearity="relu")
+                nn.init.zeros_(m.bias)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, in_dim)
+        Returns:
+            logits: (batch,)
+        """
+        return self.net(x).squeeze(-1)
+
+
+# 构造数据
+X = torch.randn(500, IN_DIM)
+Y = (X[:, 0] ** 2 + X[:, 1] ** 2 < 1.0).float()
+train_ds = TensorDataset(X[:400], Y[:400])
+val_ds = TensorDataset(X[400:], Y[400:])
+train_loader = DataLoader(train_ds, batch_size=BATCH, shuffle=True)
+val_loader = DataLoader(val_ds, batch_size=BATCH)
+
+model = MLP(IN_DIM, HIDDEN)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
+loss_fn = nn.BCEWithLogitsLoss()
+
+for epoch in range(NUM_EPOCHS):
+    # --- 训练 ---
+    model.train()
+    for x_batch, y_batch in train_loader:
+        logits = model(x_batch)
+        loss = loss_fn(logits, y_batch)
+
+        optimizer.zero_grad()          # 1. 清零旧梯度
+        loss.backward()                # 2. 反向传播计算新梯度
+        nn.utils.clip_grad_norm_(      # 3. 梯度裁剪防爆炸
+            model.parameters(), MAX_GRAD_NORM
+        )
+        optimizer.step()               # 4. 更新参数
+
+    scheduler.step()
+
+    # --- 验证 ---
+    model.eval()
+    val_loss = 0.0
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for x_batch, y_batch in val_loader:
+            logits = model(x_batch)
+            val_loss += loss_fn(logits, y_batch).item()
+            preds = (logits > 0).float()
+            correct += (preds == y_batch).sum().item()
+            total += y_batch.size(0)
+
+    acc = correct / total
+    lr = optimizer.param_groups[0]["lr"]
+    if (epoch + 1) % 5 == 0:
+        print(f"epoch {epoch+1:2d}/{NUM_EPOCHS}  "
+              f"val_loss: {val_loss/len(val_loader):.4f}  "
+              f"acc: {acc:.3f}  lr: {lr:.6f}")
+```
+
+**每步为什么不能少、不能颠倒：**
+
+| 步骤 | 作用 | 省略或颠倒的后果 |
+|------|------|----------------|
+| `zero_grad()` | 清除上一步的梯度 | 梯度累积，等效学习率越来越大 |
+| `forward` | 计算预测值 | 没有预测值就无法算 loss |
+| `loss` | 量化误差 | 没有误差信号就没有学习目标 |
+| `backward()` | 沿计算图反向计算梯度 | 没有梯度就不知道往哪更新 |
+| `clip_grad_norm_` | 限制梯度范数 | 可能梯度爆炸导致参数变 NaN |
+| `step()` | 用梯度更新参数 | 没有这一步，模型永远不会变 |
+
+> 你要记住：`zero_grad → backward → step` 是训练循环的骨架，顺序不能颠倒。中间可以插入裁剪、schedule 等操作，但这三步的相对位置固定。
+
+---
+
+## 3. 工程陷阱
+
+优先级从高到低：
+
+1. **忘记 `zero_grad()`** → 梯度累积，等效学习率越来越大
+   处置：每次 `backward()` 前必须调用，PyTorch 不会自动清零
+
+2. **学习率设错** → loss 不降（过小）或 loss 爆炸（过大）
+   处置：先试 `1e-3`，观察前 10 个 batch 的 loss 走势
+
+3. **初始化不当** → 深层网络激活全零或全饱和，梯度传不动
+   处置：ReLU 用 He 初始化（`kaiming_normal_`），Tanh 用 Xavier（`xavier_uniform_`）
+
+4. **Adam 的 weight_decay 陷阱** → Adam + L2 正则化 ≠ AdamW
+   处置：需要权重衰减时用 `AdamW`，不要在 loss 里手动加 L2
+
+> 你要记住：训练崩掉时，先查学习率和初始化，再查网络结构。80% 的问题在这两处。
+
+---
+
+## 演进笔记
+
+> **这一技术的遗产**：反向传播让多层网络可训练，优化器让训练收敛可控。但 MLP 对数据结构没有任何假设——图像的局部性和序列的时序性都被忽略。这两个盲区分别催生了卷积网络（利用空间局部性）和循环网络（利用时序依赖）。
+>
+> → 下一章：[CNN 架构 — 为什么全连接网络处理图像太浪费了？](../../01-Visual-Intelligence/cnn-architectures/README.md)
+
+---
+
+**上一章**：[神经网络基础](../deep-learning-basics/README.md) | **下一章**：[CNN 架构](../../01-Visual-Intelligence/cnn-architectures/README.md)
