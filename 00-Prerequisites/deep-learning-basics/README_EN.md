@@ -280,9 +280,10 @@ This is the core of engineering judgment: performance is only one dimension.
 This chapter gives you the basic neural network intuition, but the MLP is only the beginning.
 Next you will see why image tasks benefit from CNN inductive bias and why sequence tasks need architectures that better model order and dependency.
 
+- Why ReLU replaced Sigmoid, and what Dying ReLU is → [Activation Functions](../activation-functions/README_EN.md)
 - Continue to [CNN Architectures](../../02-Neural-Networks/cnn-architectures/README_EN.md)
 - Or move to [Sequence Models](../../02-Neural-Networks/sequence-models/README_EN.md)
 
 ---
 
-**Previous**: [Machine Learning Foundations](../machine-learning/README_EN.md) | **Next**: [CNN Architectures](../../02-Neural-Networks/cnn-architectures/README_EN.md)
+**Previous**: [Machine Learning Foundations](../machine-learning/README_EN.md) | **Next**: [Activation Functions](../activation-functions/README_EN.md)
