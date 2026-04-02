@@ -10,7 +10,12 @@
 - 反向传播与梯度下降
 - 激活函数：Sigmoid、ReLU 及其变体
 - 损失函数与训练循环
-- 过拟合与正则化基础
+
+### [正则化与 Dropout](regularization/README.md)
+- 过拟合的诊断与根源
+- Dropout 核心机制与变体（DropConnect、SpatialDropout、DropBlock）
+- 权重衰减（L2 正则化）
+- 其他正则化手段：Early Stopping、Data Augmentation、Label Smoothing
 
 ## 时间线节点
 
