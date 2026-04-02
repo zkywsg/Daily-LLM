@@ -34,13 +34,56 @@
 ## 2. 机制
 
 ### 2.1 过拟合的诊断与根源
-- 训练/验证 loss 曲线分叉的 Mermaid 图
+
+```mermaid
+graph LR
+    E1["Epoch 10"]:::input
+    E2["Epoch 50"]:::input
+    E3["Epoch 100"]:::input
+    E4["Epoch 200+"]:::input
+
+    subgraph 过拟合演变
+        direction TB
+        T1["Train Loss ↓\nVal Loss ↓"]:::output
+        T2["Train Loss ↓\nVal Loss →"]:::compute
+        T3["Train Loss ↓\nVal Loss ↑ ⚠"]:::compute
+        T4["Train Loss ≈ 0\nVal Loss ↑↑ 🔴"]:::compute
+    end
+
+    E1 --> T1 --> E2 --> T2 --> E3 --> T3 --> E4 --> T4
+
+    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e
+    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d
+    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46
+```
+
 - 模型容量 vs 数据量的直觉公式
 - > 你要记住：正则化的本质不是"让模型变差"，而是"限制有效容量"
 
 ### 2.2 Dropout：核心机制
+
+```mermaid
+graph TD
+    H["隐藏层输出 h\n(batch, hidden)"]:::input
+    M["随机掩码 m ~ Bernoulli(1-p)\n同形状 0/1 矩阵"]:::compute
+    MASK["逐元素相乘\nh · m"]:::compute
+    SCALE["缩放\n÷ (1-p)"]:::compute
+    OUT["Dropout 输出\n(batch, hidden)"]:::output
+
+    H --> MASK
+    M --> MASK
+    MASK --> SCALE --> OUT
+
+    EVAL["model.eval()"]:::compute
+    EVAL2["跳过 Dropout\n直接输出 h"]:::output
+    EVAL --> EVAL2
+
+    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e
+    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d
+    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46
+```
+
 - Inverted dropout 公式：$\tilde{h}_i = \frac{m_i \cdot h_i}{1-p}$
-- train/eval 模式切换的 Mermaid 流程图
 - 为什么用 inverted 而不是原始版本
 - > 你要记住：Dropout 推理时必须关闭——它不是在给网络加噪声，是在做模型平均的近似
 
@@ -66,6 +109,58 @@
 - Step 2：PyTorch `nn.Dropout` + train/eval 切换演示
 - Step 3：CNN 中 SpatialDropout / DropBlock 的使用
 - Step 4：对比实验——同一 MLP 在不同 dropout rate 下的 train/val loss 曲线
+  ```python
+  import torch, matplotlib.pyplot as plt
+
+  torch.manual_seed(42)
+
+  # --- 数据 ---
+  X = torch.randn(1000, 20)
+  y = (X[:, 0] + X[:, 1] > 0).long()
+  train_X, val_X = X[:800], X[800:]
+  train_y, val_y = y[:800], y[800:]
+
+  def make_model(dropout_p):
+      return torch.nn.Sequential(
+          torch.nn.Linear(20, 256),
+          torch.nn.ReLU(),
+          torch.nn.Dropout(dropout_p),
+          torch.nn.Linear(256, 256),
+          torch.nn.ReLU(),
+          torch.nn.Dropout(dropout_p),
+          torch.nn.Linear(256, 2),
+      )
+
+  rates = [0.0, 0.2, 0.5, 0.8]
+  fig, axes = plt.subplots(1, 4, figsize=(16, 4), sharey=True)
+
+  for ax, p in zip(axes, rates):
+      model = make_model(p)
+      opt = torch.optim.Adam(model.parameters(), lr=1e-3)
+      train_losses, val_losses = [], []
+
+      for epoch in range(200):
+          model.train()
+          loss = torch.nn.functional.cross_entropy(model(train_X), train_y)
+          opt.zero_grad(); loss.backward(); opt.step()
+          train_losses.append(loss.item())
+
+          model.eval()
+          with torch.no_grad():
+              val_loss = torch.nn.functional.cross_entropy(model(val_X), val_y)
+          val_losses.append(val_loss.item())
+
+      ax.plot(train_losses, label='train')
+      ax.plot(val_losses, label='val')
+      ax.set_title(f'dropout={p}')
+      ax.legend()
+      ax.set_xlabel('epoch')
+
+  axes[0].set_ylabel('loss')
+  plt.suptitle('不同 Dropout 率下的训练/验证 Loss 对比')
+  plt.tight_layout()
+  plt.savefig('dropout_comparison.png', dpi=150)
+  ```
 
 ## 3. 工程陷阱
 1. Dropout rate 过高 → 浅层网络欠拟合
