@@ -5,6 +5,13 @@
 
 ## 本阶段内容
 
+### [循环神经网络与 Seq2Seq](recurrent-networks/README.md)
+RNN、LSTM、GRU，到编码器-解码器翻译范式
+- 固定窗口方法为什么不够用
+- 循环状态、BPTT 与长依赖难题
+- LSTM / GRU 的门控机制
+- Seq2Seq 如何推动 Attention 出现
+
 ### [注意力机制](attention-mechanisms/README.md)
 从 Bahdanau Attention 到 Self-Attention
 - Seq2Seq 的信息瓶颈问题
