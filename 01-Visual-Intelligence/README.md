@@ -21,7 +21,7 @@ GAN、VAE、WaveNet，以及 AlphaGo（CNN + RL）
 
 ### [训练与优化](training/README.md)
 Dropout、Batch Norm、数据增强、GPU 训练技巧
-- 正则化：Dropout、DropConnect
+- 正则化：Dropout、DropConnect（原理详见 [前置·正则化](../00-Prerequisites/regularization/README.md)）
 - 归一化：Batch Norm、Layer Norm
 - 优化器：SGD、Adam
 - 训练稳定性工程
