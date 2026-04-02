@@ -1,6 +1,6 @@
 [English](README_EN.md) | [中文](README.md)
 
-> 说明：RNN / LSTM / GRU / Seq2Seq 主章节已迁移至 [语言线·循环神经网络与 Seq2Seq](../../02-Language-Transformers/recurrent-networks/README.md)。本页暂保留为旧内容入口，后续再按视觉线主题单独整理。
+> 说明：RNN / LSTM / GRU / Seq2Seq 主章节已迁移至 [语言线·循环神经网络与 Seq2Seq](../../02-Language-Transformers/recurrent-networks/README.md)。本页暂保留供历史访问与参考，仍保留为视觉线下的旧内容入口。
 
 # 序列模型
 

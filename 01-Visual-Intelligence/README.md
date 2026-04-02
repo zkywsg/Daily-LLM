@@ -13,9 +13,9 @@ AlexNet → ZFNet → VGGNet → GoogLeNet → ResNet → DenseNet
 - 轻量化架构：MobileNet、SqueezeNet、SE-Net
 
 ### [序列模型](sequence-models/README.md)
-这一页保留为旧内容入口；RNN / LSTM / GRU / Seq2Seq 主章节现已迁移到 [语言线·循环神经网络与 Seq2Seq](../02-Language-Transformers/recurrent-networks/README.md)
-- 循环神经网络主线已移至语言线
-- 本页仅保留历史内容过渡与后续整理入口
+RNN / LSTM / GRU / Seq2Seq 主章节已迁移到 [语言线·循环神经网络与 Seq2Seq](../02-Language-Transformers/recurrent-networks/README.md)
+- 旧页暂保留用于历史访问与参考
+- 该内容仍可作为视觉线下的过渡入口
 
 ### [训练与优化](training/README.md)
 Dropout、Batch Norm、数据增强、GPU 训练技巧
