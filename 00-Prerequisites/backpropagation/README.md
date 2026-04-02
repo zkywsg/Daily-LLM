@@ -155,3 +155,219 @@ print(f"dL/db1 max diff: {np.max(np.abs(dL_db1 - b1_t.grad.numpy())):.2e}")
 运行预期输出：所有 max diff 在 `1e-10` 量级以下，证明手算正确。
 
 > 你要记住：反向传播不是黑科技，是链式法则在计算图上的系统应用。每一步梯度都是局部的——只依赖本层激活值和下一层传回的误差。
+
+### 2.2 梯度问题：消失与爆炸
+
+链式法则的本质是连乘。如果每一层的梯度都小于 1，乘几十次后，梯度趋近于零——**梯度消失**。如果每一层的梯度都大于 1，乘几十次后，梯度趋于无穷——**梯度爆炸**。
+
+**消失的推导（Sigmoid 网络）：**
+
+$$
+\sigma'(z) = \sigma(z)(1 - \sigma(z)) \leq 0.25
+$$
+
+20 层 sigmoid 网络，梯度经过 20 次连乘后：
+
+$$
+\|\frac{\partial L}{\partial W^{(1)}}\| \propto (0.25)^{20} \approx 10^{-12}
+$$
+
+第一层的梯度几乎为零，等于没有在学习。
+
+**可视化：不同深度网络的梯度范数**
+
+```python
+# 观察：深度增加时，各层梯度 L2 范数的变化
+# 对比 Sigmoid vs ReLU 在 5/10/20 层网络中的表现
+import torch
+import torch.nn as nn
+import matplotlib.pyplot as plt
+
+torch.manual_seed(42)
+
+
+def make_depth_net(depth: int, activation: str, dim: int = 32):
+    """构建指定深度的全连接网络"""
+    layers = []
+    for _ in range(depth):
+        layers.append(nn.Linear(dim, dim))
+        if activation == "relu":
+            layers.append(nn.ReLU())
+        else:
+            layers.append(nn.Sigmoid())
+    layers.append(nn.Linear(dim, 1))
+    return nn.Sequential(*layers)
+
+
+def collect_grad_norms(model: nn.Module, x: torch.Tensor, y: torch.Tensor):
+    """收集各层权重的梯度 L2 范数"""
+    loss_fn = nn.BCEWithLogitsLoss()
+    loss = loss_fn(model(x).squeeze(-1), y)
+    loss.backward()
+
+    norms = []
+    for name, param in model.named_parameters():
+        if "weight" in name and param.grad is not None:
+            norms.append(param.grad.norm().item())
+    return norms
+
+
+x = torch.randn(16, 32)
+y = torch.randint(0, 2, (16,)).float()
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+for ax, act in zip(axes, ["sigmoid", "relu"]):
+    for depth in [5, 10, 20]:
+        model = make_depth_net(depth, act)
+        norms = collect_grad_norms(model, x, y)
+        ax.plot(range(len(norms)), norms, label=f"{depth} layers")
+        model.zero_grad()
+    ax.set_yscale("log")
+    ax.set_xlabel("Layer index (0 = first)")
+    ax.set_ylabel("Grad L2 norm (log)")
+    ax.set_title(f"Activation: {act}")
+    ax.legend()
+
+plt.tight_layout()
+plt.savefig("gradient_norms.png", dpi=150)
+plt.show()
+```
+
+运行预期：
+- Sigmoid 图：20 层网络的第一层梯度比最后一层低 10+ 个数量级
+- ReLU 图：各层梯度范数保持在同一量级
+
+**对策（按优先级）：**
+
+| 优先级 | 问题 | 对策 | 原理 |
+|--------|------|------|------|
+| 1 | Sigmoid 梯度消失 | 换 ReLU | 正半轴梯度恒为 1，不衰减 |
+| 2 | 初始化不当导致梯度不稳定 | He 初始化（ReLU）/ Xavier（Tanh） | 让各层激活值和梯度的方差保持稳定 |
+| 3 | 梯度爆炸 | 梯度裁剪 `clip_grad_norm_` | 硬性限制梯度范数，通常阈值 1.0 |
+
+He 初始化的原理：
+
+$$
+W \sim \mathcal{N}(0, \frac{2}{n_{in}})
+$$
+
+其中 $n_{in}$ 是输入维度。系数 2 抵消了 ReLU 将一半激活值置零的影响，让前向传播和反向传播中信号的方差都保持稳定。
+
+### 2.3 优化器：从 SGD 到 Adam
+
+有了梯度，还需要决定**怎么用梯度更新参数**。不同的更新策略，收敛速度和稳定性差异很大。
+
+**SGD（随机梯度下降）**
+
+$$
+\theta_{t+1} = \theta_t - \eta \cdot g_t
+$$
+
+$\eta$ 是学习率。问题是：loss 曲面可能像一条狭长的山谷，SGD 会在两侧来回震荡，沿着谷底方向前进很慢。
+
+**Momentum（动量）**
+
+$$
+v_t = \beta v_{t-1} + g_t, \quad \theta_{t+1} = \theta_t - \eta \cdot v_t
+$$
+
+物理类比：小球在坡上滚。惯性让它在一致的方向上加速，在震荡的方向上抵消。$\beta$ 通常取 0.9。
+
+**Adam（Adaptive Moment Estimation）**
+
+$$
+m_t = \beta_1 m_{t-1} + (1 - \beta_1) g_t
+$$
+$$
+v_t = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2
+$$
+$$
+\hat{m}_t = \frac{m_t}{1 - \beta_1^t}, \quad \hat{v}_t = \frac{v_t}{1 - \beta_2^t}
+$$
+$$
+\theta_{t+1} = \theta_t - \eta \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}
+$$
+
+Adam 同时维护一阶矩（梯度的指数移动平均）和二阶矩（梯度平方的指数移动平均），相当于为每个参数自适应地调节学习率。偏置校正（$\hat{m}_t, \hat{v}_t$）确保训练初期估计无偏。
+
+**经验法则：** Adam 是默认首选（几乎不用调参就能收敛）。SGD + Momentum 在某些 CV 任务上最终泛化更好，但需要仔细调学习率。
+
+**三种优化器收敛对比：**
+
+```python
+# 同一二分类任务，对比 SGD / SGD+Momentum / Adam 的 loss 曲线
+import torch
+import torch.nn as nn
+import matplotlib.pyplot as plt
+
+torch.manual_seed(42)
+
+IN_DIM, HIDDEN, NUM_SAMPLES = 20, 64, 500
+
+
+class MLP(nn.Module):
+    """MLP · 00-Prerequisites/backpropagation · 两层分类器 · 依赖: torch"""
+
+    def __init__(self, in_dim: int, hidden: int):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, hidden),
+            nn.ReLU(),
+            nn.Linear(hidden, 1),
+        )
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, nonlinearity="relu")
+                nn.init.zeros_(m.bias)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, in_dim)
+        Returns:
+            logits: (batch,)
+        """
+        return self.net(x).squeeze(-1)
+
+
+# 构造数据
+X = torch.randn(NUM_SAMPLES, IN_DIM)
+Y = (X[:, 0] ** 2 + X[:, 1] ** 2 < 1.0).float()  # 圆内分类
+loss_fn = nn.BCEWithLogitsLoss()
+
+optimizers = {
+    "SGD": lambda p: torch.optim.SGD(p, lr=0.1),
+    "SGD+Momentum": lambda p: torch.optim.SGD(p, lr=0.1, momentum=0.9),
+    "Adam": lambda p: torch.optim.Adam(p, lr=1e-3),
+}
+
+EPOCHS = 50
+histories = {}
+
+for name, opt_fn in optimizers.items():
+    torch.manual_seed(42)
+    model = MLP(IN_DIM, HIDDEN)
+    optimizer = opt_fn(model.parameters())
+    losses = []
+    for _ in range(EPOCHS):
+        logits = model(X)
+        loss = loss_fn(logits, Y)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        losses.append(loss.item())
+    histories[name] = losses
+
+plt.figure(figsize=(8, 4))
+for name, losses in histories.items():
+    plt.plot(losses, label=name)
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.title("Optimizer Comparison")
+plt.legend()
+plt.tight_layout()
+plt.savefig("optimizer_comparison.png", dpi=150)
+plt.show()
+```
+
+运行预期：Adam 最快收敛，SGD+Momentum 次之，纯 SGD 最慢且震荡明显。
