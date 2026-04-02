@@ -78,6 +78,8 @@ $$
 
 > 你要记住：`zero_grad → backward → step` 是训练循环的骨架，顺序不能颠倒。
 
+→ 详细推导与代码验证见 [反向传播与优化器](../backpropagation/README.md)
+
 ### 2.4 渐进式实现
 
 **Step 1 · 最小实现（核心逻辑，可独立运行）**
