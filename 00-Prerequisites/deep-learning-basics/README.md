@@ -146,6 +146,8 @@ print(f"loss: {loss.item():.4f}")
 
 **Step 3 · 工程完善（BatchNorm + Dropout + 权重初始化）**
 
+> 下方代码使用了 `nn.Dropout()`，详细原理和变体见 [正则化与 Dropout](../regularization/README.md)。
+
 ```python
 # BatchNorm 稳定训练；Dropout 防过拟合；He 初始化匹配 ReLU
 import torch
@@ -209,6 +211,7 @@ print(f"loss: {loss.item():.4f}")
 ```python
 # 梯度裁剪防止爆炸；train/eval 模式切换影响 BatchNorm 和 Dropout
 # 完整的 epoch 循环包含验证集评估
+# Dropout 原理与变体详见 → 00-Prerequisites/regularization
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -319,8 +322,8 @@ for epoch in range(NUM_EPOCHS):
 > 图像需要平移不变性和局部感受野 → CNN（Phase 01）
 > 序列需要捕捉长程依赖 → RNN → Attention → Transformer（Phase 02）
 
-→ 下一章：[CNN 架构 — 为什么全连接网络处理图像太浪费了？](../../01-Visual-Intelligence/cnn-architectures/README.md)
+→ 下一章：[正则化与 Dropout — 为什么模型会"死记硬背"？](../regularization/README.md)
 
 ---
 
-**上一章**：[前置准备概览](../README.md) | **下一章**：[CNN 架构](../../01-Visual-Intelligence/cnn-architectures/README.md)
+**上一章**：[前置准备概览](../README.md) | **下一章**：[正则化与 Dropout](../regularization/README.md)
