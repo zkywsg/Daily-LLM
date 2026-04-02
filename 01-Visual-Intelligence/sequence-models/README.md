@@ -155,7 +155,7 @@ RNN 家族的结构性限制：
 3. 长序列训练吞吐低
 
 注意力机制直接建模任意位置依赖，天然并行，更适合现代大规模训练。  
-详见 [注意力机制](../../03-NLP-Transformers/attention-mechanisms/README.md)。
+详见 [注意力机制](../../02-Language-Transformers/attention-mechanisms/README.md)。
 
 ## 8. 调参与排障优先级
 

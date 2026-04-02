@@ -16,7 +16,7 @@ By the end of this chapter, you should be able to answer:
 
 ## 1. Intuition
 
-Use the analogy of "remembering earlier words while reading a sentence" to explain the core ideas:
+A useful analogy is "remembering earlier words while reading a sentence":
 - Fixed windows are like only looking at the last few words; everything outside the window is forgotten
 - RNNs are like a sticky note that gets rewritten at every step, carrying a rolling summary of the past
 - Seq2Seq is like listening to a whole sentence first and then repeating it, but if the note is too small, long sentences get compressed too much
@@ -27,13 +27,13 @@ Use the analogy of "remembering earlier words while reading a sentence" to expla
 
 ### 2.1 Basic RNN: state flows through time
 
-Start with the minimal update:
+The minimal RNN update is:
 
 $$
 h_t = \tanh(W_h h_{t-1} + W_x x_t + b)
 $$
 
-Explain time unrolling and parameter sharing.
+When you unroll this across time, the network becomes a chain that keeps passing hidden state forward, while every time step reuses the same parameters $W_h$, $W_x$, and $b$. That parameter sharing is what lets RNNs handle variable-length inputs without creating a separate model for each sequence length.
 
 ### 2.2 Why training is hard: BPTT, vanishing gradients, and exploding gradients
 
@@ -67,7 +67,7 @@ graph TD
 
 ### 2.3 LSTM: an explicit memory path
 
-Keep the key updates:
+LSTM adds a dedicated cell-state path, with the core updates below:
 
 $$
 f_t = \sigma(W_f[h_{t-1}, x_t] + b_f)
@@ -93,11 +93,11 @@ $$
 h_t = o_t \odot \tanh(C_t)
 $$
 
-Explain what the forget gate, input gate, and output gate control.
+The forget gate controls how much old memory to keep, the input gate controls how much new candidate information to write, and the output gate controls how much of the cell state to expose as the hidden state. The gain is not just extra structure, but finer control over what gets preserved across long spans.
 
 ### 2.4 GRU: a lighter gated alternative
 
-Keep the key updates:
+GRU folds the gating logic into a smaller update rule:
 
 $$
 z_t = \sigma(W_z[h_{t-1}, x_t]), \quad r_t = \sigma(W_r[h_{t-1}, x_t])
@@ -108,7 +108,7 @@ $$
 h_t = (1-z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t
 $$
 
-Add a `LSTM vs GRU` comparison table with at least 5 columns:
+The trade-off is easier to see side by side:
 
 | Comparison | LSTM | GRU | Training Speed | Long-Range Stability | Best Fit |
 |------|------|------|----------|--------------|----------|
@@ -117,19 +117,19 @@ Add a `LSTM vs GRU` comparison table with at least 5 columns:
 
 ### 2.5 Seq2Seq: encoder-decoder
 
-Explain:
+Seq2Seq turns sequence modeling into an encoder-decoder pipeline:
 - The encoder compresses the input sequence into a context vector
 - The decoder generates the output sequence step by step from that vector
 - This made translation, summarization, and dialogue-style generation practical to train end to end
 
-Then state the bottleneck clearly:
+The bottleneck is straightforward:
 - The longer the input, the easier it is for a fixed-length context to become overloaded with information
 
 > Remember this: Seq2Seq extended "sequence understanding" into "sequence generation," but it also made the fixed-length context bottleneck impossible to ignore.
 
 ### 2.6 Progressive implementation
 
-Include 3 steps, and each step must have a comment that says what problem it solves:
+The three snippets below mirror a common implementation path, and each one targets a specific engineering problem:
 
 ```python
 # What problem this solves: run the smallest LSTM to verify sequence encoding end to end
@@ -159,7 +159,7 @@ torch.manual_seed(42)
 
 embed = torch.randn(3, 5, 16)
 lengths = torch.tensor([5, 3, 2])
-encoder = nn.GRU(16, 32, batch_first=True, bidirectional=True)
+encoder = nn.GRU(16, 32, batch_first=True)
 packed = pack_padded_sequence(
     embed, lengths.cpu(), batch_first=True, enforce_sorted=False
 )
