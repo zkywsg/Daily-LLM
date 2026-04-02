@@ -41,7 +41,7 @@ $$
 
 ```mermaid
 graph TD
-    xt["x_t<br/>(batch, seq, d_in)"]
+    xt["x_t<br/>(batch, d_in)"]
     hprev["h_{t-1}<br/>(batch, d_h)"]
     ht["h_t<br/>(batch, d_h)"]
     loss["Loss<br/>(scalar)"]
@@ -55,9 +55,6 @@ graph TD
     classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
     classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
     classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-    classDef problem fill:#fff7ed,stroke:#ea580c,color:#9a3412;
-    classDef evolution fill:#eff6ff,stroke:#2563eb,color:#1e40af;
-
     class xt input;
     class hprev input;
     class ht compute;
