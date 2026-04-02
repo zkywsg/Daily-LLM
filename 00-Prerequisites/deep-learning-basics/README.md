@@ -326,8 +326,8 @@ for epoch in range(NUM_EPOCHS):
 
 > 激活函数为什么选 ReLU 而不是 Sigmoid？Dying ReLU 是什么？→ 详见 [激活函数家族](../activation-functions/README.md)
 
-→ 下一章：[正则化与 Dropout — 为什么模型会"死记硬背"？](../regularization/README.md)
+→ 下一章：[Softmax 与概率分布 — 为什么多分类不能直接比大小？](../softmax/README.md)
 
 ---
 
-**上一章**：[前置准备概览](../README.md) | **下一章**：[激活函数家族](../activation-functions/README.md)
+**上一章**：[前置准备概览](../README.md) | **下一章**：[Softmax 与概率分布](../softmax/README.md)
