@@ -322,8 +322,10 @@ for epoch in range(NUM_EPOCHS):
 > 图像需要平移不变性和局部感受野 → CNN（Phase 01）
 > 序列需要捕捉长程依赖 → RNN → Attention → Transformer（Phase 02）
 
+> 激活函数为什么选 ReLU 而不是 Sigmoid？Dying ReLU 是什么？→ 详见 [激活函数家族](../activation-functions/README.md)
+
 → 下一章：[正则化与 Dropout — 为什么模型会"死记硬背"？](../regularization/README.md)
 
 ---
 
-**上一章**：[前置准备概览](../README.md) | **下一章**：[正则化与 Dropout](../regularization/README.md)
+**上一章**：[前置准备概览](../README.md) | **下一章**：[激活函数家族](../activation-functions/README.md)
