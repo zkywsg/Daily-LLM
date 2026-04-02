@@ -120,7 +120,7 @@ Add a `LSTM vs GRU` comparison table with at least 5 columns:
 Explain:
 - The encoder compresses the input sequence into a context vector
 - The decoder generates the output sequence step by step from that vector
-- This made translation, summarization, and dialogue-style generation train end to end for the first time
+- This made translation, summarization, and dialogue-style generation practical to train end to end
 
 Then state the bottleneck clearly:
 - The longer the input, the easier it is for a fixed-length context to become overloaded with information
