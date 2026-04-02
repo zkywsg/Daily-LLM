@@ -13,11 +13,9 @@ AlexNet → ZFNet → VGGNet → GoogLeNet → ResNet → DenseNet
 - 轻量化架构：MobileNet、SqueezeNet、SE-Net
 
 ### [序列模型](sequence-models/README.md)
-GAN、VAE、WaveNet，以及 AlphaGo（CNN + RL）
-- 生成对抗网络的对抗训练原理
-- 变分自编码器的潜变量空间
-- 自回归波形生成
-- 强化学习与 CNN 的结合
+这一页保留为旧内容入口；RNN / LSTM / GRU / Seq2Seq 主章节现已迁移到 [语言线·循环神经网络与 Seq2Seq](../02-Language-Transformers/recurrent-networks/README.md)
+- 循环神经网络主线已移至语言线
+- 本页仅保留历史内容过渡与后续整理入口
 
 ### [训练与优化](training/README.md)
 Dropout、Batch Norm、数据增强、GPU 训练技巧
