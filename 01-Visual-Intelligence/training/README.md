@@ -54,13 +54,9 @@ graph TD
 
 ### 2.2 Dropout
 
-训练时以概率 $p$ 随机将神经元输出置零，推理时所有神经元都激活但乘以 $(1-p)$ 缩放：
+训练时以概率 $p$ 随机将神经元置零，推理时关闭。关键：**训练时开，推理时关**，`model.eval()` 自动切换。
 
-$$
-\tilde{h}_i = \begin{cases} 0 & \text{以概率 } p \\ h_i / (1-p) & \text{以概率 } 1-p \end{cases}
-$$
-
-关键点：**训练时开，推理时关**。`model.eval()` 会自动处理这件事。
+> Dropout 的原理、inverted dropout 公式、变体（DropConnect / SpatialDropout / DropBlock / RNN Dropout）详见前置章节 [正则化与 Dropout](../../00-Prerequisites/regularization/README.md)。
 
 ### 2.3 Batch Normalization
 
