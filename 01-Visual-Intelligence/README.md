@@ -6,11 +6,10 @@
 ## 本阶段内容
 
 ### [CNN 架构](cnn-architectures/README.md)
-AlexNet → ZFNet → VGGNet → GoogLeNet → ResNet → DenseNet
-- 卷积、池化、感受野
-- 深度 vs 宽度的系统探索
-- 跳跃连接解决退化问题
-- 轻量化架构：MobileNet、SqueezeNet、SE-Net
+从“图像为什么不能直接交给全连接层”出发，沿着 AlexNet → ResNet 的问题链理解经典 CNN 演进，并收束到注意力出现前的局部建模边界。
+- 卷积、感受野与下采样
+- 深度、计算量与信息流动的权衡
+- 经典 CNN 如何一步步逼近注意力时代
 
 ### [序列模型](sequence-models/README.md)
 RNN / LSTM / GRU / Seq2Seq 主章节已迁移到 [语言线·循环神经网络与 Seq2Seq](../02-Language-Transformers/recurrent-networks/README.md)

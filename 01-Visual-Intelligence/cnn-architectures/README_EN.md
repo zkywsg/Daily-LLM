@@ -1,186 +1,284 @@
-# CNN Architectures
+# Why Can't Images Be Modeled Well by Fully Connected Networks? — CNN Architecture Evolution (2012–2017)
 
 **[English](README_EN.md) | [中文](README.md)**
 
-## Overview
+## Where This Problem Came From
 
-Convolutional Neural Networks (CNNs) are specialized for processing grid-like data, particularly images. This guide covers classic CNN architectures from LeNet to modern EfficientNet.
+> Before AlexNet, visual recognition relied heavily on hand-crafted features such as SIFT and HOG. Flattening an image into a vector made MLPs expensive and structurally blind to spatial locality. The real breakthrough of CNNs was not depth alone, but the decision to encode locality and parameter sharing directly into the architecture.
 
-## Convolutional Layers
+## Learning Goals
 
-### 1. Convolution Operation
+After this chapter, you should be able to answer:
 
-**2D Convolution**:
-```
-Output[i,j] = Σ_m Σ_n Input[i+m, j+n] × Kernel[m,n]
-```
+1. What problems are solved by local connectivity, parameter sharing, and hierarchical feature learning?
+2. Why did VGG, GoogLeNet, ResNet, DenseNet, and SE-Net appear in that order?
+3. Why are CNNs powerful in vision, and why do they eventually need to converge with attention-based modeling?
 
-**Key Parameters**:
-- **Kernel Size**: Typically 3×3 or 5×5
-- **Stride**: Step size (usually 1 or 2)
-- **Padding**: Preserve spatial dimensions
-- **Channels**: Input/output feature maps
+---
 
-### 2. Pooling Layers
+## 1. Intuition
 
-| Type | Operation | Purpose |
-|------|-----------|---------|
-| **Max Pooling** | Take maximum value | Translation invariance |
-| **Average Pooling** | Take average | Smooth features |
-| **Global Pooling** | Reduce to 1×1 | Final feature extraction |
+An image is not just a long list of numbers. It is a two-dimensional signal with local structure: neighboring pixels often form edges, textures, and parts, while long-range relationships usually emerge only after higher-level composition.
 
-## Classic Architectures
+If you flatten an image and feed it to a fully connected network, you lose two things at once. First, the parameter count explodes with input resolution. Second, the model no longer knows which pixels were originally neighbors. To the network, a pixel in the top-left corner and one in the bottom-right corner are just two unrelated coordinates.
 
-### 1. LeNet (1998)
-```
-Input → Conv → Pool → Conv → Pool → FC → Output
-```
-- **First successful CNN**
-- 5 layers, MNIST handwritten digits
+A convolution layer makes the opposite choice. It assumes locality first, applies a small filter to a local window, and reuses the same weights across the whole image. The model is no longer learning “a pattern at one fixed position,” but “a local pattern that matters wherever it appears.”
 
-### 2. AlexNet (2012)
-**Breakthrough architecture that won ImageNet**
+It helps to think of convolution kernels as reusable detectors: early layers respond to edges, later layers combine them into textures, parts, and objects. The strength of CNNs is not just that they are deeper, but that they build spatial inductive bias directly into the model.
 
-```
-Conv(11×11) → MaxPool → Conv(5×5) → MaxPool
-→ Conv(3×3)×3 → MaxPool → FC(4096)×2 → FC(1000)
-```
+> Remember: the core of a CNN is not “more layers,” but “encoding spatial structure into the hypothesis class.”
 
-**Innovations**:
-- ReLU activation
-- GPU training
-- Dropout regularization
-- Data augmentation
+---
 
-### 3. VGGNet (2014)
-**Simplicity and depth**
+## 2. Mechanism
 
-| Variant | Depth | Configuration |
-|---------|-------|---------------|
-| VGG-16 | 16 | 13 conv + 3 FC |
-| VGG-19 | 19 | 16 conv + 3 FC |
+### 2.1 Convolution and Feature Maps
 
-**Key Insight**: 3×3 convolutions stacked = larger receptive field
+Two-dimensional convolution can be written as:
 
-```
-64 → 64 → MaxPool → 128 → 128 → MaxPool
-→ 256×2 → MaxPool → 512×2 → MaxPool → 512×2 → FC
-```
+$$
+Y(i,j) = \sum_m \sum_n X(i+m,\, j+n) \cdot K(m,n)
+$$
 
-### 4. ResNet (2015)
-**Residual connections solve vanishing gradients**
+What matters more than the equation is the structure it enforces:
 
-**Residual Block**:
-```
-Output = F(x) + x
-```
+- `kernel size` controls how large a local window the model sees at once
+- `stride` controls how aggressively the feature map moves across space
+- `padding` controls whether border information is preserved
+- `channels` control how many different patterns are extracted in parallel
 
-Where F(x) is the residual mapping (conv → BN → ReLU → conv)
+A feature map is not just a compressed image. It is a response map: high activation means “this pattern is strongly present here.”
 
-| Variant | Depth | Params | Top-1 Acc |
-|---------|-------|--------|-----------|
-| ResNet-18 | 18 | 11.7M | 69.6% |
-| ResNet-34 | 34 | 21.8M | 73.3% |
-| ResNet-50 | 50 | 25.6M | 76.1% |
-| ResNet-101 | 101 | 44.5M | 77.4% |
+### 2.2 Receptive Fields and Downsampling
 
-### 5. EfficientNet (2019)
-**Compound scaling: depth, width, resolution**
+CNNs do not see the whole image at once. They expand context gradually by stacking layers. That is why many modern CNNs prefer repeated 3×3 convolutions over one large kernel:
 
-**Compound Scaling Formula**:
-```
-depth: d = α^φ
-width: w = β^φ
-resolution: r = γ^φ
+- multiple 3×3 layers approximate a larger receptive field with fewer parameters
+- nonlinearity between layers increases representational power
+- the design is more regular and easier to scale
 
-s.t. α · β² · γ² ≈ 2
+Downsampling is the second big choice. Whether it comes from pooling or stride-2 convolution, it trades spatial detail for larger context and lower compute. The tradeoff is real: if you downsample too early, small objects and high-frequency detail disappear before later layers can use them.
+
+```mermaid
+graph TD
+    IMG["Input Image<br/>(B, 3, 224, 224)"]:::input
+    C1["Conv 3×3<br/>(B, 64, 224, 224)"]:::compute
+    C2["Conv 3×3<br/>(B, 64, 224, 224)"]:::compute
+    DS["Stride / Pool<br/>(B, 64, 112, 112)"]:::compute
+    C3["Deeper Conv Blocks<br/>(B, 256, 28, 28)"]:::compute
+    GAP["Global Avg Pool<br/>(B, 256)"]:::output
+
+    IMG --> C1 --> C2 --> DS --> C3 --> GAP
+
+    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e
+    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d
+    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46
 ```
 
-| Variant | Params | FLOPs | Top-1 Acc |
-|---------|--------|-------|-----------|
-| B0 | 5.3M | 0.39B | 77.1% |
-| B1 | 7.8M | 0.70B | 79.1% |
-| B7 | 66M | 37B | 84.3% |
+In principle, a deep enough CNN can accumulate local evidence into global understanding. In practice, that path is still layer-by-layer rather than natively global.
 
-## Implementation
+### 2.3 Residual Connections
+
+As CNNs grew deeper after AlexNet and VGG, the bottleneck shifted. The question was no longer only “how many parameters can we afford,” but “why does optimization get worse when the network gets deeper?” This is degradation, not merely overfitting.
+
+ResNet answers with a simple form:
+
+$$
+y = F(x, \{W_i\}) + x
+$$
+
+The crucial idea is the identity shortcut:
+
+- if the added layers are not yet useful, the network can still preserve the input path
+- gradients can flow directly through the shortcut
+- the block only needs to learn a residual correction, not rebuild the full mapping from scratch
+
+```mermaid
+graph TD
+    X["Input x<br/>(B, C, H, W)"]:::input
+    F["Conv → BN → ReLU → Conv → BN<br/>F(x)"]:::compute
+    ID["Identity / 1×1 Projection<br/>x"]:::compute
+    ADD["Elementwise Add<br/>F(x) + x"]:::compute
+    Y["Output y<br/>(B, C', H', W')"]:::output
+
+    X --> F --> ADD --> Y
+    X --> ID --> ADD
+
+    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e
+    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d
+    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46
+```
+
+> Remember: ResNet did not mainly solve “insufficient capacity.” It solved “poor information and gradient flow across depth.”
+
+### 2.4 The Limit from Local to Global Modeling
+
+CNNs are strong precisely because they impose local inductive bias. In vision, nearby pixels really do tend to compose edges, textures, and parts before becoming whole objects. That bias is often an advantage when data is limited and the spatial prior is clear.
+
+But the same fixed bias also becomes a limit. CNNs typically need to rely on:
+
+- more layers
+- larger receptive fields
+- multi-scale branches
+- dilated convolutions or global pooling
+
+These tools help them approach global context, but the information path is still largely incremental. CNNs are not naturally built to connect arbitrary distant positions at the first step. That is the deeper reason later vision models began to introduce attention and eventually moved toward ViT-style token mixing.
+
+### 2.5 Progressive Implementation
+
+**Step 1 · Minimal Convolution Layer**
 
 ```python
+# Verify how convolution changes channels while preserving H/W
+# Start with the smallest runnable Conv2d example
 import torch
 import torch.nn as nn
 
-class ResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, stride=1):
-        super().__init__()
-        self.conv1 = nn.Conv2d(in_channels, out_channels, 3, stride, 1)
-        self.bn1 = nn.BatchNorm2d(out_channels)
-        self.conv2 = nn.Conv2d(out_channels, out_channels, 3, 1, 1)
-        self.bn2 = nn.BatchNorm2d(out_channels)
-        
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_channels != out_channels:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 1, stride),
-                nn.BatchNorm2d(out_channels)
-            )
-    
-    def forward(self, x):
-        out = torch.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
-        out += self.shortcut(x)
-        out = torch.relu(out)
-        return out
+torch.manual_seed(42)
 
-# Usage with pretrained models
-from torchvision import models
+conv = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1)
+x = torch.randn(4, 3, 32, 32)
+out = conv(x)
 
-# Load pretrained ResNet-50
-resnet = models.resnet50(pretrained=True)
-
-# Fine-tune for new task
-num_classes = 10
-resnet.fc = nn.Linear(resnet.fc.in_features, num_classes)
+assert out.shape == (4, 16, 32, 32), f"Shape error: {out.shape}"
+print(f"in: {x.shape}  out: {out.shape}")
+print(f"params: {sum(p.numel() for p in conv.parameters())}")
 ```
 
-## Modern Techniques
+**Step 2 · Standard Convolution Block**
 
-### 1. Batch Normalization
 ```python
-nn.BatchNorm2d(num_features)
+# Build the core CNN building block in minimal form
+# Observe how stride affects both channel count and spatial size
+import torch
+import torch.nn as nn
+
+torch.manual_seed(42)
+
+
+def conv_block(in_ch: int, out_ch: int, stride: int = 1) -> nn.Sequential:
+    return nn.Sequential(
+        nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=stride, padding=1, bias=False),
+        nn.BatchNorm2d(out_ch),
+        nn.ReLU(inplace=True),
+    )
+
+
+net = nn.Sequential(
+    conv_block(3, 32),            # (B, 3, 32, 32) -> (B, 32, 32, 32)
+    conv_block(32, 64, stride=2), # -> (B, 64, 16, 16)
+    nn.AdaptiveAvgPool2d(1),      # -> (B, 64, 1, 1)
+    nn.Flatten(),                 # -> (B, 64)
+)
+
+x = torch.randn(4, 3, 32, 32)
+out = net(x)
+assert out.shape == (4, 64)
+print(f"output shape: {out.shape}")
 ```
-Normalizes activations: stabilizes training, faster convergence
 
-### 2. Skip Connections
-Direct gradient flow paths prevent vanishing gradients
+**Step 3 · Minimal Residual Block**
 
-### 3. Attention in CNNs
-- **Squeeze-and-Excitation**: Channel attention
-- **CBAM**: Channel + Spatial attention
+```python
+# Keep only the core residual-addition logic from ResNet
+# Use a 1x1 projection when shortcut dimensions do not match
+import torch
+import torch.nn as nn
 
-## Architecture Selection Guide
+torch.manual_seed(42)
 
-| Use Case | Recommended Architecture | Reason |
-|----------|-------------------------|--------|
-| **Mobile/Edge** | MobileNet, EfficientNet-Lite | Efficiency |
-| **General Purpose** | ResNet-50 | Balanced |
-| **High Accuracy** | EfficientNet-B7, ResNet-152 | Performance |
-| **Real-time** | ResNet-18, MobileNet-V3 | Speed |
-| **Transfer Learning** | ResNet, EfficientNet | Proven features |
 
-## Common Patterns
+class ResBlock(nn.Module):
+    def __init__(self, in_ch: int, out_ch: int, stride: int = 1):
+        super().__init__()
+        self.body = nn.Sequential(
+            nn.Conv2d(in_ch, out_ch, 3, stride=stride, padding=1, bias=False),
+            nn.BatchNorm2d(out_ch),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(out_ch, out_ch, 3, padding=1, bias=False),
+            nn.BatchNorm2d(out_ch),
+        )
+        self.shortcut = nn.Sequential(
+            nn.Conv2d(in_ch, out_ch, 1, stride=stride, bias=False),
+            nn.BatchNorm2d(out_ch),
+        ) if (stride != 1 or in_ch != out_ch) else nn.Identity()
+        self.relu = nn.ReLU(inplace=True)
 
-### 1. Feature Pyramid
-Multi-scale feature extraction for object detection
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.relu(self.body(x) + self.shortcut(x))
 
-### 2. Dilated Convolution
-Increase receptive field without losing resolution
 
-### 3. Depthwise Separable Conv
-Factorize standard conv for efficiency
-```
-Depthwise: Apply single filter per channel
-Pointwise: 1×1 conv to combine channels
+block = ResBlock(64, 128, stride=2)
+x = torch.randn(4, 64, 16, 16)
+out = block(x)
+assert out.shape == (4, 128, 8, 8), f"Shape error: {out.shape}"
+print(f"in: {x.shape}  out: {out.shape}")
 ```
 
 ---
 
-**Previous**: [Deep Learning Basics](../../01-Foundations/deep-learning-basics/README.md) | **Next**: [Sequence Models](../sequence-models/README.md)
+## 3. Architecture Evolution: Each Generation Fixed a Different Bottleneck
+
+### 3.1 AlexNet: First Make CNNs Work at Scale
+
+AlexNet did not answer “what is the final best design?” It answered the more urgent question: can a deep convolutional network actually work on large-scale visual recognition? By combining convolution, ReLU, GPU training, data augmentation, and Dropout into one training pipeline, it turned CNNs into a practical ImageNet-era system.
+
+What it solved was the ceiling of hand-crafted features. What it left behind was a design that still felt partly heuristic and expensive.
+
+### 3.2 VGG: Turn “Deep and Regular” into a Paradigm
+
+VGG responded by simplifying the design language. Instead of mixing many kernel styles, it stacked uniform 3×3 convolutions over and over. This made one lesson unmistakable: depth itself could be a systematic source of better features.
+
+But VGG also exposed the next bottleneck very clearly: the model became heavy in both parameters and computation.
+
+### 3.3 GoogLeNet: Answer the Cost Problem of VGG
+
+GoogLeNet asked a sharper question: how do we keep expressive power without paying VGG-level cost? Its Inception modules process multiple scales in parallel and use 1×1 convolutions to reduce dimension first.
+
+The lasting idea here is not just efficiency. It is the recognition that visual patterns exist at multiple scales, and a single fixed branch is often not enough.
+
+### 3.4 ResNet: Solve “More Depth, Worse Optimization”
+
+When CNNs kept getting deeper, the limiting factor became optimization rather than raw capacity. ResNet answered with the shortcut path: if the extra layers are not helping yet, they should at least not block the signal.
+
+This is the most decisive step in CNN evolution because it turned depth from a fragile experiment into a scalable design dimension.
+
+### 3.5 DenseNet / SE-Net: Refine Reuse and Recalibration
+
+DenseNet continues the story by asking whether features are being relearned unnecessarily. By connecting each layer to all previous ones, it pushes feature reuse much further.
+
+SE-Net asks a different question: even if convolution produces many channels, why should they all matter equally? Its squeeze-excitation mechanism lets the model recalibrate channel importance dynamically.
+
+These later steps no longer redefine the whole field the way AlexNet or ResNet did, but they show how CNN design gradually shifted from “can it work?” to “how can information be reused and weighted more intelligently?”
+
+---
+
+## 4. Engineering Pitfalls
+
+1. **Misaligned shortcuts** -> adding tensors with mismatched channels or stride causes immediate shape failures
+   Fix: use a 1×1 projection whenever the residual branch changes resolution or channel count
+
+2. **Downsampling too early** -> compute is cheaper, but small objects and high-frequency detail disappear too soon
+   Fix: be conservative with aggressive early stride when the task needs fine local structure
+
+3. **Stacking depth without checking receptive fields** -> the model gets deeper without seeing enough context
+   Fix: inspect kernel size, stride, multi-scale branches, and the effective context path together
+
+4. **Mixing up BN / activation / residual order** -> training becomes unstable and results drift from the intended architecture
+   Fix: follow the exact block ordering of the target design, especially for post-activation vs pre-activation variants
+
+> Remember: CNNs are strong because of local inductive bias, and they are also limited by that same fixed bias.
+
+---
+
+## Evolution Notes
+
+> **What this technique left behind:** CNNs pushed locality and parameter sharing to their limit, making it practical to learn hierarchical visual features directly from pixels. They remain extremely effective when spatial priors are strong and data is not unlimited. But the same fixed local window also means CNNs are better at accumulating global understanding gradually than at modeling long-range dependencies flexibly from the start.
+>
+> This is why later vision models gradually introduced attention and eventually converged toward ViT-style token mixing.
+>
+> → Later convergence: Transformer / attention-based vision modeling
+
+---
+
+**Previous**: [Training and Optimization](../training/README_EN.md) | **Next**: [Sequence Models](../sequence-models/README_EN.md)
