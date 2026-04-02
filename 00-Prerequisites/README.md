@@ -11,6 +11,12 @@
 - 激活函数：Sigmoid、ReLU 及其变体
 - 损失函数与训练循环
 
+### [反向传播与优化器](backpropagation/README.md)
+- 链式法则与计算图推导
+- 梯度消失/爆炸与对策
+- 优化器对比：SGD、Momentum、Adam
+- 训练循环骨架与学习率调度
+
 ### [激活函数家族](activation-functions/README.md)
 - Sigmoid 的梯度消失与 ReLU 的崛起
 - Dying ReLU 问题与变体（Leaky ReLU、GELU 等）
