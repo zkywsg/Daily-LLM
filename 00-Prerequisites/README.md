@@ -11,6 +11,11 @@
 - 激活函数：Sigmoid、ReLU 及其变体
 - 损失函数与训练循环
 
+### [激活函数家族](activation-functions/README.md)
+- Sigmoid 的梯度消失与 ReLU 的崛起
+- Dying ReLU 问题与变体（Leaky ReLU、GELU 等）
+- 激活函数选择策略
+
 ### [正则化与 Dropout](regularization/README.md)
 - 过拟合的诊断与根源
 - Dropout 核心机制与变体（DropConnect、SpatialDropout、DropBlock）
