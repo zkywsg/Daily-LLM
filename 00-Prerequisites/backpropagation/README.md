@@ -506,8 +506,8 @@ for epoch in range(NUM_EPOCHS):
 
 > **这一技术的遗产**：反向传播让多层网络可训练，优化器让训练收敛可控。但 MLP 对数据结构没有任何假设——图像的局部性和序列的时序性都被忽略。这两个盲区分别催生了卷积网络（利用空间局部性）和循环网络（利用时序依赖）。
 >
-> → 下一章：[CNN 架构 — 为什么全连接网络处理图像太浪费了？](../../01-Visual-Intelligence/cnn-architectures/README.md)
+> → 下一章：[归一化机制 — 为什么训练深度网络需要"校准仪"？](../normalization/README.md)
 
 ---
 
-**上一章**：[神经网络基础](../deep-learning-basics/README.md) | **下一章**：[CNN 架构](../../01-Visual-Intelligence/cnn-architectures/README.md)
+**上一章**：[损失函数全景](../loss-functions/README.md) | **下一章**：[归一化机制](../normalization/README.md)
