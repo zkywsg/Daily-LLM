@@ -237,4 +237,4 @@ print(f"grad[0]     = {z.grad[0].item():.6f}")
 
 ---
 
-**上一章**：[深度学习基础](../deep-learning-basics/README.md) | **下一章**：[损失函数全景](../loss-functions/README.md)
+**上一章**：[线性代数基础](../linear-algebra/README.md) | **下一章**：[损失函数全景](../loss-functions/README.md)

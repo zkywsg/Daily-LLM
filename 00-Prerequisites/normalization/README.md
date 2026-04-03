@@ -289,4 +289,4 @@ print("LayerNorm 各样本均值:", ln_out.mean(dim=1).detach().tolist()[:4])
 
 ---
 
-**上一章**：[反向传播与优化器](../backpropagation/README.md) | **下一章**：[残差连接](../residual-connections/README.md)
+**上一章**：[学习率调度与梯度优化](../optimization-scheduling/README.md) | **下一章**：[残差连接](../residual-connections/README.md)
