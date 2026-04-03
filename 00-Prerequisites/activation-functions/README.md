@@ -315,8 +315,8 @@ for name, r in results.items():
 >
 > ReLU 的稀疏激活思想也影响了后续的 Mixture of Experts (MoE) 架构——只激活部分神经元/专家，本质上是稀疏性的放大版。
 
-→ 下一章：[CNN 架构 — 为什么需要平移不变性？](../../01-Visual-Intelligence/cnn-architectures/README.md)
+→ 下一章：[正则化与 Dropout — 为什么模型会"死记硬背"？](../regularization/README.md)
 
 ---
 
-**上一章**: [深度学习基础](../deep-learning-basics/README.md) | **下一章**: [CNN 架构](../../01-Visual-Intelligence/cnn-architectures/README.md)
+**上一章**: [残差连接](../residual-connections/README.md) | **下一章**: [正则化与 Dropout](../regularization/README.md)
