@@ -400,4 +400,4 @@ graph TD
 
 ---
 
-**上一章**：[分割与生成](../segmentation-gan/README.md) | **下一阶段**：[语言线](../../02-Language-Transformers/README.md)
+**上一章**：[GAN 进阶](../gan-advanced/README.md) | **下一阶段**：[语言线](../../02-Language-Transformers/README.md)

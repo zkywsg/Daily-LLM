@@ -402,4 +402,4 @@ The three threads ultimately converge at EfficientNet (2019), which simultaneous
 
 ---
 
-**Previous chapter**: [Segmentation & Generation](../segmentation-gan/README_EN.md) | **Next phase**: [Language Line](../../02-Language-Transformers/README_EN.md)
+**Previous chapter**: [Advanced GAN](../gan-advanced/README_EN.md) | **Next phase**: [Language Line](../../02-Language-Transformers/README_EN.md)

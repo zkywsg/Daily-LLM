@@ -627,8 +627,8 @@ U-Net 的训练相比 GAN 要简单得多——没有对抗训练的稳定性问
 >
 > 编码器-解码器的思想贯穿始终——从 U-Net 到 VAE 到 Transformer 的 Encoder-Decoder，"压缩再展开"是深度学习的通用范式。
 
-→ 下一章：[轻量化架构 — 大模型很好，但手机装不下](../lightweight-vision/README.md)
+→ 下一章：[GAN 进阶 — 从随机噪声到精确控制](../gan-advanced/README.md)
 
 ---
 
-**上一章**：[目标检测](../object-detection/README.md) | **下一章**：[轻量化架构](../lightweight-vision/README.md)
+**上一章**：[目标检测](../object-detection/README.md) | **下一章**：[GAN 进阶](../gan-advanced/README.md)

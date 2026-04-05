@@ -409,6 +409,24 @@ The Discriminator is the mirror image of the Generator: it uses strided convolut
 
 > Key takeaway: GAN troubleshooting priority is training stability (is loss oscillating?) -> mode diversity (FID) -> image quality. First ensure training runs, then pursue diversity, and finally optimize details.
 
+### 3.5 Segmentation Class Imbalance -> Small Objects Drowned Out
+
+**Symptom**: In road scene segmentation, "road" and "sky" occupy the vast majority of the image, while "pedestrians" and "traffic signs" occupy only a few pixels. The model tends to predict all pixels as the majority class, with high overall accuracy but near-zero IoU for small classes.
+
+**Remedies**:
+- Use weighted cross-entropy loss: assign higher weights to small classes so the model pays more attention to them
+- Use Dice Loss or Focal Loss: Dice Loss directly optimizes IoU-related metrics, while Focal Loss makes the model focus on hard-to-classify samples
+- Oversample image patches containing small classes, or use sliding window strategies to increase the frequency of small class appearances
+
+### 3.6 GPU Memory Management -> High-Resolution Challenges for Segmentation
+
+**Symptom**: Segmentation requires output predictions at the same resolution as the input, while classification only outputs a vector. For a 512x512 input, the segmentation output is a 512x512xC tensor; if C=21 (PASCAL VOC classes), the label for a single image has 5.5 million values. Batch size is typically limited to 1-4.
+
+**Remedies**:
+- Use gradient accumulation to simulate larger batch sizes
+- Use mixed precision training (FP16) to reduce memory usage
+- Use sliding window patching during inference to process very large images
+
 ---
 
 ## 4. Key Papers and Timeline
@@ -440,6 +458,52 @@ The Discriminator is the mirror image of the Generator: it uses strided convolut
 
 ---
 
+## 6. Segmentation vs. Generation: Comparative Analysis
+
+| Dimension | Semantic Segmentation (FCN/U-Net) | Image Generation (GAN/DCGAN) |
+|-----------|-----------------------------------|-------------------------------|
+| Task type | Discriminative (classify each pixel) | Generative (generate new samples from noise) |
+| Input | Image | Random noise vector |
+| Output | H x W x C segmentation map | H x W x 3 generated image |
+| Loss function | Per-pixel cross-entropy | Adversarial loss (min-max game) |
+| Training stability | High (standard supervised learning) | Low (adversarial training) |
+| Evaluation metrics | mIoU, Pixel Accuracy | FID, IS, human evaluation |
+| Data requirements | Image + pixel-level annotations (expensive) | Images only (no annotations needed) |
+| Shared architecture | Encoder-decoder | Encoder-decoder (decoder only) |
+| Skip connections | Critical (U-Net's core) | None (or later works like StyleGAN's adaptive) |
+
+This comparison reveals an interesting symmetry: segmentation goes "from image to pixel labels," requiring an encoder to extract features that are then decoded into spatial outputs; generation goes "from noise to image," requiring only a decoder to unfold low-dimensional vectors into high-dimensional outputs. Both share the "decoder upsampling" operation, but their input sources are completely different.
+
+Segmentation decoders have skip connections providing real spatial information, while generation decoders start from scratch — this is also one of the reasons why GAN training is much harder than segmentation training. Each upsampling step in segmentation has guidance from the corresponding encoder layer, while each upsampling step in GAN must be learned from scratch.
+
+---
+
+## 7. Exercises and Practice
+
+### 7.1 Basic Understanding
+
+1. **Why can FCN convert a classification network into a segmentation network?** What is the key operation? If transposed convolution is not used, what other upsampling methods are available? (Hint: bilinear interpolation)
+
+2. **If U-Net's skip connections were changed from concatenation to addition, what would be the impact?** Analyze from three perspectives: parameter count, information capacity, and gradient flow.
+
+3. **If GAN's Discriminator is always much stronger than the Generator, what happens to training?** What if the Generator is always much stronger than the Discriminator?
+
+### 7.2 Hands-On Experiments
+
+4. **Modify the UNet code**: Change `base` from 64 to 32 and observe the parameter count change. If you add another encoder-decoder layer (enc4/dec4), what condition must the input size satisfy? (Hint: must be divisible by 2 four times)
+
+5. **GAN training monitoring**: Record the mean of `D(x)` and `D(G(z))` during the training loop. Ideally, as training progresses, what values should each converge to? If you see `D(x)` always at 0.99 and `D(G(z))` always at 0.01, what does that indicate?
+
+6. **Checkerboard artifacts in transposed convolution**: Generate some images with the DCGAN Generator and carefully observe whether there are checkerboard-pattern artifacts. This is caused by uneven overlap due to kernel size and stride mismatches. Try changing the kernel size from 4 to 5 and observe whether the artifacts are reduced.
+
+### 7.3 Advanced Thinking
+
+7. **From segmentation to detection**: Mask R-CNN added a segmentation branch on top of Faster R-CNN. Why is instance segmentation harder than semantic segmentation? (Hint: different instances of the same class need to be distinguished)
+
+8. **Why were GANs replaced by diffusion models?** Analyze GAN's limitations from three dimensions: training stability, generation diversity, and controllability. How do diffusion models solve these problems? (Will be discussed in detail in later chapters)
+
+---
+
 ## Evolution Notes
 
 > The segmentation thread moved from semantic segmentation to instance segmentation (Mask R-CNN, 2017) and panoptic segmentation (Panoptic Segmentation, 2019). Later, DETR (2020) used Transformers to unify detection and segmentation, and SegFormer (2021) used pure Transformers for segmentation. In 2024, SAM (Segment Anything Model) further advanced toward universal segmentation.
@@ -452,8 +516,8 @@ The Discriminator is the mirror image of the Generator: it uses strided convolut
 >
 > The encoder-decoder idea runs throughout — from U-Net to VAE to Transformer's Encoder-Decoder, "compress then expand" is a universal paradigm in deep learning.
 
--> Next chapter: [Lightweight Architectures — Large Models Are Great, But They Won't Fit on a Phone](../lightweight-vision/README_EN.md)
+-> Next chapter: [Advanced GAN — From Random Noise to Precise Control](../gan-advanced/README_EN.md)
 
 ---
 
-**Previous chapter**: [Object Detection](../object-detection/README_EN.md) | **Next chapter**: [Lightweight Architectures](../lightweight-vision/README_EN.md)
+**Previous chapter**: [Object Detection](../object-detection/README_EN.md) | **Next chapter**: [Advanced GAN](../gan-advanced/README_EN.md)
