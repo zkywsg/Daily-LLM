@@ -281,4 +281,4 @@ These later steps no longer redefine the whole field the way AlexNet or ResNet d
 
 ---
 
-**Previous**: [Training and Optimization](../training/README_EN.md) | **Next**: [Sequence Models](../sequence-models/README_EN.md)
+**Previous**: [Training and Optimization](../training/README_EN.md) | **Next**: [Object Detection](../object-detection/README_EN.md)

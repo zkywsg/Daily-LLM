@@ -176,4 +176,4 @@ RNN 家族的结构性限制：
 
 ---
 
-**上一篇**：[CNN 架构](../cnn-architectures/README.md) | **下一篇**：[训练](../training/README.md)
+**返回**：[Phase 01 概览](../README.md) | **主章节**：[循环神经网络与 Seq2Seq](../../02-Language-Transformers/recurrent-networks/README.md)
