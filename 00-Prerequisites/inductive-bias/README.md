@@ -127,6 +127,9 @@ Vision Transformer（Dosovitskiy et al., 2020）把图像切成 16×16 的 patch
 **Step 1 · 感受野可视化**
 
 ```python
+# 计算 CNN 多层 3×3 卷积的感受野
+# 对比 Transformer 的全局感受野
+# 理解局部性与全局性差异
 import numpy as np
 
 # CNN 感受野计算：3×3 卷积堆叠
@@ -144,6 +147,9 @@ print(f"\n1 层 Transformer: 感受野 = 全局")
 **Step 2 · 参数效率对比**
 
 ```python
+# 对比 CNN 与 MLP 的参数量
+# 展示参数共享带来的数据效率优势
+# 理解归纳偏置对模型规模的影响
 import torch.nn as nn
 
 IMG_SIZE = 224
@@ -179,6 +185,9 @@ print(f"MLP/CNN 参数比: {mlp_params / cnn_params:.0f}x")
 **Step 3 · ViT Patch Embedding**
 
 ```python
+# 将图像切分为 patch 并线性投影
+# 模拟 ViT 的 Patch Embedding 流程
+# 验证图像到序列的 shape 变换
 import torch
 import torch.nn as nn
 

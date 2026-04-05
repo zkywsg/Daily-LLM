@@ -486,4 +486,4 @@ model.save_pretrained("./merged_model")
 
 ---
 
-**Previous**: [Pre-training](../pre-training/README.md) | **Next**: [Alignment](../alignment/README.md)
+**Previous**: [Pre-training](../../03-Scale-Multimodal/pre-training/README.md) | **Next**: [Alignment](../alignment/README.md)

@@ -94,6 +94,7 @@ graph TD
 ```python
 # 验证手算反向传播与 PyTorch autograd 结果一致
 # 两层网络: 3 → 4 → 1, ReLU + Sigmoid, BCE loss
+# 逐层推导梯度并与自动微分对比
 import numpy as np
 import torch
 

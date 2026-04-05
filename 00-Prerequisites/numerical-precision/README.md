@@ -126,6 +126,9 @@ GPU 3: 模型副本 + 数据分片 3  →  梯度 3 ─┘
 **Step 1 · 浮点精度对比**
 
 ```python
+# 对比 FP32 与 FP16 的数值范围与精度
+# 演示 FP16 的梯度下溢与精度丢失
+# 理解混合精度训练的必要性
 import numpy as np
 
 # FP32 vs FP16 的表示范围
@@ -152,6 +155,9 @@ print(f"\nFP16 梯度下溢: 1e-7 → {small_grad}")  # 可能变成 0
 **Step 2 · Loss Scaling 模拟**
 
 ```python
+# 模拟 Loss Scaling 对小梯度的保护效果
+# 对比直接转 FP16 与先放大再转 FP16
+# 理解动态 scale 的核心思想
 import numpy as np
 
 np.random.seed(42)
@@ -179,6 +185,9 @@ for g32, g16, g_rec in zip(gradients, grad_fp16_scaled, grad_recovered):
 **Step 3 · PyTorch AMP（自动混合精度）**
 
 ```python
+# 使用 PyTorch AMP 进行自动混合精度训练
+# 演示 autocast 与 GradScaler 的配合
+# 验证 BF16/FP16 前向与反向流程
 import torch
 import torch.nn as nn
 
@@ -218,6 +227,9 @@ print(f"Scaler scale factor: {scaler.get_scale()}")
 **Step 4 · 梯度累积（模拟大 batch）**
 
 ```python
+# 模拟梯度累积实现等效大 batch
+# 每步 loss 除以 accum_steps 保持梯度尺度
+# 验证累积完成后的参数更新
 import torch
 import torch.nn as nn
 

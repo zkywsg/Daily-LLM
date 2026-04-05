@@ -2,6 +2,17 @@
 
 **[English](README_EN.md) | [中文](README.md)**
 
+## Where does this problem come from?
+
+> In 2021, CLIP proved that images and text can be encoded into the same semantic space, where the vision and language lines officially converged. Multimodal models are no longer independent vision or NLP systems—they have become unified perception-reasoning engines.
+
+## Learning Objectives
+
+After completing this module, you should be able to answer:
+1. How does contrastive learning align vision and language?
+2. What are the mainstream architecture patterns for vision-language models?
+3. What engineering problems must be solved when connecting large language models to visual inputs?
+
 ## Overview
 
 Multimodal models process and generate content across multiple modalities (text, images, audio, video). This guide focuses on vision-language models that combine computer vision with language understanding.
@@ -624,8 +635,13 @@ train_transform = transforms.Compose([
 | **Language bias** | Model ignores visual information | Balanced vision-language loss |
 | **Resolution limits** | Fine details missed | Higher resolution encoders, patch selection |
 
+## Evolution Notes
+
+> The legacy of this technology: CLIP opened the era of cross-modal unified representation, but visual resolution limits, modality hallucination, and copyright/privacy issues in training data remain unresolved challenges.
+→ See [RAG Foundations](../../05-Systems-Production/rag-foundations/README.md)
+
 ---
 
-**Previous**: [Alignment](../alignment/README.md) | **Next**: [RAG Foundations](../../05-RAG-Systems/rag-foundations/README.md)
+**Previous**: [Frameworks](../frameworks/README.md) | **Next**: [RAG Foundations](../../05-Systems-Production/rag-foundations/README.md)
 
 *Note: Phase 5 (RAG Systems) and Phase 6 (MLOps Production) contain complete production-ready content already established in the repository.*

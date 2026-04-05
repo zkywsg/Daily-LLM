@@ -35,4 +35,4 @@
 
 → 完整时间线见 [00-Timeline](../00-Timeline/)
 
-**下一阶段**: [系统与生产 →](../05-Systems-Production/)
+**上一阶段**: [汇流：规模与多模态 ←](../03-Scale-Multimodal/) | **下一阶段**: [系统与生产 →](../05-Systems-Production/)

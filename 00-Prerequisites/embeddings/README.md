@@ -144,6 +144,9 @@ vectors = embed(indices)  # (3, 300)
 **Step 1 · 手写简化版 Skip-gram**
 
 ```python
+# 手写简化版 Skip-gram 负采样
+# 使用中心词与上下文词 embedding 矩阵
+# 验证负采样 loss 的计算流程
 import torch
 import torch.nn as nn
 
@@ -181,6 +184,9 @@ print(f"Skip-gram 负采样 loss: {loss.item():.4f}")
 **Step 2 · PyTorch `nn.Embedding` 基本用法**
 
 ```python
+# 演示 PyTorch nn.Embedding 的基本用法
+# 单个词与 batch 句子的 lookup 操作
+# 验证输出 shape
 import torch
 import torch.nn as nn
 
@@ -206,6 +212,9 @@ print(f"Batch embedding shape: {embedded.shape}")  # (2, 5, 64)
 **Step 3 · Embedding 相似度可视化**
 
 ```python
+# 计算并可视化 embedding 相似度
+# 使用余弦相似度找最近邻
+# 验证语义空间中的邻居关系
 import torch
 import torch.nn.functional as F
 
@@ -231,6 +240,9 @@ for word_id in range(5):
 **Step 4 · Embedding + 线性层组成完整模型**
 
 ```python
+# 用 Embedding + 线性层搭建文本分类器
+# 平均池化后映射到类别 logits
+# 验证端到端前向 shape
 import torch
 import torch.nn as nn
 

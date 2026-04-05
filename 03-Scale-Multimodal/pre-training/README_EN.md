@@ -1,125 +1,44 @@
-# LLM Pre-training
+# Why Small Models Stopped Being Enough? — LLM Pre-training and Scale
 
-**[English](README_EN.md) | [中文](README.md)**
+[English](README_EN.md) | [中文](README.md)
 
-## Overview
+## Where does this problem come from?
 
-Pre-training is the process of training large language models on vast amounts of text data to learn general language representations. This foundational phase determines the model's capabilities and knowledge before task-specific fine-tuning.
+> In 2020, GPT-3 demonstrated few-shot emergent abilities with 175B parameters; in the same year, OpenAI's Scaling Laws paper proved that model performance follows predictable power-law relationships with scale (parameters, data, and compute). Pre-training was no longer just a "warm-up before fine-tuning"—it became the fundamental stage that determines model capability.
 
-## Pre-training Objectives
+## Learning Objectives
 
-### 1. Causal Language Modeling (CLM)
+After completing this module, you should be able to answer:
+1. Why did "scaling parameters" become a systematic science after GPT-3?
+2. How do the power laws among data, parameters, and compute guide training decisions?
+3. What distributed training techniques are essential for large-model pre-training in practice?
 
-**GPT-style**: Predict next token given previous tokens
+## 1. Intuition
 
-```
-Context: The cat sat
-Target: on
-Probability: P(on | The cat sat)
-```
+Imagine you are building a library. A small model is like a community reading room: it can only hold a few hundred of the most frequently borrowed books, and the librarian can only remember limited borrowing patterns. A large model is like a national library: not only does it have a massive collection, but the librarian can also find subtle connections between titles, authors, and topics to help you discover relevant materials you didn't even know existed.
 
-**Objective Function**:
+But building a large library isn't just about making the space ten times bigger. The number of bookshelves (parameters), the total collection size (data), and the construction crew size (compute) must grow in sync. Otherwise, you end up with empty shelves or piles of books scattered on the floor with no way to organize them. Scaling Laws tell us: under a fixed budget, there is an optimal ratio among these three factors, and blindly stacking any single dimension is wasteful.
+
+> Remember this: pre-training is not about "memorizing standard answers"—it is about letting the model learn the statistical structure of language and implicit associations about the world from massive text.
+
+## 2. Mechanism
+
+### 2.1 Pre-training Objectives: What Is the Model Learning?
+
+Pre-training is essentially a self-supervised fill-in-the-blank game. Depending on the task design, there are three main objectives:
+
+**Causal Language Modeling (CLM)** — GPT-style
+Predict the next token based on previous context.
+
 ```
 L_CLM = -Σ_t log P(x_t | x_{<t}; θ)
 ```
 
-```python
-import torch
-import torch.nn as nn
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+**Masked Language Modeling (MLM)** — BERT-style
+Predict masked tokens from bidirectional context. Masking strategy: 80% replaced with `[MASK]`, 10% replaced with a random token, 10% kept unchanged.
 
-# Causal LM pre-training objective
-def causal_lm_loss(model, input_ids):
-    """
-    Standard causal language modeling loss
-    """
-    # Shift for next-token prediction
-    labels = input_ids.clone()
-    
-    # Forward pass
-    outputs = model(input_ids, labels=labels)
-    loss = outputs.loss
-    
-    return loss
-
-# Implementation with custom loss
-def compute_clm_loss(logits, targets, ignore_index=-100):
-    """
-    Compute causal LM loss manually
-    """
-    # Shift logits and targets
-    shift_logits = logits[..., :-1, :].contiguous()
-    shift_targets = targets[..., 1:].contiguous()
-    
-    # Flatten
-    loss_fct = nn.CrossEntropyLoss(ignore_index=ignore_index)
-    loss = loss_fct(
-        shift_logits.view(-1, shift_logits.size(-1)),
-        shift_targets.view(-1)
-    )
-    
-    return loss
-```
-
-### 2. Masked Language Modeling (MLM)
-
-**BERT-style**: Predict masked tokens from bidirectional context
-
-```
-Input:  The [MASK] sat on the [MASK].
-Target: [cat, mat]
-```
-
-**Masking Strategy**:
-- 80%: Replace with [MASK] token
-- 10%: Replace with random token
-- 10%: Keep original token
-
-```python
-def create_mlm_mask(inputs, tokenizer, mlm_prob=0.15):
-    """
-    Create masked language modeling labels
-    """
-    labels = inputs.clone()
-    
-    # Create probability matrix
-    prob_matrix = torch.full(labels.shape, mlm_prob)
-    
-    # Don't mask special tokens
-    special_tokens_mask = [
-        tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True) 
-        for val in labels.tolist()
-    ]
-    prob_matrix.masked_fill_(torch.tensor(special_tokens_mask, dtype=torch.bool), value=0.0)
-    
-    # Sample masked indices
-    masked_indices = torch.bernoulli(prob_matrix).bool()
-    labels[~masked_indices] = -100  # Only compute loss on masked tokens
-    
-    # 80% mask, 10% random, 10% unchanged
-    indices_replaced = torch.bernoulli(torch.full(labels.shape, 0.8)).bool() & masked_indices
-    inputs[indices_replaced] = tokenizer.mask_token_id
-    
-    indices_random = torch.bernoulli(torch.full(labels.shape, 0.5)).bool() & masked_indices & ~indices_replaced
-    random_words = torch.randint(len(tokenizer), labels.shape, dtype=torch.long)
-    inputs[indices_random] = random_words[indices_random]
-    
-    return inputs, labels
-```
-
-### 3. Prefix Language Modeling (Prefix LM)
-
-**T5-style**: Use bidirectional attention on prefix, causal on suffix
-
-```
-Input:  Translate to French: Hello world
-Prefix (bidirectional): Translate to French: 
-Suffix (causal): Hello world
-```
-
-### 4. Mixture of Objectives
-
-**Modern approaches** combine multiple objectives:
+**Prefix Language Modeling (Prefix LM)** — T5-style
+Use bidirectional attention on the prefix and causal attention on the generation part.
 
 | Model | Primary Objective | Secondary |
 |-------|------------------|-----------|
@@ -130,141 +49,26 @@ Suffix (causal): Hello world
 | T5 | Span Corruption | - |
 | UL2 | Mixture of Denoisers | Multiple |
 
-## Data Preparation
+### 2.2 Scaling Laws: Scale as a Predictable Science
 
-### 1. Data Sources
+The **Chinchilla Scaling Laws** (Hoffmann et al., 2022) state that, given a compute budget C (in FLOPs), the optimal number of parameters N_opt and optimal number of tokens D_opt both scale with C^0.50.
 
-| Source | Proportion | Examples |
-|--------|-----------|----------|
-| **Web Text** | 60-80% | Common Crawl, C4 |
-| **Books** | 10-15% | Gutenberg, Books3 |
-| **Code** | 10-20% | GitHub, StackOverflow |
-| **Wikipedia** | 5-10% | Wikimedia dumps |
-| **Academic** | 5% | ArXiv, PubMed |
+Total training FLOPs ≈ 6ND, where:
+- 2N for the forward pass (matrix multiplications)
+- 4N for the backward pass (gradient computation)
 
-```python
-# Data mixing configuration
-data_weights = {
-    'common_crawl': 0.67,
-    'c4': 0.15,
-    'github': 0.045,
-    'wikipedia': 0.045,
-    'books': 0.045,
-    'arxiv': 0.025,
-    'stackexchange': 0.02
-}
-```
-
-### 2. Data Processing Pipeline
-
-```python
-import re
-from typing import List, Iterator
-import multiprocessing as mp
-
-class DataProcessor:
-    def __init__(self, min_length=100, max_length=100000):
-        self.min_length = min_length
-        self.max_length = max_length
-    
-    def clean_text(self, text: str) -> str:
-        """Basic text cleaning"""
-        # Remove excessive whitespace
-        text = re.sub(r'\s+', ' ', text)
-        
-        # Remove control characters
-        text = re.sub(r'[\x00-\x08\x0b-\x0c\x0e-\x1f]', '', text)
-        
-        # Normalize unicode
-        text = text.strip()
-        
-        return text
-    
-    def quality_filter(self, text: str) -> bool:
-        """Filter low-quality documents"""
-        # Length check
-        if len(text) < self.min_length or len(text) > self.max_length:
-            return False
-        
-        # Character ratio checks
-        alpha_ratio = sum(c.isalpha() for c in text) / len(text)
-        if alpha_ratio < 0.5:
-            return False
-        
-        # Repetition check
-        lines = text.split('\n')
-        if len(lines) != len(set(lines)):
-            return False
-        
-        return True
-    
-    def deduplicate(self, texts: List[str]) -> List[str]:
-        """Remove near-duplicate documents"""
-        from datasketch import MinHashLSH, MinHash
-        
-        lsh = MinHashLSH(threshold=0.9, num_perm=128)
-        unique_texts = []
-        
-        for text in texts:
-            m = MinHash(num_perm=128)
-            for word in text.split()[:100]:  # Sample first 100 words
-                m.update(word.encode('utf8'))
-            
-            # Check if similar document exists
-            if not lsh.query(m):
-                lsh.insert(text, m)
-                unique_texts.append(text)
-        
-        return unique_texts
-    
-    def tokenize_batch(self, texts: List[str], tokenizer) -> Iterator[List[int]]:
-        """Tokenize with chunking for long documents"""
-        for text in texts:
-            # Tokenize
-            tokens = tokenizer.encode(text, add_special_tokens=False)
-            
-            # Chunk into sequences
-            max_seq_length = 2048
-            for i in range(0, len(tokens), max_seq_length):
-                chunk = tokens[i:i + max_seq_length]
-                if len(chunk) > 10:  # Minimum length
-                    yield chunk
-```
-
-### 3. Data Format
-
-**Common formats**:
-- **JSONL**: `{"text": "...", "metadata": {...}}`
-- **Arrow**: Columnar format for efficient loading
-- **TFRecord/Parquet**: Binary formats for large-scale training
-
-```python
-import pyarrow as pa
-import pyarrow.parquet as pq
-
-def save_to_parquet(examples, output_path):
-    """Save tokenized data to parquet"""
-    table = pa.table({
-        'input_ids': pa.array(examples, type=pa.list_(pa.int64()))
-    })
-    pq.write_table(table, output_path)
-```
-
-## Scaling Laws
-
-### 1. Chinchilla Scaling Laws
-
-**Optimal model size given compute budget**:
-
-```
-Given compute C (in FLOPs):
-- Optimal parameters: N_opt ∝ C^0.50
-- Optimal tokens: D_opt ∝ C^0.50
-
-Training FLOPs ≈ 6ND
-Where:
-- N: number of parameters
-- D: number of tokens
+```mermaid
+graph TD
+    A[Compute Budget C] --> B[Optimal Params N ∝ C^0.50]
+    A --> C[Optimal Data D ∝ C^0.50]
+    B --> D[Training FLOPs ≈ 6ND]
+    C --> D
+    D --> E[Expected Loss L = E + A/N^α + B/D^β]
+    style A fill:#fef3c7,stroke:#d97706,color:#92400e
+    style B fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style C fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style D fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style E fill:#ecfdf5,stroke:#059669,color:#065f46
 ```
 
 | Compute (FLOPs) | Optimal Params | Optimal Tokens |
@@ -276,115 +80,236 @@ Where:
 | 1e22 | 40B | 800B |
 | 1e23 | 130B | 2.6T |
 
-### 2. Loss Prediction
-
-**Loss as function of parameters and data**:
+Loss is predictable as a function of parameters and data:
 
 ```
 L(N, D) = E + A/N^α + B/D^β
 
-Where:
+where:
 - E: irreducible entropy
 - A, B: scaling coefficients
 - α ≈ 0.34, β ≈ 0.28
 ```
 
+> Remember this: given fixed compute, parameters N and data D should grow proportionally (N ∝ C^0.50, D ∝ C^0.50). This is the core of Chinchilla optimality.
+
+### 2.3 Data Engineering: From Raw Internet to Training Corpus
+
+Data sources are typically mixed in the following proportions:
+
+| Source | Proportion | Examples |
+|--------|-----------|----------|
+| **Web Text** | 60-80% | Common Crawl, C4 |
+| **Books** | 10-15% | Gutenberg, Books3 |
+| **Code** | 10-20% | GitHub, StackOverflow |
+| **Wikipedia** | 5-10% | Wikimedia dumps |
+| **Academic** | 5% | ArXiv, PubMed |
+
 ```python
-def estimate_loss(num_params, num_tokens, 
-                  E=1.69, A=406.4, B=410.7, 
+# Data mixture configuration
+data_weights = {
+    'common_crawl': 0.67,
+    'c4': 0.15,
+    'github': 0.045,
+    'wikipedia': 0.045,
+    'books': 0.045,
+    'arxiv': 0.025,
+    'stackexchange': 0.02
+}
+```
+
+The data processing pipeline includes cleaning, quality filtering, deduplication, and tokenization chunking:
+
+```python
+import re
+from typing import List, Iterator
+import multiprocessing as mp
+
+# Build a full pipeline from raw text to training corpus
+# Includes cleaning, quality filtering, deduplication, and tokenization
+# Outputs token chunks that satisfy length requirements
+class DataProcessor:
+    def __init__(self, min_length=100, max_length=100000):
+        self.min_length = min_length
+        self.max_length = max_length
+
+    def clean_text(self, text: str) -> str:
+        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r'[\x00-\x08\x0b-\x0c\x0e-\x1f]', '', text)
+        text = text.strip()
+        return text
+
+    def quality_filter(self, text: str) -> bool:
+        if len(text) < self.min_length or len(text) > self.max_length:
+            return False
+        alpha_ratio = sum(c.isalpha() for c in text) / len(text)
+        if alpha_ratio < 0.5:
+            return False
+        lines = text.split('\n')
+        if len(lines) != len(set(lines)):
+            return False
+        return True
+
+    def deduplicate(self, texts: List[str]) -> List[str]:
+        from datasketch import MinHashLSH, MinHash
+
+        lsh = MinHashLSH(threshold=0.9, num_perm=128)
+        unique_texts = []
+
+        for text in texts:
+            m = MinHash(num_perm=128)
+            for word in text.split()[:100]:
+                m.update(word.encode('utf8'))
+            if not lsh.query(m):
+                lsh.insert(text, m)
+                unique_texts.append(text)
+
+        return unique_texts
+
+    def tokenize_batch(self, texts: List[str], tokenizer) -> Iterator[List[int]]:
+        max_seq_length = 2048
+        for text in texts:
+            tokens = tokenizer.encode(text, add_special_tokens=False)
+            for i in range(0, len(tokens), max_seq_length):
+                chunk = tokens[i:i + max_seq_length]
+                if len(chunk) > 10:
+                    yield chunk
+```
+
+Common storage formats are JSONL, Arrow, or Parquet:
+
+```python
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+# Save tokenized data as Parquet columnar format
+# Supports efficient loading and large-scale training pipelines
+# Output files can be directly read by the datasets library
+def save_to_parquet(examples, output_path):
+    table = pa.table({
+        'input_ids': pa.array(examples, type=pa.list_(pa.int64()))
+    })
+    pq.write_table(table, output_path)
+```
+
+### 2.4 Distributed Training: When the Model Doesn't Fit on One GPU
+
+When models reach billions or even hundreds of billions of parameters, a single GPU cannot hold the model, gradients, and optimizer states. The choice of distributed training strategy depends on model scale:
+
+| Strategy | What is Split | When to Use |
+|----------|--------------|-------------|
+| **Data Parallel (DP)** | data batch across GPUs | < 1B params |
+| **Tensor Parallel (TP)** | layer weights across GPUs | 1-10B params |
+| **Pipeline Parallel (PP)** | layers across GPUs | > 10B params |
+| **FSDP** | params, gradients, optimizer states | 1-100B params |
+| **3D Parallel** | DP + TP + PP | > 100B params |
+
+## 3. Progressive Implementation
+
+### Step 1 Causal Language Modeling Loss (Core Logic)
+
+```python
+import torch.nn as nn
+
+# Predict the next token based on previous context
+# Shift logits and targets by one position to align
+# Return cross-entropy loss
+def compute_clm_loss(logits, targets, ignore_index=-100):
+    shift_logits = logits[..., :-1, :].contiguous()
+    shift_targets = targets[..., 1:].contiguous()
+    loss_fct = nn.CrossEntropyLoss(ignore_index=ignore_index)
+    loss = loss_fct(
+        shift_logits.view(-1, shift_logits.size(-1)),
+        shift_targets.view(-1)
+    )
+    return loss
+```
+
+### Step 2 Masked Language Modeling Labels (Boundary Handling)
+
+```python
+import torch
+
+# Generate MLM masks following the BERT strategy
+# Handle special token masking and the 80/10/10 replacement rule
+# Return processed inputs and labels
+def create_mlm_mask(inputs, tokenizer, mlm_prob=0.15):
+    labels = inputs.clone()
+    prob_matrix = torch.full(labels.shape, mlm_prob)
+
+    special_tokens_mask = [
+        tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True)
+        for val in labels.tolist()
+    ]
+    prob_matrix.masked_fill_(
+        torch.tensor(special_tokens_mask, dtype=torch.bool), value=0.0
+    )
+
+    masked_indices = torch.bernoulli(prob_matrix).bool()
+    labels[~masked_indices] = -100
+
+    indices_replaced = (
+        torch.bernoulli(torch.full(labels.shape, 0.8)).bool() & masked_indices
+    )
+    inputs[indices_replaced] = tokenizer.mask_token_id
+
+    indices_random = (
+        torch.bernoulli(torch.full(labels.shape, 0.5)).bool()
+        & masked_indices
+        & ~indices_replaced
+    )
+    random_words = torch.randint(len(tokenizer), labels.shape, dtype=torch.long)
+    inputs[indices_random] = random_words[indices_random]
+
+    return inputs, labels
+```
+
+### Step 3 Scaling Laws and Cost Estimation (Mechanism Verification)
+
+```python
+# Estimate pre-training loss using the Chinchilla scaling law
+# Loss = irreducible entropy + parameter term + data term
+# Input N (params) and D (tokens), return expected loss
+def estimate_loss(num_params, num_tokens,
+                  E=1.69, A=406.4, B=410.7,
                   alpha=0.34, beta=0.28):
-    """
-    Estimate pre-training loss based on scaling laws
-    """
-    N = num_params
-    D = num_tokens
-    
-    loss = E + A / (N ** alpha) + B / (D ** beta)
+    loss = E + A / (num_params ** alpha) + B / (num_tokens ** beta)
     return loss
 
-# Example: 7B model with 1T tokens
-loss = estimate_loss(7e9, 1e12)
-print(f"Estimated loss: {loss:.2f}")
-```
 
-### 3. Compute Estimation
-
-**Training compute formula**:
-
-```
-FLOPs ≈ 6 × N × D
-
-Where 6N accounts for:
-- 2N for forward pass (matrix multiplies)
-- 4N for backward pass (gradients)
-```
-
-```python
-def estimate_training_compute(params, tokens, hardware_flops=312e12, 
+# Estimate required GPU-hours and cost for training
+# Total FLOPs ≈ 6 * N * D
+# Convert to time based on peak hardware FLOPs and utilization
+def estimate_training_compute(params, tokens, hardware_flops=312e12,
                                utilization=0.3, num_gpus=1024):
-    """
-    Estimate training time and cost
-    """
-    # Total FLOPs
     total_flops = 6 * params * tokens
-    
-    # GPU-hours needed
     gpu_flops_per_second = hardware_flops * utilization
     total_seconds = total_flops / (gpu_flops_per_second * num_gpus)
     gpu_hours = total_seconds * num_gpus / 3600
-    
-    # Cost estimation (at $2/GPU-hour)
     cost = gpu_hours * 2
-    
     return {
         'total_flops': total_flops,
         'gpu_hours': gpu_hours,
         'days': total_seconds / 86400,
         'estimated_cost_usd': cost
     }
-
-# LLaMA-2 7B example
-result = estimate_training_compute(
-    params=7e9,
-    tokens=2e12,
-    hardware_flops=312e12,  # A100
-    utilization=0.3,
-    num_gpus=1024
-)
-print(f"Training time: {result['days']:.1f} days")
-print(f"GPU-hours: {result['gpu_hours']:,.0f}")
-print(f"Estimated cost: ${result['estimated_cost_usd']:,.0f}")
 ```
 
-## Distributed Training for Pre-training
-
-### 1. Parallelism Strategies
-
-| Strategy | What is Split | When to Use |
-|----------|--------------|-------------|
-| **Data Parallel (DP)** | Data batch across GPUs | < 1B params |
-| **Tensor Parallel (TP)** | Layer weights across GPUs | 1-10B params |
-| **Pipeline Parallel (PP)** | Layers across GPUs | > 10B params |
-| **FSDP** | Parameters, gradients, optimizer states | 1-100B params |
-| **3D Parallel** | DP + TP + PP | > 100B params |
-
-### 2. PyTorch FSDP for Large Models
+### Step 4 Large-Model Distributed Training (Production-Grade)
 
 ```python
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
 import torch.distributed as dist
+from pathlib import Path
 
+# Shard model parameters and gradients with PyTorch FSDP
+# Configure auto-wrapping, BF16 mixed precision, and communication optimization
+# Return a large model ready for distributed training
 def setup_fsdp_model(model, world_size):
-    """
-    Setup FSDP for large model training
-    """
-    # Auto-wrap policy for transformer layers
     auto_wrap_policy = transformer_auto_wrap_policy(
         transformer_layer_cls={TransformerBlock}
     )
-    
-    # FSDP configuration
     model = FSDP(
         model,
         auto_wrap_policy=auto_wrap_policy,
@@ -394,38 +319,62 @@ def setup_fsdp_model(model, world_size):
         forward_prefetch=True,
         backward_prefetch=True,
     )
-    
     return model
 
-# Training with FSDP
-for step, batch in enumerate(dataloader):
-    loss = model(input_ids=batch['input_ids'])
-    loss.backward()
-    
-    # Gradient clipping
-    model.clip_grad_norm_(max_norm=1.0)
-    
-    optimizer.step()
-    optimizer.zero_grad()
-    
-    # Checkpoint periodically
-    if step % checkpoint_interval == 0:
-        state_dict = model.state_dict()
-        if dist.get_rank() == 0:
-            torch.save(state_dict, f'checkpoint_step_{step}.pt')
+
+# Save and rotate training checkpoints
+# Keep the most recent N checkpoints to prevent storage explosion
+# Support distributed multi-rank filenames
+class CheckpointManager:
+    def __init__(self, checkpoint_dir, keep_last_n=3):
+        self.checkpoint_dir = Path(checkpoint_dir)
+        self.keep_last_n = keep_last_n
+        self.checkpoints = []
+
+    def save_checkpoint(self, model, optimizer, scheduler, step, loss):
+        checkpoint = {
+            'step': step,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'scheduler_state_dict': scheduler.state_dict(),
+            'loss': loss,
+            'rng_state': torch.get_rng_state(),
+        }
+        if torch.distributed.is_initialized():
+            checkpoint_path = (
+                self.checkpoint_dir /
+                f'checkpoint_step_{step}_rank_{dist.get_rank()}.pt'
+            )
+        else:
+            checkpoint_path = (
+                self.checkpoint_dir / f'checkpoint_step_{step}.pt'
+            )
+        torch.save(checkpoint, checkpoint_path)
+        self.checkpoints.append(checkpoint_path)
+        if len(self.checkpoints) > self.keep_last_n:
+            old_checkpoint = self.checkpoints.pop(0)
+            old_checkpoint.unlink(missing_ok=True)
+        return checkpoint_path
+
+    def load_checkpoint(self, model, optimizer, scheduler, checkpoint_path):
+        checkpoint = torch.load(checkpoint_path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        torch.set_rng_state(checkpoint['rng_state'])
+        return checkpoint['step'], checkpoint['loss']
 ```
 
-### 3. DeepSpeed ZeRO
+DeepSpeed ZeRO-3 is another mainstream solution for training hundred-billion-parameter models:
 
 ```python
-from deepspeed import DeepSpeedEngine
-
-# DeepSpeed configuration for 70B model training
+# Configure DeepSpeed ZeRO-3 to train 100B+ parameter models
+# Shard optimizer states, gradients, and params across GPUs or CPU memory
+# Includes activation checkpointing, BF16, and gradient clipping settings
 ds_config = {
-    "train_batch_size": 512,  # Global batch size
+    "train_batch_size": 512,
     "train_micro_batch_size_per_gpu": 1,
     "gradient_accumulation_steps": 16,
-    
     "optimizer": {
         "type": "AdamW",
         "params": {
@@ -435,7 +384,6 @@ ds_config = {
             "weight_decay": 0.1
         }
     },
-    
     "scheduler": {
         "type": "WarmupDecayLR",
         "params": {
@@ -445,9 +393,8 @@ ds_config = {
             "total_num_steps": 100000
         }
     },
-    
     "zero_optimization": {
-        "stage": 3,  # ZeRO-3 for largest models
+        "stage": 3,
         "offload_optimizer": {
             "device": "cpu",
             "pin_memory": True
@@ -462,105 +409,41 @@ ds_config = {
         "stage3_prefetch_bucket_size": 5e8,
         "stage3_param_persistence_threshold": 1e6
     },
-    
     "gradient_clipping": 1.0,
-    
     "fp16": {
         "enabled": True,
         "loss_scale": 0,
         "loss_scale_window": 1000,
         "initial_scale_power": 16
     },
-    
     "activation_checkpointing": {
         "partition_activations": True,
         "cpu_checkpointing": True,
         "contiguous_memory_optimization": False
     }
 }
-
-# Initialize DeepSpeed
-model_engine, optimizer, _, _ = deepspeed.initialize(
-    model=model,
-    model_parameters=model.parameters(),
-    config=ds_config
-)
-
-# Training loop
-for step, batch in enumerate(dataloader):
-    loss = model_engine(batch)
-    model_engine.backward(loss)
-    model_engine.step()
 ```
 
-### 4. Checkpointing Strategy
+## 4. Engineering Pitfalls
+
+| Pitfall | Cause | Symptom | Fix |
+|---------|-------|---------|-----|
+| **Data quality > Data quantity** | Low-quality or duplicated texts pollute the loss landscape | Loss plateaus, poor downstream performance, garbage outputs | Aggressive deduplication, quality filtering, balanced sources |
+| **Loss spikes** | Bad data points, high learning rate, numerical instability | Sharp upward spikes in the training curve | Gradient clipping (norm=1.0), mixed-precision checks, warmup |
+| **Distributed communication bottleneck** | all-reduce communication grows linearly with parameters | Low GPU utilization (<30%), actual time far above theory | FSDP / DeepSpeed ZeRO, optimize topology, overlap compute/comm |
+| **Checkpoint storage disaster** | A 10B+ checkpoint can reach hundreds of GB | Storage alerts, training stalls during saves | Keep only the last N checkpoints, async saving, tiered storage |
+
+Key code practices for training stability at scale:
 
 ```python
-class CheckpointManager:
-    def __init__(self, checkpoint_dir, keep_last_n=3):
-        self.checkpoint_dir = Path(checkpoint_dir)
-        self.keep_last_n = keep_last_n
-        self.checkpoints = []
-    
-    def save_checkpoint(self, model, optimizer, scheduler, step, loss):
-        """Save training checkpoint"""
-        checkpoint = {
-            'step': step,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'scheduler_state_dict': scheduler.state_dict(),
-            'loss': loss,
-            'rng_state': torch.get_rng_state(),
-        }
-        
-        if torch.distributed.is_initialized():
-            checkpoint_path = self.checkpoint_dir / f'checkpoint_step_{step}_rank_{dist.get_rank()}.pt'
-        else:
-            checkpoint_path = self.checkpoint_dir / f'checkpoint_step_{step}.pt'
-        
-        torch.save(checkpoint, checkpoint_path)
-        self.checkpoints.append(checkpoint_path)
-        
-        # Clean old checkpoints
-        if len(self.checkpoints) > self.keep_last_n:
-            old_checkpoint = self.checkpoints.pop(0)
-            old_checkpoint.unlink(missing_ok=True)
-    
-    def load_checkpoint(self, model, optimizer, scheduler, checkpoint_path):
-        """Resume from checkpoint"""
-        checkpoint = torch.load(checkpoint_path)
-        
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-        torch.set_rng_state(checkpoint['rng_state'])
-        
-        return checkpoint['step'], checkpoint['loss']
-```
-
-## Training Stability
-
-### 1. Loss Spikes
-
-**Causes and Solutions**:
-| Cause | Solution |
-|-------|----------|
-| Bad data points | Gradient clipping, data cleaning |
-| Numerical instability | Mixed precision check, loss scaling |
-| Learning rate too high | Reduce LR, use warmup |
-| Bad initialization | Use proper weight init |
-
-```python
-# Gradient clipping
-torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-
-# Loss scaling for mixed precision
 from torch.cuda.amp import autocast, GradScaler
 
+# Stabilize large-model training with mixed precision and gradient clipping
+# BF16 forward + scaled backward with norm=1.0 clipping
+# Effectively suppresses loss spikes and numerical instability
 scaler = GradScaler()
 with autocast(dtype=torch.bfloat16):
     loss = model(batch)
-
 scaler.scale(loss).backward()
 scaler.unscale_(optimizer)
 torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -568,50 +451,28 @@ scaler.step(optimizer)
 scaler.update()
 ```
 
-### 2. Learning Rate Schedule
-
 ```python
 from transformers import get_cosine_schedule_with_warmup
 
-# Cosine with linear warmup
-num_warmup_steps = 2000
-num_training_steps = 100000
-
+# Cosine annealing with warmup stabilizes large-model pre-training
+# 2000-step warmup then half-cosine decay to 10% peak learning rate
+# Avoids early training oscillation and late-stage overfitting
 scheduler = get_cosine_schedule_with_warmup(
     optimizer,
-    num_warmup_steps=num_warmup_steps,
-    num_training_steps=num_training_steps,
-    num_cycles=0.5,  # Half cosine
-    min_lr_ratio=0.1  # End at 10% of max LR
+    num_warmup_steps=2000,
+    num_training_steps=100000,
+    num_cycles=0.5,
+    min_lr_ratio=0.1
 )
 ```
 
-## Best Practices
+> Remember this: pre-training is a three-in-one battle of data, algorithm, and engineering. A shortcoming in any corner will waste enormous compute budgets.
 
-### 1. Data
-- Deduplicate aggressively
-- Filter low-quality content
-- Balance data sources
-- Monitor data distribution
+## 5. Evolution Notes
 
-### 2. Training
-- Use cosine LR schedule with warmup
-- Gradient clipping (norm=1.0)
-- Mixed precision (BF16 preferred over FP16)
-- Checkpoint frequently
-- Monitor loss curves
-
-### 3. Hardware
-- Start with data parallel for < 1B
-- Use FSDP for 1-70B
-- Use 3D parallel for > 100B
-- Optimize communication
-
-### 4. Evaluation
-- Perplexity on held-out data
-- Downstream task performance
-- Human evaluation samples
+> The legacy of this technology: pre-training established the "scale is capability" paradigm, making general language understanding possible. But it also left new problems—impending data exhaustion, high compute barriers, and difficulty controlling model behavior.
+→ See [PEFT](../../04-Alignment-OpenSource/peft/README.md)
 
 ---
 
-**Previous**: [Pre-trained Models](../../03-NLP-Transformers/pretrained-models/README.md) | **Next**: [PEFT](../peft/README.md)
+**Previous**: [Pre-trained Models](../../02-Language-Transformers/pretrained-models/README.md) | **Next**: [PEFT](../../04-Alignment-OpenSource/peft/README.md)

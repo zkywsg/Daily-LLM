@@ -270,4 +270,4 @@ Attention aligns audio frames with text
 
 ---
 
-**Previous**: [Sequence Models](../../02-Neural-Networks/sequence-models/README.md) | **Next**: [Transformer Architecture](../transformer-architecture/README.md)
+**Previous**: [Recurrent Networks & Seq2Seq](../recurrent-networks/README_EN.md) | **Next**: [Transformer Architecture](../transformer-architecture/README_EN.md)

@@ -696,4 +696,4 @@ Train → Evaluate → Find failures → Collect more data → Retrain
 
 ---
 
-**Previous**: [PEFT](../peft/README.md) | **Next**: [Multimodal](../multimodal/README.md)
+**Previous**: [PEFT](../peft/README.md) | **Next**: [Prompt Engineering](../../03-Scale-Multimodal/prompt-engineering/README.md)

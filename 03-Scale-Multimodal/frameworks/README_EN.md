@@ -2,6 +2,17 @@
 
 **Documentation**: [**English**](README_EN.md) | [**中文**](README.md)
 
+## Where does this problem come from?
+
+> Between 2020 and 2021, as large models like GPT-3, CLIP, and T5 emerged, the engineering complexity of training and deploying them rose exponentially. Frameworks such as HuggingFace, DeepSpeed, and Megatron-LM enabled individual researchers and small teams to reach model scales that were once accessible only to industrial labs.
+
+## Learning Objectives
+
+After completing this module, you should be able to answer:
+1. How do the components of the HuggingFace ecosystem (Transformers, Datasets, PEFT, TRL) divide responsibilities?
+2. In what scenarios should FSDP or DeepSpeed be chosen when training large models?
+3. What are the core advantages of vLLM over native inference in production deployment?
+
 ## Table of Contents
 
 1. [Overview](#1-overview)
@@ -476,3 +487,12 @@ Need to fine-tune?
                         ├── Local dev → Ollama
                         └── Production → vLLM / TGI
 ```
+
+## Evolution Notes
+
+> The legacy of this technology: open-source frameworks dramatically lowered the barrier to entry for large models, fostering a complete toolchain from pre-training to deployment. But framework fragmentation, version compatibility issues, and the tuning gap from "it runs" to "it runs fast" remain major pain points in engineering practice.
+→ See [RAG Foundations](../../05-Systems-Production/rag-foundations/README.md)
+
+---
+
+**Previous**: [Prompt Engineering](../prompt-engineering/README.md) | **Next**: [Multimodal](../multimodal/README.md)

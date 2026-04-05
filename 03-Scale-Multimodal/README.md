@@ -45,4 +45,4 @@ In-Context Learning 的系统方法论
 
 → 完整时间线见 [00-Timeline](../00-Timeline/)
 
-**下一阶段**: [对齐与开源 →](../04-Alignment-OpenSource/)
+**上一阶段**: [语言与 Transformer ←](../02-Language-Transformers/) | **下一阶段**: [对齐与开源 →](../04-Alignment-OpenSource/)

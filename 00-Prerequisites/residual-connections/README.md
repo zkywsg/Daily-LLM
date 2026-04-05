@@ -130,6 +130,9 @@ $$
 **Step 1 · 最小残差块**
 
 ```python
+# 实现最简残差块：x + F(x)
+# 验证输入输出同维度时的直接相加
+# 理解残差连接的前向结构
 import torch
 import torch.nn as nn
 
@@ -157,6 +160,9 @@ print(f"输入 shape: {x.shape}, 输出 shape: {out.shape}")
 **Step 2 · 带 Projection 的残差块（维度变化时）**
 
 ```python
+# 实现带 Projection 的残差块
+# 维度变化时用线性投影对齐 shortcut
+# 验证不同维度下的相加可行性
 import torch
 import torch.nn as nn
 
@@ -183,6 +189,9 @@ print(f"输入: {x.shape} → 输出: {block(x).shape}")
 **Step 3 · 梯度流对比实验**
 
 ```python
+# 对比 20 层 plain net 与残差网络的梯度流
+# 测量第一层权重的梯度范数差异
+# 验证残差连接对梯度消失的缓解
 import torch
 import torch.nn as nn
 
@@ -221,6 +230,9 @@ for name, net in [("无残差", plain_net), ("有残差", res_net)]:
 **Step 4 · Transformer 风格的 Pre-LN 残差块**
 
 ```python
+# 实现 Pre-LN 风格的简化 Transformer block
+# 先 LayerNorm 再进 Attention/FFN
+# 验证残差路径的无阻碍特性
 import torch
 import torch.nn as nn
 
@@ -283,8 +295,8 @@ print(f"Transformer block: {x.shape} → {out.shape}")
 >
 > **留下的新问题**：残差连接和归一化解决了深层网络的训练问题。但 MLP 对数据结构没有任何假设——图像的局部性和序列的时序性都被忽略。这两个盲区催生了下一阶段的 CNN 和 RNN。
 
-→ 下一章：[激活函数家族](../activation-functions/README.md)
+→ 下一章：[正则化与 Dropout — 为什么模型会"死记硬背"？](../regularization/README.md)
 
 ---
 
-**上一章**：[归一化机制](../normalization/README.md) | **下一章**：[激活函数家族](../activation-functions/README.md)
+**上一章**：[归一化机制](../normalization/README.md) | **下一章**：[正则化与 Dropout](../regularization/README.md)

@@ -486,4 +486,4 @@ model.save_pretrained("./merged_model")
 
 ---
 
-**上一节**: [预训练](../pre-training/README.md) | **下一节**: [对齐](../alignment/README.md)
+**上一章**: [预训练](../../03-Scale-Multimodal/pre-training/README.md) | **下一章**: [对齐](../alignment/README.md)

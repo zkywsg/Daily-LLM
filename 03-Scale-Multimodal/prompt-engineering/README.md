@@ -2,6 +2,17 @@
 
 **文档语言**: [**English**](README_EN.md) | [**中文**](README.md)
 
+## 这个问题从哪来
+
+> 2022年，GPT-3 的 In-Context Learning 能力被系统挖掘出来：无需更新参数，仅通过精心构造的输入就能让模型完成复杂任务。Prompt Engineering 由此成为连接模型能力与生产应用的最低成本桥梁。
+
+## 学习目标
+
+完成后你应能回答：
+1. Zero-shot 与 Few-shot 的本质区别是什么？
+2. Chain-of-Thought 为什么能显著提升推理准确率？
+3. 如何设计安全、可控且高效的 System Prompt？
+
 ## 目录
 
 1. [概述](#1-概述)
@@ -468,3 +479,12 @@ messages = [
 - [Google DeepMind — Chain-of-Thought Prompting (Wei et al., 2022)](https://arxiv.org/abs/2201.11903)
 - [Tree of Thoughts (Yao et al., 2023)](https://arxiv.org/abs/2305.10601)
 - [Self-Consistency (Wang et al., 2022)](https://arxiv.org/abs/2203.11171)
+
+## 演进笔记
+
+> 这一技术的遗产：Prompt Engineering 证明了"语境即权重"的可能性，让大模型在零训练成本下被快速适配；但它也带来了 Prompt 注入风险、上下文窗口瓶颈，以及对模型能力天花板不可突破的局限。
+→ 详见 [RAG 基础](../../05-Systems-Production/rag-foundations/README.md)
+
+---
+
+**上一章**: [对齐](../../04-Alignment-OpenSource/alignment/README.md) | **下一章**: [框架](../frameworks/README.md)

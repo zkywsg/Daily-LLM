@@ -2,6 +2,17 @@
 
 **Documentation**: [**English**](README_EN.md) | [**中文**](README.md)
 
+## Where does this problem come from?
+
+> In 2022, GPT-3's In-Context Learning capabilities were systematically exploited: without updating any parameters, models could perform complex tasks through carefully crafted inputs. Prompt Engineering thus became the lowest-cost bridge connecting model capabilities to production applications.
+
+## Learning Objectives
+
+After completing this module, you should be able to answer:
+1. What is the fundamental difference between Zero-shot and Few-shot?
+2. Why can Chain-of-Thought significantly improve reasoning accuracy?
+3. How do you design a safe, controllable, and efficient System Prompt?
+
 ## Table of Contents
 
 1. [Overview](#1-overview)
@@ -469,3 +480,12 @@ messages = [
 - [Google DeepMind — Chain-of-Thought Prompting (Wei et al., 2022)](https://arxiv.org/abs/2201.11903)
 - [Tree of Thoughts (Yao et al., 2023)](https://arxiv.org/abs/2305.10601)
 - [Self-Consistency (Wang et al., 2022)](https://arxiv.org/abs/2203.11171)
+
+## Evolution Notes
+
+> The legacy of this technology: Prompt Engineering proved the possibility of "context as weights," enabling large models to be quickly adapted at zero training cost. But it also brings Prompt injection risks, context window bottlenecks, and the limitation that model capability ceilings cannot be broken.
+→ See [RAG Foundations](../../05-Systems-Production/rag-foundations/README.md)
+
+---
+
+**Previous**: [Alignment](../../04-Alignment-OpenSource/alignment/README.md) | **Next**: [Frameworks](../frameworks/README.md)

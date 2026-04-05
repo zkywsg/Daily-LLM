@@ -126,6 +126,9 @@ BERT 使用 WordPiece（词表 30,000），DistilBERT 也是。
 **Step 1 · 手写 BPE 训练**
 
 ```python
+# 最简 BPE 训练：从字符级开始合并
+# 统计相邻对频率并迭代合并最高频对
+# 验证合并序列的正确性
 from collections import Counter
 
 def train_bpe(corpus, num_merges):
@@ -176,6 +179,9 @@ for i, (a, b) in enumerate(merges):
 **Step 2 · 用 BPE 编码新文本**
 
 ```python
+# 用学到的 BPE 合并规则编码新文本
+# 按合并顺序逐步替换字符对
+# 验证编码结果与训练一致性
 def bpe_encode(text, merges):
     """用学到的合并规则编码新文本"""
     words = text.split()
@@ -203,6 +209,9 @@ print(f"编码结果: {encoded}")
 **Step 3 · HuggingFace tokenizers 使用**
 
 ```python
+# 使用 HuggingFace AutoTokenizer 加载 GPT-2/BERT
+# 对比 BPE 与 WordPiece 的子词切分结果
+# 理解不同模型的 tokenizer 配对要求
 # 需要安装: pip install transformers
 from transformers import AutoTokenizer
 
@@ -226,6 +235,9 @@ print(f"子词: {bert_tok.convert_ids_to_tokens(tokens_bert)}")
 **Step 4 · 中英文分词对比**
 
 ```python
+# 对比 GPT-2 对英文与中文的 tokenization 效率
+# 观察中文字符被拆成多个 token 的现象
+# 理解多语言 tokenizer 的优化方向
 from transformers import AutoTokenizer
 
 gpt2_tok = AutoTokenizer.from_pretrained("gpt2")
@@ -273,7 +285,7 @@ print(f"GPT-2 中文: {gpt2_tok.convert_ids_to_tokens(gpt2_tok.encode(zh_text))}
 >
 > 字节级分词是一个重要趋势：它让模型天然支持任何语言（包括 emoji），不再需要为不同语言训练不同的 tokenizer。GPT-2、LLaMA 都使用字节级 BPE。
 >
-> **留下的新问题**：分词把文字变成了 token 序列，但 token 之间没有顺序信息——"猫吃鱼"和"鱼吃猫"的 token 集合相同。这引出了位置编码（Positional Encoding）的概念。
+> **留下的新问题**：分词把文字变成了 token 序列，但 token 之间没有顺序信息——"猫吃鱼"和"鱼吃猫"的 token 集合相同。如何在模型中显式地表达"谁在前、谁在后"，是序列建模必须回答的下一个问题。
 
 → 下一章：[编码器-解码器范式](../encoder-decoder/README.md)
 

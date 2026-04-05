@@ -1,48 +1,112 @@
-# Pre-trained Language Models
+[English](README_EN.md) | [中文](README.md)
 
-**[English](README_EN.md) | [中文](README.md)**
+# Why Is "Reading Widely First" More Effective Than "Taking the Exam Cold"? — Pre-trained Language Models
 
-## Overview
+## Where This Problem Comes From
 
-Pre-trained language models have revolutionized NLP by learning general language representations from large text corpora, then fine-tuning on specific tasks. This guide covers the major model families: BERT, GPT, and T5.
+> Before 2018, the dominant paradigm in NLP was "train a separate model from scratch for every task." This meant 100 tasks required 100 models, each seeing only the small amount of data available for that specific task.
+> In 2018, three breakthroughs happened simultaneously: ELMo showed that contextual word vectors dramatically outperformed static embeddings; GPT-1 proved that generative pre-training could transfer to downstream tasks; and BERT demonstrated that a bidirectional encoder with masked language modeling could dominate almost all understanding tasks. That year, the "pre-train + fine-tune" paradigm was established, and NLP moved from "artisanal modeling" to "industrial production."
 
-## BERT Family (Encoder-Only)
+## Learning Objectives
 
-### BERT Architecture
+After completing this chapter, you should be able to answer:
 
-**Bidirectional Encoder Representations from Transformers**
+1. How do BERT, GPT, and T5 differ in pre-training objectives and architecture choices?
+2. When should you use feature extraction (frozen backbone) versus fine-tuning (updating all parameters)?
+3. Given a specific task, how do you choose the right pre-trained model and fine-tuning strategy?
 
-| Component | Specification |
-|-----------|--------------|
-| Architecture | Encoder-only Transformer |
-| Objective | Masked Language Modeling (MLM) + Next Sentence Prediction (NSP) |
-| Tokenization | WordPiece (30K vocab) |
-| Position Encoding | Learned positional embeddings |
+---
 
-**Model Sizes**:
-| Variant | Layers | Hidden | Heads | Params |
-|---------|--------|--------|-------|--------|
-| BERT-Base | 12 | 768 | 12 | 110M |
-| BERT-Large | 24 | 1024 | 16 | 340M |
+## 1. Intuition
 
-### Masked Language Modeling
+Imagine you are preparing for a bar exam.
 
-**Objective**: Predict masked tokens from context
+**Plan A**: Buy a set of past exam papers and study them in isolation. The upside is task-specific focus; the downside is that without foundational legal knowledge, many concepts will be completely foreign no matter how many papers you drill.
+
+**Plan B**: Spend two years systematically reading law school textbooks (pre-training) to build a comprehensive knowledge base, then spend two weeks doing practice papers and exam technique drills (fine-tuning). The result is usually much better, and the legal knowledge you acquired can also be used for writing contracts, giving consultations, and participating in debates — strong transferability.
+
+The core intuition of pre-trained language models is exactly this: first let the model learn general language patterns (grammar, semantics, common sense, reasoning) from massive unlabeled text, then make task-specific adjustments with a small amount of labeled data. This "general → specialized" layered strategy allows even low-resource tasks to achieve strong results.
+
+> Key takeaway: pre-training solves "general language ability," while fine-tuning solves "task alignment." Neither alone is enough.
+
+---
+
+## 2. Mechanics
+
+### 2.1 BERT: The Bidirectional Understanding Expert
+
+BERT (Bidirectional Encoder Representations from Transformers) uses only the Transformer encoder. Its training objective is **Masked Language Modeling (MLM)**: randomly mask 15% of the input tokens and let the model predict the masked content using bidirectional context.
 
 ```
 Input:  The [MASK] sat on the mat.
 Target: cat
 ```
 
+Because the encoder is bidirectional, BERT excels at understanding tasks: text classification, named entity recognition, extractive question answering, and semantic similarity. It is not well-suited for generation because it lacks an autoregressive decoding mechanism.
+
+**BERT variants at a glance**:
+
+| Model | Key Improvement | Best For |
+|-------|-----------------|----------|
+| RoBERTa | Larger corpus, no NSP, dynamic masking | General NLP understanding |
+| ALBERT | Parameter sharing, factorized embeddings | Resource-constrained scenarios |
+| DistilBERT | Knowledge distillation (-40% size, -3% performance) | Edge deployment, low latency |
+| ELECTRA | Replaced token detection (higher sample efficiency) | Pre-training stage |
+| DeBERTa | Disentangled attention, enhanced mask decoder | When you need the strongest encoder |
+
+### 2.2 GPT: The Unidirectional Generation Expert
+
+GPT (Generative Pre-trained Transformer) uses only the Transformer decoder. Its training objective is **Causal Language Modeling (CLM / Next Token Prediction)**: given previous tokens, predict the next one.
+
+```
+Context: The cat sat
+Target:  on
+```
+
+This autoregressive nature makes the GPT family naturally suited for text generation, dialogue, code completion, and chain-of-thought reasoning. From GPT-1 (117M) to GPT-4 (multimodal), the core architecture has not changed — only scale, data, and alignment strategies have.
+
+**Modern representative models**: GPT-4, LLaMA-2, Mistral, CodeLLaMA, Mixtral (MoE)
+
+### 2.3 T5: The Unified Text-to-Text Framework
+
+T5 (Text-to-Text Transfer Transformer) uses the full Encoder-Decoder architecture. Its core innovation is unifying **all NLP tasks as text-to-text problems**: classification does not output a label but a text string; translation, summarization, and question answering all take one text segment as input and produce another as output.
+
+The training objective is **Span Corruption**: replace contiguous spans in the input with unique sentinel tokens, and let the decoder generate the replaced content.
+
+```
+Original: Thank you for inviting me to your party last week.
+Corrupt:  Thank you <X> me to your party <Y>.
+Target:   <X> for inviting <Y> last week.
+```
+
+T5 and its variants (mT5, Flan-T5) are the go-to choice for conditional generation tasks (translation, summarization, rewriting).
+
+### 2.4 Three Families Compared
+
+| Dimension | BERT | GPT | T5 |
+|-----------|------|-----|-----|
+| Architecture | Encoder-only | Decoder-only | Encoder-Decoder |
+| Pre-training objective | MLM (masked prediction) | CLM (next token) | Span Corruption |
+| Best at | Understanding, classification, extraction | Generation, dialogue, reasoning | Translation, summarization, conditional generation |
+| Representatives | BERT/RoBERTa/DeBERTa | GPT-4/LLaMA/Mistral | T5/BART/mT5 |
+
+> Key takeaway: choose the model family based on whether the task is "understanding" or "generation" — BERT for understanding, GPT for generation, T5 for conditional generation.
+
+---
+
+## 3. Progressive Implementation
+
+**Step 1 · BERT masked prediction**
+
 ```python
+# Use pre-trained BERT to predict the most likely token at [MASK]
+# Validate the value of bidirectional context for understanding tasks
 import torch
 from transformers import BertTokenizer, BertForMaskedLM
 
-# Load pre-trained model
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertForMaskedLM.from_pretrained('bert-base-uncased')
 
-# Masked prediction
 text = "The [MASK] sat on the mat."
 inputs = tokenizer(text, return_tensors='pt')
 
@@ -50,417 +114,118 @@ with torch.no_grad():
     outputs = model(**inputs)
     predictions = outputs.logits
 
-# Get top predictions for [MASK]
 mask_index = torch.where(inputs['input_ids'] == tokenizer.mask_token_id)[1]
 predicted_token_id = predictions[0, mask_index].argmax(dim=-1)
 predicted_token = tokenizer.decode(predicted_token_id)
-print(f"Predicted: {predicted_token}")  # "cat"
+print(f"Prediction: {predicted_token}")  # cat
 ```
 
-### BERT Variants
-
-| Model | Key Improvement | Use Case |
-|-------|----------------|----------|
-| **RoBERTa** | Better training: more data, no NSP, dynamic masking | General NLP |
-| **ALBERT** | Parameter sharing, factorized embeddings | Memory-constrained |
-| **DistilBERT** | Knowledge distillation (40% smaller, 97% performance) | Efficiency |
-| **ELECTRA** | Replaced token detection (more sample-efficient) | Pre-training |
-| **DeBERTa** | Disentangled attention, enhanced mask decoder | SOTA encoder |
-
-## GPT Family (Decoder-Only)
-
-### GPT Architecture
-
-**Generative Pre-trained Transformer**
-
-| Component | Specification |
-|-----------|--------------|
-| Architecture | Decoder-only Transformer (causal) |
-| Objective | Causal Language Modeling (CLM) |
-| Tokenization | BPE/GPT-2 tokenizer |
-
-**Evolution**:
-| Model | Year | Params | Key Innovation |
-|-------|------|--------|---------------|
-| GPT | 2018 | 117M | First GPT |
-| GPT-2 | 2019 | 1.5B | Zero-shot capability |
-| GPT-3 | 2020 | 175B | In-context learning, few-shot |
-| GPT-4 | 2023 | Unknown | Multimodal, reasoning |
-
-### Causal Language Modeling
-
-**Objective**: Predict next token given previous tokens
-
-```
-Context: The cat sat
-Target: on
-```
+**Step 2 · GPT text generation**
 
 ```python
+# Use GPT-2 for autoregressive text generation
+# Validate the generation capability of causal language modeling
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 
-# Load model
 tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
 model = GPT2LMHeadModel.from_pretrained('gpt2')
 
-# Text generation
 prompt = "The future of artificial intelligence"
 inputs = tokenizer(prompt, return_tensors='pt')
 
-# Generate
 with torch.no_grad():
     output = model.generate(
         **inputs,
         max_length=50,
-        num_return_sequences=1,
         temperature=0.8,
         top_k=50,
         top_p=0.95,
         do_sample=True
     )
 
-generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
-print(generated_text)
+print(tokenizer.decode(output[0], skip_special_tokens=True))
 ```
 
-### Modern GPT Models
-
-| Model | Developer | Params | Context | Notable Features |
-|-------|-----------|--------|---------|-----------------|
-| **GPT-3.5** | OpenAI | 175B | 4K | Chat-optimized |
-| **GPT-4** | OpenAI | Unknown | 8K-32K | Multimodal, reasoning |
-| **LLaMA** | Meta | 7B-65B | 2K-4K | Open weights, efficient |
-| **LLaMA-2** | Meta | 7B-70B | 4K | Open commercial use |
-| **CodeLLaMA** | Meta | 7B-34B | 4K-100K | Code specialization |
-| **Mistral** | Mistral AI | 7B | 8K | Sliding window attention |
-| **Mixtral** | Mistral AI | 8×7B | 32K | Sparse MoE architecture |
-
-## T5 Family (Encoder-Decoder)
-
-### T5 Architecture
-
-**Text-to-Text Transfer Transformer**
-
-Key principle: Frame all NLP tasks as text-to-text problems
-
-```
-Input:  translate English to German: The house is wonderful.
-Output: Das Haus ist wunderbar.
-
-Input:  cola sentence: The movie was boring.
-Output: unacceptable
-```
-
-| Model | Params | Architecture |
-|-------|--------|--------------|
-| T5-Small | 60M | 6 layers each |
-| T5-Base | 220M | 12 layers each |
-| T5-Large | 770M | 24 layers each |
-| T5-3B | 3B | 24 layers each |
-| T5-11B | 11B | 24 layers each |
-
-### Denoising Objective
-
-**Span Corruption**: Replace consecutive spans with unique sentinel tokens
-
-```
-Original: Thank you for inviting me to your party last week.
-Corrupted: Thank you <X> me to your party <Y>.
-Target: <X> for inviting <Y> last week.
-```
+**Step 3 · T5 translation**
 
 ```python
+# Use T5 for English-to-German translation
+# Validate the unified text-to-text framework
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 
-# Load model
 tokenizer = T5Tokenizer.from_pretrained('t5-base')
 model = T5ForConditionalGeneration.from_pretrained('t5-base')
 
-# Translation task
 input_text = "translate English to German: The house is wonderful."
 inputs = tokenizer(input_text, return_tensors='pt', max_length=512, truncation=True)
 
-# Generate
 with torch.no_grad():
     outputs = model.generate(**inputs, max_length=150)
 
-translation = tokenizer.decode(outputs[0], skip_special_tokens=True)
-print(translation)  # "Das Haus ist wunderbar."
+print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 ```
 
-## Transfer Learning Strategies
-
-### 1. Feature Extraction
-
-**Freeze pre-trained weights, only train classification head**
+**Step 4 · Feature extraction vs Fine-tuning**
 
 ```python
-from transformers import BertModel, BertTokenizer
+# Plan A: Freeze BERT and only train the classification head (feature extraction)
+from transformers import BertModel
 import torch.nn as nn
 
-class BERTClassifier(nn.Module):
+class BERTFeatureExtractor(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
-        # Load pre-trained BERT (frozen)
         self.bert = BertModel.from_pretrained('bert-base-uncased')
         for param in self.bert.parameters():
             param.requires_grad = False
-        
-        # Trainable classifier head
-        self.classifier = nn.Sequential(
-            nn.Dropout(0.1),
-            nn.Linear(768, num_classes)
-        )
-    
+        self.classifier = nn.Linear(768, num_classes)
+
     def forward(self, input_ids, attention_mask):
-        with torch.no_grad():
-            outputs = self.bert(input_ids, attention_mask)
-        
-        # Use [CLS] token representation
-        pooled = outputs.last_hidden_state[:, 0]
-        return self.classifier(pooled)
-```
+        outputs = self.bert(input_ids, attention_mask)
+        return self.classifier(outputs.last_hidden_state[:, 0])
 
-**Best for**:
-- Small datasets (< 1K examples)
-- Quick prototyping
-- Limited compute
-
-### 2. Fine-Tuning
-
-**Update all parameters with small learning rate**
-
-```python
+# Plan B: Fine-tune all parameters with different learning rates
 from transformers import BertForSequenceClassification, AdamW
 
-# Load with classification head
-model = BertForSequenceClassification.from_pretrained(
-    'bert-base-uncased',
-    num_labels=2
-)
-
-# Optimizer with different learning rates
+model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2)
 optimizer = AdamW([
-    {'params': model.bert.parameters(), 'lr': 2e-5},  # Lower for BERT
-    {'params': model.classifier.parameters(), 'lr': 1e-3}  # Higher for head
+    {'params': model.bert.parameters(), 'lr': 2e-5},
+    {'params': model.classifier.parameters(), 'lr': 1e-3}
 ])
-
-# Training loop
-for epoch in range(epochs):
-    for batch in train_loader:
-        optimizer.zero_grad()
-        outputs = model(**batch)
-        loss = outputs.loss
-        loss.backward()
-        optimizer.step()
 ```
-
-**Best for**:
-- Medium to large datasets
-- When task differs significantly from pre-training
-- Maximum performance
-
-### 3. Layer-wise Learning Rate Decay
-
-```python
-# Gradually decrease LR for earlier layers
-no_decay = ['bias', 'LayerNorm.weight']
-optimizer_grouped_parameters = [
-    {
-        'params': [p for n, p in model.bert.embeddings.named_parameters() 
-                   if not any(nd in n for nd in no_decay)],
-        'weight_decay': 0.01,
-        'lr': 1e-5  # Lowest for embeddings
-    },
-    {
-        'params': [p for n, p in model.bert.encoder.layer[:6].named_parameters()
-                   if not any(nd in n for nd in no_decay)],
-        'weight_decay': 0.01,
-        'lr': 2e-5
-    },
-    {
-        'params': [p for n, p in model.bert.encoder.layer[6:].named_parameters()
-                   if not any(nd in n for nd in no_decay)],
-        'weight_decay': 0.01,
-        'lr': 3e-5  # Highest for top layers
-    },
-    {
-        'params': [p for n, p in model.classifier.named_parameters()],
-        'weight_decay': 0.01,
-        'lr': 1e-3  # Highest for classifier
-    }
-]
-
-optimizer = AdamW(optimizer_grouped_parameters)
-```
-
-## Model Selection Guide
-
-| Use Case | Recommended Model | Reason |
-|----------|------------------|--------|
-| **Classification** | RoBERTa, DeBERTa | Strong encoder representations |
-| **Named Entity Recognition** | BERT, RoBERTa | Token-level classification |
-| **Question Answering** | RoBERTa, ELECTRA | Good span extraction |
-| **Text Generation** | GPT-4, LLaMA-2, Mistral | Autoregressive generation |
-| **Chat/Dialogue** | GPT-3.5, LLaMA-2-Chat | Instruction-tuned |
-| **Code Generation** | CodeLLaMA, GPT-4 | Code pre-training |
-| **Summarization** | T5, BART | Encoder-decoder architecture |
-| **Translation** | T5, mT5 | Text-to-text framework |
-| **Multilingual** | XLM-R, mBERT | Cross-lingual training |
-| **Long Documents** | Longformer, BigBird | Efficient long attention |
-
-## Fine-Tuning Best Practices
-
-### 1. Learning Rate
-
-| Model Size | Typical LR Range |
-|------------|-----------------|
-| Base (110M) | 2e-5 to 5e-5 |
-| Large (340M) | 1e-5 to 3e-5 |
-| 1B+ | 1e-5 to 2e-5 |
-
-### 2. Batch Size
-
-- Larger batches (32-128) generally better for fine-tuning
-- Use gradient accumulation if GPU memory limited
-
-### 3. Epochs
-
-| Dataset Size | Recommended Epochs |
-|--------------|-------------------|
-| < 1K | 10-20 |
-| 1K - 10K | 3-5 |
-| > 10K | 2-3 |
-
-### 4. Early Stopping
-
-```python
-best_val_loss = float('inf')
-patience = 3
-patience_counter = 0
-
-for epoch in range(max_epochs):
-    train_loss = train_epoch(model, train_loader)
-    val_loss = validate(model, val_loader)
-    
-    if val_loss < best_val_loss:
-        best_val_loss = val_loss
-        torch.save(model.state_dict(), 'best_model.pt')
-        patience_counter = 0
-    else:
-        patience_counter += 1
-        if patience_counter >= patience:
-            print(f"Early stopping at epoch {epoch}")
-            break
-```
-
-## Advanced Techniques
-
-### 1. Prompt Tuning
-
-**Soft prompts**: Trainable continuous vectors prepended to input
-
-```python
-class PromptTunedModel(nn.Module):
-    def __init__(self, model_name, num_tokens=20):
-        super().__init__()
-        self.model = AutoModel.from_pretrained(model_name)
-        self.prompt_embeddings = nn.Parameter(
-            torch.randn(1, num_tokens, self.model.config.hidden_size)
-        )
-        # Freeze base model
-        for param in self.model.parameters():
-            param.requires_grad = False
-    
-    def forward(self, input_ids, attention_mask):
-        batch_size = input_ids.size(0)
-        # Expand prompt for batch
-        prompts = self.prompt_embeddings.expand(batch_size, -1, -1)
-        
-        # Get input embeddings
-        inputs_embeds = self.model.embeddings(input_ids)
-        
-        # Concatenate prompt + input
-        inputs_embeds = torch.cat([prompts, inputs_embeds], dim=1)
-        
-        # Adjust attention mask
-        prompt_mask = torch.ones(batch_size, prompts.size(1))
-        attention_mask = torch.cat([prompt_mask, attention_mask], dim=1)
-        
-        outputs = self.model(inputs_embeds=inputs_embeds, attention_mask=attention_mask)
-        return outputs
-```
-
-### 2. Adapter Layers
-
-**Small trainable modules inserted between frozen layers**
-
-```python
-class Adapter(nn.Module):
-    def __init__(self, hidden_size, adapter_size=64):
-        super().__init__()
-        self.down_project = nn.Linear(hidden_size, adapter_size)
-        self.up_project = nn.Linear(adapter_size, hidden_size)
-        self.activation = nn.GELU()
-    
-    def forward(self, x):
-        residual = x
-        x = self.down_project(x)
-        x = self.activation(x)
-        x = self.up_project(x)
-        return x + residual  # Residual connection
-
-# Insert adapters into BERT
-for layer in model.bert.encoder.layer:
-    layer.output.adapters = Adapter(768)
-```
-
-### 3. Progressive Layer Freezing
-
-**Gradually unfreeze layers during training**
-
-```python
-def progressive_unfreeze(model, epoch, total_epochs):
-    """Unfreeze from top to bottom"""
-    num_layers = len(model.bert.encoder.layer)
-    layers_to_unfreeze = int(num_layers * (epoch / total_epochs))
-    
-    # Freeze all first
-    for param in model.bert.parameters():
-        param.requires_grad = False
-    
-    # Unfreeze top layers
-    for i in range(num_layers - layers_to_unfreeze, num_layers):
-        for param in model.bert.encoder.layer[i].parameters():
-            param.requires_grad = True
-```
-
-## Evaluation Metrics
-
-### Classification
-- **Accuracy**: Overall correctness
-- **F1-Score**: Balance of precision and recall
-- **AUC-ROC**: Ranking quality
-
-### Generation
-- **BLEU**: N-gram overlap with reference
-- **ROUGE**: Recall-oriented overlap
-- **Perplexity**: Model confidence
-
-### Similarity
-- **Cosine Similarity**: Vector space similarity
-- **BERTScore**: Contextual embedding similarity
-
-## Common Pitfalls
-
-| Issue | Symptom | Solution |
-|-------|---------|----------|
-| **Catastrophic Forgetting** | Poor generalization | Use lower LR, more regularization |
-| **Overfitting** | High train acc, low val acc | Add dropout, early stopping, more data |
-| **Underfitting** | Both accuracies low | Train longer, higher LR, unfreeze more |
-| **Long Input** | Truncation hurts | Use Longformer, sliding window, or chunking |
-| **Imbalanced Data** | Biased predictions | Class weights, oversampling, focal loss |
 
 ---
 
-**Previous**: [Transformer Architecture](../transformer-architecture/README.md) | **Next**: [Pre-training](../../04-LLM-Core/pre-training/README.md)
+## 4. Engineering Pitfalls (Sorted by Severity)
+
+1. **Catastrophic forgetting**
+   Symptom: during downstream fine-tuning, the model loses its general language ability because the learning rate is too high.
+   Fix: fine-tuning learning rates are typically 10-100x lower than pre-training (e.g. 2e-5); use feature extraction or PEFT for large datasets with limited resources.
+
+2. **Blindly choosing full-parameter fine-tuning on small datasets**
+   Symptom: updating hundreds of millions of parameters with only a few hundred samples leads to severe overfitting.
+   Fix: samples < 1K → prefer feature extraction; 1K-10K → light fine-tuning + early stopping; large datasets → full-parameter fine-tuning.
+
+3. **Input truncation hurting performance**
+   Symptom: BERT's default max_length=512 truncates long documents, discarding critical information in the latter half.
+   Fix: for understanding tasks use Longformer/BigBird; for generation use sliding windows or chunking strategies.
+
+4. **Ignoring class imbalance**
+   Symptom: one class dominates 95% of the data, so the model predicts the majority class every time and accuracy looks deceptively high.
+   Fix: use Focal Loss, class weights, oversampling, or replace Accuracy with F1 as the primary metric.
+
+---
+
+## 5. Evolution Notes
+
+> **The evolution of the pre-training paradigm**: static word vectors (Word2Vec) → contextual word vectors (ELMo) → pre-train + fine-tune (BERT/GPT-1) → larger scale + prompt engineering (GPT-3) → parameter-efficient fine-tuning (Prompt Tuning, Adapters, LoRA) → alignment with human feedback (RLHF).
+>
+> The central thread of this evolution is: as models grow larger, the cost of "updating all parameters" becomes prohibitive, so research focus shifts from "how to train big models" to "how to do more with big models while spending less."
+>
+> **New question left behind**: when pre-trained models reach 175B parameters, full fine-tuning is no longer feasible. How can we adapt them to downstream tasks using 1% or even 0.1% of the parameters? This gave rise to Parameter-Efficient Fine-Tuning (PEFT) and alignment techniques.
+
+→ Next Phase: [Scale & Multimodal](../../03-Scale-Multimodal/README_EN.md)
+
+---
+
+**Previous**: [Transformer Architecture](../transformer-architecture/README_EN.md) | **Next**: [Scale & Multimodal](../../03-Scale-Multimodal/README_EN.md)

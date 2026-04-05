@@ -97,6 +97,38 @@ class TransformerDecoderLayer(nn.Module):
         return x
 ```
 
+### Positional Encoding
+
+Self-attention is permutation-invariant—shuffling token order does not change the output. Positional encoding injects sequence-order information explicitly.
+
+**Sinusoidal PE (original Transformer)**
+
+```python
+import math
+import torch
+import torch.nn as nn
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, max_len=5000):
+        super().__init__()
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len).unsqueeze(1).float()
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model)
+        )
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe.unsqueeze(0))
+
+    def forward(self, x):
+        return x + self.pe[:, :x.size(1)]
+```
+
+**Key variants**:
+- **Learnable PE** (BERT, GPT-2): a learned matrix instead of fixed sinusoids. Simpler but weaker extrapolation to longer sequences.
+- **RoPE** (LLaMA): encodes position via rotation matrices applied to Q and K, so attention scores naturally carry relative position.
+- **ALiBi**: adds a distance-based penalty to attention scores instead of an explicit embedding, achieving strong long-sequence extrapolation.
+
 ## Complete Transformer
 
 ```python

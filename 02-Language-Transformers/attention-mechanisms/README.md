@@ -183,4 +183,4 @@ out = torch.nn.functional.scaled_dot_product_attention(
 
 ---
 
-**上一章**: [序列模型 RNN/LSTM](../../02-Neural-Networks/sequence-models/README.md) | **下一章**: [Transformer 架构](../transformer-architecture/README.md)
+**上一章**：[循环神经网络与 Seq2Seq](../recurrent-networks/README.md) | **下一章**：[Transformer 架构](../transformer-architecture/README.md)

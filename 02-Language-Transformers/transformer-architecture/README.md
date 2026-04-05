@@ -54,6 +54,66 @@ $$
 
 你要记住：注意力负责“token 间通信”，FFN 负责“token 内变换”。
 
+### 2.5 位置编码：给序列注入顺序信息
+
+Self-Attention 本身是**置换不变**的——把序列中 token 的顺序打乱，注意力输出不变。但语言里“猫吃鱼”和“鱼吃猫”含义完全不同。位置编码（Positional Encoding, PE）的任务，就是把“第几个词”的信息显式注入模型。
+
+**Sinusoidal PE（原始 Transformer）**
+
+对位置 $pos$ 和维度 $i$，用不同频率的正弦/余弦函数：
+
+$$
+PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d_{model}}}\right)
+$$
+
+$$
+PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d_{model}}}\right)
+$$
+
+直觉：低频维度编码“远距相对位置”，高频维度编码“近距相对位置。由于正弦/余弦的周期性，模型可以通过线性变换学习到相对位置关系，而且能够外推到训练时没见过的更长序列。
+
+**Learnable PE（BERT、GPT-2）**
+
+直接把位置编码当成一个可学习的矩阵 $E_{pos} \in \mathbb{R}^{L \times d_{model}}$，和词嵌入相加。更简单，但外推能力弱——遇到比训练更长的序列时，新位置没有对应的参数。
+
+**演进：RoPE 与 ALiBi**
+
+- **RoPE（Rotary Position Embedding，LLaMA 使用）**：把位置信息编码进 Q、K 向量的旋转矩阵中，让 attention score 天然携带相对位置信息。
+- **ALiBi**：不在 embedding 层加位置信息，而是在 attention score 上直接加一个与距离成负比的偏置项，长文本外推效果极佳。
+
+> 你要记住：位置编码不是“锦上添花”，而是让 Attention 从“词袋模型”变成“序列模型”的必要组件。
+
+**渐进式实现：生成 Sinusoidal 位置编码**
+
+```python
+import math
+import torch
+
+def get_sinusoidal_pe(seq_len, d_model):
+    """
+    生成正弦位置编码矩阵
+    Args:
+        seq_len: 最大序列长度
+        d_model: 模型维度
+    Returns:
+        pe: (seq_len, d_model)
+    """
+    pe = torch.zeros(seq_len, d_model)
+    position = torch.arange(0, seq_len).unsqueeze(1).float()  # (seq_len, 1)
+    div_term = torch.exp(
+        torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model)
+    )
+    pe[:, 0::2] = torch.sin(position * div_term)
+    pe[:, 1::2] = torch.cos(position * div_term)
+    return pe
+
+pe = get_sinusoidal_pe(seq_len=8, d_model=64)
+print(f"位置编码 shape: {pe.shape}")  # (8, 64)
+# 相邻位置的内积随距离衰减，体现相对位置关系
+print(f"位置 0 与 1 的内积: {pe[0] @ pe[1]:.4f}")
+print(f"位置 0 与 7 的内积: {pe[0] @ pe[7]:.4f}")
+```
+
 ## 3. 编码器层与解码器层（PyTorch）
 
 ```python

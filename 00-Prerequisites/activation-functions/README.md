@@ -315,8 +315,8 @@ for name, r in results.items():
 >
 > ReLU 的稀疏激活思想也影响了后续的 Mixture of Experts (MoE) 架构——只激活部分神经元/专家，本质上是稀疏性的放大版。
 
-→ 下一章：[正则化与 Dropout — 为什么模型会"死记硬背"？](../regularization/README.md)
+→ 下一章：[归一化机制 — 为什么训练深度网络需要"校准仪"？](../normalization/README.md)
 
 ---
 
-**上一章**: [残差连接](../residual-connections/README.md) | **下一章**: [正则化与 Dropout](../regularization/README.md)
+**上一章**：[学习率调度与梯度优化](../optimization-scheduling/README.md) | **下一章**：[归一化机制](../normalization/README.md)

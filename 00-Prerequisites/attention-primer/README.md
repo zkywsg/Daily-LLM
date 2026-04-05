@@ -149,6 +149,9 @@ $$
 **Step 1 · 手写注意力权重可视化**
 
 ```python
+# 模拟编码器隐状态与解码器隐状态的注意力权重
+# 使用 softmax 归一化相似度分数
+# 可视化注意力分配过程
 import numpy as np
 
 np.random.seed(42)
@@ -181,6 +184,9 @@ print(f"上下文向量 shape: {context.shape}")
 **Step 2 · 完整 Scaled Dot-Product Attention**
 
 ```python
+# 完整实现 Scaled Dot-Product Attention
+# 计算 QK^T / √d_k 并 softmax 加权 V
+# 验证注意力矩阵的 shape 与行和
 import torch
 import torch.nn.functional as F
 
@@ -205,6 +211,9 @@ print(f"输出 shape: {output.shape}")          # (2, 6, 16)
 **Step 3 · 因果 mask（Decoder 使用）**
 
 ```python
+# 构造因果 mask 阻止模型看到未来位置
+# 上三角设为 -inf 后 softmax 归零
+# 验证 Decoder 的自回归特性
 import torch
 import torch.nn.functional as F
 
@@ -232,6 +241,9 @@ print(weights[0].round(decimals=2))
 **Step 4 · 可视化注意力热力图**
 
 ```python
+# 可视化 Self-Attention 权重热力图
+# 模拟 token 序列并绘制注意力矩阵
+# 保存结果用于直观理解注意力分布
 import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
@@ -289,7 +301,7 @@ print("注意力热力图已保存")
 >
 > 注意力的思想后来超越了 NLP：ViT 把图像切成 patch 后用 self-attention 处理，CLIP 用 cross-attention 对齐图像和文本，扩散模型用 cross-attention 注入文本条件。
 >
-> **留下的新问题**：注意力让序列中每个位置都能直接交互，但这也意味着模型对输入顺序没有天然感知——"猫吃鱼"和"鱼吃猫"的 attention 权重可能完全一样。这引出了位置编码（Positional Encoding）。
+> **留下的新问题**：注意力让序列中每个位置都能直接交互，但这也意味着模型对输入顺序没有天然感知——"猫吃鱼"和"鱼吃猫"的 attention 权重可能完全一样。位置编码（Positional Encoding）与多头注意力（Multi-Head Attention）等完整实现细节，将在 Transformer 架构章节中系统讲解。
 
 → 下一章：[归纳偏置 — CNN 和 Transformer "看到"的世界有何不同？](../inductive-bias/README.md)
 

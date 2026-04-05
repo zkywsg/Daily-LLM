@@ -2,6 +2,17 @@
 
 **文档语言**: [**English**](README_EN.md) | [**中文**](README.md)
 
+## 这个问题从哪来
+
+> 2020–2021年，随着 GPT-3、CLIP、T5 等大型模型涌现，训练和部署它们的工程复杂度呈指数级上升。HuggingFace、DeepSpeed、Megatron-LM 等框架的出现，让个人研究者和小团队也能触达曾经只有工业界实验室才能操作的模型规模。
+
+## 学习目标
+
+完成后你应能回答：
+1. HuggingFace 生态各组件（Transformers、Datasets、PEFT、TRL）如何分工？
+2. 训练大模型时应该在什么场景选择 FSDP 或 DeepSpeed？
+3. 生产部署中 vLLM 相比原生推理有哪些核心优势？
+
 ## 目录
 
 1. [概述](#1-概述)
@@ -476,3 +487,12 @@ wandb.finish()
                         ├── 本地开发 → Ollama
                         └── 生产部署 → vLLM / TGI
 ```
+
+## 演进笔记
+
+> 这一技术的遗产：开源框架极大地降低了大模型的准入门槛，催生了从预训练到部署的完整工具链；但框架碎片化、版本兼容性、以及从"能跑"到"跑得快"的调优鸿沟，仍是工程实践中的主要痛点。
+→ 详见 [RAG 基础](../../05-Systems-Production/rag-foundations/README.md)
+
+---
+
+**上一章**: [提示工程](../prompt-engineering/README.md) | **下一章**: [多模态](../multimodal/README.md)

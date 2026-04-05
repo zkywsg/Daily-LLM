@@ -21,9 +21,9 @@
 
 | # | 模块 | 核心内容 |
 |---|------|---------|
-| 7 | [归一化机制](normalization/README.md) | BatchNorm（训练/推理差异）、LayerNorm、Pre-LN vs Post-LN |
-| 8 | [残差连接](residual-connections/README.md) | 梯度直通通道、Projection Shortcut、Pre-LN vs Post-LN、DenseNet |
-| 9 | [激活函数家族](activation-functions/README.md) | Sigmoid 的梯度消失与 ReLU 的崛起、Dying ReLU 与变体、GELU |
+| 7 | [激活函数家族](activation-functions/README.md) | Sigmoid 的梯度消失与 ReLU 的崛起、Dying ReLU 与变体、GELU |
+| 8 | [归一化机制](normalization/README.md) | BatchNorm（训练/推理差异）、LayerNorm、Pre-LN vs Post-LN |
+| 9 | [残差连接](residual-connections/README.md) | 梯度直通通道、Projection Shortcut、Pre-LN vs Post-LN、DenseNet |
 | 10 | [正则化与 Dropout](regularization/README.md) | 过拟合诊断、Dropout 变体、L2 权重衰减、Early Stopping |
 
 ### NLP 桥梁

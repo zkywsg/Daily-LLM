@@ -696,4 +696,4 @@ def evaluate_alignment(model, test_prompts, reward_model, safety_classifier):
 
 ---
 
-**上一节**: [PEFT](../peft/README.md) | **下一节**: [多模态](../multimodal/README.md)
+**上一章**: [PEFT](../peft/README.md) | **下一章**: [提示工程](../../03-Scale-Multimodal/prompt-engineering/README.md)

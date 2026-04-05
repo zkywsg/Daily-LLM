@@ -159,6 +159,9 @@ $$I(X; Y) = H(X) - H(X|Y) = D_{KL}(p(x,y) \| p(x)p(y))$$
 **Step 1 · 纯 NumPy 实现信息熵、交叉熵、KL 散度**
 
 ```python
+# 纯 NumPy 实现信息熵、交叉熵与 KL 散度
+# 对比真实分布、好预测与差预测的差异
+# 验证 H(p,q) = H(p) + D_KL(p||q) 的关系
 import numpy as np
 
 def entropy(p):
@@ -192,6 +195,9 @@ print(f"D_KL(p||q_bad) = {kl_divergence(p_true, q_bad):.4f}")
 **Step 2 · MLE 拟合高斯分布**
 
 ```python
+# 从高斯分布采样并用 MLE 估计参数
+# 验证样本均值与样本标准差的收敛性
+# 理解最大似然估计的基本思想
 import numpy as np
 
 np.random.seed(42)
@@ -212,6 +218,9 @@ print(f"MLE 估计: μ={mu_mle:.4f}, σ={sigma_mle:.4f}")
 **Step 3 · PyTorch 对接 `F.cross_entropy`**
 
 ```python
+# 使用 PyTorch F.cross_entropy 计算分类损失
+# 手动验证 softmax + negative log-likelihood
+# 理解 log-sum-exp 的数值稳定性
 import torch
 import torch.nn.functional as F
 
@@ -262,9 +271,9 @@ print(f"手动计算: {manual_loss.item():.4f}")
 >
 > MLE = 最小化交叉熵这一等价性，把"概率建模"和"神经网络训练"统一在了同一个框架下。你不需要同时记两套理论——它们是同一件事的不同表述。
 >
-> **留下的新问题**：交叉熵衡量了"预测有多准"，但模型输出的是原始分数（logits），不是概率——怎么把 logits 变成概率？这引出了深度学习基础。
+> **留下的新问题**：交叉熵衡量了"预测有多准"，但模型输出的是原始分数（logits），不是概率——怎么把 logits 变成概率？这引出了神经网络基础。
 
-→ 下一章：[深度学习基础 — 为什么线性模型不够用了？](../deep-learning-basics/README.md)
+→ 下一章：[神经网络基础 — 为什么线性模型不够用了？](../deep-learning-basics/README.md)
 
 ---
 

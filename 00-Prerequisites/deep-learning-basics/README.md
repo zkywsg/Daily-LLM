@@ -111,6 +111,7 @@ print(f"loss: {loss.item():.4f}")
 ```python
 # 加入 shape 断言，防止常见的广播 bug
 # squeeze(-1) 在 batch=1 时行为需要确认
+# 验证 MLP 前向与反向传播的 shape 安全
 import torch
 import torch.nn as nn
 
@@ -152,6 +153,8 @@ print(f"loss: {loss.item():.4f}")
 
 ```python
 # BatchNorm 稳定训练；Dropout 防过拟合；He 初始化匹配 ReLU
+# 工程完善：加入权重初始化与正则化
+# 验证训练一步的完整流程
 import torch
 import torch.nn as nn
 

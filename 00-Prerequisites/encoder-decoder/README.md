@@ -130,6 +130,9 @@ graph LR
 **Step 1 · 最简 Seq2Seq（概念验证）**
 
 ```python
+# 最简 Seq2Seq 概念验证
+# 使用 LSTM 编码器压缩序列，解码器生成序列
+# 验证 encoder/decoder 的隐状态传递
 import torch
 import torch.nn as nn
 
@@ -169,6 +172,9 @@ print(f"解码器 logits shape: {logits.shape}")      # (batch, trg_len, output_
 **Step 2 · 注意力 mask 对比**
 
 ```python
+# 构造并对比 Encoder 双向 mask 与 Decoder 因果 mask
+# 将 mask 应用到 attention scores
+# 验证因果 mask 的正确性
 import torch
 
 SEQ_LEN = 5
@@ -201,6 +207,9 @@ print((scores.masked_fill(causal_mask == 0, float('-inf'))).softmax(dim=-1).roun
 **Step 3 · Encoder vs Decoder 的输出行为**
 
 ```python
+# 简化版 Transformer block 对比 Encoder/Decoder
+# 相同输入在不同 mask 下的输出差异
+# 验证双向与因果注意力行为
 import torch
 import torch.nn as nn
 

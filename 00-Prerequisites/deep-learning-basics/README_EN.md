@@ -286,4 +286,4 @@ Next you will see why image tasks benefit from CNN inductive bias and why sequen
 
 ---
 
-**Previous**: [Machine Learning Foundations](../machine-learning/README_EN.md) | **Next**: [Activation Functions](../activation-functions/README_EN.md)
+**Previous**: [Prerequisites Overview](../README_EN.md) | **Next**: [Linear Algebra](../linear-algebra/README_EN.md)

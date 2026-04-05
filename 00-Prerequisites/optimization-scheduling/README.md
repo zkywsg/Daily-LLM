@@ -65,6 +65,9 @@ lr = base_lr * (0.5 ** (epoch // 30))
 $$\eta_t = \eta_{\min} + \frac{1}{2}(\eta_{\max} - \eta_{\min})(1 + \cos(\frac{\pi t}{T}))$$
 
 ```python
+# 手写线性 warmup + cosine decay 调度器
+# 可视化不同 warmup 长度下的学习率曲线
+# 理解 Transformer 训练的标准调度策略
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -233,6 +236,9 @@ plt.show()
 **Step 2 · PyTorch lr_scheduler 验证**
 
 ```python
+# 验证 PyTorch CosineAnnealingLR 的行为
+# 记录 100 个 epoch 的学习率变化
+# 理解 cosine decay 的平滑下降特性
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -257,6 +263,9 @@ print(f"第 50 epoch LR: {lrs[49]:.6f}")
 **Step 3 · Gradient Clipping 实验**
 
 ```python
+# 使用长序列 RNN 触发梯度爆炸
+# 对比裁剪前后的梯度 L2 范数
+# 验证 clip_grad_norm_ 的限制效果
 import torch
 import torch.nn as nn
 
@@ -286,6 +295,9 @@ print(f"裁剪后梯度范数: {grad_norm_clipped:.1f}")  # 最大为 1.0
 **Step 4 · AdamW vs Adam 对比**
 
 ```python
+# 在相同任务上对比 Adam 与 AdamW
+# 观察权重衰减解耦对最终 loss 的影响
+# 验证 AdamW 的正则化优势
 import torch
 import torch.nn as nn
 
@@ -346,8 +358,8 @@ print(f"AdamW 最终 loss:  {losses_adamw[-1]:.4f}")
 >
 > **留下的新问题**：参数更新的方向和步长都有了，但训练过程中激活值的分布会漂移——这引出了归一化机制。
 
-→ 下一章：[归一化机制 — 为什么训练深度网络需要"校准仪"？](../normalization/README.md)
+→ 下一章：[激活函数家族 — 为什么 Sigmoid 不够用了？](../activation-functions/README.md)
 
 ---
 
-**上一章**：[反向传播与优化器](../backpropagation/README.md) | **下一章**：[归一化机制](../normalization/README.md)
+**上一章**：[反向传播与优化器](../backpropagation/README.md) | **下一章**：[激活函数家族](../activation-functions/README.md)

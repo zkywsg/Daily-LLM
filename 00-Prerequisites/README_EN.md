@@ -1,78 +1,81 @@
 [English](README_EN.md) | [中文](README.md)
 
-# Phase 01: Foundations
+# Phase 00 · Prerequisites
 
-> This phase is about learning how to turn a real problem into something measurable, trainable, and debuggable, not just how to call a model.
+The minimum neural-network foundations required before entering the visual track and the language track.
+Does not cover classical ML algorithms (SVM, decision trees, K-Means, etc.).
 
-## Why This Phase Matters
+## Contents
 
-Many people jump straight into Transformers, RAG, or agents, then get blocked by more basic questions: How should the target be defined? Which metric actually matters? Why does offline performance look good while production results degrade? Where did leakage happen?
+### Foundations
 
-Phase 01 builds that missing judgment first.
+| # | Module | Core Content |
+|---|--------|--------------|
+| 0 | [Probability & Information Theory](probability-information-theory/README_EN.md) | Probability distributions, Bayes' theorem, entropy, cross-entropy, KL divergence, MLE, mutual information |
+| 1 | [Deep Learning Basics](deep-learning-basics/README_EN.md) | Neurons & forward propagation, backpropagation & gradient descent, loss functions & the training loop |
+| 2 | [Linear Algebra](linear-algebra/README_EN.md) | Vectors & matrices, matrix multiplication as linear transformation, norms, SVD, broadcasting |
+| 3 | [Softmax & Probability Distributions](softmax/README_EN.md) | Softmax formula, relationship with Sigmoid, temperature parameter, log-sum-exp trick |
+| 4 | [Loss Functions](loss-functions/README_EN.md) | Regression/MSE/Huber, cross-entropy/Focal Loss, contrastive losses/InfoNCE, Label Smoothing |
+| 5 | [Backpropagation & Optimizers](backpropagation/README_EN.md) | Chain rule & computation graphs, vanishing/exploding gradients, SGD/Momentum/Adam |
+| 6 | [Learning-Rate Scheduling & Gradient Control](optimization-scheduling/README_EN.md) | Warmup/Cosine Decay/Step Decay, gradient clipping, AdamW/LAMB |
 
-The entire phase follows one running case study: a consumer finance platform wants to predict whether a user will default within the next 90 days. You will first build a trustworthy classical ML baseline, then move into deep learning to understand both why neural networks are powerful and why they are not always the right answer.
+### Architecture Components
 
-## Who This Phase Is For
+| # | Module | Core Content |
+|---|--------|--------------|
+| 7 | [Normalization](normalization/README_EN.md) | BatchNorm (train vs eval), LayerNorm, Pre-LN vs Post-LN |
+| 8 | [Residual Connections](residual-connections/README_EN.md) | Gradient highways, projection shortcuts, Pre-LN vs Post-LN, DenseNet |
+| 9 | [Activation Functions](activation-functions/README_EN.md) | Sigmoid's vanishing gradients & ReLU's rise, Dying ReLU & variants, GELU |
+| 10 | [Regularization & Dropout](regularization/README_EN.md) | Overfitting diagnosis, Dropout variants, L2 weight decay, Early Stopping |
 
-- Software engineers moving into AI or ML
-- LLM application builders who want stronger modeling intuition
-- Beginners who can use libraries but do not yet understand why models work or fail
+### NLP Bridge
 
-## What You Will Get
+| # | Module | Core Content |
+|---|--------|--------------|
+| 11 | [Embeddings](embeddings/README_EN.md) | One-hot → Embedding lookup, Word2Vec Skip-gram, static vs contextual embeddings |
+| 12 | [Tokenization](tokenization/README_EN.md) | BPE/WordPiece/Unigram algorithms, vocab-size tradeoffs, special tokens |
+| 13 | [Encoder-Decoder Paradigm](encoder-decoder/README_EN.md) | Seq2Seq, three Transformer paradigms (encoder-only/decoder-only/encoder-decoder) |
+| 14 | [Attention Primer](attention-primer/README_EN.md) | Seq2Seq bottleneck, QKV framework, Scaled Dot-Product Attention, causal mask |
 
-- A practical framework for turning business goals into samples, features, labels, losses, and metrics
-- A clearer sense of when to use logistic regression, decision trees, SVMs, K-Means, and PCA
-- An operational understanding of forward propagation, backpropagation, and the training loop
-- The ability to distinguish real signal from misleading offline results
-- A smoother transition into CNNs, sequence models, and Transformers
+### Conceptual Bridge
 
-## Running Case Study
+| # | Module | Core Content |
+|---|--------|--------------|
+| 15 | [Inductive Bias](inductive-bias/README_EN.md) | Inductive-bias comparison of CNN/RNN/Transformer, ViT's data-bias tradeoff |
+| 16 | [Numerical Precision & Distributed Training](numerical-precision/README_EN.md) | FP32/FP16/BF16, mixed-precision training, data parallelism, gradient accumulation |
 
-### Credit Risk: 90-Day Default Prediction
+## Suggested Reading Order
 
-Assume you work on a consumer finance platform. Every day, the system needs to decide:
+```
+Foundations: 0 → 1 → 2 → 3 → 4 → 5 → 6
+Architecture: 7 → 8 → 9 → 10
+NLP Bridge: 11 → 12 → 13 → 14
+Conceptual Bridge: 15 → 16
+```
 
-- which users can receive a higher credit line,
-- which users require stricter review,
-- which users should trigger early warning workflows.
+Each module follows the same structure: **Where it comes from → Intuition → Mechanics → Progressive Implementation → Engineering Pitfalls → Evolution Notes**.
 
-If high-risk users are misclassified as low-risk, the company absorbs bad debt. If low-risk users are flagged as high-risk, the business loses good customers and revenue.
-That makes credit risk a strong teaching case for fundamentals: the objective is concrete, the cost of mistakes is real, and the metric choice cannot be superficial.
+## Timeline Nodes
 
-## Learning Map
+| Year | Work | Core Significance |
+|------|------|-------------------|
+| 1812 | Bayes' theorem (Laplace) | Mathematical foundation of inverse-probability reasoning |
+| 1948 | Shannon's information theory | Mathematical foundation of entropy and mutual information |
+| 1986 | Backpropagation | Foundation for training multi-layer networks |
+| 2010 | ReLU (Nair & Hinton) | Replaced sigmoid, restored gradient flow |
+| 2012 | GPU deep-learning ecosystem | CUDA-accelerated training, compute infrastructure established |
+| 2013 | Word2Vec | Word embeddings moved from sparse to dense |
+| 2014 | Adam optimizer | The default optimizer that barely needs LR tuning |
+| 2015 | Batch Normalization | Training speed improved by orders of magnitude, allowed higher learning rates |
+| 2015 | ResNet (residual connections) | Made ultra-deep networks (152 layers) trainable |
+| 2015 | Bahdanau Attention | Solved the fixed-length bottleneck of Seq2Seq |
+| 2016 | BPE tokenization | Subword tokenization became the NLP standard |
+| 2017 | AdamW | Decoupled weight decay, de-facto standard for Transformer training |
+| 2017 | One-Cycle Policy | Single-cycle LR scheduling, improved training efficiency |
+| 2017 | Focal Loss | Solved class imbalance, standard for object detection |
+| 2018 | Mixed Precision | FP16 training doubled speed and halved memory |
+| 2019 | LAMB | Large-batch optimizer supporting batch sizes 8K+ |
 
-| Module | What You Will Learn | Why It Matters |
-| --- | --- | --- |
-| [Machine Learning Foundations](machine-learning/README_EN.md) | Supervised learning, unsupervised learning, evaluation, generalization, feature engineering, baseline modeling | Builds the decision framework for turning problems into models |
-| [Deep Learning Basics](deep-learning-basics/README_EN.md) | MLPs, activations, losses, backpropagation, optimizers, training stability | Explains why representation learning matters and why training succeeds or fails |
+→ Full timeline at [00-Timeline](../00-Timeline/)
 
-Recommended order:
-
-1. Finish the machine learning chapter first to build the problem-definition and evaluation framework.
-2. Then move to deep learning to understand how neural networks extend beyond linear decision boundaries.
-3. After that, continue to Phase 02 for more specialized architectures and training patterns.
-
-## Highlights
-
-- **Decision-making over algorithm listing**: each chapter explains when to choose a method, not just what it is.
-- **Minimal math with maximum payoff**: only the derivations that improve understanding stay.
-- **A real business frame, not toy examples**: the same credit-risk case is used to discuss metrics, tradeoffs, and error analysis.
-- **Engineering-first explanations**: data splits, leakage, imbalance, instability, and debugging order are all part of the story.
-
-## Common Mistakes Before This Phase
-
-- Assuming a more complex model is automatically better
-- Looking only at accuracy while ignoring recall, AUC, and business cost
-- Accidentally leaking future information into training data
-- Memorizing conclusions without understanding why the model behaves that way
-
-## How To Study This Phase
-
-- Treat the two chapters as one continuous story rather than two unrelated topics.
-- When you encounter a metric, equation, or training loop, map it back to the case study and ask what risk it helps reduce.
-- If your long-term goal is LLM engineering, the value of this phase is judgment, not nostalgia for simpler models.
-
-## Next Step
-
-After this phase, move on to [CNN Architectures](../02-Neural-Networks/cnn-architectures/README_EN.md).
-At that point, you will not just know that networks can be deeper. You will already understand why stronger inductive bias matters and why training stability stays central as systems scale.
+**Next Phase**: [Visual Intelligence →](../01-Visual-Intelligence/)

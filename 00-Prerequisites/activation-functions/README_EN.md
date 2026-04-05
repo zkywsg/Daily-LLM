@@ -315,8 +315,8 @@ for name, r in results.items():
 >
 > ReLU's sparse activation idea also influenced later Mixture of Experts (MoE) architectures — activating only a subset of neurons/experts is essentially sparse activation at scale.
 
-→ Next chapter: [Transformer Architecture — How GELU Powers Attention](../../02-Language-Transformers/transformer-architecture/README.md)
+→ Next chapter: [Normalization — Why Does Training Deep Networks Need a "Calibrator"?](../normalization/README_EN.md)
 
 ---
 
-**Previous**: [Deep Learning Basics](../deep-learning-basics/README_EN.md) | **Next**: [CNN Architectures](../../01-Visual-Intelligence/cnn-architectures/README.md)
+**Previous**: [Learning-Rate Scheduling & Gradient Control](../optimization-scheduling/README_EN.md) | **Next**: [Normalization](../normalization/README_EN.md)

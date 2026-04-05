@@ -174,12 +174,14 @@ nn.LSTM(input_size, hidden_size, num_layers=2, dropout=0.3)
 
 > 你要记住：正则化手段没有银弹，实际效果取决于数据、模型和任务的组合。最常见的组合是 Data Augmentation + Weight Decay + Early Stopping。
 
-### 2.6 渐进式实现
+## 3. 渐进式实现
 
 **Step 1 · 纯 NumPy 实现 inverted dropout（核心逻辑，可独立运行）**
 
 ```python
 # 实现 inverted dropout：训练时 mask+缩放，推理时直接通过
+# 验证保留比例与缩放补偿
+# 对比训练模式与推理模式的输出差异
 import numpy as np
 
 np.random.seed(42)
@@ -199,7 +201,9 @@ print("推理模式:", dropout_forward(h, p=0.5, training=False))
 **Step 2 · PyTorch `nn.Dropout` + train/eval 切换**
 
 ```python
-# 对比手动实现和 PyTorch 内置，验证 train/eval 模式切换行为
+# 对比手动实现与 PyTorch 内置 Dropout
+# 验证 train/eval 模式切换行为
+# 理解 inverted dropout 的推理一致性
 import torch
 import torch.nn as nn
 
@@ -222,7 +226,9 @@ print(f"推理模式 (与输入一致): {torch.allclose(out_eval, x)}")
 **Step 3 · CNN 中 SpatialDropout 的使用**
 
 ```python
-# SpatialDropout drop 整个 channel，适配 CNN 特征图的空间相关性
+# 使用 Dropout2d 在 CNN 特征图上 drop 整个 channel
+# 验证空间相关性与 channel 级丢弃效果
+# 理解 SpatialDropout 的适用场景
 import torch
 import torch.nn as nn
 
@@ -245,6 +251,7 @@ print(f"被 drop 的 channel 比例: {zero_channels.float().mean():.2f}")
 ```python
 # 验证 Dropout 率对过拟合的影响
 # 同一 MLP，仅改变 dropout rate，对比 train/val loss 曲线
+# 观察过拟合抑制与欠拟合风险的权衡
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
@@ -305,7 +312,7 @@ plt.savefig("dropout_comparison.png", dpi=150)
 
 ---
 
-## 3. 工程陷阱
+## 4. 工程陷阱
 
 优先级从高到低：
 
@@ -332,8 +339,8 @@ plt.savefig("dropout_comparison.png", dpi=150)
 >
 > **留下的新问题**：大模型时代（GPT-4 级别），Dropout 几乎不再使用——为什么？因为当数据量足够大、训练时间足够长时，模型已经没有"余力"去记忆噪声了。过拟合的前提（数据 < 容量）不再成立。正则化的重心从"限制模型"转向了"提升数据质量"。
 
-→ 下一章：[训练与优化 — 为什么加深网络之后训练反而变差了？](../../01-Visual-Intelligence/training/README.md)
+→ 下一章：[Embedding 向量 — 为什么"苹果"和"橘子"在向量空间里是邻居？](../embeddings/README.md)
 
 ---
 
-**上一章**: [深度学习基础](../deep-learning-basics/README.md) | **下一章**: [训练与优化](../../01-Visual-Intelligence/training/README.md)
+**上一章**：[残差连接](../residual-connections/README.md) | **下一章**：[Embedding 向量](../embeddings/README.md)

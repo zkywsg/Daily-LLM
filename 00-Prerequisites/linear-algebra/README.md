@@ -143,6 +143,9 @@ batch_mask = mask[np.newaxis, :, :]  # (1, 8, 8)
 **Step 1 · 纯 NumPy 手写矩阵乘法**
 
 ```python
+# 纯 NumPy 三重循环实现矩阵乘法
+# 与 NumPy 向量化版本对比速度
+# 理解矩阵乘法的算法复杂度
 import numpy as np
 import time
 
@@ -178,6 +181,9 @@ print(f"结果一致: {np.allclose(C1, C2)}")
 **Step 2 · 线性变换可视化**
 
 ```python
+# 使用 2×2 矩阵对单位圆做线性变换
+# 展示旋转、缩放、剪切的几何效果
+# 理解矩阵乘法的空间变换本质
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -215,6 +221,9 @@ plt.show()
 **Step 3 · SVD 降维示例**
 
 ```python
+# 对随机矩阵进行 SVD 分解
+# 用前 k 个奇异值重建并保留信息比例
+# 理解低秩近似与降维原理
 import numpy as np
 import matplotlib.pyplot as plt
 

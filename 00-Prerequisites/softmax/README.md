@@ -122,6 +122,9 @@ graph TD
 **Step 1 · 朴素实现（理解公式，不可用于生产）**
 
 ```python
+# 朴素 softmax 实现，未做数值稳定处理
+# 验证小输入下的概率和为 1
+# 观察大输入导致的溢出现象
 import numpy as np
 
 def softmax_naive(z):
@@ -144,6 +147,9 @@ except:
 **Step 2 · 数值稳定版（生产可用）**
 
 ```python
+# 数值稳定的 softmax：先减最大值
+# 验证大输入下仍能得到正确概率
+# 理解 log-sum-exp trick 的必要性
 import numpy as np
 
 def softmax_stable(z):
@@ -160,6 +166,9 @@ print(f"总和: {softmax_stable(z_big).sum():.6f}")  # 应为 1.0
 **Step 3 · 带温度参数的采样**
 
 ```python
+# 实现带温度参数的 softmax
+# 观察 T 对分布尖锐/平坦程度的影响
+# 理解温度在知识蒸馏中的作用
 import numpy as np
 
 def softmax_with_temperature(z, T=1.0):
@@ -177,6 +186,9 @@ for T in [0.1, 1.0, 5.0]:
 **Step 4 · PyTorch 验证与梯度**
 
 ```python
+# 使用 PyTorch 验证 softmax 与 log_softmax
+# 手动验证 softmax 的 Jacobian 梯度
+# 理解交叉熵内部使用 log_softmax 的原因
 import torch
 
 torch.manual_seed(42)
