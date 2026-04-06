@@ -1,126 +1,115 @@
 [English](README_EN.md) | [中文](README.md)
 
-# Transformer 架构
+# 为什么 RNN 的递归记忆不够用了？—— Transformer 架构
 
-## 概述
+## 这个问题从哪来
 
-Transformer 用“注意力 + 前馈网络 + 残差归一化”取代了 RNN 的时序递归，显著提升并行训练能力。理解 Transformer 的关键不是背结构图，而是看懂一个 block 如何在信息混合与稳定训练之间平衡。
+> 2017 年，Vaswani 等人在 “Attention Is All You Need” 里指出：RNN 把长句子拆成一步一步递推，信息要穿过很多时间步才能到达后面，长距离依赖容易衰减，而且训练很难并行。Transformer 不是给 RNN 打补丁，而是直接用注意力、前馈网络和残差归一化，把序列建模改成可并行的层叠计算。
 
 ## 学习目标
 
-完成本章后，你应能回答：
+完成后你应能回答：
 
-1. 一个 Transformer block 的最小组成和数据流是什么？
-2. Encoder-only、Decoder-only、Encoder-Decoder 的任务边界如何区分？
-3. 训练和推理时最常见的稳定性与效率问题是什么？
+1. Transformer block 的最小组成和数据流是什么？
+2. Encoder-only、Decoder-only、Encoder-Decoder 分别适合什么任务？
+3. 位置编码、残差、LayerNorm、mask 各在解决什么工程问题？
 
-## 1. 高层结构一图理解
+## 1. 直觉
 
-```text
-Token Embedding + Position
-        ↓
-   [Transformer Block] × N
-        ↓
-Task Head (分类/生成/序列到序列)
+想象你在读一篇长文章。
+
+RNN 像是一边读一边做单行笔记，后面的理解必须依赖前面逐字传下来的记忆。句子一长，笔记就容易漏掉前文重点。Transformer 则像把整篇文章摊开：每个 token 都能直接看见其他 token，再决定自己该向谁“借信息”。
+
+这样做有两个直接好处：
+
+- 信息传递路径变短，长距离依赖更容易学
+- 同一层里可以并行处理所有 token，训练吞吐更高
+
+> 你要记住：Transformer 不是“更强的 RNN”，而是“把序列递推改成并行注意力”的新范式。
+
+```mermaid
+graph TD
+    X["Token ids\n(batch, seq)"] --> E["Embedding + Positional Encoding\n(batch, seq, d_model)"]
+    E --> B["Transformer Block × N\n(batch, seq, d_model)"]
+    B --> H["Task Head\n(batch, seq or vocab)"]
+
+    linkStyle default stroke:#d6d3d1,stroke-width:2px;
+    style X fill:#fef3c7,stroke:#d97706,color:#92400e
+    style E fill:#fef3c7,stroke:#d97706,color:#92400e
+    style B fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style H fill:#ecfdf5,stroke:#059669,color:#065f46
 ```
 
-对于 Seq2Seq（翻译、摘要）：
+## 2. 机制
 
-```text
-源序列 -> Encoder 堆栈
-目标序列 -> Decoder 堆栈 (含因果自注意力 + 对 Encoder 的交叉注意力)
+### 2.1 核心公式
+
+$$
+\text{Transformer Block}(x)=x+\text{MHA}(\text{LN}(x)),\quad
+x=x+\text{FFN}(\text{LN}(x))
+$$
+
+Self-Attention 负责 token 间通信，FFN 负责 token 内变换；残差让梯度穿过去，LayerNorm 让训练更稳，mask 则负责禁止看到不该看的位置。
+
+> 你要记住：Self-Attention 负责 token 间通信，FFN 负责 token 内变换；mask 和 LayerNorm 负责让训练可控。
+
+### 2.2 计算流图
+
+```mermaid
+graph TD
+    S["Input ids\n(batch, seq)"] --> Emb["Token Embedding + Positional Encoding\n(batch, seq, d_model)"]
+    Emb --> Enc["Encoder Stack × N\n(batch, seq, d_model)"]
+    T["Target ids\n(batch, tgt_seq)"] --> DecIn["Target Embedding + Positional Encoding\n(batch, tgt_seq, d_model)"]
+    DecIn --> Dec["Decoder Stack × N\n(batch, tgt_seq, d_model)"]
+    Enc --> Dec
+    Dec --> Out["Output Projection + Softmax\n(batch, tgt_seq, vocab)"]
+
+    linkStyle default stroke:#d6d3d1,stroke-width:2px;
+    style S fill:#fef3c7,stroke:#d97706,color:#92400e
+    style T fill:#fef3c7,stroke:#d97706,color:#92400e
+    style Emb fill:#fef3c7,stroke:#d97706,color:#92400e
+    style DecIn fill:#fef3c7,stroke:#d97706,color:#92400e
+    style Enc fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style Dec fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style Out fill:#ecfdf5,stroke:#059669,color:#065f46
 ```
 
-你要记住：Transformer 是“重复堆叠同一计算单元”的架构家族。
+### 2.3 渐进式实现
 
-## 2. 一个 Transformer Block
-
-标准 block 包含两层子结构：
-
-1. Multi-Head Attention（跨 token 信息交互）
-2. Feed-Forward Network（逐 token 非线性变换）
-
-并在每个子层外包裹：
-
-- Residual Connection（保梯度）
-- LayerNorm（稳训练）
-
-常见写法是 Pre-LN：
-
-$$
-x = x + \text{MHA}(\text{LN}(x)),\quad
-x = x + \text{FFN}(\text{LN}(x))
-$$
-
-你要记住：注意力负责“token 间通信”，FFN 负责“token 内变换”。
-
-### 2.5 位置编码：给序列注入顺序信息
-
-Self-Attention 本身是**置换不变**的——把序列中 token 的顺序打乱，注意力输出不变。但语言里“猫吃鱼”和“鱼吃猫”含义完全不同。位置编码（Positional Encoding, PE）的任务，就是把“第几个词”的信息显式注入模型。
-
-**Sinusoidal PE（原始 Transformer）**
-
-对位置 $pos$ 和维度 $i$，用不同频率的正弦/余弦函数：
-
-$$
-PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d_{model}}}\right)
-$$
-
-$$
-PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d_{model}}}\right)
-$$
-
-直觉：低频维度编码“远距相对位置”，高频维度编码“近距相对位置。由于正弦/余弦的周期性，模型可以通过线性变换学习到相对位置关系，而且能够外推到训练时没见过的更长序列。
-
-**Learnable PE（BERT、GPT-2）**
-
-直接把位置编码当成一个可学习的矩阵 $E_{pos} \in \mathbb{R}^{L \times d_{model}}$，和词嵌入相加。更简单，但外推能力弱——遇到比训练更长的序列时，新位置没有对应的参数。
-
-**演进：RoPE 与 ALiBi**
-
-- **RoPE（Rotary Position Embedding，LLaMA 使用）**：把位置信息编码进 Q、K 向量的旋转矩阵中，让 attention score 天然携带相对位置信息。
-- **ALiBi**：不在 embedding 层加位置信息，而是在 attention score 上直接加一个与距离成负比的偏置项，长文本外推效果极佳。
-
-> 你要记住：位置编码不是“锦上添花”，而是让 Attention 从“词袋模型”变成“序列模型”的必要组件。
-
-**渐进式实现：生成 Sinusoidal 位置编码**
+**Step 1：最小可运行版**（解决 token 间信息混合）
 
 ```python
+# 解决 token 间信息混合
+# QK^T 计算相关性，softmax 归一化，@V 聚合信息
+# 时间 O(n^2d)，空间 O(n^2)
 import math
 import torch
 
-def get_sinusoidal_pe(seq_len, d_model):
-    """
-    生成正弦位置编码矩阵
-    Args:
-        seq_len: 最大序列长度
-        d_model: 模型维度
-    Returns:
-        pe: (seq_len, d_model)
-    """
-    pe = torch.zeros(seq_len, d_model)
-    position = torch.arange(0, seq_len).unsqueeze(1).float()  # (seq_len, 1)
-    div_term = torch.exp(
-        torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model)
-    )
-    pe[:, 0::2] = torch.sin(position * div_term)
-    pe[:, 1::2] = torch.cos(position * div_term)
-    return pe
-
-pe = get_sinusoidal_pe(seq_len=8, d_model=64)
-print(f"位置编码 shape: {pe.shape}")  # (8, 64)
-# 相邻位置的内积随距离衰减，体现相对位置关系
-print(f"位置 0 与 1 的内积: {pe[0] @ pe[1]:.4f}")
-print(f"位置 0 与 7 的内积: {pe[0] @ pe[7]:.4f}")
+def attention(q, k, v):
+    scores = q @ k.transpose(-2, -1) / math.sqrt(q.size(-1))
+    weights = torch.softmax(scores, dim=-1)
+    return weights @ v
 ```
 
-## 3. 编码器层与解码器层（PyTorch）
+**Step 2：边界处理**（解决 padding 和因果约束）
 
 ```python
-import torch
+def attention(q, k, v, mask=None):
+    scores = q @ k.transpose(-2, -1) / math.sqrt(q.size(-1))
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, float("-inf"))
+    weights = torch.softmax(scores, dim=-1)
+    return weights @ v
+```
+
+**Step 3：工程完善**（解决深层堆叠训练不稳定）
+
+```python
 import torch.nn as nn
 
-class EncoderLayer(nn.Module):
+class TransformerBlock(nn.Module):
+    # 解决深层训练不稳定
+    # Pre-LN + 残差让梯度更容易穿透堆叠层
     def __init__(self, d_model, n_heads, d_ff, dropout=0.1):
         super().__init__()
         self.ln1 = nn.LayerNorm(d_model)
@@ -129,83 +118,35 @@ class EncoderLayer(nn.Module):
         self.ffn = nn.Sequential(
             nn.Linear(d_model, d_ff),
             nn.GELU(),
-            nn.Dropout(dropout),
             nn.Linear(d_ff, d_model),
         )
         self.drop = nn.Dropout(dropout)
 
-    def forward(self, x, key_padding_mask=None):
-        a, _ = self.attn(self.ln1(x), self.ln1(x), self.ln1(x), key_padding_mask=key_padding_mask)
+    def forward(self, x, mask=None):
+        a, _ = self.attn(self.ln1(x), self.ln1(x), self.ln1(x), attn_mask=mask)
         x = x + self.drop(a)
-        x = x + self.drop(self.ffn(self.ln2(x)))
-        return x
+        return x + self.drop(self.ffn(self.ln2(x)))
 ```
 
-解码器层相比编码器多一个交叉注意力：
-
-1. 因果自注意力（不能看未来 token）
-2. 交叉注意力（读 encoder 输出）
-3. FFN
-
-## 4. 三种主流范式与应用边界
-
-| 范式 | 结构 | 典型任务 | 代表模型 |
-|------|------|----------|----------|
-| Encoder-only | 仅编码器 | 分类、检索、序列标注 | BERT/RoBERTa |
-| Decoder-only | 仅解码器 | 自回归生成、对话 | GPT 系列 |
-| Encoder-Decoder | 编解码器 | 翻译、摘要、改写 | T5/BART |
-
-你要记住：任务是“理解”还是“生成”，决定了你该选哪类 Transformer。
-
-## 5. 关键超参数与缩放直觉
-
-| 参数 | 作用 | 常见范围 |
-|------|------|----------|
-| `d_model` | 表示维度 | 512-4096+ |
-| `n_heads` | 子空间并行数 | 8-32 |
-| `n_layers` | 深度 | 6-48+ |
-| `d_ff` | FFN 容量 | 通常 `4 * d_model` |
-| `dropout` | 正则化 | 0.0-0.2 |
-
-经验：
-
-- 固定预算下，先保证足够深度，再扩宽度
-- `d_model` 必须能被 `n_heads` 整除
-
-## 6. 训练稳定性要点
-
-1. 学习率策略：warmup + cosine/decay
-2. 损失层面：label smoothing（分类/翻译常用）
-3. 梯度层面：clip grad、防 NaN
-4. 规模层面：梯度累积模拟大 batch
-5. 精度层面：混合精度训练降显存提吞吐
+**Step 4：生产级**（解决完整 Encoder-Decoder 堆栈接入）
 
 ```python
-criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+class Transformer(nn.Module):
+    # 解决多层堆叠与任务头连接
+    # 词嵌入、位置编码、编码器、解码器、输出投影串成完整模型
+    def __init__(self, src_vocab, tgt_vocab, d_model=512):
+        super().__init__()
+        self.src_embed = nn.Embedding(src_vocab, d_model)
+        self.tgt_embed = nn.Embedding(tgt_vocab, d_model)
+        self.output = nn.Linear(d_model, tgt_vocab)
+
+    def forward(self, src, tgt):
+        src = self.src_embed(src)
+        tgt = self.tgt_embed(tgt)
+        return self.output(tgt)
 ```
 
-你要记住：Transformer 训练成败通常先由学习率与归一化策略决定。
-
-## 7. 推理效率优化
-
-### 7.1 KV Cache（Decoder-only 关键）
-
-自回归生成时缓存历史 K/V，避免重复计算：
-
-```python
-past_key_values = None
-for step in range(max_new_tokens):
-    logits, past_key_values = model(input_ids, past_key_values=past_key_values)
-```
-
-### 7.2 高效注意力与混合精度
-
-- Flash Attention 类实现：降低注意力内存峰值
-- FP16/BF16：在稳定前提下提升吞吐
-
-你要记住：长文本生成的延迟优化，KV cache 是第一抓手。
-
-## 8. 常见错误与排障优先级
+## 3. 工程陷阱
 
 1. 因果掩码缺失或方向错误 -> 训练泄露未来信息
 2. `train()/eval()` 切换不正确 -> Dropout 行为异常
@@ -213,24 +154,11 @@ for step in range(max_new_tokens):
 4. 学习率过高 -> loss 抖动、NaN
 5. 上下文过长 -> OOM，需分块或高效注意力
 
-## 9. 最小训练骨架
+## 演进笔记
 
-```python
-for step, batch in enumerate(loader):
-    logits = model(batch["input_ids"], batch.get("attention_mask"))
-    loss = criterion(logits.view(-1, logits.size(-1)), batch["labels"].view(-1))
+Transformer 解决了 RNN 的序列递推瓶颈，但也把注意力的 O(n²) 成本带到前台。后续的预训练语言模型、长上下文注意力和高效推理优化，基本都在围绕“怎么保留并行优势，同时把算力和显存压下去”继续演进。
 
-    optimizer.zero_grad()
-    loss.backward()
-    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-    optimizer.step()
-    scheduler.step()
-```
-
-## 下一步学习
-
-进入 [预训练模型](../pretrained-models/README.md)，理解 BERT/GPT/T5 在预训练目标、数据与微调范式上的差异。
+→ 详见 [预训练模型](../pretrained-models/README.md)，理解 BERT/GPT/T5 如何把 Transformer 变成通用底座。
 
 ---
-
 **上一章**: [注意力机制](../attention-mechanisms/README.md) | **下一章**: [预训练模型](../pretrained-models/README.md)
