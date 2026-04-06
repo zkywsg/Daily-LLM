@@ -1,10 +1,4 @@
-"""
-注意力机制 · 03-NLP-Transformers/attention-mechanisms
-Scaled Dot-Product Attention 与 Multi-Head Attention 的生产级实现。
-
-依赖：
-    torch>=2.0
-"""
+"""注意力机制 · 02-Language-Transformers/attention-mechanisms/src/attention.py · Scaled Dot-Product Attention 与 Multi-Head Attention 的生产级实现 · torch>=2.0"""
 
 import math
 import torch
@@ -13,8 +7,9 @@ import torch.nn.functional as F
 from typing import Optional
 
 
-# ─── 基础实现 ────────────────────────────────────────────────────────────────
-
+# 按相关性做加权聚合
+# softmax(QK^T / √d_k) @ V
+# 时间 O(n²d)，空间 O(n²)
 def scaled_dot_product_attention(
     q: torch.Tensor,
     k: torch.Tensor,

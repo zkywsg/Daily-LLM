@@ -1,11 +1,4 @@
-"""
-注意力机制单元测试 · 03-NLP-Transformers/attention-mechanisms
-
-依赖：
-    torch>=2.0, pytest>=7.0
-运行：
-    pytest src/test_attention.py -v
-"""
+"""注意力机制单元测试 · 02-Language-Transformers/attention-mechanisms/src/test_attention.py · 验证注意力实现的 shape、mask 与数值性质 · torch>=2.0, pytest>=7.0"""
 
 import math
 import pytest
