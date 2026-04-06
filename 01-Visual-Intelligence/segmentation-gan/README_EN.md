@@ -13,9 +13,10 @@ Around 2015, two threads exploded simultaneously in the vision community. The se
 After completing this chapter, you should be able to answer:
 
 1. How do FCN and U-Net convert classification networks into per-pixel prediction? What role do skip connections play?
-2. Why does GAN's adversarial training framework work, and what causes training instability?
-3. How does the encoder-decoder architecture serve segmentation and generation respectively?
-4. What stability issues did DCGAN's engineering practices solve? Why is Progressive GAN's incremental strategy effective?
+2. How does VAE enable generation by "learning a distribution" instead of "learning a vector"? What problem does the reparameterization trick solve?
+3. Why does GAN's adversarial training framework work, and what causes training instability?
+4. How does the encoder-decoder architecture serve segmentation and generation respectively?
+5. What stability issues did DCGAN's engineering practices solve? Why is Progressive GAN's incremental strategy effective?
 
 ---
 
@@ -132,7 +133,64 @@ graph LR
 
 The significance of skip connections goes beyond "detail supplementation." In terms of gradient flow, they provide a short-circuit path for deep networks, similar to ResNet's residual connections. But unlike ResNet, U-Net's skip connections transmit complete feature maps (not residuals), and they fuse information via concatenation rather than addition.
 
-### 2.3 GAN: The Generative Adversarial Framework
+### 2.3 VAE: Another Generative Paradigm of Encoder-Decoder
+
+U-Net demonstrated the "segmentation" capability of encoder-decoder — compressing an image and expanding it back to obtain per-pixel semantic labels. Can the same encoder-decoder structure work in reverse for "generation"? The Autoencoder gives a naive answer: an encoder compresses the image into a latent vector $\mathbf{z}$, and a decoder reconstructs the original image from $\mathbf{z}$. But vanilla autoencoders have a fatal flaw: **the latent space is irregular** — the encoder may map different images to arbitrary positions in the latent space, and you cannot guarantee that randomly sampling a point from the latent space will produce a meaningful image when decoded.
+
+The Variational Autoencoder (VAE) proposed by Kingma & Welling (2013) solves this problem with an elegant idea: **learn a distribution rather than a deterministic vector**.
+
+**The encoder doesn't output $\mathbf{z}$ directly, but rather the mean $\boldsymbol{\mu}$ and variance $\boldsymbol{\sigma}^2$** — it describes "roughly where the latent variable lies" rather than a precise point. Then $\mathbf{z}$ is sampled from $q(\mathbf{z}|\mathbf{x}) = \mathcal{N}(\boldsymbol{\mu}, \text{diag}(\boldsymbol{\sigma}^2))$ and passed to the decoder for reconstruction.
+
+However, the sampling operation is not differentiable, so gradients cannot flow through it. The **Reparameterization Trick** solves this problem:
+
+$$\mathbf{z} = \boldsymbol{\mu} + \boldsymbol{\sigma} \odot \boldsymbol{\epsilon}, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(0, \mathbf{I})$$
+
+The randomness is shifted to an external variable $\boldsymbol{\epsilon}$, while $\boldsymbol{\mu}$ and $\boldsymbol{\sigma}$ participate in gradient computation as deterministic operations, making the entire pipeline differentiable.
+
+**The VAE loss function consists of two parts:**
+
+$$\mathcal{L}_{VAE} = \underbrace{\mathcal{L}_{recon}}_{\text{Reconstruction Loss}} + \underbrace{D_{KL}(q(\mathbf{z}|\mathbf{x}) \| p(\mathbf{z}))}_{\text{KL Divergence}}$$
+
+- **Reconstruction Loss**: measures the discrepancy between the decoder output and the original input (MSE or BCE), ensuring the model can "remember" what the input looked like.
+- **KL Divergence**: constrains the encoder's output distribution $q(\mathbf{z}|\mathbf{x})$ to stay close to the standard normal distribution $p(\mathbf{z}) = \mathcal{N}(0, \mathbf{I})$. This ensures the latent space is continuous and smooth — neighboring points produce similar outputs when decoded.
+
+```mermaid
+graph LR
+    X["Input x"]:::input
+    ENC["Encoder<br/>outputs μ, σ²"]:::compute
+    EPS["ε ~ N(0, I)"]:::input
+    SAMPLE["z = μ + σ·ε<br/>(Reparameterization)"]:::compute
+    DEC["Decoder<br/>Reconstruct x̂"]:::compute
+    XHAT["Output x̂"]:::output
+    KL["KL Divergence<br/>q(z|x) ≈ N(0,I)"]:::compute
+
+    X --> ENC --> SAMPLE --> DEC --> XHAT
+    EPS --> SAMPLE
+    ENC -.-> KL
+
+    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e
+    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d
+    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46
+```
+
+**VAE vs GAN: Comparing Two Generative Routes**
+
+| Dimension | VAE | GAN |
+|-----------|-----|-----|
+| Training approach | Single network + regularization (KL divergence) | Two-network adversarial game |
+| Training stability | High (analytic loss function) | Low (difficult to balance adversarial training) |
+| Generation quality | Tends to be blurry (reconstruction loss favors outputting the mean) | Sharper (adversarial loss doesn't average) |
+| Latent space structure | Continuous and smooth, supports interpolation and sampling | Irregular, unreliable for sampling |
+| Theoretical foundation | Variational inference (rigorous probabilistic framework) | Minimax game (no explicit likelihood) |
+| Evaluation metrics | Reconstruction error + ELBO | FID / IS |
+
+The reason VAE outputs tend to be blurry lies in the reconstruction loss (MSE/BCE): when the model is uncertain about what value a pixel should be, the safest strategy is to output the **mean** of all possible values — which visually manifests as blurriness. GAN's discriminator doesn't accept "mean-like compromises"; it demands that generated samples be realistic in detail, hence GAN outputs are sharper.
+
+After 2020, diffusion models (DDPM) in some sense unified the strengths of both VAE and GAN: they have a solid probabilistic framework like VAE, and can generate high-quality samples like GAN.
+
+> Key takeaway: VAE's core innovation is "learning a distribution rather than a vector." The reparameterization trick makes sampling differentiable, and KL divergence regularizes the latent space. VAE trains stably but outputs are blurry; GAN outputs are sharp but training is unstable — this contradiction was later resolved by diffusion models.
+
+### 2.4 GAN: The Generative Adversarial Framework
 
 The minimax game of Goodfellow et al. (2014) can be captured in a single objective function:
 
@@ -171,7 +229,7 @@ graph LR
     classDef output fill:#ecfdf5,stroke:#059669,color:#065f46
 ```
 
-### 2.4 DCGAN: Engineering Practices for Stable GAN Training
+### 2.5 DCGAN: Engineering Practices for Stable GAN Training
 
 The contribution of Radford et al. (2015) is not a new algorithm, but rather turning GAN from "works in theory but extremely hard to tune in practice" into "follow this recipe and it works." Through extensive experiments, they distilled a set of architectural guidelines:
 
@@ -193,7 +251,7 @@ The contribution of Radford et al. (2015) is not a new algorithm, but rather tur
 
 DCGAN's contribution lies in demonstrating that GAN stability primarily comes from architectural choices, not more complex training algorithms. Before subsequent works like WGAN and StyleGAN appeared, DCGAN's guidelines were the standard practice for training GANs.
 
-### 2.5 Progressive GAN: Gradually Increasing Resolution
+### 2.6 Progressive GAN: Gradually Increasing Resolution
 
 Karras et al. (2017) solved another difficult problem for GANs: how to generate high-resolution images. Directly training a 1024x1024 GAN is nearly impossible to converge. Progressive GAN's approach is to start from low resolution and gradually increase network depth.
 
@@ -213,7 +271,7 @@ Alpha transitions smoothly from 0 to 1; once training stabilizes, the new layer 
 
 The core reason is that at low resolution stages, the network first learns the global structure of the data (rough shapes, color distributions), then gradually learns local details (textures, edges). This is analogous to how a painter first sketches then refines — outlines first, then details. If the network is required to simultaneously learn global structure and local details from the start, the optimization landscape is too complex, and it easily falls into local optima or mode collapse.
 
-### 2.6 Neural Style Transfer (Brief)
+### 2.7 Neural Style Transfer (Brief)
 
 Gatys et al. (2015) did something interesting: using feature maps from a pretrained VGG network to separate the "content" and "style" of an image, then fusing the content of one image with the style of another.
 
@@ -241,7 +299,7 @@ By adjusting the ratio of alpha to beta, you can control the balance between con
 
 Style transfer itself is not a GAN, but it reveals an interesting property of CNN feature representations: feature maps at different layers encode information at different levels. Lower layers encode texture, higher layers encode semantics. This insight later influenced GAN development — StyleGAN exploits a similar layer-wise control mechanism.
 
-### 2.7 Progressive Code Implementation
+### 2.8 Progressive Code Implementation
 
 Below we implement U-Net and the DCGAN Generator step by step in PyTorch, from basic blocks to the complete network.
 
@@ -433,6 +491,7 @@ The Discriminator is the mirror image of the Generator: it uses strided convolut
 
 | Year | Paper | Core Contribution |
 |------|-------|-------------------|
+| 2013 | Kingma & Welling *Auto-Encoding Variational Bayes* | VAE, variational inference + reparameterization, probabilistic framework for generative models |
 | 2014 | Goodfellow et al. *Generative Adversarial Nets* | Proposed the GAN framework, minimax game |
 | 2015 | Long et al. *Fully Convolutional Networks* | FCN, converting classification networks to per-pixel prediction |
 | 2015 | Ronneberger et al. *U-Net* | Symmetric encoder-decoder + skip connections |
@@ -449,6 +508,7 @@ The Discriminator is the mirror image of the Generator: it uses strided convolut
 |---------|---------------------|----------------------|
 | FCN | Replace fully connected layers with convolutions for per-pixel classification | 1x1 Conv + Upsampling |
 | U-Net | Symmetric encoder-decoder, skip connections preserve details | Encoder-Decoder + Skip Concat |
+| VAE | Learn a latent distribution rather than a deterministic vector, enabling sampleable generative models | Reparameterization + KL Divergence |
 | GAN | Adversarial training of generator and discriminator | Min-max game |
 | DCGAN | Stable training architecture guide for GANs | Transposed Conv + BN + LeakyReLU |
 | Progressive GAN | Gradually grow from low to high resolution | Progressive layer addition + alpha blending |
@@ -460,21 +520,21 @@ The Discriminator is the mirror image of the Generator: it uses strided convolut
 
 ## 6. Segmentation vs. Generation: Comparative Analysis
 
-| Dimension | Semantic Segmentation (FCN/U-Net) | Image Generation (GAN/DCGAN) |
-|-----------|-----------------------------------|-------------------------------|
-| Task type | Discriminative (classify each pixel) | Generative (generate new samples from noise) |
-| Input | Image | Random noise vector |
-| Output | H x W x C segmentation map | H x W x 3 generated image |
-| Loss function | Per-pixel cross-entropy | Adversarial loss (min-max game) |
-| Training stability | High (standard supervised learning) | Low (adversarial training) |
-| Evaluation metrics | mIoU, Pixel Accuracy | FID, IS, human evaluation |
-| Data requirements | Image + pixel-level annotations (expensive) | Images only (no annotations needed) |
-| Shared architecture | Encoder-decoder | Encoder-decoder (decoder only) |
-| Skip connections | Critical (U-Net's core) | None (or later works like StyleGAN's adaptive) |
+| Dimension | Semantic Segmentation (FCN/U-Net) | Variational Generation (VAE) | Adversarial Generation (GAN/DCGAN) |
+|-----------|-----------------------------------|------------------------------|-------------------------------------|
+| Task type | Discriminative (classify each pixel) | Generative (sample new images from latent distribution) | Generative (generate new samples from noise) |
+| Input | Image | Image (training) / Noise (sampling) | Random noise vector |
+| Output | H x W x C segmentation map | H x W x 3 reconstructed/generated image | H x W x 3 generated image |
+| Loss function | Per-pixel cross-entropy | Reconstruction + KL divergence (ELBO) | Adversarial loss (min-max game) |
+| Training stability | High (standard supervised learning) | High (analytic loss function) | Low (adversarial training) |
+| Generation quality | — | Tends to be blurry | Sharp |
+| Latent space | — | Continuous and smooth, supports interpolation | Irregular |
+| Evaluation metrics | mIoU, Pixel Accuracy | Reconstruction error + ELBO | FID, IS, human evaluation |
+| Data requirements | Image + pixel-level annotations (expensive) | Images only (no annotations needed) | Images only (no annotations needed) |
+| Shared architecture | Full encoder-decoder | Full encoder-decoder | Decoder only (generator) |
+| Skip connections | Critical (U-Net's core) | None | None (or later works like StyleGAN's adaptive) |
 
-This comparison reveals an interesting symmetry: segmentation goes "from image to pixel labels," requiring an encoder to extract features that are then decoded into spatial outputs; generation goes "from noise to image," requiring only a decoder to unfold low-dimensional vectors into high-dimensional outputs. Both share the "decoder upsampling" operation, but their input sources are completely different.
-
-Segmentation decoders have skip connections providing real spatial information, while generation decoders start from scratch — this is also one of the reasons why GAN training is much harder than segmentation training. Each upsampling step in segmentation has guidance from the corresponding encoder layer, while each upsampling step in GAN must be learned from scratch.
+This comparison reveals two routes in generative modeling: VAE uses a probabilistic framework to ensure a regular latent space and stable training, at the cost of blurry outputs; GAN uses adversarial training to pursue sharp outputs, at the cost of training instability and mode collapse. Segmentation tasks don't face this trade-off — they have clear supervised signals (per-pixel labels), making training the most stable.
 
 ---
 

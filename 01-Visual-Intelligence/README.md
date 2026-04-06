@@ -29,6 +29,7 @@ Dropout、Batch Norm、数据增强、GPU 训练技巧
 ### [分割与生成](segmentation-gan/README.md)
 理解像素 vs 创造像素——编码器-解码器架构的分割与生成两副面孔。
 - FCN / U-Net 的语义分割
+- VAE 的变分生成与潜空间结构
 - GAN / DCGAN / Progressive GAN 的生成对抗
 - Neural Style Transfer 的内容与风格分离
 
