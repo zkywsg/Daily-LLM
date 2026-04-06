@@ -94,7 +94,7 @@ T5 and its variants (mT5, Flan-T5) are the go-to choice for conditional generati
 
 ---
 
-## 3. Progressive Implementation
+### 2.5 Progressive Implementation
 
 **Step 1 · Solve the smallest runnable understanding task: BERT masked prediction**
 
@@ -196,7 +196,7 @@ optimizer = AdamW([
 
 ---
 
-## 4. Engineering Pitfalls (Sorted by Severity)
+## 3. Engineering Pitfalls
 
 1. **Catastrophic forgetting**
    Symptom: during downstream fine-tuning, the model loses its general language ability because the learning rate is too high.
@@ -216,7 +216,7 @@ optimizer = AdamW([
 
 ---
 
-## 5. Evolution Notes
+## Evolution Notes
 
 > **The evolution of the pre-training paradigm**: static word vectors (Word2Vec) → contextual word vectors (ELMo) → pre-train + fine-tune (BERT/GPT-1) → larger scale + prompt engineering (GPT-3) → parameter-efficient fine-tuning (Prompt Tuning, Adapters, LoRA) → alignment with human feedback (RLHF).
 >
