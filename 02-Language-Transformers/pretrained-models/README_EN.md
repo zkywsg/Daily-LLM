@@ -31,7 +31,7 @@ The core intuition of pre-trained language models is exactly this: first let the
 
 ---
 
-## 2. Mechanics
+## 2. Mechanism
 
 ### 2.1 BERT: The Bidirectional Understanding Expert
 
@@ -96,7 +96,7 @@ T5 and its variants (mT5, Flan-T5) are the go-to choice for conditional generati
 
 ## 3. Progressive Implementation
 
-**Step 1 · BERT masked prediction**
+**Step 1 · Solve the smallest runnable understanding task: BERT masked prediction**
 
 ```python
 # Use pre-trained BERT to predict the most likely token at [MASK]
@@ -120,7 +120,7 @@ predicted_token = tokenizer.decode(predicted_token_id)
 print(f"Prediction: {predicted_token}")  # cat
 ```
 
-**Step 2 · GPT text generation**
+**Step 2 · Solve input constraints and generation boundaries: GPT text generation**
 
 ```python
 # Use GPT-2 for autoregressive text generation
@@ -146,7 +146,7 @@ with torch.no_grad():
 print(tokenizer.decode(output[0], skip_special_tokens=True))
 ```
 
-**Step 3 · T5 translation**
+**Step 3 · Solve task-paradigm comparison: T5 translation**
 
 ```python
 # Use T5 for English-to-German translation
@@ -165,7 +165,7 @@ with torch.no_grad():
 print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 ```
 
-**Step 4 · Feature extraction vs Fine-tuning**
+**Step 4 · Solve production choices: feature extraction vs fine-tuning**
 
 ```python
 # Plan A: Freeze BERT and only train the classification head (feature extraction)

@@ -66,6 +66,7 @@ graph TD
     Scores --> Softmax
     Softmax --> Context
     Context --> Out
+    linkStyle default stroke:#d6d3d1,stroke-width:1.5px
 
     style X fill:#fef3c7,stroke:#d97706,color:#92400e
     style Proj fill:#fef3c7,stroke:#d97706,color:#92400e
@@ -79,7 +80,7 @@ graph TD
 
 ### 2.4 渐进式实现
 
-**Step 1：最小可运行版**（验证 QKV 计算流程）
+**Step 1：解决“相关性先算出来”**（最小可运行版，验证 QKV 计算流程）
 
 ```python
 # 按相关性做加权聚合
@@ -101,7 +102,7 @@ def attention(q, k, v):
     return weights @ v, weights
 ```
 
-**Step 2：加 Mask**（防止 Decoder 看到未来 token，防止关注 padding 位置）
+**Step 2：解决“不能看未来、也别看 padding”**（加 Mask）
 
 ```python
 def attention(q, k, v, mask=None):
@@ -113,7 +114,7 @@ def attention(q, k, v, mask=None):
     return weights @ v, weights
 ```
 
-**Step 3：多头注意力**（单头只能建模一种关系，多头并行建模不同子空间——语法、语义、位置……）
+**Step 3：解决“多种关系要并行建模”**（多头注意力）
 
 ```python
 import torch.nn as nn
@@ -150,7 +151,7 @@ class MultiHeadAttention(nn.Module):
         return self.w_o(ctx), weights
 ```
 
-**Step 4：生产级**（标准实现显存 O(n²)，Flash Attention 用分块计算降到 O(n)）
+**Step 4：解决“长序列显存和吞吐”**（生产级）
 
 ```python
 # PyTorch 2.0+ 内置 Flash Attention，直接调用：
