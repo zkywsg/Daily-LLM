@@ -239,7 +239,7 @@ print(f"device={device}, loss={loss.item():.4f}")
 3. Treating LSTM / GRU as a universal fix for long context -> long inputs still face a fixed-state bottleneck
 4. Underestimating sequential compute cost -> the longer the sequence, the worse the training throughput
 
-## Evolution Note
+## Evolution Notes
 
 > RNNs solved the problem of end-to-end sequence modeling, LSTM / GRU made long dependencies easier to train, and Seq2Seq pushed recurrence into generation tasks. But the fixed-length context and sequential compute cost still limited scale. The natural next question became: can every step directly see every input position?
 > → See [Attention Mechanisms](../attention-mechanisms/README_EN.md)

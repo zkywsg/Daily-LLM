@@ -2,12 +2,12 @@
 
 # Why Is "Reading Widely First" More Effective Than "Taking the Exam Cold"? — Pre-trained Language Models
 
-## Where This Problem Comes From
+## Where This Problem Came From
 
 > Before 2018, the dominant paradigm in NLP was "train a separate model from scratch for every task." This meant 100 tasks required 100 models, each seeing only the small amount of data available for that specific task.
 > In 2018, three breakthroughs happened simultaneously: ELMo showed that contextual word vectors dramatically outperformed static embeddings; GPT-1 proved that generative pre-training could transfer to downstream tasks; and BERT demonstrated that a bidirectional encoder with masked language modeling could dominate almost all understanding tasks. That year, the "pre-train + fine-tune" paradigm was established, and NLP moved from "artisanal modeling" to "industrial production."
 
-## Learning Objectives
+## Learning Goals
 
 After completing this chapter, you should be able to answer:
 
