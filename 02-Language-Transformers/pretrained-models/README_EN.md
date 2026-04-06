@@ -92,8 +92,6 @@ T5 and its variants (mT5, Flan-T5) are the go-to choice for conditional generati
 
 > Key takeaway: choose the model family based on whether the task is "understanding" or "generation" — BERT for understanding, GPT for generation, T5 for conditional generation.
 
----
-
 ### 2.5 Progressive Implementation
 
 **Step 1 · Solve the smallest runnable understanding task: BERT masked prediction**

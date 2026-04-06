@@ -164,6 +164,8 @@ out = torch.nn.functional.scaled_dot_product_attention(
 # Equivalent to the handwritten version, but faster and lower-memory on long sequences
 ```
 
+---
+
 ## 3. Engineering Pitfalls
 
 1. **d_k too large without scaling** → softmax saturates, gradients vanish, loss stops improving
