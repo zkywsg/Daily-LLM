@@ -2,7 +2,7 @@
 
 [English](README_EN.md) | [中文](README.md)
 
-## Where this Problem Came From
+## Where This Problem Came From
 
 > In 2017, Vaswani et al. showed in “Attention Is All You Need” that recurrence was not the only way to model sequences. RNNs move information step by step, so long-range dependencies travel through many operations, parallelism is poor, and long context becomes hard to train. Transformer replaces recurrence with attention, feed-forward layers, and normalization so the whole sequence can be processed as stacked matrix operations.
 
