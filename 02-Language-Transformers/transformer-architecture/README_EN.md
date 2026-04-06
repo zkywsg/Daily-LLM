@@ -1,6 +1,6 @@
-# Why RNN Recurrence Was No Longer Enough — Transformer Architecture
-
 [English](README_EN.md) | [中文](README.md)
+
+# Why RNN Recurrence Was No Longer Enough — Transformer Architecture
 
 ## Where This Problem Came From
 
@@ -53,7 +53,19 @@ Self-attention moves information across tokens, FFN transforms each token, resid
 
 > Remember: self-attention moves information across tokens, FFN transforms each token, and masks plus LayerNorm keep training stable.
 
-### 2.2 Data Flow
+### 2.2 Variant Selection
+
+Choose the architecture by input-output shape:
+
+| Variant | Structure | Best for | Typical models |
+|---------|-----------|----------|----------------|
+| Encoder-only | Encoder stack only, bidirectional context | Classification, retrieval, tagging | BERT, RoBERTa |
+| Decoder-only | Decoder stack only, next-token prediction | Generation, dialogue, code completion | GPT, LLaMA |
+| Encoder-Decoder | Encode the input, then decode the output | Translation, summarization, rewriting | T5, BART |
+
+Rule of thumb: use Encoder-only for understanding tasks, Decoder-only for generation tasks, and Encoder-Decoder for input-to-output transformation tasks.
+
+### 2.3 Data Flow
 
 ```mermaid
 graph TD
@@ -74,7 +86,7 @@ graph TD
     style Out fill:#ecfdf5,stroke:#059669,color:#065f46
 ```
 
-### 2.3 Progressive Implementation
+### 2.4 Progressive Implementation
 
 **Step 1: Minimal runnable core** to solve token-to-token information mixing
 
@@ -128,12 +140,12 @@ class TransformerBlock(nn.Module):
         return x + self.drop(self.ffn(self.ln2(x)))
 ```
 
-**Step 4: Production-ready wiring** to solve full encoder-decoder integration
+**Step 4: Minimal model wiring** to solve input-output tensor connections
 
 ```python
 class Transformer(nn.Module):
-    # Solve the connection between stacked layers and the task head
-    # Token embeddings, positional signals, encoder, decoder, and projection form one model
+    # Solve the connection from inputs to the output head
+    # This is only the smallest scaffold, not a full encoder-decoder stack
     def __init__(self, src_vocab, tgt_vocab, d_model=512):
         super().__init__()
         self.src_embed = nn.Embedding(src_vocab, d_model)
