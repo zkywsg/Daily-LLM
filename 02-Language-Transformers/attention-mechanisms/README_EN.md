@@ -174,6 +174,8 @@ out = torch.nn.functional.scaled_dot_product_attention(
 4. **Using standard attention on long sequences** → OOM; switch to `scaled_dot_product_attention` or shorten the sequence
 5. **Forgetting `model.eval()` during inference** → dropout stays active and outputs become unstable
 
+---
+
 ## Evolution Notes
 
 > Attention solved the Seq2Seq bottleneck, but once Transformer removed recurrence in 2017, self-attention itself became the new bottleneck: O(n²) cost grows too fast on long sequences. From 2019 to 2022, Longformer, Linformer, and Flash Attention attacked that limit from different angles. Flash Attention eventually became the industrial default, and PyTorch 2.0 ships it directly.
