@@ -193,36 +193,40 @@ print(f"loss={loss.item():.4f}")
 ```
 
 ```python
-# Step 4 生产级稳定性或性能处理：训练到生产阶段，需要同时补齐稳定性和吞吐
+# Step 4 混合精度与稳定训练循环：在变长安全基础上演示 AMP、裁剪和规范更新
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 torch.manual_seed(42)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model = nn.LSTM(32, 64, batch_first=True).to(device)
+encoder = nn.LSTM(32, 64, batch_first=True).to(device)
 head = nn.Linear(64, 2).to(device)
-x = torch.randn(8, 20, 32, device=device)
-y = torch.randint(0, 2, (8,), device=device)
+embed = torch.randn(3, 5, 32, device=device)
+lengths = torch.tensor([5, 3, 2])
+targets = torch.randint(0, 2, (3,), device=device)
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.AdamW(
-    list(model.parameters()) + list(head.parameters()),
-    lr=1e-3,
-)
+optimizer = torch.optim.Adam(list(encoder.parameters()) + list(head.parameters()), lr=1e-3)
 scaler = torch.cuda.amp.GradScaler(enabled=device == "cuda")
 
+packed = pack_padded_sequence(
+    embed, lengths.cpu(), batch_first=True, enforce_sorted=False
+)
 optimizer.zero_grad(set_to_none=True)
 with torch.cuda.amp.autocast(enabled=device == "cuda"):
-    out, _ = model(x)
-    logits = head(out[:, -1, :])
-    loss = criterion(logits, y)
+    packed_out, _ = encoder(packed)
+    out, _ = pad_packed_sequence(packed_out, batch_first=True)
+    last_idx = (lengths - 1).clamp(min=0)
+    final = out[torch.arange(out.size(0), device=device), last_idx]
+    logits = head(final)
+    loss = criterion(logits, targets)
 
 scaler.scale(loss).backward()
 scaler.unscale_(optimizer)
-torch.nn.utils.clip_grad_norm_(list(model.parameters()) + list(head.parameters()), 1.0)
+torch.nn.utils.clip_grad_norm_(list(encoder.parameters()) + list(head.parameters()), 1.0)
 scaler.step(optimizer)
 scaler.update()
-optimizer.zero_grad(set_to_none=True)
 print(f"device={device}, loss={loss.item():.4f}")
 ```
 
