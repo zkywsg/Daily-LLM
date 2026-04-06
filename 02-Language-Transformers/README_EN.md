@@ -75,4 +75,4 @@ BERT, GPT, and T5 compared
 > This phase's legacy: language modeling became reusable representation learning; the new problems it left behind were scale, alignment, and multimodality.
 → See [03-Scale-Multimodal](../03-Scale-Multimodal/)
 
-**Next Phase**: [Convergence: Scale and Multimodal →](../03-Scale-Multimodal/)
+**Next Phase**: Phase 03 content is currently available only in Chinese. See the [03-Scale-Multimodal directory](../03-Scale-Multimodal/).
