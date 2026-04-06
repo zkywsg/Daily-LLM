@@ -129,10 +129,10 @@ The bottleneck is straightforward:
 
 ### 2.6 Progressive implementation
 
-The three snippets below mirror a common implementation path, and each one targets a specific engineering problem:
+The four snippets below mirror a common implementation path, and each one targets a specific engineering problem:
 
 ```python
-# What problem this solves: run the smallest LSTM to verify sequence encoding end to end
+# Step 1 Minimal recurrent encoding: run the smallest LSTM end to end
 import torch
 import torch.nn as nn
 
@@ -150,7 +150,7 @@ print(out.shape, h_n.shape, c_n.shape)
 ```
 
 ```python
-# What problem this solves: variable-length sequences cannot be handled by taking out[:, -1, :]
+# Step 2 Variable-length and padding safety: do not take out[:, -1, :] directly
 import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
@@ -171,7 +171,7 @@ print(final.shape)
 ```
 
 ```python
-# What problem this solves: long sequences can explode gradients, so clip before updating
+# Step 3 Engineering completion: long sequences can explode gradients, so clip before updating
 import torch
 import torch.nn as nn
 
@@ -192,6 +192,40 @@ torch.nn.utils.clip_grad_norm_(list(model.parameters()) + list(head.parameters()
 optimizer.step()
 optimizer.zero_grad()
 print(f"loss={loss.item():.4f}")
+```
+
+```python
+# Step 4 Production-grade stability or performance: production training needs both stability and throughput
+import torch
+import torch.nn as nn
+
+torch.manual_seed(42)
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+model = nn.LSTM(32, 64, batch_first=True).to(device)
+head = nn.Linear(64, 2).to(device)
+x = torch.randn(8, 20, 32, device=device)
+y = torch.randint(0, 2, (8,), device=device)
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.AdamW(
+    list(model.parameters()) + list(head.parameters()),
+    lr=1e-3,
+)
+scaler = torch.cuda.amp.GradScaler(enabled=device == "cuda")
+
+optimizer.zero_grad(set_to_none=True)
+with torch.cuda.amp.autocast(enabled=device == "cuda"):
+    out, _ = model(x)
+    logits = head(out[:, -1, :])
+    loss = criterion(logits, y)
+
+scaler.scale(loss).backward()
+scaler.unscale_(optimizer)
+torch.nn.utils.clip_grad_norm_(list(model.parameters()) + list(head.parameters()), 1.0)
+scaler.step(optimizer)
+scaler.update()
+optimizer.zero_grad(set_to_none=True)
+print(f"device={device}, loss={loss.item():.4f}")
 ```
 
 ## 3. Engineering Pitfalls
