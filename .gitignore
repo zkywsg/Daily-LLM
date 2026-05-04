@@ -24,6 +24,9 @@ venv/
 *.swo
 *~
 
+# Local brainstorming previews
+.superpowers/
+
 # ML artifacts
 *.pt
 *.pth
