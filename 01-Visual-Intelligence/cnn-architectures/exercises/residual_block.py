@@ -1,18 +1,4 @@
-"""
-exercise_resnet_from_scratch.py — 从零搭建 ResNet
-====================================================
-从最简单的恒等映射开始，逐步理解残差连接、shortcut 对齐、
-Bottleneck 结构，最终搭建一个可训练的迷你 ResNet。
-
-学习路线:
-  Step 1  残差连接的直觉 — 为什么 F(x)+x 比 F(x) 容易学
-  Step 2  BasicBlock — 两层残差块 + shortcut 对齐
-  Step 3  Bottleneck — 1x1-3x3-1x1 三层残差块
-  Step 4  迷你 ResNet — 多 stage 堆叠 + 全局池化分类
-
-依赖: torch (无需额外数据集，全部用合成数据)
-运行: python exercise_resnet_from_scratch.py
-"""
+"""ResNet 从零搭建 · 01-Visual-Intelligence/cnn-architectures/exercises/residual_block.py · BasicBlock、Bottleneck 到迷你 ResNet · torch"""
 
 import torch
 import torch.nn as nn

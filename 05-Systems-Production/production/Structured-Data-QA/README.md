@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 结构化数据问答 (Structured Data QA)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 使用自然语言而非 SQL 查询结构化数据库。

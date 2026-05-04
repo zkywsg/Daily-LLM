@@ -1,17 +1,4 @@
-"""
-Conditional GAN (cGAN) for MNIST
-=================================
-Exercise: Implement a conditional GAN that generates MNIST digits
-based on class labels.
-
-Key concepts:
-- Condition information injected into both Generator and Discriminator
-- Label embedding + noise concatenation
-- Conditional adversarial training
-
-Usage:
-    python conditional_gan.py
-"""
+"""Conditional GAN · 01-Visual-Intelligence/gan-advanced/exercises/conditional_gan.py · 条件 GAN 生成 MNIST 数字 · torch"""
 
 import torch
 import torch.nn as nn

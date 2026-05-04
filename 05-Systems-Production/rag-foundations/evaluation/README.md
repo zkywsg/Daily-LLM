@@ -1,6 +1,5 @@
-**[English](README_EN.md) | [中文](README.md)**
-
 # 检索评估体系 (Retrieval Evaluation)
+[English](README_EN.md) | [中文](README.md)
 
 ## 目录
 

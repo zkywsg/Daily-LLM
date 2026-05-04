@@ -1,20 +1,4 @@
-"""
-StyleGAN Core Components
-=========================
-Exercise: Implement StyleGAN's key components:
-- Mapping Network (z → w)
-- Adaptive Instance Normalization (AdaIN)
-- Style Block (Conv + AdaIN + Noise)
-- Style mixing
-
-Key concepts:
-- Disentangled latent space W vs entangled Z
-- Layered style control (coarse / middle / fine)
-- Noise injection for random细节 variation
-
-Usage:
-    python stylegan_mapping_network.py
-"""
+"""StyleGAN 核心组件 · 01-Visual-Intelligence/gan-advanced/exercises/stylegan_mapping_network.py · Mapping Network、AdaIN、Style Block · torch"""
 
 import torch
 import torch.nn as nn

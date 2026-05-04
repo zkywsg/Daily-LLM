@@ -1,6 +1,6 @@
 # LLM 框架与工具指南
 
-**文档语言**: [**English**](README_EN.md) | [**中文**](README.md)
+[English](README_EN.md) | [中文](README.md)
 
 ## 这个问题从哪来
 

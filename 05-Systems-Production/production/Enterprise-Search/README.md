@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 企业搜索 (Enterprise Search)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 企业搜索帮助员工在内部文档、邮件和数据库中查找信息。

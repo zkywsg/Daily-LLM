@@ -36,4 +36,4 @@ Real-world application patterns.
 
 ---
 
-**Next Phase**: [MLOps & Production](../06-MLOps-Production/README.md)
+**Previous Phase**: [Alignment & Open Source ←](../04-Alignment-OpenSource/) | **Next Phase**: [Capstone Projects →](../06-Capstone-Projects/)

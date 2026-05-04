@@ -1,14 +1,4 @@
-"""
-vae.py — 变分自编码器（VAE）实现
-依赖: torch >= 2.0
-所属模块: 01-Visual-Intelligence/segmentation-gan
-
-练习目标:
-  1. 实现 VAE 编码器（输出 μ 和 log_var）
-  2. 实现重参数化技巧（让采样可微）
-  3. 实现 VAE 解码器
-  4. 组装完整 VAE 并实现 ELBO 损失（重建 + KL 散度）
-"""
+"""VAE 变分自编码器 · 01-Visual-Intelligence/segmentation-gan/exercises/vae.py · 编码器、重参数化、解码器与 ELBO 损失 · torch>=2.0"""
 
 import torch
 import torch.nn as nn

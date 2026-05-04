@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # Query改写与扩展 (Query Rewriting and Expansion)
+[English](README_EN.md) | [中文](README.md)
 
 ## 目录
 

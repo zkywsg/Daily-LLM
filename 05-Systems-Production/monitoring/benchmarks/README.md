@@ -1,6 +1,6 @@
 # LLM 评测基准
 
-**文档语言**: [**English**](README_EN.md) | [**中文**](README.md)
+[English](README_EN.md) | [中文](README.md)
 
 ## 目录
 

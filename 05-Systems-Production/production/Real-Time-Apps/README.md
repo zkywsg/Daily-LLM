@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 实时应用 (Real-Time Applications)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 需要快速响应时间的低延迟大语言模型应用。

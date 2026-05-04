@@ -1,21 +1,18 @@
 [English](README_EN.md) | [中文](README.md)
 
-# Where Does Cross-Entropy Come From? — Probability and Information Theory Fundamentals
+# Why Raw Scores Alone Were No Longer Enough — Probability and Information Theory Fundamentals
 
-## Where This Problem Comes From
+## Where This Problem Came From
 
-> In previous modules, you've encountered terms like cross-entropy loss, KL divergence, and maximum likelihood estimation — they appear repeatedly in loss functions, Softmax, and regularization, yet have never been systematically explained.
-> These concepts are not inventions of deep learning; they come from probability theory and information theory developed between the 18th and 20th centuries. Understanding their origins is the only way to truly grasp "what the model is optimizing."
+> In 1763, Bayes established the basic framework for inverse probability; in 1948, Shannon turned “uncertainty” into something measurable with information entropy. By the deep learning era, cross-entropy, KL divergence, and maximum likelihood estimation had reappeared inside loss functions, Softmax, and regularization as the mathematical core of what the model is actually optimizing.
 
-## Learning Objectives
+## Learning Goals
 
 After completing this chapter, you should be able to answer:
 
 1. Why can cross-entropy be used as a classification loss?
 2. What does KL divergence measure, and why is it asymmetric?
 3. Why are maximum likelihood estimation and minimizing cross-entropy the same thing?
-
----
 
 ## 1. Intuition
 
@@ -27,9 +24,7 @@ Imagine you are a weather forecaster. Every day you must predict "what is the pr
 
 > Key takeaway: information theory is not about "how much information there is," but about "how much uncertainty there is and how accurate your prediction is."
 
----
-
-## 2. Mechanics
+## 2. Mechanism
 
 ### 2.1 Probability Basics
 
@@ -84,10 +79,18 @@ Properties:
 - A certain event (P=1) has entropy 0
 
 ```mermaid
-graph LR
-    A["Certain event<br/>P=1"] -->|"entropy=0"| B["Low uncertainty"]
-    C["Skewed distribution<br/>P=[0.9,0.1]"] -->|"entropy≈0.47"| D["Medium uncertainty"]
-    E["Uniform distribution<br/>P=[0.5,0.5]"] -->|"entropy=1.0"| F["Maximum uncertainty"]
+graph TD
+    A["Certain event<br/>P=[1,0]"] --> B["Low uncertainty<br/>H=0"]
+    C["Skewed distribution<br/>P=[0.9,0.1]"] --> D["Medium uncertainty<br/>H≈0.47"]
+    E["Uniform distribution<br/>P=[0.5,0.5]"] --> F["Maximum uncertainty<br/>H=1.0"]
+
+    linkStyle default stroke:#d6d3d1,stroke-width:2px;
+
+    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
+    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
+    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
+    class A,C,E input;
+    class B,D,F output;
 ```
 
 **Maximum entropy principle**: among all distributions that satisfy given constraints, choose the one with the highest entropy — because you don't want to make assumptions without evidence.
@@ -118,6 +121,8 @@ Key properties:
 | Applications | Variational inference (VAE) | Knowledge distillation, reinforcement learning |
 
 > Linked to loss functions: cross-entropy loss $L = -\sum y_k \log \hat{y}_k$ is exactly $H(y, \hat{y})$; the model is learning to make the predicted distribution $\hat{y}$ as close as possible to the true distribution $y$.
+
+> Remember this: cross-entropy = entropy + KL divergence, so minimizing cross-entropy is really about pushing the predicted distribution toward the true one.
 
 ### 2.5 Maximum Likelihood Estimation
 
@@ -154,9 +159,7 @@ $$I(X; Y) = H(X) - H(X|Y) = D_{KL}(p(x,y) \| p(x)p(y))$$
 - Feature selection: choose features with the highest mutual information with the label
 - InfoNCE contrastive loss: maximize mutual information between the query and positive sample keys (linked to the loss functions module)
 
----
-
-## 3. Progressive Implementation
+### 2.7 Progressive Implementation
 
 **Step 1 · Pure NumPy implementation of entropy, cross-entropy, and KL divergence**
 
@@ -234,29 +237,37 @@ print(f"Manual calculation: {manual_loss.item():.4f}")
 # The two should match (PyTorch internally uses log-sum-exp for better stability)
 ```
 
----
+**Step 4 · Production-grade numerical stability and shape safety**
 
-## 4. Engineering Pitfalls (Sorted by Severity)
+```python
+# Solve the problem: keep batched logits numerically stable and labels shape-aligned
+import torch
+import torch.nn.functional as F
 
-1. **log(0) causes NaN**
-   Symptom: when probability is 0, log(0) = -inf, causing NaN in subsequent calculations.
-   Fix: always add epsilon clip, `np.clip(p, 1e-10, 1.0)`. PyTorch's `F.cross_entropy` handles this internally.
+logits = torch.tensor([[20.0, -3.0, 0.5], [0.1, 0.2, 0.3]], dtype=torch.float32)
+labels = torch.tensor([0, 2], dtype=torch.long)
 
-2. **KL asymmetry reversed**
-   Symptom: using forward/reverse KL backwards in VAE training causes generation quality to collapse.
-   Fix: VAEs use reverse KL (the model covers the data's modes), knowledge distillation uses forward KL (the student covers the teacher's distribution).
+log_probs = F.log_softmax(logits, dim=-1)
+nll = -log_probs[torch.arange(labels.size(0)), labels]
+loss = nll.mean()
+print(f"stable_ce={loss.item():.4f}")
+```
 
-3. **Entropy calculation distortion under limited precision**
-   Symptom: extremely small probabilities cause log overflow, especially in FP16.
-   Fix: use log_softmax instead of log(softmax), which is numerically more stable. Pay special attention in FP16.
+## 3. Engineering Pitfalls (Sorted by Severity)
+
+1. Taking `log` on zero probabilities directly -> `log(0)` turns into `-inf`, and entropy or cross-entropy calculations become NaN  
+   Fix: clip probabilities with an epsilon first, for example `np.clip(p, 1e-10, 1.0)`; `F.cross_entropy` already handles this internally.
+
+2. Treating KL divergence like a symmetric distance -> using the wrong direction in VAEs, distillation, or policy optimization distorts the training objective  
+   Fix: decide first whether you need mode coverage or mode seeking, then choose `D_{KL}(p \| q)` or `D_{KL}(q \| p)` accordingly.
+
+3. Computing `log(softmax(x))` naively -> tiny probabilities underflow and the entropy estimate becomes numerically unstable, especially in FP16  
+   Fix: prefer `log_softmax` or the framework's built-in cross-entropy implementation.  
    → See [Numerical Precision](../numerical-precision/README.md)
 
-4. **Misunderstanding MLE overfitting**
-   Symptom: assuming MLE is always optimal, ignoring its severe overfitting on small samples.
-   Fix: MLE is asymptotically unbiased with abundant data, but small data needs MAP (adding a prior) for regularization.
+4. Assuming MLE is always the best estimate -> small-sample settings ignore prior constraints and overfit the observed data too easily  
+   Fix: in low-data regimes, treat MAP as “MLE plus a prior” and use priors or regularization to constrain the solution space.  
    → See [Regularization](../regularization/README.md)
-
----
 
 ## Evolution Notes
 

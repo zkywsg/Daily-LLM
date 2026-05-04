@@ -1,6 +1,5 @@
-**[English](README_EN.md) | [中文](README.md)**
-
 # 工具调用与函数执行 (Tool Use and Function Calling)
+[English](README_EN.md) | [中文](README.md)
 
 ## 目录
 

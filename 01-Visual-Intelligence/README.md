@@ -1,6 +1,6 @@
 # Phase 01 · 视觉线（2012–2017）
 
-**[English](README_EN.md) | [中文](README.md)**
+[English](README_EN.md) | [中文](README.md)
 
 从手工特征到自动学习，CNN 如何一步步解放视觉理解的上限。
 这条线在 2020 年 ViT 处与语言线汇流。

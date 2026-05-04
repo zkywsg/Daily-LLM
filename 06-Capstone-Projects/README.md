@@ -15,3 +15,5 @@
 - 对应技术：Phase 04（PEFT + 对齐）+ Phase 05（服务 + MLOps）
 
 → 完整时间线见 [00-Timeline](../00-Timeline/)
+
+**上一阶段**: [系统与生产 ←](../05-Systems-Production/)

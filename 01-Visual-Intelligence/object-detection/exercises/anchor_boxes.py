@@ -1,18 +1,4 @@
-"""
-exercise_anchor_boxes_iou.py — 目标检测基础组件练习
-=====================================================
-从边界框表示和 IoU 开始，逐步实现锚框生成、匹配、
-编码/解码和非极大值抑制(NMS)——目标检测流水线的核心工具。
-
-学习路线:
-  Step 1  边界框表示与 IoU 计算
-  Step 2  锚框 (Anchor) 生成
-  Step 3  锚框匹配与编码/解码
-  Step 4  非极大值抑制 (NMS)
-
-依赖: torch (无需额外数据集，全部用合成数据)
-运行: python exercise_anchor_boxes_iou.py
-"""
+"""目标检测基础组件 · 01-Visual-Intelligence/object-detection/exercises/anchor_boxes.py · IoU、锚框、匹配编码与 NMS · torch"""
 
 import torch
 

@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 多语言应用 (Multilingual Applications)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 支持多语言和跨语言能力的大语言模型应用。

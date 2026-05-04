@@ -1,6 +1,6 @@
 # Capstone 1: 企业级RAG+Agent系统
 
-**[English](README_EN.md) | [中文](README.md)**
+[English](README_EN.md) | [中文](README.md)
 
 ## 项目概述
 

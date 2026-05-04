@@ -1,19 +1,4 @@
-"""
-exercise_depthwise_separable.py — 轻量化卷积与注意力练习
-========================================================
-从标准卷积的参数量问题出发，逐步实现深度可分离卷积、
-SE（Squeeze-and-Excitation）通道注意力，最终组装
-一个 MobileNet 风格的轻量分类网络。
-
-学习路线:
-  Step 1  标准卷积 vs 深度可分离卷积 — 参数量对比
-  Step 2  逐点卷积 (1x1 Conv) — 通道混洗与降维
-  Step 3  SE-Block — 通道注意力重标定
-  Step 4  MobileNet 模块 — 深度可分离 + SE + 残差
-
-依赖: torch (无需额外数据集，全部用合成数据)
-运行: python exercise_depthwise_separable.py
-"""
+"""轻量化卷积与注意力 · 01-Visual-Intelligence/lightweight-vision/exercises/depthwise_separable.py · 深度可分离卷积、SE-Block 到 MobileNet 模块 · torch"""
 
 import torch
 import torch.nn as nn

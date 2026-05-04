@@ -1,224 +1,70 @@
-# Parameter-Efficient Fine-Tuning (PEFT)
+# Why Full Fine-Tuning Stopped Being Enough? — Parameter-Efficient Fine-Tuning (PEFT)
 
-**[English](README_EN.md) | [中文](README.md)**
+[English](README_EN.md) | [中文](README.md)
 
-## Overview
+## Where does this problem come from?
 
-PEFT methods adapt large pre-trained models to downstream tasks by training only a small number of parameters, dramatically reducing memory requirements and training costs while maintaining competitive performance.
+> In 2021, GPT-3 and subsequent large models pushed parameter scales to tens or even hundreds of billions. Full fine-tuning a 175B model requires terabytes of GPU memory—unaffordable for most researchers and organizations. The emergence of PEFT proved that training less than 1% of parameters can achieve results close to full fine-tuning.
 
-## Why PEFT?
+## Learning Objectives
 
-### Full Fine-tuning Challenges
+After completing this module, you should be able to answer:
+1. Why can low-rank matrices effectively adapt large models in LoRA?
+2. How does QLoRA enable fine-tuning 70B models on consumer GPUs?
+3. How should rank r, target modules, and learning rate be chosen in practice?
 
-| Challenge | Impact |
-|-----------|--------|
-| **Memory** | Store gradients for all parameters |
-| **Storage** | Each task requires a full model copy |
-| **Catastrophic Forgetting** | Lose pre-trained knowledge |
-| **Compute** | Long training times for large models |
+## 1. Intuition
 
-**Example: LLaMA-2 70B Full Fine-tuning**
-- Model parameters: 140GB (FP16)
-- Gradients: 140GB
-- Optimizer states (Adam): 280GB
-- **Total: ~560GB GPU memory**
+Imagine a skyscraper. Full fine-tuning is like renovating the entire building's structure—you need a huge construction crew, massive materials, and extensive permits. PEFT, by contrast, is like adding small plug-and-play outlet panels in each room: without changing load-bearing walls or the main structure, you add a few replaceable interfaces that let the building support new electrical standards.
 
-### PEFT Benefits
+LoRA is the most efficient approach among these. Its core assumption is that large pre-trained weights already capture rich general features, while downstream adjustments often live in a **low-dimensional subspace**. Instead of updating the entire enormous weight matrix, LoRA learns only a tiny low-rank increment.
 
-| Benefit | Improvement |
-|---------|-------------|
-| **Memory** | 70-90% reduction |
-| **Storage** | Only save small adapter weights |
-| **Training Speed** | 3-5x faster |
-| **Knowledge Retention** | Base model frozen |
+> Remember this: the essence of PEFT is not "cutting corners"—it leverages the rich structure already encoded in pre-trained weights to adapt to tasks with minimal perturbation.
 
-## LoRA (Low-Rank Adaptation)
+## 2. Mechanism
 
-### Core Concept
+### 2.1 LoRA: Low-Rank Incremental Decomposition
 
-Instead of updating full weight matrices $W \in \mathbb{R}^{d \times k}$, LoRA decomposes the update into low-rank matrices:
+For a pre-trained weight matrix $W_0 \in \mathbb{R}^{d \times k}$, LoRA constrains the update to the product of two low-rank matrices:
 
 ```
 W = W_0 + ΔW = W_0 + BA
 
 Where:
-- W_0: Frozen pre-trained weights (d × k)
-- B: Trainable matrix (d × r)
-- A: Trainable matrix (r × k)
-- r: Low-rank dimension (r ≪ min(d, k))
+- W_0: frozen pre-trained weights (d × k)
+- B ∈ ℝ^(d × r), A ∈ ℝ^(r × k): trainable low-rank matrices
+- r: low-rank dimension (r ≪ min(d, k))
 ```
 
-**Forward Pass**:
+The forward pass becomes:
 ```
 h = W_0·x + ΔW·x = W_0·x + B·A·x
 ```
 
-### Mathematical Analysis
+**Parameter savings**: when d=k=4096 and r=16, full fine-tuning needs 16.8M parameters, while LoRA needs only 131K—a **99.2%** reduction.
 
-**Parameter Count**:
-
-| Method | Formula | Example (d=k=4096, r=16) |
-|--------|---------|------------------------|
-| Full Fine-tuning | d × k | 16.8M |
-| LoRA | r × (d + k) | 131K |
-| **Savings** | - | **99.2%** |
-
-```python
-import torch
-import torch.nn as nn
-import math
-
-class LoRALayer(nn.Module):
-    def __init__(self, in_features, out_features, rank=16, lora_alpha=32):
-        super().__init__()
-        
-        self.rank = rank
-        self.lora_alpha = lora_alpha
-        self.scaling = lora_alpha / rank
-        
-        # LoRA matrices - initialized with specific strategy
-        self.lora_A = nn.Parameter(torch.zeros(in_features, rank))
-        self.lora_B = nn.Parameter(torch.zeros(rank, out_features))
-        
-        # Initialize A with kaiming uniform, B with zeros
-        # This ensures ΔW is zero at initialization
-        nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
-        nn.init.zeros_(self.lora_B)
-    
-    def forward(self, x, base_output):
-        """
-        x: input tensor
-        base_output: output from frozen base layer
-        """
-        # LoRA path: x @ A @ B
-        lora_output = (x @ self.lora_A @ self.lora_B) * self.scaling
-        
-        return base_output + lora_output
-
-# Complete LoRA Linear layer
-class LoRALinear(nn.Module):
-    def __init__(self, base_layer, rank=16, lora_alpha=32, dropout=0.0):
-        super().__init__()
-        
-        self.base_layer = base_layer
-        # Freeze base layer
-        for param in self.base_layer.parameters():
-            param.requires_grad = False
-        
-        # Add LoRA
-        in_features = base_layer.in_features
-        out_features = base_layer.out_features
-        
-        self.lora = LoRALayer(in_features, out_features, rank, lora_alpha)
-        self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
-    
-    def forward(self, x):
-        # Base output (frozen)
-        base_output = self.base_layer(x)
-        
-        # LoRA adaptation
-        x_dropped = self.dropout(x)
-        return self.lora(x_dropped, base_output)
+```mermaid
+graph LR
+    A[Input x] --> B[Frozen W_0]
+    A --> C[Matrix A r×k]
+    C --> D[Matrix B d×r]
+    B --> E[Add]
+    D --> E
+    E --> F[Output h]
+    style A fill:#fef3c7,stroke:#d97706,color:#92400e
+    style B fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style C fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style D fill:#fce7f3,stroke:#db2777,color:#9d174d
+    style E fill:#ecfdf5,stroke:#059669,color:#065f46
+    style F fill:#ecfdf5,stroke:#059669,color:#065f46
 ```
 
-### LoRA Configuration
+### 2.2 QLoRA: 4-bit Quantization + LoRA
 
-```python
-from peft import LoraConfig, get_peft_model, TaskType
-
-# Standard LoRA configuration
-lora_config = LoraConfig(
-    task_type=TaskType.CAUSAL_LM,
-    r=16,                    # Low-rank dimension
-    lora_alpha=32,          # Scaling factor (usually 2*r)
-    target_modules=[        # Which layers to adapt
-        "q_proj",           # Query projection
-        "k_proj",           # Key projection  
-        "v_proj",           # Value projection
-        "o_proj",           # Output projection
-    ],
-    lora_dropout=0.05,      # Dropout for regularization
-    bias="none",            # Bias training strategy
-    modules_to_save=None,   # Additional modules to train
-)
-
-# Apply to model
-from transformers import AutoModelForCausalLM
-
-model = AutoModelForCausalLM.from_pretrained(
-    "meta-llama/Llama-2-7b-hf",
-    torch_dtype=torch.float16,
-    device_map="auto"
-)
-
-# Convert to PEFT model
-peft_model = get_peft_model(model, lora_config)
-peft_model.print_trainable_parameters()
-# Output: trainable params: 33,554,432 || all params: 6,771,970,048 || 
-#         trainable%: 0.4956
-```
-
-### Target Module Selection
-
-| Module | Recommendation | Reason |
-|--------|---------------|--------|
-| **q_proj, v_proj** | ✓ Required | Most important for attention |
-| **k_proj, o_proj** | ✓ Recommended | Improves performance |
-| **gate_proj, up_proj, down_proj** | ? Optional | MLP layers, more params |
-| **embed_tokens** | ✗ Usually skip | Large vocab dimension |
-| **lm_head** | ✗ Usually skip | Output layer |
-
-## QLoRA (Quantized LoRA)
-
-### 4-bit Quantization + LoRA
-
-QLoRA enables fine-tuning 65B models on single 48GB GPU by:
-1. Quantizing base model to 4-bit
-2. Computing LoRA updates in higher precision
-3. Dequantizing on-the-fly during forward pass
-
-```python
-from transformers import AutoModelForCausalLM, BitsAndBytesConfig
-from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model
-
-# 4-bit quantization configuration
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,                          # Use 4-bit quantization
-    bnb_4bit_use_double_quant=True,             # Nested quantization
-    bnb_4bit_quant_type="nf4",                  # 4-bit normal float
-    bnb_4bit_compute_dtype=torch.bfloat16       # Compute dtype
-)
-
-# Load quantized model
-model = AutoModelForCausalLM.from_pretrained(
-    "meta-llama/Llama-2-7b-hf",
-    quantization_config=bnb_config,
-    device_map="auto",                          # Auto-distribute layers
-    trust_remote_code=True
-)
-
-# Prepare for training
-model = prepare_model_for_kbit_training(model)
-
-# Apply LoRA
-lora_config = LoraConfig(
-    r=16,
-    lora_alpha=32,
-    target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
-    lora_dropout=0.05,
-    bias="none",
-    task_type=TaskType.CAUSAL_LM
-)
-
-model = get_peft_model(model, lora_config)
-
-# Memory comparison
-print("QLoRA enables training 65B models on 48GB GPU")
-print("Standard LoRA requires ~80GB for 65B model")
-print("Full fine-tuning requires ~780GB for 65B model")
-```
-
-### Memory Savings Breakdown
+QLoRA fits a 65B model into a 48GB GPU through three techniques:
+1. **4-bit NormalFloat (NF4)** quantization of base model weights
+2. **Double quantization**: quantizing the quantization constants themselves to save more memory
+3. **Paged optimizer**: paging optimizer states to CPU when GPU memory runs low
 
 | Model Size | Full FT | LoRA | QLoRA |
 |------------|---------|------|-------|
@@ -226,154 +72,13 @@ print("Full fine-tuning requires ~780GB for 65B model")
 | 13B | 52GB | 26GB | 14GB |
 | 70B | 280GB | 140GB | 48GB |
 
-## Adapters
+### 2.3 Other PEFT Methods at a Glance
 
-### Architecture
+**Adapter**: inserts small bottleneck modules into Transformer layers (down-projection → activation → up-projection), fused via residual connection.
 
-Small bottleneck modules inserted between transformer layers:
+**Prompt Tuning**: does not modify model weights; instead, it learns a set of continuous trainable soft prompt tokens prepended to input embeddings.
 
-```
-Input → [LayerNorm → Adapter → Residual] → Output
-
-Adapter structure:
-x → Linear(down) → Activation → Linear(up) → Output
-```
-
-```python
-class Adapter(nn.Module):
-    def __init__(self, hidden_size, adapter_size=64, dropout=0.1):
-        super().__init__()
-        self.down_project = nn.Linear(hidden_size, adapter_size)
-        self.activation = nn.GELU()
-        self.up_project = nn.Linear(adapter_size, hidden_size)
-        self.dropout = nn.Dropout(dropout)
-        
-        # Initialize
-        nn.init.xavier_uniform_(self.down_project.weight)
-        nn.init.xavier_uniform_(self.up_project.weight)
-        nn.init.zeros_(self.down_project.bias)
-        nn.init.zeros_(self.up_project.bias)
-    
-    def forward(self, x):
-        residual = x
-        x = self.down_project(x)
-        x = self.activation(x)
-        x = self.dropout(x)
-        x = self.up_project(x)
-        return x + residual  # Residual connection
-
-# Adapter configuration
-from peft import AdapterConfig
-
-adapter_config = AdapterConfig(
-    adapter_dim=64,          # Bottleneck dimension
-    hidden_act="gelu",       # Activation function
-    adapter_dropout=0.1,
-    target_modules=["attention", "mlp"]
-)
-```
-
-## Prompt Tuning
-
-### Soft Prompts
-
-Instead of discrete text prompts, learn continuous embeddings:
-
-```python
-class PromptTuning(nn.Module):
-    def __init__(self, num_tokens, token_dim, initialize_from_vocab=True):
-        super().__init__()
-        
-        # Initialize soft prompt tokens
-        if initialize_from_vocab:
-            # Initialize from existing vocabulary
-            self.soft_prompt = nn.Parameter(
-                torch.randn(num_tokens, token_dim) * 0.01
-            )
-        else:
-            # Random initialization
-            self.soft_prompt = nn.Parameter(
-                torch.randn(num_tokens, token_dim)
-            )
-    
-    def forward(self, input_embeds):
-        batch_size = input_embeds.size(0)
-        
-        # Expand soft prompt for batch
-        soft_prompt_embeds = self.soft_prompt.unsqueeze(0).expand(
-            batch_size, -1, -1
-        )
-        
-        # Concatenate: [soft prompt] + [input]
-        return torch.cat([soft_prompt_embeds, input_embeds], dim=1)
-
-# Usage with transformer
-class PromptTunedTransformer(nn.Module):
-    def __init__(self, base_model, num_prompt_tokens=20):
-        super().__init__()
-        self.base_model = base_model
-        
-        # Freeze base model
-        for param in self.base_model.parameters():
-            param.requires_grad = False
-        
-        # Learnable soft prompts
-        self.prompt_tuning = PromptTuning(
-            num_tokens=num_prompt_tokens,
-            token_dim=self.base_model.config.hidden_size
-        )
-    
-    def forward(self, input_ids):
-        # Get input embeddings
-        input_embeds = self.base_model.embeddings(input_ids)
-        
-        # Add soft prompts
-        prompted_embeds = self.prompt_tuning(input_embeds)
-        
-        # Pass through frozen transformer
-        return self.base_model(inputs_embeds=prompted_embeds)
-```
-
-## P-tuning v2
-
-### Deep Prompt Tuning
-
-Add trainable prompts at every layer, not just input:
-
-```python
-class PTuningV2(nn.Module):
-    def __init__(self, num_layers, num_tokens, hidden_size):
-        super().__init__()
-        
-        # Prompt embeddings for each layer
-        self.prompt_embeddings = nn.ParameterList([
-            nn.Parameter(torch.randn(num_tokens, hidden_size) * 0.01)
-            for _ in range(num_layers)
-        ])
-        
-        # MLP for prompt generation (optional)
-        self.prompt_encoder = nn.Sequential(
-            nn.Linear(hidden_size, hidden_size // 2),
-            nn.Tanh(),
-            nn.Linear(hidden_size // 2, hidden_size)
-        )
-    
-    def forward(self, hidden_states, layer_idx):
-        """Add prompts to hidden states at specific layer"""
-        batch_size = hidden_states.size(0)
-        
-        # Get prompts for this layer
-        prompts = self.prompt_embeddings[layer_idx]
-        prompts = self.prompt_encoder(prompts)
-        
-        # Expand for batch
-        prompts = prompts.unsqueeze(0).expand(batch_size, -1, -1)
-        
-        # Concatenate
-        return torch.cat([prompts, hidden_states], dim=1)
-```
-
-## Comparison
+**P-tuning v2**: extends trainable prompts to every Transformer layer, not just the input layer.
 
 | Method | Trainable Params | Memory | Speed | Performance |
 |--------|-----------------|--------|-------|-------------|
@@ -384,64 +89,126 @@ class PTuningV2(nn.Module):
 | **Prompt Tuning** | <0.1% | 15-20% | 5x | 90% |
 | **P-tuning v2** | 0.2-0.5% | 20-25% | 4x | 94% |
 
-## Hyperparameter Tuning
+> Remember this: LoRA is the best balance of performance and usability among PEFT methods; QLoRA is the lowest-barrier path for individual developers to reach hundred-billion-parameter models.
 
-### LoRA Rank Selection
+## 3. Progressive Implementation
 
-| Rank | Parameters | Performance | Use Case |
-|------|-----------|-------------|----------|
-| 4 | 0.12% | 92% | Quick experiments |
-| 8 | 0.24% | 95% | Limited resources |
-| 16 | 0.47% | 98% | **Recommended** |
-| 32 | 0.94% | 99% | High performance |
-| 64 | 1.88% | 99.5% | Maximum quality |
-
-### Learning Rate Guidelines
-
-| Model Size | LoRA LR | Full FT LR |
-|------------|---------|------------|
-| < 1B | 1e-3 | 5e-5 |
-| 7B | 1e-4 | 2e-5 |
-| 13B | 1e-4 | 1e-5 |
-| 70B+ | 5e-5 | 5e-6 |
-
-## Best Practices
-
-### 1. Module Selection
+### Step 1 LoRA Low-Rank Layer (Core Logic)
 
 ```python
-# Minimal configuration (fastest)
-target_modules = ["q_proj", "v_proj"]
+import torch
+import torch.nn as nn
+import math
 
-# Recommended (best balance)
-target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
+# Implement low-rank increment ΔW = B @ A
+# Initialize A with kaiming and B with zeros
+# Ensures ΔW = 0 at start so behavior matches pre-training
+def lora_forward(x, lora_A, lora_B, scaling):
+    return (x @ lora_A @ lora_B) * scaling
 
-# Comprehensive (highest quality)
-target_modules = [
-    "q_proj", "k_proj", "v_proj", "o_proj",
-    "gate_proj", "up_proj", "down_proj"
-]
+
+class LoRALayer(nn.Module):
+    def __init__(self, in_features, out_features, rank=16, lora_alpha=32):
+        super().__init__()
+        self.rank = rank
+        self.lora_alpha = lora_alpha
+        self.scaling = lora_alpha / rank
+
+        self.lora_A = nn.Parameter(torch.zeros(in_features, rank))
+        self.lora_B = nn.Parameter(torch.zeros(rank, out_features))
+
+        nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
+        nn.init.zeros_(self.lora_B)
+
+    def forward(self, x, base_output):
+        lora_output = (x @ self.lora_A @ self.lora_B) * self.scaling
+        return base_output + lora_output
 ```
 
-### 2. Training Configuration
+### Step 2 Complete LoRA Linear Layer (Boundary Handling)
+
+```python
+# Wrap an existing linear layer, freeze base weights, and inject LoRA path
+# Supports dropout regularization
+# Only LoRA parameters are updated during training
+class LoRALinear(nn.Module):
+    def __init__(self, base_layer, rank=16, lora_alpha=32, dropout=0.0):
+        super().__init__()
+        self.base_layer = base_layer
+        for param in self.base_layer.parameters():
+            param.requires_grad = False
+
+        in_features = base_layer.in_features
+        out_features = base_layer.out_features
+
+        self.lora = LoRALayer(in_features, out_features, rank, lora_alpha)
+        self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
+
+    def forward(self, x):
+        base_output = self.base_layer(x)
+        x_dropped = self.dropout(x)
+        return self.lora(x_dropped, base_output)
+```
+
+### Step 3 QLoRA Quantization Configuration (Engineering)
+
+```python
+from transformers import AutoModelForCausalLM, BitsAndBytesConfig
+from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model
+
+# Load a 4-bit NF4 quantized model
+# Double quantization saves memory, BF16 as compute dtype
+# Prepare for subsequent k-bit training
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16
+)
+
+model = AutoModelForCausalLM.from_pretrained(
+    "meta-llama/Llama-2-7b-hf",
+    quantization_config=bnb_config,
+    device_map="auto",
+    trust_remote_code=True
+)
+
+model = prepare_model_for_kbit_training(model)
+
+lora_config = LoraConfig(
+    r=16,
+    lora_alpha=32,
+    target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
+    lora_dropout=0.05,
+    bias="none",
+    task_type="CAUSAL_LM"
+)
+
+model = get_peft_model(model, lora_config)
+```
+
+### Step 4 Training, Merging, and Deployment (Production-Grade)
 
 ```python
 from trl import SFTTrainer
 from transformers import TrainingArguments
 
+# Configure LoRA/QLoRA training hyperparameters
+# Learning rate is 10-100x higher than full fine-tuning, with cosine warmup
+# paged_adamw_8bit further saves memory for QLoRA scenarios
 training_args = TrainingArguments(
     output_dir="./lora_model",
     num_train_epochs=3,
     per_device_train_batch_size=4,
     gradient_accumulation_steps=4,
-    learning_rate=2e-4,           # Higher than full FT
+    learning_rate=2e-4,
     warmup_ratio=0.03,
     lr_scheduler_type="cosine",
     logging_steps=10,
     save_strategy="epoch",
     fp16=True,
-    optim="paged_adamw_8bit",     # For QLoRA
-    group_by_length=True,        # Efficiency
+    optim="paged_adamw_8bit",
+    group_by_length=True,
 )
 
 trainer = SFTTrainer(
@@ -455,34 +222,63 @@ trainer = SFTTrainer(
 trainer.train()
 ```
 
-### 3. Inference and Deployment
+At inference time, you can either merge weights or keep adapters separate:
 
 ```python
-# Load base model
-base_model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf")
-
-# Load LoRA weights
 from peft import PeftModel
 
+# Load base model and LoRA weights
+# Option 1: merge_and_unload() removes PEFT dependency and speeds up inference
+# Option 2: keep separate for easy multi-adapter hot-swapping
+base_model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-hf")
 model = PeftModel.from_pretrained(base_model, "./lora_weights")
 
-# Option 1: Merge weights (faster inference, no PEFT dependency)
+# Merge weights
 model = model.merge_and_unload()
 model.save_pretrained("./merged_model")
-
-# Option 2: Keep separate (memory efficient, easy to swap adapters)
-# Just use model for inference directly
 ```
 
-## Common Pitfalls
+## 4. Engineering Pitfalls
 
-| Issue | Symptom | Solution |
-|-------|---------|----------|
-| **Rank too low** | Poor performance | Increase r to 16+ |
-| **Wrong modules** | No improvement | Use q_proj, v_proj at minimum |
-| **Learning rate too low** | Slow convergence | Use 10-100x full FT LR |
-| **Overfitting** | High train loss, low val | Add dropout, reduce epochs |
-| **Instability** | Loss spikes | Gradient clipping, warmup |
+| Pitfall | Cause | Symptom | Fix |
+|---------|-------|---------|-----|
+| **Rank too low** | Low-rank subspace insufficient to capture task differences | Validation performance consistently 5-10% below full FT | Increase r to 16 or higher |
+| **Wrong target modules** | LoRA applied to unimportant layers only | Training loss drops but downstream metrics don't improve | Include at least q_proj and v_proj |
+| **Learning rate too low** | Using full-FT learning rate for LoRA | Extremely slow convergence, needs many more epochs | LoRA LR should be 10-100x full-FT LR |
+| **Overfitting** | Few trainable params but rank too large or data too small | Low training loss, high validation loss | Increase lora_dropout, reduce epochs, lower r |
+| **QLoRA numerical instability** | 4-bit quantization + FP16 gradient overflow | NaNs or loss spikes during training | Switch to BF16 compute, lower LR, increase warmup |
+
+### Target Module Selection Guide
+
+```python
+# Minimal configuration (fastest experimentation)
+target_modules = ["q_proj", "v_proj"]
+
+# Recommended configuration (best cost-performance)
+target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
+
+# Comprehensive configuration (maximum quality)
+target_modules = [
+    "q_proj", "k_proj", "v_proj", "o_proj",
+    "gate_proj", "up_proj", "down_proj"
+]
+```
+
+### Learning Rate Reference
+
+| Model Size | LoRA LR | Full FT LR |
+|------------|---------|------------|
+| < 1B | 1e-3 | 5e-5 |
+| 7B | 1e-4 | 2e-5 |
+| 13B | 1e-4 | 1e-5 |
+| 70B+ | 5e-5 | 5e-6 |
+
+> Remember this: LoRA is not a panacea—if the task requires changing the model's underlying knowledge structure (e.g., learning an entirely new language or domain), full fine-tuning remains the better choice.
+
+## 5. Evolution Notes
+
+> The legacy of this technology: PEFT, especially LoRA/QLoRA, transformed large models from "lab-only" to "personally accessible," sparking an explosion in the open-source fine-tuning ecosystem. But it also brings new challenges in adapter management, multi-task composition, and safety boundary drift after fine-tuning.
+→ See [Alignment](../alignment/README.md)
 
 ---
 

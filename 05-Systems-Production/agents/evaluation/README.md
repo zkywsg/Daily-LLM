@@ -1,6 +1,5 @@
-**[English](README_EN.md) | [中文](README.md)**
-
 # Agent评估 (Agent Evaluation)
+[English](README_EN.md) | [中文](README.md)
 
 ## 目录
 

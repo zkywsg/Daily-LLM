@@ -1,18 +1,4 @@
-"""
-exercise_training_loop.py — 渐进式训练循环练习
-=================================================
-从最简单的 forward-backward-step 开始，逐步加入正则化、调度、早停，
-最终拼出生产级训练循环。
-
-学习路线:
-  Step 1  最小训练循环 — forward / loss / backward / step
-  Step 2  加入 Dropout + BatchNorm — train/eval 模式切换
-  Step 3  加入梯度裁剪 + 学习率调度 — Warmup + Cosine
-  Step 4  生产级 epoch 循环 — 早停 + 检查点
-
-依赖: torch (无需额外数据集，全部用合成数据)
-运行: python exercise_training_loop.py
-"""
+"""渐进式训练循环 · 01-Visual-Intelligence/training/exercises/training_loop.py · 从最小循环到生产级 epoch 训练 · torch"""
 
 import torch
 import torch.nn as nn

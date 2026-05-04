@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 多模态问答 (Multimodal QA)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 多模态问答系统处理涉及图像、视频和文本的综合问题。

@@ -1,14 +1,4 @@
-"""
-yolo_loss.py — YOLO 损失函数
-依赖: torch >= 2.0
-所属模块: 01-Visual-Intelligence/object-detection
-
-练习目标:
-  1. 实现 YOLO v1 的坐标损失（宽高取平方根）
-  2. 实现置信度损失（有物体/无物体分开加权）
-  3. 实现分类损失
-  4. 组合为完整 YOLO Loss
-"""
+"""YOLO 损失函数 · 01-Visual-Intelligence/object-detection/exercises/yolo_loss.py · YOLO v1 坐标、置信度、分类损失实现 · torch>=2.0"""
 
 import torch
 import torch.nn as nn

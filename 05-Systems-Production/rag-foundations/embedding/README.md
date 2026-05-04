@@ -1,6 +1,6 @@
 # 嵌入模型选择与蒸馏 (Embedding Model Selection and Distillation)
 
-**文档语言**: [**English**](README_EN.md) | [**中文**](README.md)
+[English](README_EN.md) | [中文](README.md)
 
 ## 目录
 

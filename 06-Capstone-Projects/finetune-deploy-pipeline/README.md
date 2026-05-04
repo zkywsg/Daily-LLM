@@ -1,6 +1,6 @@
 # Capstone 2: 微调+部署一体化项目
 
-**[English](README_EN.md) | [中文](README.md)**
+[English](README_EN.md) | [中文](README.md)
 
 ## 项目概述
 

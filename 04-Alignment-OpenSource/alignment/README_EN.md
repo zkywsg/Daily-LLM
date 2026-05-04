@@ -1,6 +1,17 @@
-# LLM Alignment
+# Why Aren't Pre-trained Models "Obedient" Enough? — LLM Alignment
 
 **[English](README_EN.md) | [中文](README.md)**
+
+## Where does this problem come from?
+
+> In 2022, ChatGPT's stunning performance made the world realize that large models need not only "understanding" but also "alignment"—behaving according to human intentions, values, and preferences. OpenAI's three-step RLHF pipeline (SFT → Reward Model → PPO) became an industry standard, and alignment techniques have since become a core part of deploying large models.
+
+## Learning Objectives
+
+After completing this module, you should be able to answer:
+1. What problem does each stage of the RLHF three-stage pipeline solve?
+2. Why can DPO eliminate both the reward model and the RL stage?
+3. How do Constitutional AI and red teaming improve model safety?
 
 ## Overview
 
@@ -693,6 +704,11 @@ Train → Evaluate → Find failures → Collect more data → Retrain
 - Track reward scores during training
 - Monitor for reward hacking
 - Regular safety evaluations
+
+## Evolution Notes
+
+> The legacy of this technology: alignment transformed large models from "text generators" into "usable assistants." But the high cost of RLHF, reward hacking, and the alignment tax (capability-safety trade-off) continue to drive the evolution of simpler methods like DPO and RLAIF.
+→ See [RAG Foundations](../../05-Systems-Production/rag-foundations/README.md)
 
 ---
 

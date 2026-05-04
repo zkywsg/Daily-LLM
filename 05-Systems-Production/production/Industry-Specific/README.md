@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 行业特定应用 (Industry-Specific Applications)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 为特定行业（如法律、医疗和金融）定制的大语言模型应用。

@@ -1,6 +1,16 @@
-**[English](README_EN.md) | [中文](README.md)**
-
 # 向量数据库与索引 (Vector Databases and Indexing)
+[English](README_EN.md) | [中文](README.md)
+
+## 这个问题从哪来
+
+> 随着 RAG 和语义搜索成为 LLM 应用的核心组件，高维向量的高效存储与检索从学术问题变成了生产刚需。向量数据库通过在内存、延迟、召回率之间的工程权衡，让十亿级向量的近似最近邻搜索成为可能。
+
+## 学习目标
+
+完成后你应能回答：
+1. HNSW、IVF、PQ 三类索引分别适合什么规模与场景？
+2. 如何在 Recall、Latency、Memory 之间进行工程权衡？
+3. Milvus、Weaviate、Pinecone、FAISS 的选型差异是什么？
 
 ## 1. 背景 (Vector DB Landscape)
 
@@ -1650,3 +1660,12 @@ Q5：分布式扩展是否一定提升性能？
 这也是现代 LLM 系统可靠落地的重要前提。
 
 值得持续投入。
+
+## 演进笔记
+
+> 这一技术的遗产：向量数据库让语义检索成为基础设施级的标准化能力；但长向量、高并发、实时更新与成本控制的复合压力，仍是超大规模场景下持续优化的方向。
+→ 详见 [智能体](../agents/README.md)
+
+---
+
+**上一章**: [RAG 基础](../rag-foundations/README.md) | **下一章**: [智能体](../agents/README.md)

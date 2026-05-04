@@ -1,6 +1,6 @@
 # Prompt Engineering（提示工程）
 
-**文档语言**: [**English**](README_EN.md) | [**中文**](README.md)
+[English](README_EN.md) | [中文](README.md)
 
 ## 这个问题从哪来
 

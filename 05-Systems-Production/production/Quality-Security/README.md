@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 质量与安全治理 (Quality and Security Governance)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 确保大语言模型输出符合质量标准和安全要求。

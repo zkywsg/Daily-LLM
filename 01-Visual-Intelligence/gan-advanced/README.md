@@ -1,6 +1,6 @@
 # 从随机噪声到精确控制 —— GAN 进阶（2017–2019）
 
-**[English](README_EN.md) | [中文](README.md)**
+[English](README_EN.md) | [中文](README.md)
 
 ## 这个问题从哪来
 

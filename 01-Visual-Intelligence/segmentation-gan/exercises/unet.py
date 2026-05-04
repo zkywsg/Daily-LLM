@@ -1,18 +1,4 @@
-"""
-exercise_encoder_decoder.py — 编码器-解码器与 U-Net 练习
-========================================================
-从最简单的转置卷积开始，逐步构建编码器、解码器、跳跃连接，
-最终组装一个可训练的 U-Net 风格分割网络。
-
-学习路线:
-  Step 1  转置卷积 — 上采样的基本操作
-  Step 2  编码器-解码器骨架 — 下采样再上采样
-  Step 3  跳跃连接 — U-Net 的核心创新
-  Step 4  完整 U-Net — 端到端像素级分类
-
-依赖: torch (无需额外数据集，全部用合成数据)
-运行: python exercise_encoder_decoder.py
-"""
+"""U-Net 编码器-解码器 · 01-Visual-Intelligence/segmentation-gan/exercises/unet.py · 转置卷积、跳跃连接到完整 U-Net · torch"""
 
 import torch
 import torch.nn as nn

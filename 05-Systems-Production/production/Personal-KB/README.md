@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 个人知识库 (Personal Knowledge Base)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 基于大语言模型驱动的搜索和组织的个人知识管理系统。

@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 为什么 RNN 的递归记忆不够用了？—— Transformer 架构
+[English](README_EN.md) | [中文](README.md)
 
 ## 这个问题从哪来
 

@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 代码助手 (Code Assistant)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 代码助手使用大语言模型帮助开发者编写、理解和调试代码。

@@ -1,12 +1,12 @@
-# Contributing to Daily-DeepLearning
+# Contributing to Daily-LLM
 
 贡献指南 / Contributing Guide
 
 ## How to Contribute / 如何贡献
 
-Thank you for considering contributing to Daily-DeepLearning! We welcome all contributions that improve the project's educational value.
+Thank you for considering contributing to Daily-LLM! We welcome all contributions that improve the project's educational value.
 
-欢迎您为 Daily-DeepLearning 做出贡献！我们欢迎所有能提升项目教育价值的贡献。
+欢迎您为 Daily-LLM 做出贡献！我们欢迎所有能提升项目教育价值的贡献。
 
 ### Steps / 步骤
 

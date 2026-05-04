@@ -1,6 +1,17 @@
-# LLM 对齐
+# 为什么预训练模型不够「听话」？—— LLM 对齐
 
 [English](README_EN.md) | [中文](README.md)
+
+## 这个问题从哪来
+
+> 2022年，ChatGPT 的惊艳表现让世人意识到：大模型不仅需要「懂」，更需要「对齐」——按照人类意图、价值观和偏好行事。OpenAI 的 RLHF 三步流程（SFT → 奖励模型 → PPO）成为行业标配，而对齐技术从此成为大模型落地的核心环节。
+
+## 学习目标
+
+完成后你应能回答：
+1. RLHF 的三阶段流水线各自解决什么问题？
+2. DPO 为什么能省去奖励模型和 RL 阶段？
+3.  Constitutional AI 和红队测试如何提升模型安全性？
 
 ## 概述
 
@@ -693,6 +704,11 @@ def evaluate_alignment(model, test_prompts, reward_model, safety_classifier):
 - 训练期间跟踪奖励分数
 - 监控奖励黑客 (reward hacking)
 - 定期安全评估
+
+## 演进笔记
+
+> 这一技术的遗产：对齐让大模型从「文本生成器」升级为「可用助手」，但 RLHF 的高成本、奖励黑客、以及对齐税（能力-安全权衡）等问题，仍在驱动 DPO、RLAIF 等更简洁方法的演进。
+→ 详见 [RAG 基础](../../05-Systems-Production/rag-foundations/README.md)
 
 ---
 

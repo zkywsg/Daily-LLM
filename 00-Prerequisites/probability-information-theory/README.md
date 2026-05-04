@@ -1,9 +1,9 @@
-# 交叉熵从哪来？—— 概率与信息论基础
+# 为什么只会算分还不够用了？—— 概率与信息论基础
+[English](README_EN.md) | [中文](README.md)
 
 ## 这个问题从哪来
 
-> 在前面的模块中，你已经见过交叉熵损失、KL 散度、最大似然估计这些术语——它们在损失函数、Softmax、正则化中反复出现，但从未被系统解释过。
-> 这些概念不是深度学习的发明，而是来自 18-20 世纪的概率论与信息论。理解它们的来源，才能真正理解"模型在优化什么"。
+> 1763 年，Bayes 给出了逆概率推理的基本框架；1948 年，Shannon 用信息熵把“不确定性”变成了可计算的量。到深度学习时代，交叉熵、KL 散度和最大似然估计被重新带回损失函数、Softmax 与正则化里，变成“模型到底在优化什么”的数学底座。
 
 ## 学习目标
 
@@ -12,8 +12,6 @@
 1. 交叉熵为什么能用来做分类损失？
 2. KL 散度衡量的是什么，为什么它不对称？
 3. 最大似然估计和最小化交叉熵为什么是同一件事？
-
----
 
 ## 1. 直觉
 
@@ -24,8 +22,6 @@
 - **KL 散度**衡量的是"用你的预报代替真实天气分布，要多付多少代价"。
 
 > 你要记住：信息论不是关于"信息量有多大"，而是关于"不确定性有多少、你的预测有多准"。
-
----
 
 ## 2. 机制
 
@@ -82,10 +78,18 @@ $$H(X) = -\sum_{x} P(x) \log P(x)$$
 - 确定事件（P=1）的熵为 0
 
 ```mermaid
-graph LR
-    A["确定事件<br/>P=1"] -->|"熵=0"| B["低不确定性"]
-    C["偏斜分布<br/>P=[0.9,0.1]"] -->|"熵≈0.47"| D["中等不确定性"]
-    E["均匀分布<br/>P=[0.5,0.5]"] -->|"熵=1.0"| F["最大不确定性"]
+graph TD
+    A["确定事件<br/>P=[1,0]"] --> B["低不确定性<br/>H=0"]
+    C["偏斜分布<br/>P=[0.9,0.1]"] --> D["中等不确定性<br/>H≈0.47"]
+    E["均匀分布<br/>P=[0.5,0.5]"] --> F["最大不确定性<br/>H=1.0"]
+
+    linkStyle default stroke:#d6d3d1,stroke-width:2px;
+
+    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
+    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
+    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
+    class A,C,E input;
+    class B,D,F output;
 ```
 
 **最大熵原理**：在满足约束的所有分布中，选择熵最大的那个——因为你不想做没有证据的假设。
@@ -116,6 +120,8 @@ $$D_{KL}(p \| q) = \sum_{x} P(x) \log \frac{P(x)}{Q(x)} = H(p, q) - H(p)$$
 | 应用 | 变分推断（VAE） | 知识蒸馏、强化学习 |
 
 > 链接损失函数：交叉熵损失 $L = -\sum y_k \log \hat{y}_k$ 正是 $H(y, \hat{y})$，模型在学习让预测分布 $\hat{y}$ 尽量接近真实分布 $y$。
+
+> 你要记住：交叉熵 = 熵 + KL 散度，所以最小化交叉熵，本质上是在逼近真实分布。
 
 ### 2.5 最大似然估计
 
@@ -152,9 +158,7 @@ $$I(X; Y) = H(X) - H(X|Y) = D_{KL}(p(x,y) \| p(x)p(y))$$
 - 特征选择：选与标签互信息最高的特征
 - InfoNCE 对比损失：最大化查询和正样本键之间的互信息（链接损失函数模块）
 
----
-
-## 3. 渐进式实现
+### 2.7 渐进式实现
 
 **Step 1 · 纯 NumPy 实现信息熵、交叉熵、KL 散度**
 
@@ -241,29 +245,37 @@ print(f"手动计算: {manual_loss.item():.4f}")
 # 两者应该一致（PyTorch 内部用 log-sum-exp 更稳定）
 ```
 
----
+**Step 4 · 生产级数值稳定与 shape 安全**
 
-## 4. 工程陷阱（按严重度排序）
+```python
+# 解决什么问题：批量 logits 下避免数值溢出，同时保证 label shape 对齐
+import torch
+import torch.nn.functional as F
 
-1. **log(0) 导致 NaN**
-   现象：概率为 0 时 log(0) = -inf，后续计算产生 NaN。
-   处置：始终加 epsilon clip，`np.clip(p, 1e-10, 1.0)`。PyTorch 的 `F.cross_entropy` 内部已处理。
+logits = torch.tensor([[20.0, -3.0, 0.5], [0.1, 0.2, 0.3]], dtype=torch.float32)
+labels = torch.tensor([0, 2], dtype=torch.long)
 
-2. **KL 散度非对称性搞反**
-   现象：VAE 训练中用反了 forward/reverse KL，导致生成质量崩塌。
-   处置：VAE 用 reverse KL（模型去覆盖数据的模式），知识蒸馏用 forward KL（学生去覆盖教师的分布）。
+log_probs = F.log_softmax(logits, dim=-1)
+nll = -log_probs[torch.arange(labels.size(0)), labels]
+loss = nll.mean()
+print(f"stable_ce={loss.item():.4f}")
+```
 
-3. **浮点精度下熵计算失真**
-   现象：概率极小时 log 溢出，FP16 尤甚。
-   处置：用 log_softmax 代替 log(softmax)，数值更稳定。FP16 下特别注意。
+## 3. 工程陷阱（按严重度排序）
+
+1. 概率为 0 直接取对数 -> `log(0)` 变成 `-inf`，后续熵或交叉熵计算出现 NaN  
+   处置：始终先做 epsilon clip，例如 `np.clip(p, 1e-10, 1.0)`；PyTorch 的 `F.cross_entropy` 已内置处理。
+
+2. 把 KL 散度当成对称距离 -> 在 VAE、蒸馏或策略优化里用反方向，训练目标直接失真  
+   处置：先分清 `D_{KL}(p \| q)` 和 `D_{KL}(q \| p)` 的含义，再决定是“覆盖所有模式”还是“集中拟合单个模式”。
+
+3. 先 `softmax` 再 `log` -> 极小概率下数值下溢，尤其在 FP16 中更容易失真  
+   处置：优先使用 `log_softmax` 或框架内置交叉熵实现。  
    → 详见 [数值精度](../numerical-precision/README.md)
 
-4. **MLE 过拟合理解偏差**
-   现象：认为 MLE 一定最优，忽略它在小样本下严重过拟合。
-   处置：MLE 在数据量充足时是渐近无偏的，但小数据下需要 MAP（加先验）来正则化。
+4. 把 MLE 理解成永远最优 -> 小样本场景下忽略先验约束，参数估计更容易过拟合  
+   处置：数据少时把 MAP 看成“带先验的 MLE”，用先验或正则化约束解空间。  
    → 详见 [正则化](../regularization/README.md)
-
----
 
 ## 演进笔记
 

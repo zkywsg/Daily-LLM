@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 对话系统 (Conversational System)
+[English](README_EN.md) | [中文](README.md)
 
 ## 概述
 用于客户服务和个人助手的多轮对话系统。

@@ -1,20 +1,4 @@
-"""
-CycleGAN Cycle Consistency Components
-======================================
-Exercise: Implement the core components of CycleGAN:
-- Residual block for the Generator
-- PatchGAN Discriminator
-- Cycle consistency loss
-- Identity loss
-
-Key concepts:
-- Two generators (A→B, B→A) and two discriminators
-- Cycle consistency: A→B→A ≈ A
-- Identity loss: G_A2B(B) ≈ B
-
-Usage:
-    python cyclegan_cycle_consistency.py
-"""
+"""CycleGAN 循环一致性 · 01-Visual-Intelligence/gan-advanced/exercises/cyclegan_cycle_consistency.py · CycleGAN 残差块、PatchGAN、循环一致性损失 · torch"""
 
 import torch
 import torch.nn as nn

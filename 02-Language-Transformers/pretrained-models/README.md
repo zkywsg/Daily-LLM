@@ -1,6 +1,5 @@
-[English](README_EN.md) | [中文](README.md)
-
 # 为什么"先读万卷书"比"直接考试"更有效？—— 预训练语言模型
+[English](README_EN.md) | [中文](README.md)
 
 ## 这个问题从哪来
 

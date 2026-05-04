@@ -1,18 +1,4 @@
-"""
-exercise_cnn_building_blocks.py — CNN 积木渐进练习
-====================================================
-从单个卷积操作开始，逐步搭建 CNN 的核心组件，
-最终拼出一个可运行的迷你 VGG 网络。
-
-学习路线:
-  Step 1  单层卷积 — 理解 shape 变化与参数量
-  Step 2  卷积块 — Conv + BN + ReLU + Pooling
-  Step 3  多层堆叠与感受野计算
-  Step 4  迷你 VGG — 端到端分类网络
-
-依赖: torch (无需额外数据集，全部用合成数据)
-运行: python exercise_cnn_building_blocks.py
-"""
+"""CNN 积木 · 01-Visual-Intelligence/cnn-architectures/exercises/conv_basics.py · 从单层卷积到迷你 VGG 的渐进练习 · torch"""
 
 import torch
 import torch.nn as nn

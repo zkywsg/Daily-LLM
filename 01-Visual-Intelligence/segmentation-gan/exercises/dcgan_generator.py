@@ -1,14 +1,4 @@
-"""
-dcgan_generator.py — DCGAN 生成器实现
-依赖: torch >= 2.0
-所属模块: 01-Visual-Intelligence/segmentation-gan
-
-练习目标:
-  1. 实现单个转置卷积上采样块
-  2. 实现完整 DCGAN Generator
-  3. 实现 DCGAN Discriminator（镜像结构）
-  4. 验证 GAN 训练循环的 loss 动态
-"""
+"""DCGAN 生成器 · 01-Visual-Intelligence/segmentation-gan/exercises/dcgan_generator.py · 转置卷积、DCGAN Generator 与 Discriminator · torch>=2.0"""
 
 import torch
 import torch.nn as nn
