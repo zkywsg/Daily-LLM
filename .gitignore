@@ -27,6 +27,13 @@ venv/
 # Local brainstorming previews
 .superpowers/
 
+# Frontend build artifacts
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+web/vite.config.js
+web/vite.config.d.ts
+
 # ML artifacts
 *.pt
 *.pth
@@ -38,6 +45,8 @@ mlruns/
 
 # Data
 data/
+!web/src/data/
+!web/src/data/**
 
 # Environment variables
 .env
