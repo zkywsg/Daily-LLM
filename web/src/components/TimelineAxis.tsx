@@ -38,6 +38,7 @@ export function TimelineAxis({
 
             return (
               <button
+                aria-label={`${node.year} ${node.shortTitle}`}
                 aria-current={isActive ? "step" : undefined}
                 className="timeline-node"
                 data-active={isActive}
@@ -48,6 +49,7 @@ export function TimelineAxis({
                 <span className="timeline-node__year">{node.year}</span>
                 <span className="timeline-node__dot" aria-hidden="true" />
                 <span className="timeline-node__title">{node.shortTitle}</span>
+                <span className="timeline-node__phase">{node.phase}</span>
               </button>
             );
           })}

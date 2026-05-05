@@ -13,6 +13,12 @@ export function TimelineContent({ node }: TimelineContentProps) {
       <h2>{node.title}</h2>
       <p className="content-card__lead">{node.whatHappened}</p>
 
+      <div className="reading-path" aria-label="当前节点阅读线索">
+        <span>旧瓶颈</span>
+        <span>关键突破</span>
+        <span>新边界</span>
+      </div>
+
       <div className="explain-grid">
         <section className="explain-block explain-block--input">
           <h3>之前卡在哪</h3>

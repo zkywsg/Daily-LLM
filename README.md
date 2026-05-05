@@ -15,6 +15,8 @@
   ·
   <a href="#timeline"><strong>时间线</strong></a>
   ·
+  <a href="#web-timeline"><strong>可视化网页</strong></a>
+  ·
   <a href="#modules"><strong>模块索引</strong></a>
   ·
   <a href="#quick-start"><strong>快速开始</strong></a>
@@ -53,6 +55,24 @@
 | 2025 | **DeepSeek R1 + Test-Time Compute** — 开源追平闭源推理能力 | 推理模型是 OpenAI 独门武器；"只有砸钱才能做"无人挑战 |
 
 → 完整展开（发生了什么 · 解决了什么 · 每年 10 个关键工作）见 [00-Timeline/](00-Timeline/)
+
+---
+
+<a id="web-timeline"></a>
+
+## 可视化网页
+
+仓库内已提供一个独立的时间线可视化网页，入口在 [web/](web/)。
+
+本地运行：
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+页面结构是“顶部横向时间线 + 下方当前节点内容”，适合浏览整条深度学习与大模型演进链路。当前先作为本地网页维护，公网部署后再补充正式访问地址。
 
 ---
 
