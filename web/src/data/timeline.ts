@@ -40,18 +40,18 @@ export const timelineNodes: TimelineNode[] = [
     solved: "它证明特征可以从数据中学习，深度学习成为视觉识别的主线。",
     newProblems: "大数据、GPU 算力和模型可解释性成为新的门槛。",
     keyWorks: [
-      { name: "Dropout", contribution: "随机失活缓解过拟合，成为深度网络标准正则化手段。", modulePath: "../00-Prerequisites/regularization/" },
-      { name: "ReLU", contribution: "改善梯度流动，让深层网络训练明显加速。", modulePath: "../00-Prerequisites/activation-functions/" },
+      { name: "Dropout", contribution: "随机失活缓解过拟合，成为深度网络标准正则化手段。", modulePath: "../foundations/deep-learning/regularization/" },
+      { name: "ReLU", contribution: "改善梯度流动，让深层网络训练明显加速。", modulePath: "../foundations/deep-learning/activation-functions/" },
       { name: "GPU 训练", contribution: "确立 CUDA 加速深度网络训练的基础设施范式。" },
     ],
     prerequisites: [
-      { label: "反向传播", path: "../00-Prerequisites/backpropagation/" },
-      { label: "激活函数", path: "../00-Prerequisites/activation-functions/" },
-      { label: "正则化", path: "../00-Prerequisites/regularization/" },
+      { label: "反向传播", path: "../foundations/deep-learning/backpropagation/" },
+      { label: "激活函数", path: "../foundations/deep-learning/activation-functions/" },
+      { label: "正则化", path: "../foundations/deep-learning/regularization/" },
     ],
     tracks: [
-      { label: "CNN 架构", path: "../01-Visual-Intelligence/cnn-architectures/" },
-      { label: "训练基础", path: "../01-Visual-Intelligence/training/" },
+      { label: "CNN 架构", path: "../tracks/vision/cnn-architectures/" },
+      { label: "训练基础", path: "../tracks/vision/training/" },
     ],
   },
   {
@@ -68,11 +68,11 @@ export const timelineNodes: TimelineNode[] = [
       { name: "VAE", contribution: "用变分推断学习连续潜变量，推动生成模型发展。" },
     ],
     prerequisites: [
-      { label: "嵌入表示", path: "../00-Prerequisites/embeddings/" },
-      { label: "概率与信息论", path: "../00-Prerequisites/probability-information-theory/" },
+      { label: "嵌入表示", path: "../foundations/representations/embeddings/" },
+      { label: "概率与信息论", path: "../foundations/math/probability-information-theory/" },
     ],
     tracks: [
-      { label: "语言线总览", path: "../02-Language-Transformers/" },
+      { label: "语言线总览", path: "../tracks/language/" },
     ],
   },
   {
@@ -85,17 +85,17 @@ export const timelineNodes: TimelineNode[] = [
     solved: "生成、序列转换、动态对齐和自适应优化四个基础件同时到位。",
     newProblems: "GAN 训练不稳定，Seq2Seq 仍串行，Attention 还没有成为统一架构。",
     keyWorks: [
-      { name: "Attention", contribution: "让解码器按需回看输入位置，突破固定上下文瓶颈。", modulePath: "../02-Language-Transformers/attention-mechanisms/" },
+      { name: "Attention", contribution: "让解码器按需回看输入位置，突破固定上下文瓶颈。", modulePath: "../tracks/language/attention-mechanisms/" },
       { name: "Adam", contribution: "结合动量和自适应学习率，成为深度学习默认优化器。" },
     ],
     prerequisites: [
-      { label: "编码器-解码器", path: "../00-Prerequisites/encoder-decoder/" },
-      { label: "注意力入门", path: "../00-Prerequisites/attention-primer/" },
-      { label: "优化与调度", path: "../00-Prerequisites/optimization-scheduling/" },
+      { label: "编码器-解码器", path: "../foundations/structures/encoder-decoder/" },
+      { label: "注意力入门", path: "../foundations/structures/attention-primer/" },
+      { label: "优化与调度", path: "../foundations/deep-learning/optimization-scheduling/" },
     ],
     tracks: [
-      { label: "注意力机制", path: "../02-Language-Transformers/attention-mechanisms/" },
-      { label: "GAN 进阶", path: "../01-Visual-Intelligence/gan-advanced/" },
+      { label: "注意力机制", path: "../tracks/language/attention-mechanisms/" },
+      { label: "GAN 进阶", path: "../tracks/vision/gan-advanced/" },
     ],
   },
   {
@@ -108,15 +108,15 @@ export const timelineNodes: TimelineNode[] = [
     solved: "网络深度被解放，152 层 ResNet 在 ImageNet 上达到低于人类水平的错误率。",
     newProblems: "更深更宽的模型加剧算力需求，也让归一化和残差设计成为工程必修课。",
     keyWorks: [
-      { name: "Residual Connection", contribution: "给梯度和信息提供直通路径，缓解退化问题。", modulePath: "../00-Prerequisites/residual-connections/" },
-      { name: "Batch Normalization", contribution: "稳定中间激活分布，提高训练速度和稳定性。", modulePath: "../00-Prerequisites/normalization/" },
+      { name: "Residual Connection", contribution: "给梯度和信息提供直通路径，缓解退化问题。", modulePath: "../foundations/structures/residual-connections/" },
+      { name: "Batch Normalization", contribution: "稳定中间激活分布，提高训练速度和稳定性。", modulePath: "../foundations/deep-learning/normalization/" },
     ],
     prerequisites: [
-      { label: "残差连接", path: "../00-Prerequisites/residual-connections/" },
-      { label: "归一化", path: "../00-Prerequisites/normalization/" },
+      { label: "残差连接", path: "../foundations/structures/residual-connections/" },
+      { label: "归一化", path: "../foundations/deep-learning/normalization/" },
     ],
     tracks: [
-      { label: "CNN 架构", path: "../01-Visual-Intelligence/cnn-architectures/" },
+      { label: "CNN 架构", path: "../tracks/vision/cnn-architectures/" },
     ],
   },
   {
@@ -133,11 +133,11 @@ export const timelineNodes: TimelineNode[] = [
       { name: "Value Network", contribution: "评估局面胜率，减少深度展开成本。" },
     ],
     prerequisites: [
-      { label: "概率与信息论", path: "../00-Prerequisites/probability-information-theory/" },
-      { label: "损失函数", path: "../00-Prerequisites/loss-functions/" },
+      { label: "概率与信息论", path: "../foundations/math/probability-information-theory/" },
+      { label: "损失函数", path: "../foundations/deep-learning/loss-functions/" },
     ],
     tracks: [
-      { label: "系统生产总览", path: "../05-Systems-Production/" },
+      { label: "系统生产总览", path: "../tracks/systems/" },
     ],
   },
   {
@@ -150,17 +150,17 @@ export const timelineNodes: TimelineNode[] = [
     solved: "它统一了上下文建模方式，成为后续 BERT、GPT 和大语言模型的基础架构。",
     newProblems: "自注意力带来 O(n²) 复杂度，长上下文成本开始成为核心瓶颈。",
     keyWorks: [
-      { name: "Self-Attention", contribution: "每个 token 直接和其他 token 建立依赖。", modulePath: "../02-Language-Transformers/attention-mechanisms/" },
-      { name: "Multi-Head Attention", contribution: "在多个子空间并行建模不同关系。", modulePath: "../02-Language-Transformers/transformer-architecture/" },
+      { name: "Self-Attention", contribution: "每个 token 直接和其他 token 建立依赖。", modulePath: "../tracks/language/attention-mechanisms/" },
+      { name: "Multi-Head Attention", contribution: "在多个子空间并行建模不同关系。", modulePath: "../tracks/language/transformer-architecture/" },
     ],
     prerequisites: [
-      { label: "注意力入门", path: "../00-Prerequisites/attention-primer/" },
-      { label: "Softmax", path: "../00-Prerequisites/softmax/" },
-      { label: "归一化", path: "../00-Prerequisites/normalization/" },
+      { label: "注意力入门", path: "../foundations/structures/attention-primer/" },
+      { label: "Softmax", path: "../foundations/representations/softmax/" },
+      { label: "归一化", path: "../foundations/deep-learning/normalization/" },
     ],
     tracks: [
-      { label: "Transformer 架构", path: "../02-Language-Transformers/transformer-architecture/" },
-      { label: "注意力机制", path: "../02-Language-Transformers/attention-mechanisms/" },
+      { label: "Transformer 架构", path: "../tracks/language/transformer-architecture/" },
+      { label: "注意力机制", path: "../tracks/language/attention-mechanisms/" },
     ],
   },
   {
@@ -173,15 +173,15 @@ export const timelineNodes: TimelineNode[] = [
     solved: "预训练加微调成为 NLP 标准范式，词义开始随上下文动态变化。",
     newProblems: "预训练成本上升，模型路线分化为理解式编码器和生成式解码器。",
     keyWorks: [
-      { name: "BERT", contribution: "双向上下文预训练刷新多项 NLP 理解任务。", modulePath: "../02-Language-Transformers/pretrained-models/" },
+      { name: "BERT", contribution: "双向上下文预训练刷新多项 NLP 理解任务。", modulePath: "../tracks/language/pretrained-models/" },
       { name: "GPT-1", contribution: "证明自回归语言模型可以迁移到下游任务。" },
     ],
     prerequisites: [
-      { label: "Tokenization", path: "../00-Prerequisites/tokenization/" },
-      { label: "嵌入表示", path: "../00-Prerequisites/embeddings/" },
+      { label: "Tokenization", path: "../foundations/representations/tokenization/" },
+      { label: "嵌入表示", path: "../foundations/representations/embeddings/" },
     ],
     tracks: [
-      { label: "预训练模型", path: "../02-Language-Transformers/pretrained-models/" },
+      { label: "预训练模型", path: "../tracks/language/pretrained-models/" },
     ],
   },
   {
@@ -198,11 +198,11 @@ export const timelineNodes: TimelineNode[] = [
       { name: "T5", contribution: "把分类、翻译、摘要等任务统一成 text-to-text。" },
     ],
     prerequisites: [
-      { label: "数值精度", path: "../00-Prerequisites/numerical-precision/" },
-      { label: "优化与调度", path: "../00-Prerequisites/optimization-scheduling/" },
+      { label: "数值精度", path: "../foundations/deep-learning/numerical-precision/" },
+      { label: "优化与调度", path: "../foundations/deep-learning/optimization-scheduling/" },
     ],
     tracks: [
-      { label: "预训练模型", path: "../02-Language-Transformers/pretrained-models/" },
+      { label: "预训练模型", path: "../tracks/language/pretrained-models/" },
     ],
   },
   {
@@ -215,16 +215,16 @@ export const timelineNodes: TimelineNode[] = [
     solved: "Prompt 和 Few-shot 让模型在不更新参数的情况下完成多种任务。",
     newProblems: "训练成本、推理成本和不可控输出成为规模路线的代价。",
     keyWorks: [
-      { name: "Scaling Laws", contribution: "用经验规律指导模型、数据和算力配比。", modulePath: "../03-Scale-Multimodal/pre-training/" },
+      { name: "Scaling Laws", contribution: "用经验规律指导模型、数据和算力配比。", modulePath: "../tracks/scale-multimodal/scale/pre-training/" },
       { name: "GPT-3", contribution: "展示大模型涌现式 Few-shot 能力。" },
     ],
     prerequisites: [
-      { label: "概率与信息论", path: "../00-Prerequisites/probability-information-theory/" },
-      { label: "归纳偏置", path: "../00-Prerequisites/inductive-bias/" },
+      { label: "概率与信息论", path: "../foundations/math/probability-information-theory/" },
+      { label: "归纳偏置", path: "../foundations/structures/inductive-bias/" },
     ],
     tracks: [
-      { label: "预训练", path: "../03-Scale-Multimodal/pre-training/" },
-      { label: "提示工程", path: "../03-Scale-Multimodal/prompt-engineering/" },
+      { label: "预训练", path: "../tracks/scale-multimodal/scale/pre-training/" },
+      { label: "提示工程", path: "../tracks/scale-multimodal/scale/prompt-engineering/" },
     ],
   },
   {
@@ -237,16 +237,16 @@ export const timelineNodes: TimelineNode[] = [
     solved: "多模态对齐、代码生成和参数高效微调同时进入实用阶段。",
     newProblems: "数据版权、模型偏见和微调后的部署治理成为新问题。",
     keyWorks: [
-      { name: "CLIP", contribution: "用自然语言监督视觉模型，连接图像和文本空间。", modulePath: "../03-Scale-Multimodal/multimodal/" },
-      { name: "LoRA", contribution: "通过低秩适配器降低大模型微调成本。", modulePath: "../04-Alignment-OpenSource/peft/" },
+      { name: "CLIP", contribution: "用自然语言监督视觉模型，连接图像和文本空间。", modulePath: "../tracks/scale-multimodal/multimodal/" },
+      { name: "LoRA", contribution: "通过低秩适配器降低大模型微调成本。", modulePath: "../tracks/alignment/peft/" },
     ],
     prerequisites: [
-      { label: "嵌入表示", path: "../00-Prerequisites/embeddings/" },
-      { label: "损失函数", path: "../00-Prerequisites/loss-functions/" },
+      { label: "嵌入表示", path: "../foundations/representations/embeddings/" },
+      { label: "损失函数", path: "../foundations/deep-learning/loss-functions/" },
     ],
     tracks: [
-      { label: "多模态", path: "../03-Scale-Multimodal/multimodal/" },
-      { label: "PEFT", path: "../04-Alignment-OpenSource/peft/" },
+      { label: "多模态", path: "../tracks/scale-multimodal/multimodal/" },
+      { label: "PEFT", path: "../tracks/alignment/peft/" },
     ],
   },
   {
@@ -259,16 +259,16 @@ export const timelineNodes: TimelineNode[] = [
     solved: "大模型从研究系统进入大众产品，交互范式从 prompt 变成自然对话。",
     newProblems: "幻觉、安全、价值对齐和评估标准成为核心挑战。",
     keyWorks: [
-      { name: "RLHF", contribution: "把人类偏好转化为奖励信号，改善回答可用性。", modulePath: "../04-Alignment-OpenSource/alignment/" },
+      { name: "RLHF", contribution: "把人类偏好转化为奖励信号，改善回答可用性。", modulePath: "../tracks/alignment/alignment/" },
       { name: "Instruction Tuning", contribution: "让模型更稳定地理解任务指令。" },
     ],
     prerequisites: [
-      { label: "损失函数", path: "../00-Prerequisites/loss-functions/" },
-      { label: "优化与调度", path: "../00-Prerequisites/optimization-scheduling/" },
+      { label: "损失函数", path: "../foundations/deep-learning/loss-functions/" },
+      { label: "优化与调度", path: "../foundations/deep-learning/optimization-scheduling/" },
     ],
     tracks: [
-      { label: "对齐", path: "../04-Alignment-OpenSource/alignment/" },
-      { label: "提示工程", path: "../03-Scale-Multimodal/prompt-engineering/" },
+      { label: "对齐", path: "../tracks/alignment/alignment/" },
+      { label: "提示工程", path: "../tracks/scale-multimodal/scale/prompt-engineering/" },
     ],
   },
   {
@@ -282,15 +282,15 @@ export const timelineNodes: TimelineNode[] = [
     newProblems: "模型评测、许可边界、部署成本和安全治理更加复杂。",
     keyWorks: [
       { name: "GPT-4", contribution: "显著提升复杂推理、多任务和多模态能力。" },
-      { name: "LLaMA", contribution: "让高质量基座模型进入开源研究和工程社区。", modulePath: "../04-Alignment-OpenSource/" },
+      { name: "LLaMA", contribution: "让高质量基座模型进入开源研究和工程社区。", modulePath: "../tracks/alignment/" },
     ],
     prerequisites: [
-      { label: "数值精度", path: "../00-Prerequisites/numerical-precision/" },
-      { label: "深度学习基础", path: "../00-Prerequisites/deep-learning-basics/" },
+      { label: "数值精度", path: "../foundations/deep-learning/numerical-precision/" },
+      { label: "深度学习基础", path: "../foundations/deep-learning/deep-learning-basics/" },
     ],
     tracks: [
-      { label: "对齐与开源", path: "../04-Alignment-OpenSource/" },
-      { label: "模型服务", path: "../05-Systems-Production/model-serving/" },
+      { label: "对齐与开源", path: "../tracks/alignment/" },
+      { label: "模型服务", path: "../tracks/systems/model-serving/" },
     ],
   },
   {
@@ -303,16 +303,16 @@ export const timelineNodes: TimelineNode[] = [
     solved: "能力提升不再只依赖训练期堆参数，推理期计算成为重要方向。",
     newProblems: "路由、缓存、延迟、成本和评估都变成系统级问题。",
     keyWorks: [
-      { name: "MoE", contribution: "按 token 激活部分专家，在能力和成本之间折中。", modulePath: "../05-Systems-Production/model-serving/architecture/" },
+      { name: "MoE", contribution: "按 token 激活部分专家，在能力和成本之间折中。", modulePath: "../tracks/systems/model-serving/architecture/" },
       { name: "Long Context", contribution: "让模型处理更长文档和复杂任务上下文。" },
     ],
     prerequisites: [
-      { label: "归纳偏置", path: "../00-Prerequisites/inductive-bias/" },
-      { label: "数值精度", path: "../00-Prerequisites/numerical-precision/" },
+      { label: "归纳偏置", path: "../foundations/structures/inductive-bias/" },
+      { label: "数值精度", path: "../foundations/deep-learning/numerical-precision/" },
     ],
     tracks: [
-      { label: "模型服务架构", path: "../05-Systems-Production/model-serving/architecture/" },
-      { label: "训练基础设施", path: "../05-Systems-Production/training-infrastructure/" },
+      { label: "模型服务架构", path: "../tracks/systems/model-serving/architecture/" },
+      { label: "训练基础设施", path: "../tracks/systems/training-infrastructure/" },
     ],
   },
   {
@@ -329,12 +329,12 @@ export const timelineNodes: TimelineNode[] = [
       { name: "Test-Time Compute", contribution: "通过推理时更多计算换取更稳的复杂问题求解。" },
     ],
     prerequisites: [
-      { label: "损失函数", path: "../00-Prerequisites/loss-functions/" },
-      { label: "概率与信息论", path: "../00-Prerequisites/probability-information-theory/" },
+      { label: "损失函数", path: "../foundations/deep-learning/loss-functions/" },
+      { label: "概率与信息论", path: "../foundations/math/probability-information-theory/" },
     ],
     tracks: [
-      { label: "模型服务", path: "../05-Systems-Production/model-serving/" },
-      { label: "评估与监控", path: "../05-Systems-Production/monitoring/" },
+      { label: "模型服务", path: "../tracks/systems/model-serving/" },
+      { label: "评估与监控", path: "../tracks/systems/monitoring/" },
     ],
   },
 ];
@@ -363,7 +363,7 @@ export const prehistoryNodes: PrehistoryNode[] = [
     shortTitle: "Shannon",
     why: "在深度学习之前奠定「信息可量化」的数学语言，交叉熵、互信息、KL 散度都源自这里。",
     contribution: "提出信息熵、互信息和信道容量，让信息可以用比特度量。",
-    foundationPath: "../00-Prerequisites/probability-information-theory/",
+    foundationPath: "../foundations/math/probability-information-theory/",
     foundationLabel: "概率与信息论",
   },
   {
@@ -372,7 +372,7 @@ export const prehistoryNodes: PrehistoryNode[] = [
     shortTitle: "Perceptron",
     why: "神经网络的第一形态，确立「输入加权求和 + 非线性」的最小单元。",
     contribution: "用阈值函数实现简单二分类，开启基于神经元的学习算法。",
-    foundationPath: "../00-Prerequisites/deep-learning-basics/",
+    foundationPath: "../foundations/deep-learning/deep-learning-basics/",
     foundationLabel: "深度学习基础",
   },
   {
@@ -381,7 +381,7 @@ export const prehistoryNodes: PrehistoryNode[] = [
     shortTitle: "Backprop",
     why: "让多层网络真正可训练——所有现代深度学习都建立在这套链式求导算法之上。",
     contribution: "Rumelhart/Hinton/Williams 把链式法则系统化为多层网络的训练算法。",
-    foundationPath: "../00-Prerequisites/backpropagation/",
+    foundationPath: "../foundations/deep-learning/backpropagation/",
     foundationLabel: "反向传播",
   },
   {
@@ -390,7 +390,7 @@ export const prehistoryNodes: PrehistoryNode[] = [
     shortTitle: "LSTM",
     why: "提出门控记忆机制，2014–2017 序列建模的事实标准，是 Transformer 出现之前的最佳序列模型。",
     contribution: "Hochreiter & Schmidhuber 用门控结构解决 RNN 梯度消失，让长依赖建模成为可能。",
-    foundationPath: "../00-Prerequisites/encoder-decoder/",
+    foundationPath: "../foundations/structures/encoder-decoder/",
     foundationLabel: "编码器-解码器",
   },
 ];

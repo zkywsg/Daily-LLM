@@ -44,7 +44,7 @@ test("major nodes carry prerequisites and tracks", () => {
 
   expect(transformer?.tracks).toContainEqual({
     label: "Transformer 架构",
-    path: "../02-Language-Transformers/transformer-architecture/",
+    path: "../tracks/language/transformer-architecture/",
   });
   expect(transformer?.prerequisites.length).toBeGreaterThan(0);
 });

@@ -18,7 +18,7 @@ const LAYERS = [
     title: "基础工具箱",
     desc: "线代 · 概率 · BP · 激活 · 归一化 · 嵌入 …",
     cta: "翻看 16 + 篇基础",
-    href: "../00-Prerequisites/",
+    href: "../foundations/",
   },
   {
     id: "timeline" as const,
@@ -33,7 +33,7 @@ const LAYERS = [
     title: "主题深挖",
     desc: "vision · language · scale-multi · alignment · systems",
     cta: "选一条主题往后追",
-    href: "../",
+    href: "../tracks/",
   },
 ];
 

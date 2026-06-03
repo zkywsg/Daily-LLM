@@ -54,7 +54,7 @@
 | 2024 | **MoE + 长上下文 + o1** — 激活参数比例下降；推理时慢思考 | 大模型推理成本线性上涨；复杂推理一步错满盘皆输 |
 | 2025 | **DeepSeek R1 + Test-Time Compute** — 开源追平闭源推理能力 | 推理模型是 OpenAI 独门武器；"只有砸钱才能做"无人挑战 |
 
-→ 完整展开（发生了什么 · 解决了什么 · 每年 10 个关键工作）见 [00-Timeline/](00-Timeline/)
+→ 完整展开（发生了什么 · 解决了什么 · 每年 10 个关键工作）见 [timeline/](timeline/)
 
 ---
 
@@ -82,14 +82,14 @@ npm run dev
 
 | Phase | 主题 | 时间段 | 入口 |
 |-------|------|--------|------|
-| 00 | Timeline — 被逼出来的历史 | 2012–2025 | [00-Timeline/](00-Timeline/) |
-| 00 | 前置准备 — 神经网络基础 | — | [00-Prerequisites/](00-Prerequisites/) |
-| 01 | 视觉线 — AlexNet → ResNet → GAN | 2012–2017 | [01-Visual-Intelligence/](01-Visual-Intelligence/) |
-| 02 | 语言线 — Word2Vec → Transformer → BERT | 2013–2019 | [02-Language-Transformers/](02-Language-Transformers/) |
-| 03 | 汇流：规模与多模态 — GPT-3 · ViT · CLIP | 2020–2021 | [03-Scale-Multimodal/](03-Scale-Multimodal/) |
-| 04 | 对齐与开源 — RLHF · DPO · LLaMA | 2022–2023 | [04-Alignment-OpenSource/](04-Alignment-OpenSource/) |
-| 05 | 系统与生产 — RAG · Agent · vLLM · MLOps | 2023–2025 | [05-Systems-Production/](05-Systems-Production/) |
-| 06 | 实战项目 — 企业级端到端系统 | 跨阶段 | [06-Capstone-Projects/](06-Capstone-Projects/) |
+| 00 | Timeline — 被逼出来的历史 | 2012–2025 | [timeline/](timeline/) |
+| 00 | 前置准备 — 神经网络基础 | — | [foundations/](foundations/) |
+| 01 | 视觉线 — AlexNet → ResNet → GAN | 2012–2017 | [tracks/vision/](tracks/vision/) |
+| 02 | 语言线 — Word2Vec → Transformer → BERT | 2013–2019 | [tracks/language/](tracks/language/) |
+| 03 | 汇流：规模与多模态 — GPT-3 · ViT · CLIP | 2020–2021 | [tracks/scale-multimodal/](tracks/scale-multimodal/) |
+| 04 | 对齐与开源 — RLHF · DPO · LLaMA | 2022–2023 | [tracks/alignment/](tracks/alignment/) |
+| 05 | 系统与生产 — RAG · Agent · vLLM · MLOps | 2023–2025 | [tracks/systems/](tracks/systems/) |
+| 06 | 实战项目 — 企业级端到端系统 | 跨阶段 | [projects/](projects/) |
 
 ---
 
