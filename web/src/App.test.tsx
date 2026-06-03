@@ -24,5 +24,5 @@ test("clicking a timeline node updates the content and URL hash", async () => {
   expect(
     screen.getByRole("heading", { name: /Transformer：把 RNN 扔掉/ }),
   ).toBeInTheDocument();
-  expect(window.location.hash).toBe("#2017");
+  expect(window.location.hash).toBe("#year=2017");
 });

@@ -1,8 +1,7 @@
-import { timelineNodes } from "./timeline";
+import { prehistoryNodes, timelineNodes } from "./timeline";
 
-test("timeline covers the required historical nodes", () => {
+test("timeline starts at 2012 and covers through 2025", () => {
   expect(timelineNodes.map((node) => node.year)).toEqual([
-    "1948",
     "2012",
     "2013",
     "2014",
@@ -20,6 +19,15 @@ test("timeline covers the required historical nodes", () => {
   ]);
 });
 
+test("prehistory holds the 4 pre-deep-learning milestones", () => {
+  expect(prehistoryNodes.map((n) => n.year)).toEqual([
+    "1948",
+    "1958",
+    "1986",
+    "1997",
+  ]);
+});
+
 test("each timeline node contains readable explanation sections", () => {
   for (const node of timelineNodes) {
     expect(node.title.length).toBeGreaterThan(4);
@@ -31,11 +39,12 @@ test("each timeline node contains readable explanation sections", () => {
   }
 });
 
-test("major nodes link back to existing learning modules", () => {
+test("major nodes carry prerequisites and tracks", () => {
   const transformer = timelineNodes.find((node) => node.year === "2017");
 
-  expect(transformer?.relatedModules).toContainEqual({
+  expect(transformer?.tracks).toContainEqual({
     label: "Transformer 架构",
     path: "../02-Language-Transformers/transformer-architecture/",
   });
+  expect(transformer?.prerequisites.length).toBeGreaterThan(0);
 });

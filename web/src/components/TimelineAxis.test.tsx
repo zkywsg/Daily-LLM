@@ -9,6 +9,7 @@ test("marks the active timeline node for assistive technology", () => {
       activeYear="2017"
       nodes={timelineNodes}
       onSelect={() => {}}
+      onOpenPrehistory={() => {}}
     />,
   );
 
@@ -25,6 +26,7 @@ test("calls onSelect when a node is clicked", async () => {
       activeYear="2012"
       nodes={timelineNodes}
       onSelect={(year) => selected.push(year)}
+      onOpenPrehistory={() => {}}
     />,
   );
 
