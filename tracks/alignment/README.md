@@ -36,3 +36,19 @@
 → 完整时间线见 [../../timeline](../../timeline/)
 
 **上一阶段**: [汇流：规模与多模态 ←](../scale-multimodal/) | **下一阶段**: [系统与生产 →](../systems/)
+
+---
+
+<!-- BEGIN: timeline-references (auto-generated) -->
+
+## 涉及的时间线节点
+
+> 本 track 在主时间线里被以下年份引用为「主题深挖」入口。
+
+| 年份 | 节点 | 引用入口 |
+|---|---|---|
+| [2021](../../timeline/2021/) | CLIP、Codex、LoRA：多模态与效率 | [PEFT](peft/) |
+| [2022](../../timeline/2022/) | ChatGPT 与 RLHF：AI 走进大众 | [对齐](alignment/) |
+| [2023](../../timeline/2023/) | GPT-4 与 LLaMA：开源的反击 | [对齐与开源](./) |
+
+<!-- END: timeline-references -->

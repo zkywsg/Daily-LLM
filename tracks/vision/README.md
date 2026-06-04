@@ -60,3 +60,19 @@ Dropout、Batch Norm、数据增强、GPU 训练技巧
 → 完整时间线见 [../../timeline](../../timeline/)
 
 **下一阶段**: [语言线 →](../language/)
+
+---
+
+<!-- BEGIN: timeline-references (auto-generated) -->
+
+## 涉及的时间线节点
+
+> 本 track 在主时间线里被以下年份引用为「主题深挖」入口。
+
+| 年份 | 节点 | 引用入口 |
+|---|---|---|
+| [2012](../../timeline/2012/) | AlexNet：一声炮响，旧世界终结 | [CNN 架构](cnn-architectures/) |
+| [2014](../../timeline/2014/) | GAN、Seq2Seq、Attention、Adam：一年四响 | [GAN 进阶](gan-advanced/) |
+| [2015](../../timeline/2015/) | ResNet 与 Batch Norm：深度的解放 | [CNN 架构](cnn-architectures/) |
+
+<!-- END: timeline-references -->

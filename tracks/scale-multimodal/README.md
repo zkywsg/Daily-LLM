@@ -46,3 +46,19 @@ In-Context Learning 的系统方法论
 → 完整时间线见 [../../timeline](../../timeline/)
 
 **上一阶段**: [语言与 Transformer ←](../language/) | **下一阶段**: [对齐与开源 →](../alignment/)
+
+---
+
+<!-- BEGIN: timeline-references (auto-generated) -->
+
+## 涉及的时间线节点
+
+> 本 track 在主时间线里被以下年份引用为「主题深挖」入口。
+
+| 年份 | 节点 | 引用入口 |
+|---|---|---|
+| [2020](../../timeline/2020/) | GPT-3 与 Scaling Laws：大力出奇迹 | [预训练](scale/pre-training/) |
+| [2021](../../timeline/2021/) | CLIP、Codex、LoRA：多模态与效率 | [多模态](multimodal/) |
+| [2022](../../timeline/2022/) | ChatGPT 与 RLHF：AI 走进大众 | [提示工程](scale/prompt-engineering/) |
+
+<!-- END: timeline-references -->

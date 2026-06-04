@@ -78,3 +78,21 @@ BERT、GPT、T5 三条路线系统对比
 → 详见 [../scale-multimodal](../scale-multimodal/)
 
 **下一阶段**: [汇流：规模与多模态 →](../scale-multimodal/)
+
+---
+
+<!-- BEGIN: timeline-references (auto-generated) -->
+
+## 涉及的时间线节点
+
+> 本 track 在主时间线里被以下年份引用为「主题深挖」入口。
+
+| 年份 | 节点 | 引用入口 |
+|---|---|---|
+| [2013](../../timeline/2013/) | Word2Vec：词也能有坐标 | [语言线总览](./) |
+| [2014](../../timeline/2014/) | GAN、Seq2Seq、Attention、Adam：一年四响 | [注意力机制](attention-mechanisms/) |
+| [2017](../../timeline/2017/) | Transformer：把 RNN 扔掉 | [Transformer 架构](transformer-architecture/) |
+| [2018](../../timeline/2018/) | BERT 与 GPT-1：预训练时代 | [预训练模型](pretrained-models/) |
+| [2019](../../timeline/2019/) | GPT-2 与 T5：规模的野心 | [预训练模型](pretrained-models/) |
+
+<!-- END: timeline-references -->
