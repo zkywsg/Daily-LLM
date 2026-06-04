@@ -1,9 +1,12 @@
 import type * as React from "react";
 
 /**
- * 按年份渲染的简笔示意图（SVG + CSS 动画）。
- * 目标：在「发生了什么」叙事旁边，给一个 5 秒就能看懂的结构动图。
- * 暂未覆盖的年份返回 null（content-card 自然不会留白）。
+ * 按年份渲染的"完整架构示意图"。
+ * 设计标准（v2）：
+ *  - 所有图统一 viewBox 宽度 1100，高度按内容定（360–740）
+ *  - 全部使用 illustration__svg--tall，破 card 内边距吃满横向空间
+ *  - 文字尺寸：label 14 / strong 17 / small 12（CSS 控制）
+ *  - 每张图以"完整结构"为目标：不再做简化示意，而是把每一层 / 每一个连接 / 每一个公式都画出来
  */
 
 type TimelineIllustrationProps = {
@@ -26,474 +29,708 @@ type Renderer = { caption: string; render: () => React.ReactElement };
 
 const ILLUSTRATIONS: Record<string, Renderer> = {
   "2012": {
-    caption: "AlexNet 结构示意：像素 → 卷积/池化层层抽象 → 全连接 → 分类概率",
-    render: () => <CnnDiagram />,
+    caption:
+      "AlexNet 完整 8 层：输入 224² → 5 个 Conv（含 ReLU/MaxPool）→ 3 个 FC → 1000 类 Softmax。逐层标注 spatial 维度 × 通道数",
+    render: () => <AlexNetDiagram />,
+  },
+  "2013": {
+    caption:
+      "Word2Vec：Skip-gram 用中心词预测上下文窗口；学到的稠密向量使得 king − man + woman ≈ queen 这样的线性类比成立",
+    render: () => <Word2VecDiagram />,
   },
   "2014": {
-    caption: "GAN 对抗示意：生成器与判别器互相博弈，把噪声推向真实样本分布",
+    caption:
+      "GAN 完整对抗训练回路：z → G(z) 假样本 vs 真样本同时进入 D；D 最大化辨别能力、G 最小化被识破概率，两人零和博弈到纳什均衡",
     render: () => <GanDiagram />,
   },
   "2015": {
-    caption: "ResNet 残差连接：恒等捷径让梯度直接跨越多层，深网终于训得动",
+    caption:
+      "ResNet：单个残差块内部 Conv-BN-ReLU-Conv-BN ⊕ identity skip；恒等捷径让梯度直通，使得 152 层网络可训练（相比 VGG-19 是 8× 深度）",
     render: () => <ResNetDiagram />,
   },
   "2017": {
     caption:
       "Transformer 编码器一个完整 block：token → 嵌入 + 位置编码 → Q/K/V 投影 → 多头注意力 → Add&Norm → FFN → Add&Norm；右上 ×6 表示这个 block 串联六次",
-    render: () => <AttentionDiagram />,
+    render: () => <TransformerDiagram />,
+  },
+  "2018": {
+    caption:
+      "BERT vs GPT-1：BERT 用双向 Transformer 编码器做 MLM（猜被 mask 的 token），GPT-1 用单向解码器做自回归（猜下一个 token）；都先大规模预训练，再小数据集微调",
+    render: () => <BertGptDiagram />,
   },
   "2020": {
-    caption: "Scaling Law：参数量级跃迁后，少样本/零样本能力随规模浮现",
+    caption:
+      "GPT-3 与 Scaling Laws：参数从 117M 涨到 175B 沿幂律提升能力；右侧 in-context few-shot 提示让大模型免微调完成新任务",
     render: () => <ScalingDiagram />,
   },
   "2021": {
-    caption: "CLIP 双塔：图像与文本编码到同一空间，匹配靠余弦相似度",
+    caption:
+      "CLIP 完整对比训练：N 张图 + N 段文本各自编码 → N×N 余弦相似度矩阵，对角线为正样本，其余 N²−N 个为负样本，InfoNCE 损失双向拉近",
     render: () => <ClipDiagram />,
+  },
+  "2022": {
+    caption:
+      "RLHF 三阶段：① SFT 用人写的演示监督微调 → ② Reward Model 学人类对多个回答的偏好排序 → ③ PPO 用 RM 当奖励信号 + KL 约束更新策略",
+    render: () => <RlhfDiagram />,
+  },
+  "2024": {
+    caption:
+      "MoE 稀疏激活：每个 token 由 Router 选 top-2 expert FFN（共 8 个），输出按 router 权重加权聚合；每步只激活 25% 参数，容量大但推理便宜",
+    render: () => <MoeDiagram />,
   },
 };
 
 /* =====================================================================
- * 2012 — CNN
+ * Shared: <defs> arrowhead marker
+ * 每张 SVG 顶部都需要它来画带箭头的连接线
  * ===================================================================== */
-function CnnDiagram() {
+function ArrowDefs() {
   return (
-    <svg viewBox="0 0 720 180" role="img" className="illustration__svg">
-      {/* 输入图像格子 */}
-      <g transform="translate(20,30)">
-        <text x="0" y="-8" className="illustration__label">
-          input 224²
-        </text>
-        {Array.from({ length: 6 }).map((_, r) =>
-          Array.from({ length: 6 }).map((_, c) => (
-            <rect
-              key={`p-${r}-${c}`}
-              x={c * 14}
-              y={r * 14}
-              width="12"
-              height="12"
-              rx="1.5"
-              className="illustration__pixel"
-              style={{ animationDelay: `${(r + c) * 70}ms` }}
-            />
-          )),
-        )}
-      </g>
+    <defs>
+      <marker
+        id="arrow-head"
+        viewBox="0 0 10 10"
+        refX="8"
+        refY="5"
+        markerWidth="6"
+        markerHeight="6"
+        orient="auto-start-reverse"
+      >
+        <path d="M 0 0 L 10 5 L 0 10 z" className="illustration__arrow-head" />
+      </marker>
+    </defs>
+  );
+}
 
-      {/* 卷积特征图：3 组方块叠加，逐渐变小 */}
-      {[
-        { x: 160, size: 70, n: 3, label: "conv₁ + pool" },
-        { x: 290, size: 54, n: 5, label: "conv₃ + pool" },
-        { x: 410, size: 36, n: 7, label: "conv₅ + pool" },
-      ].map((stage, i) => (
-        <g key={`stage-${i}`} transform={`translate(${stage.x},40)`}>
-          <text x="0" y="-8" className="illustration__label">
-            {stage.label}
-          </text>
-          {Array.from({ length: stage.n }).map((_, k) => (
-            <rect
-              key={`s-${i}-${k}`}
-              x={k * 5}
-              y={k * 5}
-              width={stage.size}
-              height={stage.size}
-              rx="3"
-              className="illustration__featuremap"
-              style={{
-                animationDelay: `${i * 180 + k * 60}ms`,
-              }}
-            />
-          ))}
-        </g>
+/* =====================================================================
+ * 2012 — AlexNet 完整 8 层 CNN
+ * ===================================================================== */
+function AlexNetDiagram() {
+  // 8 个 conv/fc 层，逐层给出名字、空间尺寸、通道数
+  const layers = [
+    { label: "Input", spatial: "224×224", ch: 3, x: 50, w: 60, color: "input" },
+    { label: "Conv1 (11×11, s=4) + ReLU + Pool", spatial: "55×55→27×27", ch: 96, x: 150, w: 50, color: "conv" },
+    { label: "Conv2 (5×5) + Pool", spatial: "27×27→13×13", ch: 256, x: 280, w: 42, color: "conv" },
+    { label: "Conv3 (3×3)", spatial: "13×13", ch: 384, x: 400, w: 36, color: "conv" },
+    { label: "Conv4 (3×3)", spatial: "13×13", ch: 384, x: 510, w: 36, color: "conv" },
+    { label: "Conv5 (3×3) + Pool", spatial: "13×13→6×6", ch: 256, x: 620, w: 28, color: "conv" },
+    { label: "FC1", spatial: "—", ch: 4096, x: 730, w: 14, color: "fc" },
+    { label: "FC2", spatial: "—", ch: 4096, x: 810, w: 14, color: "fc" },
+    { label: "FC3 + Softmax", spatial: "—", ch: 1000, x: 900, w: 14, color: "fc" },
+  ];
+
+  // 每层显示的视觉高度：随通道数 log 比例缩放，但有上下限
+  const layerH = (ch: number) => Math.max(40, Math.min(120, 24 + Math.log2(ch) * 12));
+
+  return (
+    <svg viewBox="0 0 1100 460" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      {/* 大标题 */}
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        AlexNet · 8 层（5 Conv + 3 FC）· 60M 参数 · 在 ImageNet 上把 Top-5 误差打到 15.3%
+      </text>
+
+      {/* 每层立方体（用 3 个错位矩形叠加表示通道维度） */}
+      {layers.map((L, i) => {
+        const h = layerH(L.ch);
+        const yMid = 200;
+        const yTop = yMid - h / 2;
+        const layerCls =
+          L.color === "input"
+            ? "illustration__layer illustration__layer--input"
+            : L.color === "conv"
+            ? "illustration__layer illustration__layer--conv"
+            : "illustration__layer illustration__layer--fc";
+        return (
+          <g key={L.label} style={{ animationDelay: `${i * 80}ms` }} className="illustration__appear">
+            {/* 三层错位矩形，做 3D 感 */}
+            <rect x={L.x + 6} y={yTop - 6} width={L.w} height={h} rx="3" className={`${layerCls} illustration__layer--back`} />
+            <rect x={L.x + 3} y={yTop - 3} width={L.w} height={h} rx="3" className={`${layerCls} illustration__layer--mid`} />
+            <rect x={L.x} y={yTop} width={L.w} height={h} rx="3" className={layerCls} />
+
+            {/* 通道数顶部 */}
+            <text x={L.x + L.w / 2} y={yTop - 14} textAnchor="middle" className="illustration__label illustration__label--small">
+              {L.ch} ch
+            </text>
+            {/* 空间尺寸底部 */}
+            <text x={L.x + L.w / 2} y={yTop + h + 16} textAnchor="middle" className="illustration__label illustration__label--small">
+              {L.spatial}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* 层名（旋转 35°，避免拥挤） */}
+      {layers.map((L, i) => (
+        <text
+          key={`name-${i}`}
+          x={L.x + L.w / 2}
+          y="358"
+          textAnchor="end"
+          className="illustration__label illustration__label--small"
+          transform={`rotate(-30 ${L.x + L.w / 2} 358)`}
+        >
+          {L.label}
+        </text>
       ))}
 
-      {/* 全连接层 */}
-      <g transform="translate(530,40)">
-        <text x="0" y="-8" className="illustration__label">
-          FC
-        </text>
-        {Array.from({ length: 8 }).map((_, i) => (
-          <circle
-            key={`fc-${i}`}
-            cx="12"
-            cy={i * 14 + 8}
-            r="4"
-            className="illustration__neuron"
-            style={{ animationDelay: `${600 + i * 50}ms` }}
+      {/* 层间流动箭头 */}
+      {layers.slice(0, -1).map((L, i) => {
+        const next = layers[i + 1];
+        const x1 = L.x + L.w + 4;
+        const x2 = next.x - 4;
+        return (
+          <line
+            key={`flow-${i}`}
+            x1={x1}
+            y1="200"
+            x2={x2}
+            y2="200"
+            className="illustration__flow"
+            style={{ animationDelay: `${i * 150}ms` }}
           />
-        ))}
-      </g>
+        );
+      })}
 
-      {/* 输出 softmax */}
-      <g transform="translate(620,40)">
-        <text x="0" y="-8" className="illustration__label">
-          softmax
-        </text>
-        {["cat", "dog", "car", "…"].map((label, i) => (
-          <g key={label}>
+      {/* 底部公式与说明 */}
+      <text x="30" y="402" className="illustration__label">
+        关键创新：① ReLU 替代 sigmoid → 收敛 6× 快  ② GPU 并行训练 5–6 天  ③ Dropout 0.5 在 FC1/FC2  ④ 数据增强（裁剪+镜像+PCA 颜色抖动）
+      </text>
+      <text x="30" y="424" className="illustration__label illustration__label--small">
+        感受野从 11×11 局部边缘 → 经过 5 层卷积 → 13×13 特征图每个位置已"看到"整张图的语义；FC 把 9216 维空间特征压成 1000 类概率
+      </text>
+
+      {/* 输出：Top-5 概率柱状（cat/dog/car/...） */}
+      <g transform="translate(960, 160)">
+        <text x="0" y="-8" className="illustration__label illustration__label--small">Top-5 输出</text>
+        {[
+          { label: "cat", v: 0.78 },
+          { label: "dog", v: 0.12 },
+          { label: "car", v: 0.05 },
+          { label: "...", v: 0.02 },
+        ].map((p, i) => (
+          <g key={p.label}>
             <rect
               x="0"
-              y={i * 22 + 4}
-              width={i === 0 ? 70 : 30 + i * 8}
+              y={i * 20}
+              width={p.v * 70 + 4}
               height="14"
               rx="2"
               className="illustration__bar"
-              style={{ animationDelay: `${900 + i * 80}ms` }}
+              style={{ animationDelay: `${800 + i * 80}ms` }}
             />
-            <text
-              x="74"
-              y={i * 22 + 14}
-              className="illustration__label illustration__label--inline"
-            >
-              {label}
+            <text x={p.v * 70 + 10} y={i * 20 + 12} className="illustration__label illustration__label--small">
+              {p.label} {(p.v * 100).toFixed(0)}%
             </text>
           </g>
         ))}
       </g>
-
-      {/* 流向箭头（4 段虚线，循环涌动） */}
-      {[100, 245, 370, 500].map((x, i) => (
-        <line
-          key={`arrow-${i}`}
-          x1={x}
-          y1="90"
-          x2={x + 22}
-          y2="90"
-          className="illustration__flow"
-          style={{ animationDelay: `${i * 250}ms` }}
-        />
-      ))}
     </svg>
   );
 }
 
 /* =====================================================================
- * 2014 — GAN
+ * 2013 — Word2Vec Skip-gram + 类比向量
+ * ===================================================================== */
+function Word2VecDiagram() {
+  return (
+    <svg viewBox="0 0 1100 500" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        Word2Vec Skip-gram · 用中心词预测窗口内的每个上下文词，副产品就是稠密词向量
+      </text>
+
+      {/* 训练样本：句子 + 滑动窗口（窗口大小 c=2） */}
+      <text x="30" y="68" className="illustration__label illustration__label--strong">
+        ① 训练样本（窗口 c=2）
+      </text>
+      {["the", "quick", "brown", "fox", "jumps", "over", "lazy"].map((w, i) => (
+        <g key={w} transform={`translate(${60 + i * 78}, 84)`}>
+          <rect
+            width="68"
+            height="32"
+            rx="6"
+            className={i === 3 ? "illustration__block illustration__block--alt illustration__token--center" : "illustration__block"}
+          />
+          <text x="34" y="22" textAnchor="middle" className="illustration__block-label">
+            {w}
+          </text>
+          {/* 窗口范围圈出 */}
+        </g>
+      ))}
+      {/* 窗口高亮（覆盖 fox 左右各 2 词） */}
+      <rect x="60" y="78" width={5 * 78} height="44" rx="10" className="illustration__window" />
+      <text x={60 + 5 * 78 / 2} y="138" textAnchor="middle" className="illustration__label illustration__label--small">
+        中心词 = fox，正样本 = (fox→the), (fox→quick), (fox→brown), (fox→jumps), (fox→over)
+      </text>
+
+      {/* ② Skip-gram 网络结构 */}
+      <text x="30" y="180" className="illustration__label illustration__label--strong">
+        ② Skip-gram 网络（无隐藏层非线性，只有两个嵌入矩阵）
+      </text>
+
+      {/* one-hot 输入 */}
+      <g transform="translate(60, 210)">
+        <text x="0" y="-6" className="illustration__label illustration__label--small">one-hot |V|</text>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <rect
+            key={i}
+            x="0"
+            y={i * 10}
+            width="40"
+            height="8"
+            rx="1"
+            className={i === 3 ? "illustration__featuremap illustration__featuremap--ctx" : "illustration__attn-cell illustration__attn-cell--raw"}
+          />
+        ))}
+        <text x="48" y="38" className="illustration__label illustration__label--small">fox</text>
+      </g>
+
+      {/* W (输入嵌入矩阵 |V|×d) */}
+      <g transform="translate(180, 210)">
+        <line x1="-60" y1="40" x2="0" y2="40" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <rect width="84" height="80" rx="6" className="illustration__proj illustration__proj--q" />
+        <text x="42" y="36" textAnchor="middle" className="illustration__block-label">W</text>
+        <text x="42" y="54" textAnchor="middle" className="illustration__label illustration__label--small">|V|×d</text>
+      </g>
+
+      {/* 中心词向量 v_fox */}
+      <g transform="translate(300, 210)">
+        <line x1="-16" y1="40" x2="0" y2="40" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <text x="0" y="-6" className="illustration__label illustration__label--small">v_fox (d=300)</text>
+        {Array.from({ length: 10 }).map((_, i) => (
+          <rect key={i} x={i * 7} y={20 + (i % 3) * 20} width="5" height="40" rx="1" className="illustration__featuremap" style={{ animationDelay: `${i * 30}ms` }} />
+        ))}
+      </g>
+
+      {/* W' (输出嵌入矩阵 d×|V|) */}
+      <g transform="translate(440, 210)">
+        <line x1="-60" y1="40" x2="0" y2="40" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <rect width="84" height="80" rx="6" className="illustration__proj illustration__proj--v" />
+        <text x="42" y="36" textAnchor="middle" className="illustration__block-label">W'</text>
+        <text x="42" y="54" textAnchor="middle" className="illustration__label illustration__label--small">d×|V|</text>
+      </g>
+
+      {/* softmax 输出 = 上下文词概率 */}
+      <g transform="translate(560, 210)">
+        <line x1="-16" y1="40" x2="0" y2="40" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <text x="0" y="-6" className="illustration__label illustration__label--small">softmax over |V|</text>
+        {[
+          { w: "the", v: 0.22 },
+          { w: "quick", v: 0.18 },
+          { w: "brown", v: 0.25 },
+          { w: "jumps", v: 0.20 },
+          { w: "over", v: 0.10 },
+          { w: "其他", v: 0.05 },
+        ].map((p, i) => (
+          <g key={p.w}>
+            <rect x="0" y={i * 14} width={p.v * 160 + 4} height="10" rx="1" className="illustration__bar" style={{ animationDelay: `${400 + i * 60}ms` }} />
+            <text x={p.v * 160 + 10} y={i * 14 + 8} className="illustration__label illustration__label--small">{p.w}</text>
+          </g>
+        ))}
+      </g>
+
+      {/* 损失：cross-entropy 目标 = 让上下文词概率最大 */}
+      <text x="800" y="252" className="illustration__label illustration__label--small">
+        loss = − Σ log p(context | center)
+      </text>
+      <text x="800" y="272" className="illustration__label illustration__label--small">
+        实践用 negative sampling 加速
+      </text>
+
+      {/* ③ 学到的向量空间 —— 类比关系 */}
+      <text x="30" y="360" className="illustration__label illustration__label--strong">
+        ③ 学到的向量空间 · 副产品：语义关系变成线性方向
+      </text>
+
+      {/* 2D 类比平面 */}
+      <g transform="translate(60, 380)">
+        <line x1="0" y1="80" x2="500" y2="80" className="illustration__rail" />
+        <line x1="0" y1="80" x2="0" y2="0" className="illustration__rail" />
+        <text x="500" y="98" className="illustration__label illustration__label--small">性别 (gender)</text>
+        <text x="-4" y="-4" className="illustration__label illustration__label--small" textAnchor="end">王 (royalty)</text>
+
+        {/* 4 个词向量点 */}
+        {[
+          { x: 90, y: 60, label: "man" },
+          { x: 360, y: 60, label: "woman" },
+          { x: 90, y: 18, label: "king" },
+          { x: 360, y: 18, label: "queen" },
+        ].map((p, i) => (
+          <g key={p.label}>
+            <circle cx={p.x} cy={p.y} r="6" className="illustration__neuron illustration__neuron--big" style={{ animationDelay: `${600 + i * 100}ms` }} />
+            <text x={p.x + 10} y={p.y + 4} className="illustration__label">{p.label}</text>
+          </g>
+        ))}
+
+        {/* 向量箭头：king - man + woman = queen */}
+        <line x1="90" y1="60" x2="360" y2="60" className="illustration__residual" markerEnd="url(#arrow-head)" />
+        <text x="225" y="76" textAnchor="middle" className="illustration__label illustration__label--small">man → woman</text>
+
+        <line x1="90" y1="18" x2="360" y2="18" className="illustration__residual" markerEnd="url(#arrow-head)" />
+        <text x="225" y="14" textAnchor="middle" className="illustration__label illustration__label--small">king → queen</text>
+
+        <line x1="90" y1="60" x2="90" y2="18" className="illustration__branch illustration__branch--v" markerEnd="url(#arrow-head)" />
+        <line x1="360" y1="60" x2="360" y2="18" className="illustration__branch illustration__branch--v" markerEnd="url(#arrow-head)" />
+      </g>
+
+      {/* 公式 */}
+      <g transform="translate(640, 400)">
+        <rect width="430" height="78" rx="10" className="illustration__block illustration__block--alt" />
+        <text x="20" y="28" className="illustration__label illustration__label--strong" style={{ fill: "var(--rose-700)" }}>
+          v(king) − v(man) + v(woman) ≈ v(queen)
+        </text>
+        <text x="20" y="52" className="illustration__label illustration__label--small">
+          两条"性别向量"平行；两条"王室向量"平行 —— 语义关系是空间中的方向，不再依赖人工规则。
+        </text>
+        <text x="20" y="70" className="illustration__label illustration__label--small">
+          这是 NLP 第一次有"可迁移的语义表示"，奠定后续所有预训练语言模型的范式。
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/* =====================================================================
+ * 2014 — GAN 完整训练回路
  * ===================================================================== */
 function GanDiagram() {
   return (
-    <svg viewBox="0 0 720 180" role="img" className="illustration__svg">
-      <g transform="translate(40,40)">
-        <text x="0" y="-10" className="illustration__label">
-          noise z
-        </text>
-        {Array.from({ length: 9 }).map((_, i) => (
+    <svg viewBox="0 0 1100 520" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        GAN · 生成器 G 与判别器 D 的零和博弈
+      </text>
+
+      {/* 上半：真实数据通路 */}
+      <text x="30" y="68" className="illustration__label">
+        ① 真实数据通路
+      </text>
+      <g transform="translate(80, 80)">
+        <text x="0" y="-6" className="illustration__label illustration__label--small">真实图像 x ~ p_data</text>
+        {[0, 1, 2].map((i) => (
+          <rect key={i} x={i * 38 + i * 4} y="0" width="36" height="36" rx="4" className="illustration__featuremap illustration__featuremap--ctx" />
+        ))}
+      </g>
+
+      {/* 下半：噪声 → G → 假数据 */}
+      <text x="30" y="160" className="illustration__label">
+        ② 假数据生成通路
+      </text>
+      <g transform="translate(80, 174)">
+        <text x="0" y="-6" className="illustration__label illustration__label--small">z ~ N(0,1) · 100 维</text>
+        {Array.from({ length: 16 }).map((_, i) => (
           <circle
             key={i}
-            cx={(i % 3) * 20 + 10}
-            cy={Math.floor(i / 3) * 20 + 10}
+            cx={(i % 8) * 14 + 6}
+            cy={Math.floor(i / 8) * 14 + 6}
             r="5"
             className="illustration__neuron illustration__neuron--noise"
-            style={{ animationDelay: `${i * 80}ms` }}
+            style={{ animationDelay: `${i * 40}ms` }}
           />
         ))}
       </g>
 
-      {/* Generator block */}
-      <g transform="translate(160,30)">
-        <rect width="120" height="100" rx="10" className="illustration__block" />
-        <text x="60" y="58" className="illustration__block-label" textAnchor="middle">
-          Generator
-        </text>
+      <g transform="translate(240, 168)">
+        <line x1="-32" y1="20" x2="0" y2="20" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <rect width="120" height="60" rx="8" className="illustration__block illustration__block--alt" />
+        <text x="60" y="32" textAnchor="middle" className="illustration__block-label">Generator G</text>
+        <text x="60" y="48" textAnchor="middle" className="illustration__label illustration__label--small">deconv / transposed conv</text>
       </g>
 
-      {/* fake samples */}
-      <g transform="translate(310,55)">
-        <text x="0" y="-12" className="illustration__label">
-          fake
-        </text>
-        {Array.from({ length: 3 }).map((_, i) => (
+      <g transform="translate(390, 174)">
+        <line x1="-30" y1="20" x2="0" y2="20" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <text x="0" y="-6" className="illustration__label illustration__label--small">G(z) · 假图像</text>
+        {[0, 1, 2].map((i) => (
           <rect
             key={i}
-            x="0"
-            y={i * 22}
-            width="60"
-            height="16"
-            rx="3"
-            className="illustration__bar illustration__bar--fake"
-            style={{ animationDelay: `${300 + i * 100}ms` }}
+            x={i * 38 + i * 4}
+            y="0"
+            width="36"
+            height="36"
+            rx="4"
+            className="illustration__pixel illustration__pixel--big"
+            style={{ animationDelay: `${i * 100}ms` }}
           />
         ))}
       </g>
 
-      {/* real samples */}
-      <g transform="translate(310,2)">
-        <text x="0" y="-2" className="illustration__label">
-          real
-        </text>
-        {Array.from({ length: 1 }).map((_, i) => (
-          <rect
-            key={i}
-            x="0"
-            y={i * 22}
-            width="60"
-            height="16"
-            rx="3"
-            className="illustration__bar illustration__bar--real"
-          />
-        ))}
+      {/* 两路汇入 D */}
+      <path d="M 200 100 C 460 100, 460 280, 560 280" className="illustration__arrow" fill="none" markerEnd="url(#arrow-head)" />
+      <path d="M 510 196 C 540 196, 540 290, 560 290" className="illustration__arrow" fill="none" markerEnd="url(#arrow-head)" />
+
+      <g transform="translate(560, 250)">
+        <rect width="140" height="70" rx="8" className="illustration__block illustration__block--alt" />
+        <text x="70" y="32" textAnchor="middle" className="illustration__block-label">Discriminator D</text>
+        <text x="70" y="50" textAnchor="middle" className="illustration__label illustration__label--small">conv → sigmoid</text>
       </g>
 
-      {/* Discriminator */}
-      <g transform="translate(420,30)">
-        <rect width="140" height="100" rx="10" className="illustration__block illustration__block--alt" />
-        <text x="70" y="58" className="illustration__block-label" textAnchor="middle">
-          Discriminator
+      {/* D 输出 real/fake 概率 */}
+      <g transform="translate(740, 280)">
+        <line x1="-40" y1="10" x2="0" y2="10" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <text x="0" y="-2" className="illustration__label illustration__label--small">D(·) ∈ [0,1]</text>
+        <rect x="0" y="6" width="110" height="14" rx="2" className="illustration__bar illustration__bar--real" style={{ animationDelay: "300ms" }} />
+        <text x="116" y="18" className="illustration__label illustration__label--small">P(real)</text>
+        <rect x="0" y="28" width="56" height="14" rx="2" className="illustration__bar illustration__bar--fake" style={{ animationDelay: "400ms" }} />
+        <text x="62" y="40" className="illustration__label illustration__label--small">P(fake)</text>
+      </g>
+
+      {/* 两个 loss 公式块 */}
+      <g transform="translate(80, 360)">
+        <rect width="460" height="120" rx="10" className="illustration__block" />
+        <text x="20" y="26" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-alignment-ink)" }}>
+          D 的目标（最大化）
+        </text>
+        <text x="20" y="56" className="illustration__label">
+          max  E[ log D(x) ]  +  E[ log(1 − D(G(z))) ]
+        </text>
+        <text x="20" y="82" className="illustration__label illustration__label--small">
+          真图片 → 推到 1，假图片 → 推到 0
+        </text>
+        <text x="20" y="102" className="illustration__label illustration__label--small">
+          每步先用 mini-batch 真 + mini-batch 假更新 D
         </text>
       </g>
 
-      {/* verdict */}
-      <g transform="translate(590,68)">
-        <circle r="20" className="illustration__verdict" />
-        <text className="illustration__label" textAnchor="middle" y="5">
-          real?
+      <g transform="translate(560, 360)">
+        <rect width="460" height="120" rx="10" className="illustration__block" />
+        <text x="20" y="26" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-multimodal-ink)" }}>
+          G 的目标（最小化）
+        </text>
+        <text x="20" y="56" className="illustration__label">
+          min  E[ log(1 − D(G(z))) ]
+        </text>
+        <text x="20" y="82" className="illustration__label illustration__label--small">
+          实际常用 max E[ log D(G(z)) ] 缓解早期梯度消失
+        </text>
+        <text x="20" y="102" className="illustration__label illustration__label--small">
+          再用同样 mini-batch 假更新 G（D 冻结）
         </text>
       </g>
 
-      {/* feedback loop */}
-      <path
-        d="M 590 100 Q 380 170 220 130"
-        className="illustration__feedback"
-        fill="none"
-      />
-      <text x="380" y="168" className="illustration__label" textAnchor="middle">
-        gradient ←
+      {/* 反向梯度示意 */}
+      <path d="M 810 360 C 870 240, 760 240, 700 320" className="illustration__feedback" fill="none" markerEnd="url(#arrow-head)" />
+      <text x="900" y="338" className="illustration__label illustration__label--small">
+        ∂loss/∂G 反向回传到 G
       </text>
     </svg>
   );
 }
 
 /* =====================================================================
- * 2015 — ResNet skip connection
+ * 2015 — ResNet 残差块详图 + 152 层堆叠
  * ===================================================================== */
 function ResNetDiagram() {
   return (
-    <svg viewBox="0 0 720 180" role="img" className="illustration__svg">
-      <line x1="40" y1="100" x2="680" y2="100" className="illustration__rail" />
-      {[
-        { x: 90, label: "x" },
-        { x: 240, label: "F₁(x)" },
-        { x: 380, label: "F₂" },
-        { x: 520, label: "F₃" },
-        { x: 660, label: "y" },
-      ].map((n, i) => (
-        <g key={i} transform={`translate(${n.x},100)`}>
-          <circle r="18" className="illustration__neuron illustration__neuron--big" />
-          <text textAnchor="middle" y="5" className="illustration__block-label">
-            {n.label}
-          </text>
-        </g>
-      ))}
-      {/* skip connections (arcs above the rail) */}
-      {[
-        { x1: 90, x2: 380 },
-        { x1: 240, x2: 520 },
-        { x1: 380, x2: 660 },
-      ].map((arc, i) => (
-        <path
-          key={i}
-          d={`M ${arc.x1} 82 Q ${(arc.x1 + arc.x2) / 2} 10 ${arc.x2} 82`}
-          className="illustration__skip"
-          style={{ animationDelay: `${i * 220}ms` }}
-          fill="none"
-        />
-      ))}
-      <text x="360" y="170" className="illustration__label" textAnchor="middle">
-        H(x) = F(x) + x  · 恒等捷径让梯度跨层流动
+    <svg viewBox="0 0 1100 520" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        ResNet · 残差块内部 + 152 层堆叠：恒等捷径让任意深度都可训
       </text>
+
+      {/* 左半：单个 residual block 完整流程 */}
+      <text x="30" y="64" className="illustration__label illustration__label--strong">
+        ① 单个残差块（Basic Block）
+      </text>
+
+      <g transform="translate(30, 80)">
+        {/* 输入 x */}
+        <g transform="translate(40, 30)">
+          <rect width="60" height="30" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="30" y="20" textAnchor="middle" className="illustration__block-label">x</text>
+        </g>
+        <line x1="100" y1="45" x2="120" y2="45" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        {/* 主路径：Conv1 → BN → ReLU → Conv2 → BN */}
+        {[
+          { label: "Conv 3×3", y: 16 },
+          { label: "BN", y: 70 },
+          { label: "ReLU", y: 124 },
+          { label: "Conv 3×3", y: 178 },
+          { label: "BN", y: 232 },
+        ].map((b, i) => (
+          <g key={i} transform={`translate(120, ${b.y})`}>
+            <rect width="120" height="38" rx="6" className={i === 0 || i === 3 ? "illustration__proj illustration__proj--ffn" : i === 2 ? "illustration__proj illustration__proj--act" : "illustration__block illustration__block--alt"} />
+            <text x="60" y="24" textAnchor="middle" className="illustration__block-label">{b.label}</text>
+            {i < 4 && <line x1="60" y1="40" x2="60" y2={b.y + 56 - b.y} className="illustration__arrow" />}
+            {i < 4 && <line x1="60" y1="40" x2="60" y2="54" className="illustration__arrow" markerEnd="url(#arrow-head)" />}
+          </g>
+        ))}
+
+        {/* ⊕ Add */}
+        <g transform="translate(160, 290)">
+          <circle r="16" cx="20" cy="16" className="illustration__addnorm" />
+          <text x="20" y="22" textAnchor="middle" className="illustration__block-label">⊕</text>
+        </g>
+
+        {/* 残差跳过：从 x 直接绕到 ⊕ */}
+        <path d="M 70 60 C 12 60, 12 306, 160 306" className="illustration__residual" fill="none" markerEnd="url(#arrow-head)" />
+        <text x="18" y="180" className="illustration__label illustration__label--small" transform="rotate(-90 18 180)">
+          identity shortcut · 不增参
+        </text>
+
+        {/* F(x) 的箭头汇入 ⊕ */}
+        <line x1="180" y1="270" x2="180" y2="290" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <text x="240" y="200" className="illustration__label illustration__label--small">F(x)</text>
+
+        {/* ⊕ 后接 ReLU + 输出 */}
+        <line x1="180" y1="322" x2="180" y2="338" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <g transform="translate(120, 338)">
+          <rect width="120" height="34" rx="6" className="illustration__proj illustration__proj--act" />
+          <text x="60" y="22" textAnchor="middle" className="illustration__block-label">ReLU</text>
+        </g>
+        <line x1="180" y1="372" x2="180" y2="388" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <g transform="translate(150, 388)">
+          <rect width="60" height="30" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="30" y="20" textAnchor="middle" className="illustration__block-label">H(x)</text>
+        </g>
+      </g>
+
+      {/* 公式区 */}
+      <g transform="translate(290, 130)">
+        <rect width="320" height="120" rx="10" className="illustration__block illustration__block--alt" />
+        <text x="20" y="32" className="illustration__label illustration__label--strong" style={{ fill: "var(--rose-700)" }}>
+          H(x) = F(x) + x
+        </text>
+        <text x="20" y="58" className="illustration__label">
+          ∂L/∂x = ∂L/∂H · (1 + ∂F/∂x)
+        </text>
+        <text x="20" y="84" className="illustration__label illustration__label--small">
+          就算 ∂F/∂x → 0，梯度仍能通过"1"直通回去 ——
+        </text>
+        <text x="20" y="102" className="illustration__label illustration__label--small">
+          这就是为什么 ResNet 把网络深度从 20 层推到 152 层
+        </text>
+      </g>
+
+      {/* 右半：152 层堆叠（与 VGG-19 高度对比） */}
+      <text x="650" y="64" className="illustration__label illustration__label--strong">
+        ② 残差块串联得到 ResNet-152
+      </text>
+
+      {/* VGG-19 参照（19 层） */}
+      <g transform="translate(650, 90)">
+        <text x="0" y="0" className="illustration__label illustration__label--small">VGG-19（参照）</text>
+        {Array.from({ length: 19 }).map((_, i) => (
+          <rect key={i} x="0" y={8 + i * 6} width="44" height="4" rx="1" className="illustration__layer illustration__layer--fc" />
+        ))}
+        <text x="0" y={8 + 19 * 6 + 16} className="illustration__label illustration__label--small">19 层 · 训不深</text>
+      </g>
+
+      {/* ResNet-152 */}
+      <g transform="translate(750, 90)">
+        <text x="0" y="0" className="illustration__label illustration__label--small">ResNet-152</text>
+        {Array.from({ length: 50 }).map((_, i) => (
+          <rect key={i} x="0" y={8 + i * 6} width="44" height="4" rx="1" className="illustration__layer illustration__layer--conv" />
+        ))}
+        <text x="0" y={8 + 50 * 6 + 16} className="illustration__label illustration__label--small">前 50 个 Block …</text>
+      </g>
+
+      {/* ResNet-152 第二列剩余 */}
+      <g transform="translate(850, 90)">
+        <text x="0" y="0" className="illustration__label illustration__label--small">（同上，简化）</text>
+        {Array.from({ length: 50 }).map((_, i) => (
+          <rect key={i} x="0" y={8 + i * 6} width="44" height="4" rx="1" className="illustration__layer illustration__layer--conv" />
+        ))}
+        <text x="0" y={8 + 50 * 6 + 16} className="illustration__label illustration__label--small">152 层 · 训得动</text>
+      </g>
+
+      {/* 关键结果 */}
+      <g transform="translate(640, 440)">
+        <rect width="430" height="64" rx="10" className="illustration__block" />
+        <text x="20" y="26" className="illustration__label">
+          ImageNet Top-5 误差：VGG-19  7.3%  →  ResNet-152  3.57%
+        </text>
+        <text x="20" y="50" className="illustration__label illustration__label--small">
+          首次低于人类（5.1%）；让"网络越深越好"成为可行的工程方向
+        </text>
+      </g>
     </svg>
   );
 }
 
 /* =====================================================================
- * 2017 — Transformer encoder (端到端完整 pipeline)
- *
- * 视图结构（从上到下）：
- *   ① Token 输入 → ② Embedding 行 → ③ + 位置编码 sin/cos
- *   ④ Encoder Block（带 ×6 徽标），内部：
- *      a. Multi-Head Self-Attention
- *           · X 同时投影 W_Q / W_K / W_V → Q, K, V
- *           · 每头独立算 Q·Kᵀ/√d → softmax → @V
- *           · 8 头并行（一头展开 + 七头堆叠）
- *           · Concat → W_O 输出投影
- *      b. Add & Norm 1（带从 X 跨过 MHA 的残差弧线）
- *      c. Feed-Forward Network: Linear d→4d → GELU → Linear 4d→d
- *      d. Add & Norm 2
- *   ⑤ 上下文化输出 5 个向量（颜色更饱和）
+ * 2017 — Transformer 完整 encoder block（保留之前 bd26c3f 的版本）
  * ===================================================================== */
-function AttentionDiagram() {
+function TransformerDiagram() {
   const tokens = ["The", "cat", "sat", "on", "mat"];
-  // 5 token 的 x 中心位置（左右居中布局）
   const tokenXs = [120, 240, 360, 480, 600];
   const tokenW = 56;
 
-  // 主头展开的 5x5 attention 矩阵
   const mainHead = [
     [0.92, 0.04, 0.02, 0.01, 0.01],
     [0.18, 0.62, 0.14, 0.04, 0.02],
-    [0.08, 0.30, 0.46, 0.13, 0.03],
+    [0.08, 0.3, 0.46, 0.13, 0.03],
     [0.02, 0.06, 0.18, 0.58, 0.16],
     [0.01, 0.02, 0.06, 0.22, 0.69],
   ];
 
   return (
-    <svg
-      viewBox="0 0 1100 760"
-      role="img"
-      className="illustration__svg illustration__svg--tall"
-    >
-      <defs>
-        <marker
-          id="arrow-head"
-          viewBox="0 0 10 10"
-          refX="8"
-          refY="5"
-          markerWidth="6"
-          markerHeight="6"
-          orient="auto-start-reverse"
-        >
-          <path d="M 0 0 L 10 5 L 0 10 z" className="illustration__arrow-head" />
-        </marker>
-      </defs>
+    <svg viewBox="0 0 1100 760" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
 
-      {/* ============================================================ */}
-      {/* ① 输入 tokens                                                 */}
-      {/* ============================================================ */}
       <text x="30" y="30" className="illustration__label illustration__label--strong">
         ① 输入 token 序列
       </text>
       {tokens.map((t, i) => (
-        <g
-          key={`tok-${i}`}
-          transform={`translate(${tokenXs[i] - tokenW / 2}, 44)`}
-          style={{ animationDelay: `${i * 90}ms` }}
-          className="illustration__appear"
-        >
+        <g key={`tok-${i}`} transform={`translate(${tokenXs[i] - tokenW / 2}, 44)`} style={{ animationDelay: `${i * 90}ms` }} className="illustration__appear">
           <rect width={tokenW} height="30" rx="6" className="illustration__block illustration__block--alt" />
-          <text x={tokenW / 2} y="20" className="illustration__block-label" textAnchor="middle">
-            {t}
-          </text>
+          <text x={tokenW / 2} y="20" className="illustration__block-label" textAnchor="middle">{t}</text>
         </g>
       ))}
 
-      {/* token → embedding 箭头 */}
       {tokenXs.map((x, i) => (
-        <line
-          key={`a-${i}`}
-          x1={x}
-          y1="78"
-          x2={x}
-          y2="108"
-          className="illustration__arrow"
-          markerEnd="url(#arrow-head)"
-        />
+        <line key={`a-${i}`} x1={x} y1="78" x2={x} y2="108" className="illustration__arrow" markerEnd="url(#arrow-head)" />
       ))}
 
-      {/* ============================================================ */}
-      {/* ② Embedding 行（每 token 一个 d 维向量，以一组小竖条表示）    */}
-      {/* ============================================================ */}
-      <text x="30" y="124" className="illustration__label illustration__label--strong">
-        ② 嵌入 (d=512)
-      </text>
+      <text x="30" y="124" className="illustration__label illustration__label--strong">② 嵌入 (d=512)</text>
       {tokenXs.map((x, i) =>
         Array.from({ length: 8 }).map((_, k) => (
-          <rect
-            key={`e-${i}-${k}`}
-            x={x - 24 + k * 6}
-            y="116"
-            width="4"
-            height="28"
-            rx="1"
-            className="illustration__pixel"
-            style={{ animationDelay: `${200 + i * 60 + k * 20}ms` }}
-          />
+          <rect key={`e-${i}-${k}`} x={x - 24 + k * 6} y="116" width="4" height="28" rx="1" className="illustration__pixel" style={{ animationDelay: `${200 + i * 60 + k * 20}ms` }} />
         )),
       )}
 
-      {/* ============================================================ */}
-      {/* ③ ⊕ 位置编码 sin/cos                                         */}
-      {/* ============================================================ */}
-      <text x="30" y="170" className="illustration__label illustration__label--strong">
-        ③ + 位置编码 (sin/cos)
-      </text>
+      <text x="30" y="170" className="illustration__label illustration__label--strong">③ + 位置编码 (sin/cos)</text>
       <PositionalWave x={90} y={172} width={620} />
-      <text x="730" y="180" className="illustration__label">
-        让序列顺序进入向量空间
-      </text>
+      <text x="730" y="180" className="illustration__label">让序列顺序进入向量空间</text>
 
-      {/* 注入箭头 */}
       <line x1="360" y1="200" x2="360" y2="232" className="illustration__arrow" markerEnd="url(#arrow-head)" />
 
-      {/* ============================================================ */}
-      {/* ④ Encoder Block 外框 + ×6 徽标                                */}
-      {/* ============================================================ */}
       <g>
-        <rect
-          x="40"
-          y="232"
-          width="1020"
-          height="468"
-          rx="14"
-          className="illustration__group"
-        />
+        <rect x="40" y="232" width="1020" height="468" rx="14" className="illustration__group" />
         <g className="illustration__badge">
           <rect x="940" y="222" width="92" height="26" rx="13" />
-          <text x="986" y="240" textAnchor="middle">
-            × 6 blocks
-          </text>
+          <text x="986" y="240" textAnchor="middle">× 6 blocks</text>
         </g>
-        <text x="56" y="252" className="illustration__label illustration__label--strong">
-          ④ Encoder Block · 内部完整流程
-        </text>
+        <text x="56" y="252" className="illustration__label illustration__label--strong">④ Encoder Block · 内部完整流程</text>
       </g>
 
-      {/* -- 4a. Multi-Head Self-Attention 外框 -------------------------- */}
-      <rect
-        x="58"
-        y="262"
-        width="984"
-        height="232"
-        rx="10"
-        className="illustration__group illustration__group--inner"
-      />
-      <text x="72" y="280" className="illustration__label illustration__label--strong">
-        a. Multi-Head Self-Attention
-      </text>
+      <rect x="58" y="262" width="984" height="232" rx="10" className="illustration__group illustration__group--inner" />
+      <text x="72" y="280" className="illustration__label illustration__label--strong">a. Multi-Head Self-Attention</text>
 
-      {/* X 输入矩阵（5 行） */}
       <g transform="translate(72, 292)">
         <text x="0" y="-2" className="illustration__label">X (输入)</text>
         {Array.from({ length: 5 }).map((_, r) => (
-          <rect
-            key={`x-${r}`}
-            x="0"
-            y={r * 14 + 6}
-            width="56"
-            height="11"
-            rx="2"
-            className="illustration__featuremap"
-            style={{ animationDelay: `${400 + r * 50}ms` }}
-          />
+          <rect key={`x-${r}`} x="0" y={r * 14 + 6} width="56" height="11" rx="2" className="illustration__featuremap" style={{ animationDelay: `${400 + r * 50}ms` }} />
         ))}
       </g>
 
-      {/* X 同时分三路 → W_Q / W_K / W_V 投影 → Q / K / V */}
       <g transform="translate(140, 296)">
-        {/* 三条分流线（彩色） */}
         <path d="M 0 30 C 30 30, 50 0, 80 0" className="illustration__branch illustration__branch--q" fill="none" markerEnd="url(#arrow-head)" />
         <path d="M 0 30 L 80 30" className="illustration__branch illustration__branch--k" fill="none" markerEnd="url(#arrow-head)" />
         <path d="M 0 30 C 30 30, 50 60, 80 60" className="illustration__branch illustration__branch--v" fill="none" markerEnd="url(#arrow-head)" />
 
-        {/* W_Q W_K W_V 投影矩阵 */}
         {(["W_Q", "W_K", "W_V"] as const).map((lbl, i) => (
           <g key={lbl} transform={`translate(82, ${i * 30 - 8})`}>
             <rect width="42" height="20" rx="4" className={`illustration__proj illustration__proj--${["q", "k", "v"][i]}`} />
-            <text x="21" y="14" textAnchor="middle" className="illustration__block-label illustration__block-label--small">
-              {lbl}
-            </text>
+            <text x="21" y="14" textAnchor="middle" className="illustration__block-label illustration__block-label--small">{lbl}</text>
           </g>
         ))}
 
-        {/* Q/K/V 输出 */}
         {(["Q", "K", "V"] as const).map((lbl, i) => (
           <g key={lbl} transform={`translate(134, ${i * 30 - 8})`}>
             <line x1="0" y1="10" x2="20" y2="10" className="illustration__arrow" markerEnd="url(#arrow-head)" />
@@ -502,27 +739,14 @@ function AttentionDiagram() {
         ))}
       </g>
 
-      {/* 单头注意力详细计算（QKᵀ/√d → softmax → @V） */}
       <g transform="translate(360, 296)">
-        <text x="0" y="-4" className="illustration__label">
-          每头：scaled dot-product attention
-        </text>
+        <text x="0" y="-4" className="illustration__label">每头：scaled dot-product attention</text>
 
-        {/* Q·Kᵀ 矩阵 */}
         <g transform="translate(0, 4)">
           <text x="36" y="-2" className="illustration__label illustration__label--small" textAnchor="middle">Q·Kᵀ / √d</text>
           {mainHead.map((row, r) =>
             row.map((_, c) => (
-              <rect
-                key={`qk-${r}-${c}`}
-                x={c * 14}
-                y={r * 14 + 4}
-                width="12"
-                height="12"
-                rx="1.5"
-                className="illustration__attn-cell illustration__attn-cell--raw"
-                style={{ animationDelay: `${600 + (r * 5 + c) * 25}ms` }}
-              />
+              <rect key={`qk-${r}-${c}`} x={c * 14} y={r * 14 + 4} width="12" height="12" rx="1.5" className="illustration__attn-cell illustration__attn-cell--raw" style={{ animationDelay: `${600 + (r * 5 + c) * 25}ms` }} />
             )),
           )}
         </g>
@@ -530,24 +754,11 @@ function AttentionDiagram() {
         <line x1="78" y1="44" x2="98" y2="44" className="illustration__arrow" markerEnd="url(#arrow-head)" />
         <text x="88" y="38" textAnchor="middle" className="illustration__label illustration__label--small">softmax</text>
 
-        {/* softmax 后概率矩阵 */}
         <g transform="translate(102, 4)">
           <text x="36" y="-2" className="illustration__label illustration__label--small" textAnchor="middle">attention 概率</text>
           {mainHead.map((row, r) =>
             row.map((v, c) => (
-              <rect
-                key={`sm-${r}-${c}`}
-                x={c * 14}
-                y={r * 14 + 4}
-                width="12"
-                height="12"
-                rx="1.5"
-                className="illustration__attn-cell"
-                style={{
-                  opacity: 0.18 + v * 0.82,
-                  animationDelay: `${900 + (r * 5 + c) * 25}ms`,
-                }}
-              />
+              <rect key={`sm-${r}-${c}`} x={c * 14} y={r * 14 + 4} width="12" height="12" rx="1.5" className="illustration__attn-cell" style={{ opacity: 0.18 + v * 0.82, animationDelay: `${900 + (r * 5 + c) * 25}ms` }} />
             )),
           )}
         </g>
@@ -555,25 +766,14 @@ function AttentionDiagram() {
         <line x1="180" y1="44" x2="200" y2="44" className="illustration__arrow" markerEnd="url(#arrow-head)" />
         <text x="190" y="38" textAnchor="middle" className="illustration__label illustration__label--small">@V</text>
 
-        {/* head 输出向量 */}
         <g transform="translate(204, 4)">
           <text x="20" y="-2" className="illustration__label illustration__label--small" textAnchor="middle">head 输出</text>
           {Array.from({ length: 5 }).map((_, r) => (
-            <rect
-              key={`ho-${r}`}
-              x="0"
-              y={r * 14 + 4}
-              width="40"
-              height="12"
-              rx="2"
-              className="illustration__featuremap"
-              style={{ animationDelay: `${1200 + r * 40}ms` }}
-            />
+            <rect key={`ho-${r}`} x="0" y={r * 14 + 4} width="40" height="12" rx="2" className="illustration__featuremap" style={{ animationDelay: `${1200 + r * 40}ms` }} />
           ))}
         </g>
       </g>
 
-      {/* ×8 头（堆叠表示） */}
       <g transform="translate(660, 300)">
         <text x="0" y="-4" className="illustration__label">8 头并行</text>
         {Array.from({ length: 7 }).map((_, i) => (
@@ -581,15 +781,10 @@ function AttentionDiagram() {
             <rect width="52" height="72" rx="4" className="illustration__head-stack" />
           </g>
         ))}
-        <text x="80" y="40" className="illustration__label illustration__label--small">
-          每头独立子空间
-        </text>
-        <text x="80" y="56" className="illustration__label illustration__label--small">
-          建模不同关系
-        </text>
+        <text x="80" y="40" className="illustration__label illustration__label--small">每头独立子空间</text>
+        <text x="80" y="56" className="illustration__label illustration__label--small">建模不同关系</text>
       </g>
 
-      {/* Concat + W_O */}
       <g transform="translate(820, 296)">
         <line x1="-20" y1="40" x2="0" y2="40" className="illustration__arrow" markerEnd="url(#arrow-head)" />
         <rect width="78" height="32" y="24" rx="6" className="illustration__block illustration__block--alt" />
@@ -604,21 +799,11 @@ function AttentionDiagram() {
         </g>
       </g>
 
-      {/* MHA 输出箭头到 Add&Norm */}
       <line x1="552" y1="494" x2="552" y2="510" className="illustration__arrow" markerEnd="url(#arrow-head)" />
 
-      {/* -- 4b. Add & Norm 1 + 残差弧线 -------------------------------- */}
       <g>
-        {/* 残差：从 X 入口绕过 MHA */}
-        <path
-          d="M 100 332 C 24 332, 24 528, 460 528"
-          className="illustration__residual"
-          fill="none"
-          markerEnd="url(#arrow-head)"
-        />
-        <text x="20" y="430" className="illustration__label illustration__label--small" transform="rotate(-90 20 430)">
-          residual (恒等捷径)
-        </text>
+        <path d="M 100 332 C 24 332, 24 528, 460 528" className="illustration__residual" fill="none" markerEnd="url(#arrow-head)" />
+        <text x="20" y="430" className="illustration__label illustration__label--small" transform="rotate(-90 20 430)">residual (恒等捷径)</text>
 
         <g transform="translate(478, 510)">
           <circle r="14" cx="14" cy="14" className="illustration__addnorm" />
@@ -629,14 +814,10 @@ function AttentionDiagram() {
         </g>
       </g>
 
-      {/* 进入 FFN 的下行箭头 */}
       <line x1="572" y1="538" x2="572" y2="560" className="illustration__arrow" markerEnd="url(#arrow-head)" />
 
-      {/* -- 4c. Feed-Forward Network ----------------------------------- */}
       <rect x="58" y="560" width="984" height="80" rx="10" className="illustration__group illustration__group--inner" />
-      <text x="72" y="578" className="illustration__label illustration__label--strong">
-        c. Feed-Forward Network (position-wise，每个位置独立两层 MLP)
-      </text>
+      <text x="72" y="578" className="illustration__label illustration__label--strong">c. Feed-Forward Network (position-wise，每个位置独立两层 MLP)</text>
       <g transform="translate(180, 596)">
         <rect width="160" height="32" rx="6" className="illustration__proj illustration__proj--ffn" />
         <text x="80" y="20" textAnchor="middle" className="illustration__block-label">Linear · d → 4d</text>
@@ -655,25 +836,14 @@ function AttentionDiagram() {
           <text x="80" y="20" textAnchor="middle" className="illustration__block-label">Linear · 4d → d</text>
         </g>
 
-        <text x="540" y="20" className="illustration__label illustration__label--small">
-          扩张 → 非线性 → 收缩
-        </text>
+        <text x="540" y="20" className="illustration__label illustration__label--small">扩张 → 非线性 → 收缩</text>
       </g>
 
-      {/* FFN 输出箭头到 Add&Norm 2 */}
       <line x1="552" y1="644" x2="552" y2="658" className="illustration__arrow" markerEnd="url(#arrow-head)" />
 
-      {/* -- 4d. Add & Norm 2 ------------------------------------------- */}
       <g>
-        <path
-          d="M 600 528 C 980 528, 980 670, 620 670"
-          className="illustration__residual"
-          fill="none"
-          markerEnd="url(#arrow-head)"
-        />
-        <text x="990" y="600" className="illustration__label illustration__label--small" transform="rotate(-90 990 600)">
-          residual
-        </text>
+        <path d="M 600 528 C 980 528, 980 670, 620 670" className="illustration__residual" fill="none" markerEnd="url(#arrow-head)" />
+        <text x="990" y="600" className="illustration__label illustration__label--small" transform="rotate(-90 990 600)">residual</text>
 
         <g transform="translate(478, 660)">
           <circle r="14" cx="14" cy="14" className="illustration__addnorm" />
@@ -684,32 +854,17 @@ function AttentionDiagram() {
         </g>
       </g>
 
-      {/* ============================================================ */}
-      {/* ⑤ 输出：5 个上下文化向量                                       */}
-      {/* ============================================================ */}
       <line x1="572" y1="690" x2="572" y2="716" className="illustration__arrow" markerEnd="url(#arrow-head)" />
-      <text x="30" y="734" className="illustration__label illustration__label--strong">
-        ⑤ 输出 · 每个位置已聚合全局上下文（与输入同形状，可直接喂下一个 block）
-      </text>
+      <text x="30" y="734" className="illustration__label illustration__label--strong">⑤ 输出 · 每个位置已聚合全局上下文（与输入同形状，可直接喂下一个 block）</text>
       {tokenXs.map((x, i) =>
         Array.from({ length: 8 }).map((_, k) => (
-          <rect
-            key={`out-${i}-${k}`}
-            x={x - 24 + k * 6}
-            y="724"
-            width="4"
-            height="28"
-            rx="1"
-            className="illustration__featuremap illustration__featuremap--ctx"
-            style={{ animationDelay: `${1500 + i * 60 + k * 20}ms` }}
-          />
+          <rect key={`out-${i}-${k}`} x={x - 24 + k * 6} y="724" width="4" height="28" rx="1" className="illustration__featuremap illustration__featuremap--ctx" style={{ animationDelay: `${1500 + i * 60 + k * 20}ms` }} />
         )),
       )}
     </svg>
   );
 }
 
-/* 位置编码 sin/cos 波形 —— 两条相位错开的连续波，slow 漂移 */
 function PositionalWave({ x, y, width }: { x: number; y: number; width: number }) {
   const samples = 80;
   const amp = 10;
@@ -730,104 +885,768 @@ function PositionalWave({ x, y, width }: { x: number; y: number; width: number }
 }
 
 /* =====================================================================
- * 2020 — Scaling law curve
+ * 2018 — BERT MLM vs GPT-1 自回归
  * ===================================================================== */
-function ScalingDiagram() {
-  // log-log power-law-ish curve
-  const points = Array.from({ length: 30 }, (_, i) => {
-    const x = 30 + i * 20;
-    const y = 150 - Math.pow(i / 30, 0.55) * 110;
-    return [x, y] as const;
-  });
-  const path = points.map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x} ${y}`).join(" ");
-
+function BertGptDiagram() {
   return (
-    <svg viewBox="0 0 720 180" role="img" className="illustration__svg">
-      {/* axes */}
-      <line x1="30" y1="150" x2="630" y2="150" className="illustration__rail" />
-      <line x1="30" y1="20" x2="30" y2="150" className="illustration__rail" />
-      <text x="630" y="170" className="illustration__label" textAnchor="end">
-        参数量 →
-      </text>
-      <text x="20" y="20" className="illustration__label" textAnchor="end">
-        ↑ 能力
+    <svg viewBox="0 0 1100 600" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        2018 同年双星 · BERT（双向编码器 MLM）vs GPT-1（单向解码器自回归）
       </text>
 
-      {/* dots showing model sizes */}
-      {[
-        { x: 80, y: 138, l: "117M" },
-        { x: 180, y: 110, l: "1.5B" },
-        { x: 360, y: 70, l: "13B" },
-        { x: 560, y: 38, l: "175B" },
-      ].map((p, i) => (
-        <g key={i}>
-          <circle cx={p.x} cy={p.y} r="6" className="illustration__neuron illustration__neuron--big" />
-          <text x={p.x + 12} y={p.y + 4} className="illustration__label">
-            {p.l}
-          </text>
+      {/* === 左半：BERT === */}
+      <text x="40" y="64" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-language-ink)" }}>
+        BERT · Bidirectional Encoder
+      </text>
+
+      {/* BERT 输入：带 [MASK] 的句子 */}
+      {["The", "[MASK]", "sat", "on", "the", "[MASK]"].map((t, i) => {
+        const x = 50 + i * 76;
+        const masked = t === "[MASK]";
+        return (
+          <g key={`bt-${i}`} transform={`translate(${x}, 80)`}>
+            <rect width="68" height="28" rx="6" className={masked ? "illustration__token--masked" : "illustration__block illustration__block--alt"} />
+            <text x="34" y="18" textAnchor="middle" className="illustration__block-label illustration__block-label--small">{t}</text>
+          </g>
+        );
+      })}
+      <text x="40" y="128" className="illustration__label illustration__label--small">
+        随机 mask 15% 的 token，让模型从上下文反推
+      </text>
+
+      {/* 双向 attention 示意（每个 token 看所有 token） */}
+      <g transform="translate(40, 152)">
+        <text x="0" y="0" className="illustration__label illustration__label--small">双向注意力（每个位置可看左右）</text>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <circle key={`bn-${i}`} cx={i * 76 + 44} cy="20" r="6" className="illustration__neuron" />
+        ))}
+        {/* 每个节点和其他所有节点连线 */}
+        {Array.from({ length: 6 }).flatMap((_, i) =>
+          Array.from({ length: 6 }).map((_, j) =>
+            i !== j ? (
+              <line
+                key={`bl-${i}-${j}`}
+                x1={i * 76 + 44}
+                y1="20"
+                x2={j * 76 + 44}
+                y2="20"
+                className="illustration__attn-link"
+              />
+            ) : null,
+          ),
+        )}
+      </g>
+
+      {/* BERT Transformer 编码器堆叠 */}
+      <g transform="translate(50, 196)">
+        <rect width="450" height="44" rx="8" className="illustration__block illustration__block--alt" />
+        <text x="225" y="20" textAnchor="middle" className="illustration__block-label">12 × Transformer Encoder Block</text>
+        <text x="225" y="36" textAnchor="middle" className="illustration__label illustration__label--small">d=768 · 12 头 · ~110M 参数</text>
+      </g>
+
+      {/* MLM 预测头：在 [MASK] 位置预测原 token */}
+      <g transform="translate(50, 256)">
+        <text x="0" y="0" className="illustration__label illustration__label--small">MLM 头 · 只在 [MASK] 位置算 softmax</text>
+        {/* 预测概率分布 */}
+        <g transform="translate(76, 12)">
+          <rect width="56" height="22" rx="4" className="illustration__bar illustration__bar--real" />
+          <text x="62" y="16" className="illustration__label illustration__label--small">cat 0.87</text>
         </g>
-      ))}
-
-      <path d={path} className="illustration__curve" fill="none" />
-
-      {/* emergent ability hint */}
-      <g transform="translate(420,30)">
-        <rect width="180" height="40" rx="8" className="illustration__block" />
-        <text x="90" y="25" className="illustration__block-label" textAnchor="middle">
-          few-shot 涌现
+        <g transform="translate(382, 12)">
+          <rect width="48" height="22" rx="4" className="illustration__bar illustration__bar--real" />
+          <text x="54" y="16" className="illustration__label illustration__label--small">mat 0.73</text>
+        </g>
+        <text x="0" y="58" className="illustration__label illustration__label--small">
+          loss = − log p(cat | The, _, sat, on, the, _) − log p(mat | …)
         </text>
       </g>
 
-      <text x="360" y="178" className="illustration__label" textAnchor="middle">
-        参数/数据/算力按幂律共增 → 模型不只是变好，是出现新能力
+      {/* === 右半：GPT-1 === */}
+      <text x="600" y="64" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-scale-ink)" }}>
+        GPT-1 · Causal (left-to-right) Decoder
       </text>
+
+      {/* GPT 输入：完整序列 */}
+      {["The", "cat", "sat", "on", "the"].map((t, i) => (
+        <g key={`gt-${i}`} transform={`translate(${610 + i * 80}, 80)`}>
+          <rect width="68" height="28" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="34" y="18" textAnchor="middle" className="illustration__block-label illustration__block-label--small">{t}</text>
+        </g>
+      ))}
+      {/* 预测目标：next token */}
+      <g transform="translate(1010, 80)">
+        <rect width="68" height="28" rx="6" className="illustration__token--target" />
+        <text x="34" y="18" textAnchor="middle" className="illustration__block-label illustration__block-label--small">?</text>
+      </g>
+
+      <text x="600" y="128" className="illustration__label illustration__label--small">
+        每个位置只能看到自己 + 左边，预测右邻 token
+      </text>
+
+      {/* causal mask 三角矩阵 */}
+      <g transform="translate(600, 152)">
+        <text x="0" y="0" className="illustration__label illustration__label--small">causal mask（下三角 1，上三角 0）</text>
+        {Array.from({ length: 5 }).map((_, r) =>
+          Array.from({ length: 5 }).map((_, c) => (
+            <rect
+              key={`cm-${r}-${c}`}
+              x={c * 18}
+              y={r * 18 + 8}
+              width="16"
+              height="16"
+              rx="1.5"
+              className={c <= r ? "illustration__attn-cell" : "illustration__attn-cell illustration__attn-cell--masked"}
+              style={{ opacity: c <= r ? 0.7 : 0.1 }}
+            />
+          )),
+        )}
+      </g>
+
+      <g transform="translate(610, 196)">
+        <rect width="450" height="44" rx="8" className="illustration__block illustration__block--alt" />
+        <text x="225" y="20" textAnchor="middle" className="illustration__block-label">12 × Transformer Decoder Block</text>
+        <text x="225" y="36" textAnchor="middle" className="illustration__label illustration__label--small">d=768 · 12 头 · ~117M 参数</text>
+      </g>
+
+      {/* GPT 输出：自回归预测下一个 token */}
+      <g transform="translate(610, 256)">
+        <text x="0" y="0" className="illustration__label illustration__label--small">语言模型头 · 每个位置都算 softmax over |V|</text>
+        <g transform="translate(326, 12)">
+          <rect width="60" height="22" rx="4" className="illustration__bar illustration__bar--real" />
+          <text x="66" y="16" className="illustration__label illustration__label--small">mat 0.42</text>
+        </g>
+        <text x="0" y="58" className="illustration__label illustration__label--small">
+          loss = − Σ log p(t_(i+1) | t_1, …, t_i)
+        </text>
+      </g>
+
+      {/* === 底部：共同的两阶段范式 === */}
+      <g transform="translate(40, 340)">
+        <rect width="1020" height="240" rx="14" className="illustration__group" />
+        <text x="20" y="28" className="illustration__label illustration__label--strong">
+          共同范式 · "大规模无标注预训练 + 小规模任务微调" 自此成为 NLP 标配
+        </text>
+
+        {/* 阶段 1：预训练 */}
+        <g transform="translate(40, 56)">
+          <rect width="440" height="160" rx="10" className="illustration__block illustration__block--alt" />
+          <text x="20" y="26" className="illustration__label illustration__label--strong">Stage 1 · 预训练（无监督）</text>
+          <text x="20" y="52" className="illustration__label illustration__label--small">数据：BooksCorpus + Wikipedia · ~3.3B tokens</text>
+          <text x="20" y="72" className="illustration__label illustration__label--small">目标：MLM (BERT) / 下一 token (GPT)</text>
+          <text x="20" y="92" className="illustration__label illustration__label--small">硬件：BERT 16× TPU 4 天 / GPT 8× P600 一个月</text>
+          <text x="20" y="120" className="illustration__label">→ 得到通用语义表示（参数 ≈ 100M）</text>
+          <text x="20" y="138" className="illustration__label illustration__label--small">这套权重就是后来所有"预训练模型"的祖先</text>
+        </g>
+
+        {/* 阶段 2：微调 */}
+        <g transform="translate(540, 56)">
+          <rect width="440" height="160" rx="10" className="illustration__block" />
+          <text x="20" y="26" className="illustration__label illustration__label--strong">Stage 2 · 下游微调（监督）</text>
+          <text x="20" y="52" className="illustration__label illustration__label--small">数据：SST-2 / SQuAD / GLUE 等任务标注集</text>
+          <text x="20" y="72" className="illustration__label illustration__label--small">改造：加一个小分类/回归 head</text>
+          <text x="20" y="92" className="illustration__label illustration__label--small">训练：所有参数一起更新，但只需几个 epoch</text>
+          <text x="20" y="120" className="illustration__label">→ 同一权重适配 11+ 个任务，刷榜</text>
+          <text x="20" y="138" className="illustration__label illustration__label--small">GLUE 平均分 + 7 pp，重塑 NLP benchmark 格局</text>
+        </g>
+      </g>
     </svg>
   );
 }
 
 /* =====================================================================
- * 2021 — CLIP dual encoder
+ * 2020 — Scaling Laws + few-shot prompt 示例
+ * ===================================================================== */
+function ScalingDiagram() {
+  // 4 个 GPT 系列模型规模
+  const models = [
+    { x: 110, y: 280, params: "117M", name: "GPT-1" },
+    { x: 290, y: 220, params: "1.5B", name: "GPT-2" },
+    { x: 470, y: 150, params: "13B", name: "GPT-3 medium" },
+    { x: 640, y: 60, params: "175B", name: "GPT-3" },
+  ];
+  // 拟合的幂律曲线点
+  const curve = Array.from({ length: 50 }, (_, i) => {
+    const x = 80 + i * 12;
+    const y = 320 - Math.pow(i / 50, 0.5) * 280;
+    return [x, y] as const;
+  });
+  const path = curve.map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x} ${y}`).join(" ");
+
+  return (
+    <svg viewBox="0 0 1100 480" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        Scaling Laws · 模型参数、训练数据、算力按幂律共增 → 不只是变好，是出现新能力
+      </text>
+
+      {/* 左半：log-log 缩放曲线 */}
+      <g>
+        {/* 坐标轴 */}
+        <line x1="80" y1="320" x2="720" y2="320" className="illustration__rail" />
+        <line x1="80" y1="40" x2="80" y2="320" className="illustration__rail" />
+
+        <text x="720" y="340" textAnchor="end" className="illustration__label illustration__label--small">
+          参数量 N (log) →
+        </text>
+        <text x="76" y="40" textAnchor="end" className="illustration__label illustration__label--small">
+          能力 ↑
+        </text>
+
+        {/* 曲线 */}
+        <path d={path} className="illustration__curve" fill="none" />
+
+        {/* 4 个模型点（点 + 标签错开避免压住曲线） */}
+        {models.map((m, i) => (
+          <g key={m.name} style={{ animationDelay: `${i * 120}ms` }}>
+            <circle cx={m.x} cy={m.y} r="7" className="illustration__neuron illustration__neuron--big" />
+            <line x1={m.x} y1={m.y - 8} x2={m.x} y2={m.y - 28} className="illustration__arrow" />
+            <rect x={m.x - 56} y={m.y - 56} width="112" height="22" rx="4" className="illustration__block illustration__block--alt" />
+            <text x={m.x} y={m.y - 40} textAnchor="middle" className="illustration__block-label illustration__block-label--small">
+              {m.name} · {m.params}
+            </text>
+          </g>
+        ))}
+
+        {/* 涌现能力标记区域 */}
+        <rect x="600" y="50" width="120" height="50" rx="6" className="illustration__group illustration__group--inner" />
+        <text x="660" y="74" textAnchor="middle" className="illustration__label illustration__label--small" style={{ fill: "var(--rose-700)" }}>
+          ≥ 100B 后
+        </text>
+        <text x="660" y="92" textAnchor="middle" className="illustration__label illustration__label--small" style={{ fill: "var(--rose-700)" }}>
+          能力出现"涌现"
+        </text>
+
+        {/* 幂律公式 */}
+        <text x="80" y="370" className="illustration__label">
+          L(N) = (N_c / N)^α  · 损失随参数 N 服从幂律下降，跨 8 个数量级仍成立
+        </text>
+        <text x="80" y="392" className="illustration__label illustration__label--small">
+          Kaplan et al. 2020 · Chinchilla 后修正：算力固定时数据应该比参数多扩 2×
+        </text>
+      </g>
+
+      {/* 右半：few-shot prompt 示例（in-context learning） */}
+      <g transform="translate(770, 50)">
+        <rect width="300" height="380" rx="10" className="illustration__block" />
+        <text x="20" y="26" className="illustration__label illustration__label--strong">
+          in-context few-shot 示例
+        </text>
+        <text x="20" y="46" className="illustration__label illustration__label--small">
+          175B 模型不更新参数，仅靠 prompt 完成新任务
+        </text>
+
+        {/* 任务描述 */}
+        <g transform="translate(20, 60)">
+          <rect width="260" height="32" rx="4" className="illustration__block illustration__block--alt" />
+          <text x="10" y="14" className="illustration__label illustration__label--small">任务：英语 → 法语翻译</text>
+          <text x="10" y="28" className="illustration__label illustration__label--small">（无任何梯度更新）</text>
+        </g>
+
+        {/* 3 个 in-context 示例 */}
+        {[
+          ["sea otter", "loutre de mer"],
+          ["plush giraffe", "girafe en peluche"],
+          ["cheese", "fromage"],
+        ].map(([en, fr], i) => (
+          <g key={i} transform={`translate(20, ${108 + i * 50})`}>
+            <rect width="260" height="40" rx="4" className="illustration__block illustration__block--alt" />
+            <text x="10" y="16" className="illustration__label illustration__label--small">"{en} →"</text>
+            <text x="10" y="32" className="illustration__label illustration__label--small" style={{ fill: "var(--phase-alignment-ink)" }}>
+              → {fr}
+            </text>
+          </g>
+        ))}
+
+        {/* Query */}
+        <g transform="translate(20, 260)">
+          <rect width="260" height="48" rx="4" className="illustration__token--target" />
+          <text x="10" y="20" className="illustration__label illustration__label--small">prompt 末尾："peppermint →"</text>
+          <text x="10" y="40" className="illustration__label illustration__label--small" style={{ fill: "var(--rose-700)", fontWeight: 700 }}>
+            模型续写：menthe poivrée ✓
+          </text>
+        </g>
+
+        <text x="20" y="334" className="illustration__label illustration__label--small">
+          这就是 in-context learning：
+        </text>
+        <text x="20" y="350" className="illustration__label illustration__label--small">
+          模型把"示例 → 模式"装进 prompt 临时记忆
+        </text>
+        <text x="20" y="366" className="illustration__label illustration__label--small">
+          后来 RAG / chain-of-thought 都从这里发展
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/* =====================================================================
+ * 2021 — CLIP 双塔 + N×N 对比矩阵
  * ===================================================================== */
 function ClipDiagram() {
+  const N = 6;
+  // N×N 相似度矩阵：对角线高，其余低
+  const sim = Array.from({ length: N }, (_, r) =>
+    Array.from({ length: N }, (_, c) => (r === c ? 0.95 : 0.05 + Math.random() * 0.25)),
+  );
+  const captions = [
+    "a dog playing",
+    "a cat on rug",
+    "snowy mountain",
+    "red sports car",
+    "plate of food",
+    "a smiling kid",
+  ];
+
   return (
-    <svg viewBox="0 0 720 180" role="img" className="illustration__svg">
-      {/* image tower */}
-      <g transform="translate(40,20)">
-        <text x="0" y="-6" className="illustration__label">
-          image
+    <svg viewBox="0 0 1100 580" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        CLIP · 一个 batch 同时处理 N 张图 + N 段文本，N²−N 个负样本撑起对比学习
+      </text>
+
+      {/* 上：N 张图 → ViT */}
+      <text x="30" y="64" className="illustration__label">① 图像通路</text>
+      {Array.from({ length: N }).map((_, i) => (
+        <rect
+          key={`img-${i}`}
+          x={60 + i * 70}
+          y="76"
+          width="60"
+          height="40"
+          rx="6"
+          className="illustration__pixel illustration__pixel--big"
+          style={{ animationDelay: `${i * 60}ms` }}
+        />
+      ))}
+      <text x="60" y="132" className="illustration__label illustration__label--small">N=batch 张图</text>
+
+      <g transform="translate(490, 80)">
+        <rect width="120" height="36" rx="6" className="illustration__block illustration__block--alt" />
+        <text x="60" y="22" textAnchor="middle" className="illustration__block-label">ViT 编码器</text>
+      </g>
+      <line x1="480" y1="98" x2="487" y2="98" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      {/* 图像嵌入 I_1..I_N */}
+      <g transform="translate(620, 80)">
+        <line x1="0" y1="18" x2="14" y2="18" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        {Array.from({ length: N }).map((_, i) => (
+          <g key={i} transform={`translate(20, ${i * 8})`}>
+            <rect width="36" height="6" rx="1" className="illustration__featuremap" />
+            <text x="42" y="6" className="illustration__label illustration__label--small">I_{i + 1}</text>
+          </g>
+        ))}
+      </g>
+
+      {/* 下：N 段文本 → Text Transformer */}
+      <text x="30" y="170" className="illustration__label">② 文本通路</text>
+      {captions.map((c, i) => (
+        <g key={`txt-${i}`} transform={`translate(60, ${184 + i * 24})`}>
+          <rect width="380" height="20" rx="3" className="illustration__block" />
+          <text x="10" y="14" className="illustration__label illustration__label--small">"{c}"</text>
+        </g>
+      ))}
+
+      <g transform="translate(490, 230)">
+        <rect width="120" height="36" rx="6" className="illustration__block illustration__block--alt" />
+        <text x="60" y="22" textAnchor="middle" className="illustration__block-label">Text Transformer</text>
+      </g>
+      <line x1="450" y1="248" x2="487" y2="248" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      <g transform="translate(620, 230)">
+        <line x1="0" y1="18" x2="14" y2="18" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        {Array.from({ length: N }).map((_, i) => (
+          <g key={i} transform={`translate(20, ${i * 8})`}>
+            <rect width="36" height="6" rx="1" className="illustration__featuremap illustration__featuremap--ctx" />
+            <text x="42" y="6" className="illustration__label illustration__label--small">T_{i + 1}</text>
+          </g>
+        ))}
+      </g>
+
+      {/* N×N 相似度矩阵 */}
+      <text x="780" y="64" className="illustration__label illustration__label--strong">
+        ③ N×N 余弦相似度矩阵
+      </text>
+      <g transform="translate(800, 80)">
+        {/* 行列标签 */}
+        {Array.from({ length: N }).map((_, i) => (
+          <text key={`rl-${i}`} x="-6" y={i * 28 + 22} textAnchor="end" className="illustration__label illustration__label--small">I_{i + 1}</text>
+        ))}
+        {Array.from({ length: N }).map((_, i) => (
+          <text key={`cl-${i}`} x={i * 28 + 14} y="-6" textAnchor="middle" className="illustration__label illustration__label--small">T_{i + 1}</text>
+        ))}
+
+        {/* 矩阵单元 */}
+        {sim.map((row, r) =>
+          row.map((v, c) => (
+            <g key={`s-${r}-${c}`}>
+              <rect
+                x={c * 28}
+                y={r * 28 + 8}
+                width="26"
+                height="26"
+                rx="3"
+                className={r === c ? "illustration__attn-cell" : "illustration__attn-cell illustration__attn-cell--raw"}
+                style={{ opacity: r === c ? 0.95 : 0.12 + v * 0.25, animationDelay: `${(r * N + c) * 25}ms` }}
+              />
+              {r === c && (
+                <text x={c * 28 + 13} y={r * 28 + 25} textAnchor="middle" className="illustration__label illustration__label--small" style={{ fill: "white", fontWeight: 700 }}>
+                  +
+                </text>
+              )}
+            </g>
+          )),
+        )}
+
+        {/* 标注对角线为正样本 */}
+        <text x={N * 28 + 14} y={N * 14} className="illustration__label illustration__label--small">
+          ← 对角线 N 个
         </text>
-        <rect width="50" height="50" rx="6" className="illustration__pixel illustration__pixel--big" />
-        <line x1="55" y1="25" x2="105" y2="25" className="illustration__flow" />
-        <rect x="110" width="100" height="50" rx="8" className="illustration__block" />
-        <text x="160" y="30" className="illustration__block-label" textAnchor="middle">
-          ViT
+        <text x={N * 28 + 14} y={N * 14 + 16} className="illustration__label illustration__label--small">
+          正样本 (匹配的 I-T 对)
+        </text>
+        <text x={N * 28 + 14} y={N * 14 + 40} className="illustration__label illustration__label--small" style={{ fill: "var(--ink-muted)" }}>
+          其余 N²−N 个为负样本
         </text>
       </g>
 
-      {/* text tower */}
-      <g transform="translate(40,110)">
-        <text x="0" y="-6" className="illustration__label">
-          “a photo of a cat”
+      {/* loss 公式 */}
+      <g transform="translate(30, 400)">
+        <rect width="1040" height="120" rx="10" className="illustration__block illustration__block--alt" />
+        <text x="20" y="28" className="illustration__label illustration__label--strong">
+          InfoNCE 对比损失（双向）
         </text>
-        <rect width="50" height="40" rx="6" className="illustration__bar illustration__bar--real" />
-        <line x1="55" y1="20" x2="105" y2="20" className="illustration__flow" />
-        <rect x="110" width="100" height="40" rx="8" className="illustration__block illustration__block--alt" />
-        <text x="160" y="25" className="illustration__block-label" textAnchor="middle">
-          Text Transformer
+        <text x="20" y="56" className="illustration__label">
+          L = ½ · ( CE_row( sim · τ ) + CE_col( sim · τ ) )
+        </text>
+        <text x="20" y="82" className="illustration__label illustration__label--small">
+          每张图 I_i 把对应文本 T_i 的概率最大化（行 softmax）；每段文本 T_i 把对应图 I_i 最大化（列 softmax）
+        </text>
+        <text x="20" y="102" className="illustration__label illustration__label--small">
+          训练数据：400M 网上抓取的"图-文本"对；图像和文本被映射到同一表示空间 → 之后可以 0-shot 分类、检索、生成
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/* =====================================================================
+ * 2022 — RLHF 三阶段
+ * ===================================================================== */
+function RlhfDiagram() {
+  return (
+    <svg viewBox="0 0 1100 580" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        RLHF · 把"什么回答更好"的人类偏好编码进语言模型
+      </text>
+
+      {/* Stage 1: SFT */}
+      <g transform="translate(20, 60)">
+        <rect width="340" height="430" rx="14" className="illustration__group" />
+        <g className="illustration__badge">
+          <rect x="12" y="-12" width="56" height="22" rx="11" />
+          <text x="40" y="3" textAnchor="middle">Stage 1</text>
+        </g>
+        <text x="80" y="6" className="illustration__label illustration__label--strong">SFT · 监督微调</text>
+        <text x="18" y="36" className="illustration__label illustration__label--small">~13K 高质量人写演示</text>
+
+        {/* 数据样本 */}
+        <g transform="translate(20, 56)">
+          <rect width="300" height="60" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="12" y="20" className="illustration__label illustration__label--small">Prompt: 解释一下 RLHF</text>
+          <text x="12" y="40" className="illustration__label illustration__label--small">Demo (人写): RLHF 是一种用人类反馈…</text>
+        </g>
+
+        {/* 训练流程 */}
+        <g transform="translate(80, 142)">
+          <rect width="180" height="50" rx="6" className="illustration__proj illustration__proj--ffn" />
+          <text x="90" y="22" textAnchor="middle" className="illustration__block-label">预训练 GPT-3.5</text>
+          <text x="90" y="40" textAnchor="middle" className="illustration__label illustration__label--small">作为起点</text>
+        </g>
+        <line x1="170" y1="194" x2="170" y2="216" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <g transform="translate(80, 216)">
+          <rect width="180" height="50" rx="6" className="illustration__proj illustration__proj--act" />
+          <text x="90" y="22" textAnchor="middle" className="illustration__block-label">监督微调</text>
+          <text x="90" y="40" textAnchor="middle" className="illustration__label illustration__label--small">下一 token 损失</text>
+        </g>
+        <line x1="170" y1="268" x2="170" y2="290" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <g transform="translate(60, 290)">
+          <rect width="220" height="34" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="110" y="22" textAnchor="middle" className="illustration__block-label">SFT Model π_SFT</text>
+        </g>
+
+        <text x="18" y="356" className="illustration__label illustration__label--small">优点：学会"听指令"的基本格式</text>
+        <text x="18" y="376" className="illustration__label illustration__label--small">局限：人写演示有上限，无法表达</text>
+        <text x="18" y="392" className="illustration__label illustration__label--small">          "回答 A 比回答 B 好多少"</text>
+        <text x="18" y="416" className="illustration__label illustration__label--small">→ 进入第二阶段</text>
+      </g>
+
+      {/* Stage 2: RM */}
+      <g transform="translate(382, 60)">
+        <rect width="340" height="430" rx="14" className="illustration__group" />
+        <g className="illustration__badge">
+          <rect x="12" y="-12" width="56" height="22" rx="11" />
+          <text x="40" y="3" textAnchor="middle">Stage 2</text>
+        </g>
+        <text x="80" y="6" className="illustration__label illustration__label--strong">RM · 训练奖励模型</text>
+        <text x="18" y="36" className="illustration__label illustration__label--small">~33K 人类排序对比</text>
+
+        {/* 数据样本 */}
+        <g transform="translate(20, 56)">
+          <rect width="300" height="90" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="12" y="20" className="illustration__label illustration__label--small">Prompt: 同一问题，4 个回答</text>
+          <text x="12" y="40" className="illustration__label illustration__label--small">人类排序：A &gt; C &gt; B &gt; D</text>
+          <text x="12" y="60" className="illustration__label illustration__label--small">每个 pair (A, C) 等都是训练样本</text>
+          <text x="12" y="78" className="illustration__label illustration__label--small">total C(4,2)=6 个 pair / prompt</text>
+        </g>
+
+        <line x1="190" y1="146" x2="190" y2="166" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        {/* RM 训练 */}
+        <g transform="translate(80, 166)">
+          <rect width="180" height="50" rx="6" className="illustration__proj illustration__proj--v" />
+          <text x="90" y="22" textAnchor="middle" className="illustration__block-label">RM (从 SFT 复制)</text>
+          <text x="90" y="40" textAnchor="middle" className="illustration__label illustration__label--small">输出标量 r(prompt,回答)</text>
+        </g>
+
+        <line x1="170" y1="216" x2="170" y2="236" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        {/* loss */}
+        <g transform="translate(20, 236)">
+          <rect width="300" height="76" rx="6" className="illustration__block" />
+          <text x="12" y="20" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-alignment-ink)" }}>
+            Bradley-Terry 损失
+          </text>
+          <text x="12" y="42" className="illustration__label illustration__label--small">
+            L = − log σ( r(w) − r(l) )
+          </text>
+          <text x="12" y="62" className="illustration__label illustration__label--small">
+            把胜者 w 推高、败者 l 推低
+          </text>
+        </g>
+
+        <line x1="170" y1="316" x2="170" y2="336" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        <g transform="translate(60, 336)">
+          <rect width="220" height="34" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="110" y="22" textAnchor="middle" className="illustration__block-label">Reward Model RM_φ</text>
+        </g>
+
+        <text x="18" y="396" className="illustration__label illustration__label--small">RM 学到"人类偏好"的代理</text>
+        <text x="18" y="416" className="illustration__label illustration__label--small">→ 第三阶段当作奖励信号</text>
+      </g>
+
+      {/* Stage 3: PPO */}
+      <g transform="translate(744, 60)">
+        <rect width="340" height="430" rx="14" className="illustration__group" />
+        <g className="illustration__badge">
+          <rect x="12" y="-12" width="56" height="22" rx="11" />
+          <text x="40" y="3" textAnchor="middle">Stage 3</text>
+        </g>
+        <text x="80" y="6" className="illustration__label illustration__label--strong">PPO · RL 优化策略</text>
+        <text x="18" y="36" className="illustration__label illustration__label--small">policy = SFT 模型，用 RM 当 reward</text>
+
+        {/* PPO 循环 */}
+        <g transform="translate(20, 60)">
+          <rect width="300" height="40" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="150" y="18" textAnchor="middle" className="illustration__block-label">prompt 从训练池采样</text>
+          <text x="150" y="32" textAnchor="middle" className="illustration__label illustration__label--small">~31K 提示</text>
+        </g>
+        <line x1="170" y1="100" x2="170" y2="120" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        <g transform="translate(20, 120)">
+          <rect width="300" height="40" rx="6" className="illustration__proj illustration__proj--ffn" />
+          <text x="150" y="18" textAnchor="middle" className="illustration__block-label">policy π_θ 生成回答 y</text>
+          <text x="150" y="32" textAnchor="middle" className="illustration__label illustration__label--small">从 SFT 初始化</text>
+        </g>
+        <line x1="170" y1="160" x2="170" y2="180" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        <g transform="translate(20, 180)">
+          <rect width="140" height="40" rx="6" className="illustration__proj illustration__proj--v" />
+          <text x="70" y="18" textAnchor="middle" className="illustration__block-label">RM 打分</text>
+          <text x="70" y="32" textAnchor="middle" className="illustration__label illustration__label--small">r(x, y)</text>
+
+          <g transform="translate(160, 0)">
+            <rect width="140" height="40" rx="6" className="illustration__proj illustration__proj--act" />
+            <text x="70" y="18" textAnchor="middle" className="illustration__block-label">KL 惩罚</text>
+            <text x="70" y="32" textAnchor="middle" className="illustration__label illustration__label--small">vs π_SFT</text>
+          </g>
+        </g>
+
+        <line x1="170" y1="220" x2="170" y2="240" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        <g transform="translate(20, 240)">
+          <rect width="300" height="60" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="12" y="20" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-alignment-ink)" }}>
+            Reward = r(x,y) − β · KL(π_θ || π_SFT)
+          </text>
+          <text x="12" y="42" className="illustration__label illustration__label--small">奖励：人类偏好 RM 评分</text>
+          <text x="12" y="56" className="illustration__label illustration__label--small">惩罚：不要漂离 SFT 太远（防 reward hacking）</text>
+        </g>
+
+        <line x1="170" y1="300" x2="170" y2="320" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        <g transform="translate(20, 320)">
+          <rect width="300" height="40" rx="6" className="illustration__proj illustration__proj--ffn" />
+          <text x="150" y="18" textAnchor="middle" className="illustration__block-label">PPO 更新 π_θ</text>
+          <text x="150" y="32" textAnchor="middle" className="illustration__label illustration__label--small">截断梯度 + 多个 epoch</text>
+        </g>
+
+        {/* 循环箭头回到 prompt */}
+        <path d="M 320 340 C 340 340, 340 80, 320 80" className="illustration__feedback" fill="none" markerEnd="url(#arrow-head)" />
+
+        <text x="18" y="396" className="illustration__label illustration__label--small">最终 InstructGPT / ChatGPT</text>
+        <text x="18" y="416" className="illustration__label illustration__label--small">回答质量超过 175B GPT-3 (1.3B 即可)</text>
+      </g>
+    </svg>
+  );
+}
+
+/* =====================================================================
+ * 2024 — Mixture-of-Experts（MoE）稀疏激活
+ * ===================================================================== */
+function MoeDiagram() {
+  const N_EXPERTS = 8;
+  const TOP_K = 2;
+  // Router 权重（top-2 高，其余低）
+  const routeWeights = [0.62, 0.31, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01];
+  const lit = new Set([0, 1]); // 被选中的 expert 索引
+
+  return (
+    <svg viewBox="0 0 1100 500" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        Mixture-of-Experts · 同样的容量，每步只激活 {TOP_K}/{N_EXPERTS} = 25% 参数
+      </text>
+
+      {/* Token 输入 */}
+      <g transform="translate(40, 80)">
+        <rect width="120" height="40" rx="6" className="illustration__block illustration__block--alt" />
+        <text x="60" y="20" textAnchor="middle" className="illustration__block-label">token h</text>
+        <text x="60" y="36" textAnchor="middle" className="illustration__label illustration__label--small">前层 hidden 状态</text>
+      </g>
+
+      <line x1="160" y1="100" x2="200" y2="100" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      {/* Router (gating network) */}
+      <g transform="translate(200, 80)">
+        <rect width="160" height="40" rx="6" className="illustration__proj illustration__proj--v" />
+        <text x="80" y="20" textAnchor="middle" className="illustration__block-label">Router · Linear+Softmax</text>
+        <text x="80" y="36" textAnchor="middle" className="illustration__label illustration__label--small">输出 N 维概率</text>
+      </g>
+
+      <line x1="360" y1="100" x2="400" y2="100" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      {/* Router 权重柱状（N 个 bar，top-2 用强色） */}
+      <g transform="translate(400, 80)">
+        <text x="0" y="-6" className="illustration__label illustration__label--small">Router 权重 g(h)</text>
+        {routeWeights.map((w, i) => (
+          <g key={i}>
+            <rect
+              x={i * 26}
+              y={36 - w * 36}
+              width="22"
+              height={w * 36}
+              rx="2"
+              className={lit.has(i) ? "illustration__bar illustration__bar--real" : "illustration__bar illustration__bar--fake"}
+              style={{ animationDelay: `${i * 60}ms`, opacity: lit.has(i) ? 1 : 0.4 }}
+            />
+            <text x={i * 26 + 11} y="50" textAnchor="middle" className="illustration__label illustration__label--small">
+              E{i + 1}
+            </text>
+          </g>
+        ))}
+        <text x={N_EXPERTS * 26 + 14} y="22" className="illustration__label illustration__label--small">
+          取 top-{TOP_K}
+        </text>
+        <text x={N_EXPERTS * 26 + 14} y="38" className="illustration__label illustration__label--small" style={{ fill: "var(--rose-700)", fontWeight: 700 }}>
+          → E1, E2 选中
         </text>
       </g>
 
-      {/* shared space */}
-      <g transform="translate(380,60)">
-        <ellipse cx="100" cy="40" rx="120" ry="50" className="illustration__space" />
-        <text x="100" y="-10" className="illustration__label" textAnchor="middle">
-          shared embedding space
+      {/* N 个 Expert（FFN） */}
+      <text x="40" y="180" className="illustration__label illustration__label--strong">
+        N = {N_EXPERTS} 个 Expert · 每个就是普通 FFN（Linear → GELU → Linear）
+      </text>
+
+      {Array.from({ length: N_EXPERTS }).map((_, i) => {
+        const isLit = lit.has(i);
+        const x = 40 + i * 130;
+        return (
+          <g key={`exp-${i}`} transform={`translate(${x}, 200)`} className={isLit ? "" : "illustration__dim"}>
+            <rect width="120" height="84" rx="8" className={isLit ? "illustration__proj illustration__proj--ffn" : "illustration__block"} />
+            <text x="60" y="20" textAnchor="middle" className="illustration__block-label">Expert {i + 1}</text>
+            <text x="60" y="36" textAnchor="middle" className="illustration__label illustration__label--small">FFN d→4d→d</text>
+            {isLit && (
+              <>
+                <rect x="20" y="46" width="80" height="6" rx="2" className="illustration__featuremap illustration__featuremap--ctx" />
+                <rect x="20" y="58" width="80" height="6" rx="2" className="illustration__featuremap" />
+                <rect x="20" y="70" width="80" height="6" rx="2" className="illustration__featuremap illustration__featuremap--ctx" />
+              </>
+            )}
+            {!isLit && (
+              <text x="60" y="62" textAnchor="middle" className="illustration__label illustration__label--small" style={{ opacity: 0.5 }}>
+                未激活
+              </text>
+            )}
+          </g>
+        );
+      })}
+
+      {/* Router → 被选中的 expert 的强连接，其他弱 */}
+      {Array.from({ length: N_EXPERTS }).map((_, i) => {
+        const isLit = lit.has(i);
+        const x = 40 + i * 130 + 60;
+        return (
+          <line
+            key={`r-${i}`}
+            x1="500"
+            y1="120"
+            x2={x}
+            y2="200"
+            className={isLit ? "illustration__branch illustration__branch--q" : "illustration__attn-link"}
+            style={{ opacity: isLit ? 0.95 : 0.18 }}
+          />
+        );
+      })}
+
+      {/* 输出 = top-k 的加权和 */}
+      <text x="40" y="312" className="illustration__label illustration__label--strong">
+        输出 = g_1 · Expert_1(h) + g_2 · Expert_2(h)  ——  仅 2 个 FFN 参与计算
+      </text>
+
+      {/* 输出向量 */}
+      <g transform="translate(40, 332)">
+        <rect width="120" height="40" rx="6" className="illustration__block illustration__block--alt" />
+        <text x="60" y="20" textAnchor="middle" className="illustration__block-label">h_next</text>
+        <text x="60" y="36" textAnchor="middle" className="illustration__label illustration__label--small">送入下一层</text>
+      </g>
+
+      {/* 选中 expert 输出汇入 */}
+      <path d="M 100 284 C 100 320, 90 320, 100 332" className="illustration__arrow" fill="none" />
+      <path d="M 230 284 C 230 308, 130 308, 100 332" className="illustration__arrow" fill="none" markerEnd="url(#arrow-head)" />
+
+      {/* 收益总结 */}
+      <g transform="translate(220, 332)">
+        <rect width="850" height="120" rx="10" className="illustration__block" />
+        <text x="20" y="26" className="illustration__label illustration__label--strong">
+          稀疏 MoE 的工程意义
         </text>
-        <circle cx="60" cy="35" r="6" className="illustration__neuron" />
-        <circle cx="140" cy="50" r="6" className="illustration__neuron illustration__neuron--noise" />
-        <line x1="60" y1="35" x2="140" y2="50" className="illustration__sim" />
-        <text x="100" y="80" className="illustration__label" textAnchor="middle">
-          cos sim ↑
+        <text x="20" y="54" className="illustration__label">
+          总参数：8 × FFN 大小（相当于 8 倍容量）·  激活参数：2 × FFN（推理成本只翻 2 倍）
+        </text>
+        <text x="20" y="76" className="illustration__label illustration__label--small">
+          代表作：Mixtral 8×7B（46.7B 总参数，每次激活 12.9B）· DeepSeek-V2 / GLM-4 / Qwen-MoE
+        </text>
+        <text x="20" y="96" className="illustration__label illustration__label--small">
+          工程挑战：load balancing（防止 router 总选同一专家）· 通信开销（跨 GPU 路由）· capacity factor 调优
         </text>
       </g>
     </svg>

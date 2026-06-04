@@ -950,6 +950,71 @@ button:focus-visible, a:focus-visible {
   transform-box: fill-box;
 }
 
+/* ---- v2 新增（CNN 立方体层、BERT mask、causal mask、MoE 等） ---- */
+
+/* AlexNet 等卷积层立方体 */
+.illustration__layer {
+  stroke-width: 1.4;
+}
+.illustration__layer--input {
+  fill: color-mix(in srgb, var(--amber-300) 50%, var(--surface-card));
+  stroke: var(--amber-700);
+}
+.illustration__layer--conv {
+  fill: color-mix(in srgb, var(--active-line) 18%, var(--surface-card));
+  stroke: var(--active-line);
+}
+.illustration__layer--fc {
+  fill: color-mix(in srgb, var(--phase-multimodal-line) 14%, var(--surface-card));
+  stroke: var(--phase-multimodal-line);
+}
+.illustration__layer--back { opacity: 0.35; }
+.illustration__layer--mid  { opacity: 0.7; }
+
+/* Word2Vec 滑动窗口 */
+.illustration__window {
+  fill: color-mix(in srgb, var(--rose-500) 8%, transparent);
+  stroke: var(--rose-500);
+  stroke-dasharray: 5 3;
+  stroke-width: 1.4;
+}
+.illustration__token--center {
+  fill: color-mix(in srgb, var(--rose-500) 22%, var(--surface-card));
+  stroke: var(--rose-500);
+  stroke-width: 1.6;
+}
+
+/* BERT [MASK] token */
+.illustration__token--masked {
+  fill: color-mix(in srgb, var(--ink-muted) 35%, var(--surface-card));
+  stroke: var(--ink-muted);
+  stroke-dasharray: 4 2;
+  stroke-width: 1.4;
+}
+.illustration__token--target {
+  fill: color-mix(in srgb, var(--rose-500) 18%, var(--surface-card));
+  stroke: var(--rose-500);
+  stroke-width: 1.6;
+}
+
+/* BERT 双向 attention 链 */
+.illustration__attn-link {
+  stroke: var(--phase-language-line);
+  stroke-width: 0.6;
+  opacity: 0.4;
+}
+
+/* causal mask 上三角灰格 */
+.illustration__attn-cell--masked {
+  fill: var(--hairline-strong);
+}
+
+/* MoE 未激活 expert 整体变灰 */
+.illustration__dim {
+  opacity: 0.55;
+  filter: grayscale(0.4);
+}
+
 /* =========================================================== */
 /* Side column                                                  */
 /* =========================================================== */
