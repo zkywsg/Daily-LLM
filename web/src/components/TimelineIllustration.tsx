@@ -48,6 +48,11 @@ const ILLUSTRATIONS: Record<string, Renderer> = {
       "ResNet：单个残差块内部 Conv-BN-ReLU-Conv-BN ⊕ identity skip；恒等捷径让梯度直通，使得 152 层网络可训练（相比 VGG-19 是 8× 深度）",
     render: () => <ResNetDiagram />,
   },
+  "2016": {
+    caption:
+      "AlphaGo · 两套神经网络（策略网络选择落子 + 价值网络评估胜率）+ MCTS 搜索 + 自我对弈 RL，把围棋这种天文搜索空间问题压到可计算",
+    render: () => <AlphaGoDiagram />,
+  },
   "2017": {
     caption:
       "Transformer 编码器一个完整 block：token → 嵌入 + 位置编码 → Q/K/V 投影 → 多头注意力 → Add&Norm → FFN → Add&Norm；右上 ×6 表示这个 block 串联六次",
@@ -57,6 +62,11 @@ const ILLUSTRATIONS: Record<string, Renderer> = {
     caption:
       "BERT vs GPT-1：BERT 用双向 Transformer 编码器做 MLM（猜被 mask 的 token），GPT-1 用单向解码器做自回归（猜下一个 token）；都先大规模预训练，再小数据集微调",
     render: () => <BertGptDiagram />,
+  },
+  "2019": {
+    caption:
+      "T5 text-to-text 范式：翻译 / 摘要 / 情感 / 问答 全部统一为「task: 输入 → 输出」字符串接口，一个模型一套 API 处理所有 NLP 任务；GPT-2 同时证明 zero-shot 可行",
+    render: () => <Gpt2T5Diagram />,
   },
   "2020": {
     caption:
@@ -73,10 +83,20 @@ const ILLUSTRATIONS: Record<string, Renderer> = {
       "RLHF 三阶段：① SFT 用人写的演示监督微调 → ② Reward Model 学人类对多个回答的偏好排序 → ③ PPO 用 RM 当奖励信号 + KL 约束更新策略",
     render: () => <RlhfDiagram />,
   },
+  "2023": {
+    caption:
+      "2023 同年双轨：左 GPT-4 闭源能力跃迁（多模态推理、长上下文、专家级表现）；右 LLaMA 把权重开源 → 引爆 Alpaca / Vicuna / Code-LLaMA 等社区微调浪潮",
+    render: () => <Gpt4LlamaDiagram />,
+  },
   "2024": {
     caption:
       "MoE 稀疏激活：每个 token 由 Router 选 top-2 expert FFN（共 8 个），输出按 router 权重加权聚合；每步只激活 25% 参数，容量大但推理便宜",
     render: () => <MoeDiagram />,
+  },
+  "2025": {
+    caption:
+      "DeepSeek R1 · 用「可验证奖励」（数学答案、代码 unit test）替代 RLHF 的 reward model；模型在推理时生成长链 chain-of-thought，算力开始从训练期向推理期迁移",
+    render: () => <DeepSeekR1Diagram />,
   },
 };
 
@@ -1647,6 +1667,551 @@ function MoeDiagram() {
         </text>
         <text x="20" y="96" className="illustration__label illustration__label--small">
           工程挑战：load balancing（防止 router 总选同一专家）· 通信开销（跨 GPU 路由）· capacity factor 调优
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/* =====================================================================
+ * 2016 — AlphaGo: Policy + Value + MCTS + Self-Play RL
+ * ===================================================================== */
+function AlphaGoDiagram() {
+  const stones: { x: number; y: number; color: "black" | "white" }[] = [
+    { x: 2, y: 3, color: "black" },
+    { x: 3, y: 3, color: "white" },
+    { x: 4, y: 4, color: "black" },
+    { x: 5, y: 4, color: "white" },
+    { x: 3, y: 5, color: "black" },
+    { x: 6, y: 5, color: "white" },
+  ];
+
+  return (
+    <svg viewBox="0 0 1100 580" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        AlphaGo · 神经网络 + 树搜索 + 自我对弈 RL 三件套
+      </text>
+
+      <text x="30" y="62" className="illustration__label">① 输入：当前棋盘状态（19×19，含历史 8 步）</text>
+      <g transform="translate(40, 80)">
+        <rect width="160" height="160" rx="6" fill="#e6c98a" stroke="var(--ink-soft)" strokeWidth="1.2" />
+        {Array.from({ length: 9 }).map((_, i) => (
+          <line key={`h-${i}`} x1={10 + i * 17.5} y1="10" x2={10 + i * 17.5} y2="150" stroke="var(--ink-soft)" strokeWidth="0.5" />
+        ))}
+        {Array.from({ length: 9 }).map((_, i) => (
+          <line key={`v-${i}`} x1="10" y1={10 + i * 17.5} x2="150" y2={10 + i * 17.5} stroke="var(--ink-soft)" strokeWidth="0.5" />
+        ))}
+        {stones.map((s, i) => (
+          <circle key={i} cx={10 + s.x * 17.5} cy={10 + s.y * 17.5} r="7" fill={s.color === "black" ? "#1a1208" : "#fff"} stroke="#1a1208" strokeWidth="0.8" />
+        ))}
+        <text x="80" y="178" textAnchor="middle" className="illustration__label illustration__label--small">
+          state s · 含历史 + 当前走方
+        </text>
+      </g>
+
+      <path d="M 210 120 C 250 120, 250 130, 290 130" className="illustration__branch illustration__branch--q" fill="none" markerEnd="url(#arrow-head)" />
+      <path d="M 210 160 C 250 160, 250 240, 290 240" className="illustration__branch illustration__branch--v" fill="none" markerEnd="url(#arrow-head)" />
+
+      <text x="290" y="68" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-vision-ink)" }}>
+        ② 策略网络 Policy p_σ
+      </text>
+      <g transform="translate(290, 100)">
+        <rect width="180" height="60" rx="8" className="illustration__proj illustration__proj--q" />
+        <text x="90" y="26" textAnchor="middle" className="illustration__block-label">13 层 CNN</text>
+        <text x="90" y="46" textAnchor="middle" className="illustration__label illustration__label--small">19×19 → 361 维 softmax</text>
+      </g>
+      <line x1="470" y1="130" x2="492" y2="130" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      <g transform="translate(498, 80)">
+        <text x="0" y="-2" className="illustration__label illustration__label--small">落子概率 P(a|s)</text>
+        {[
+          { a: "D4", v: 0.32 },
+          { a: "Q16", v: 0.18 },
+          { a: "K10", v: 0.12 },
+          { a: "C3", v: 0.08 },
+          { a: "其余 357", v: 0.30 },
+        ].map((p, i) => (
+          <g key={p.a}>
+            <rect x="0" y={6 + i * 14} width={p.v * 140} height="10" rx="2" className="illustration__bar" style={{ animationDelay: `${i * 60}ms` }} />
+            <text x={p.v * 140 + 6} y={14 + i * 14} className="illustration__label illustration__label--small">{p.a} {(p.v * 100).toFixed(0)}%</text>
+          </g>
+        ))}
+      </g>
+
+      <text x="290" y="200" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-alignment-ink)" }}>
+        ③ 价值网络 Value v_θ
+      </text>
+      <g transform="translate(290, 210)">
+        <rect width="180" height="60" rx="8" className="illustration__proj illustration__proj--v" />
+        <text x="90" y="26" textAnchor="middle" className="illustration__block-label">13 层 CNN + tanh</text>
+        <text x="90" y="46" textAnchor="middle" className="illustration__label illustration__label--small">19×19 → 1 维 v∈[-1,1]</text>
+      </g>
+      <line x1="470" y1="240" x2="492" y2="240" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      <g transform="translate(498, 220)">
+        <text x="0" y="-2" className="illustration__label illustration__label--small">局面胜率 v(s)</text>
+        <rect x="0" y="6" width="180" height="22" rx="4" className="illustration__block" />
+        <rect x="0" y="6" width={0.74 * 180} height="22" rx="4" className="illustration__bar illustration__bar--real" style={{ animationDelay: "300ms" }} />
+        <text x="170" y="22" textAnchor="end" className="illustration__label illustration__label--small" style={{ fill: "white", fontWeight: 700 }}>0.74</text>
+        <text x="0" y="44" className="illustration__label illustration__label--small">黑胜概率 74%（接近 +1 = 必胜）</text>
+      </g>
+
+      <text x="30" y="290" className="illustration__label illustration__label--strong">
+        ④ MCTS 搜索树 · Policy 缩小分支、Value 评估叶子
+      </text>
+      <g transform="translate(40, 308)">
+        <circle cx="240" cy="20" r="14" className="illustration__neuron illustration__neuron--big" />
+        <text x="240" y="25" textAnchor="middle" className="illustration__block-label illustration__block-label--small" style={{ fill: "white" }}>s</text>
+
+        {[
+          { x: 100, label: "a₁" },
+          { x: 240, label: "a₂" },
+          { x: 380, label: "a₃" },
+        ].map((n, i) => (
+          <g key={n.label}>
+            <line x1="240" y1="34" x2={n.x} y2="76" className="illustration__arrow" />
+            <circle cx={n.x} cy="90" r="12" className="illustration__neuron" />
+            <text x={n.x} y="94" textAnchor="middle" className="illustration__block-label illustration__block-label--small" style={{ fill: "white" }}>{n.label}</text>
+            <text x={n.x} y="116" textAnchor="middle" className="illustration__label illustration__label--small">
+              P={[0.32, 0.18, 0.12][i].toFixed(2)}
+            </text>
+          </g>
+        ))}
+
+        {[
+          { x: 60, parent: 100 },
+          { x: 140, parent: 100 },
+          { x: 200, parent: 240 },
+          { x: 280, parent: 240 },
+          { x: 340, parent: 380 },
+          { x: 420, parent: 380 },
+        ].map((leaf, i) => (
+          <g key={i}>
+            <line x1={leaf.parent} y1="104" x2={leaf.x} y2="146" className="illustration__arrow" />
+            <rect x={leaf.x - 14} y="146" width="28" height="20" rx="3" className="illustration__block illustration__block--alt" />
+            <text x={leaf.x} y="160" textAnchor="middle" className="illustration__label illustration__label--small">
+              v={[0.62, 0.58, 0.74, 0.71, 0.55, 0.41][i]}
+            </text>
+          </g>
+        ))}
+
+        <g transform="translate(500, 20)">
+          <rect width="450" height="156" rx="10" className="illustration__block illustration__block--alt" />
+          <text x="20" y="26" className="illustration__label illustration__label--strong" style={{ fill: "var(--rose-700)" }}>
+            UCB1 选择
+          </text>
+          <text x="20" y="54" className="illustration__label">
+            a* = argmax [ Q(s,a) + c·P(a|s)·√N(s) / (1+N(s,a)) ]
+          </text>
+          <text x="20" y="80" className="illustration__label illustration__label--small">
+            Q(s,a)：该动作的平均叶子 value（exploit）
+          </text>
+          <text x="20" y="98" className="illustration__label illustration__label--small">
+            P(a|s)：策略网络给的先验（exploration prior）
+          </text>
+          <text x="20" y="116" className="illustration__label illustration__label--small">
+            N：访问次数 —— 多访问的节点优先级下降
+          </text>
+          <text x="20" y="140" className="illustration__label illustration__label--small">
+            每步 16,000 次 rollout，全部并行 + 缓存
+          </text>
+        </g>
+      </g>
+
+      <text x="30" y="510" className="illustration__label illustration__label--strong">
+        ⑤ Self-Play RL · 用自己对自己生成的对局，训练更强的策略 / 价值网络
+      </text>
+      <g transform="translate(30, 528)">
+        <rect width="1040" height="40" rx="10" className="illustration__block" />
+        <text x="20" y="20" className="illustration__label illustration__label--small">
+          初始策略（监督学习人类棋谱） → 自我对弈 30M 局 → 用胜负当 reward 反向更新 → 新策略 → 又自我对弈…
+        </text>
+        <text x="20" y="34" className="illustration__label illustration__label--small">
+          最终 AlphaGo Zero 完全摆脱人类棋谱，仅靠 self-play 就能超越 AlphaGo 原始版
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/* =====================================================================
+ * 2019 — GPT-2 + T5 text-to-text 统一
+ * ===================================================================== */
+function Gpt2T5Diagram() {
+  const tasks = [
+    { prefix: "translate English to German:", input: "Hello, how are you?", output: "Hallo, wie geht's?", color: "q", taskLabel: "翻译 WMT" },
+    { prefix: "summarize:", input: "The cat that sat on the mat was…", output: "A cat sat on a mat.", color: "k", taskLabel: "摘要 CNN/DM" },
+    { prefix: "cola sentence:", input: "The boy goed home.", output: "unacceptable", color: "v", taskLabel: "语法判断 CoLA" },
+    { prefix: "stsb s1: A man speaks. s2:", input: "Someone is talking.", output: "4.2", color: "o", taskLabel: "语义相似度 STS-B" },
+  ];
+
+  return (
+    <svg viewBox="0 0 1100 620" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        T5 · 把 NLP 所有任务都格式化成「text → text」的统一接口
+      </text>
+
+      <text x="30" y="58" className="illustration__label">
+        ① 多任务统一为同一字符串接口
+      </text>
+
+      {tasks.map((t, i) => (
+        <g key={i} transform={`translate(40, ${78 + i * 84})`}>
+          <text x="0" y="-4" className="illustration__label illustration__label--small">
+            {t.taskLabel}
+          </text>
+          <rect width="290" height="28" rx="4" className={`illustration__proj illustration__proj--${t.color}`} />
+          <text x="14" y="19" className="illustration__block-label illustration__block-label--small">{t.prefix}</text>
+
+          <rect x="300" y="0" width="350" height="28" rx="4" className="illustration__block illustration__block--alt" />
+          <text x="314" y="19" className="illustration__label illustration__label--small">{t.input}</text>
+
+          <line x1="660" y1="14" x2="698" y2="14" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+          <rect x="702" y="0" width="320" height="28" rx="4" className="illustration__token--target" />
+          <text x="716" y="19" className="illustration__label illustration__label--small" style={{ fontWeight: 700, fill: "var(--rose-900)" }}>{t.output}</text>
+        </g>
+      ))}
+
+      <text x="30" y="430" className="illustration__label illustration__label--strong">
+        ② 同一个 11B 参数的 encoder-decoder Transformer 处理所有任务
+      </text>
+      <g transform="translate(40, 448)">
+        <rect width="200" height="60" rx="8" className="illustration__proj illustration__proj--ffn" />
+        <text x="100" y="28" textAnchor="middle" className="illustration__block-label">Encoder · 24 层</text>
+        <text x="100" y="46" textAnchor="middle" className="illustration__label illustration__label--small">读"task: 输入"</text>
+
+        <line x1="200" y1="30" x2="240" y2="30" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        <rect x="240" y="0" width="200" height="60" rx="8" className="illustration__proj illustration__proj--o" />
+        <text x="340" y="28" textAnchor="middle" className="illustration__block-label">Decoder · 24 层</text>
+        <text x="340" y="46" textAnchor="middle" className="illustration__label illustration__label--small">自回归输出答案</text>
+
+        <text x="460" y="24" className="illustration__label illustration__label--small">→ 11B 参数</text>
+        <text x="460" y="42" className="illustration__label illustration__label--small">→ 750GB C4 语料预训练</text>
+      </g>
+
+      <text x="640" y="430" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-scale-ink)" }}>
+        ③ 同时 GPT-2 用 1.5B 参数证明 zero-shot
+      </text>
+      <g transform="translate(640, 448)">
+        <rect width="420" height="60" rx="8" className="illustration__block" />
+        <text x="14" y="22" className="illustration__label illustration__label--small">prompt：「Translate to French: The cat is on」</text>
+        <text x="14" y="44" className="illustration__label illustration__label--small" style={{ fill: "var(--rose-700)", fontWeight: 700 }}>
+          → 续写：「the mat. Le chat est sur le tapis.」
+        </text>
+      </g>
+
+      <g transform="translate(40, 530)">
+        <rect width="1020" height="76" rx="10" className="illustration__block illustration__block--alt" />
+        <text x="20" y="26" className="illustration__label">
+          意义：「任务 = 一个字符串」消除了下游接口分裂；同年 GPT-2 又证明大模型不微调也能 zero-shot
+        </text>
+        <text x="20" y="50" className="illustration__label illustration__label--small">
+          为 2020 GPT-3 in-context few-shot 铺平道路 —— 接口先统一，规模再起飞
+        </text>
+        <text x="20" y="68" className="illustration__label illustration__label--small">
+          T5 同时探索了"训练数据 vs 模型大小 vs 训练步数"三轴 → Chinchilla scaling 的前传
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/* =====================================================================
+ * 2023 — GPT-4 (闭源 多模态) vs LLaMA (开源生态)
+ * ===================================================================== */
+function Gpt4LlamaDiagram() {
+  return (
+    <svg viewBox="0 0 1100 620" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        2023 双轨同年并行：闭源能力极限 vs 开源生态爆发
+      </text>
+
+      {/* === 左半：GPT-4 === */}
+      <g transform="translate(20, 58)">
+        <rect width="500" height="540" rx="14" className="illustration__group" />
+        <text x="20" y="28" className="illustration__label illustration__label--strong" style={{ fill: "var(--rose-700)" }}>
+          GPT-4 · 闭源能力跃迁
+        </text>
+        <text x="20" y="48" className="illustration__label illustration__label--small">
+          参数 / 训练数据 / 训练方法均未公开
+        </text>
+
+        <text x="20" y="84" className="illustration__label">① 多模态输入（文本 + 图像）</text>
+        <g transform="translate(20, 96)">
+          <rect width="460" height="56" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="14" y="22" className="illustration__label illustration__label--small">文本："这张图里有什么不寻常？"</text>
+          <text x="14" y="42" className="illustration__label illustration__label--small">图像：</text>
+          <rect x="84" y="28" width="60" height="22" rx="3" className="illustration__pixel illustration__pixel--big" />
+        </g>
+
+        <g transform="translate(20, 168)">
+          <rect width="460" height="80" rx="10" className="illustration__proj illustration__proj--o" />
+          <text x="230" y="34" textAnchor="middle" className="illustration__block-label">GPT-4（黑盒）</text>
+          <text x="230" y="56" textAnchor="middle" className="illustration__label illustration__label--small">
+            推测：MoE 架构 ~1.8T 总参 · vision encoder · 32K context
+          </text>
+          <text x="230" y="72" textAnchor="middle" className="illustration__label illustration__label--small" style={{ opacity: 0.75 }}>
+            （以上未官方确认）
+          </text>
+        </g>
+
+        <text x="20" y="276" className="illustration__label">② 输出：复杂多步推理</text>
+        <g transform="translate(20, 288)">
+          <rect width="460" height="78" rx="6" className="illustration__token--target" />
+          <text x="14" y="22" className="illustration__label illustration__label--small">
+            "图中是一个 VGA 接口被插进 iPhone 充电口，
+          </text>
+          <text x="14" y="40" className="illustration__label illustration__label--small">
+            两种接口物理不兼容，所以这个场景不合理…"
+          </text>
+          <text x="14" y="62" className="illustration__label illustration__label--small" style={{ fill: "var(--rose-700)" }}>
+            → 不仅识别物体，还推理出场景荒谬性
+          </text>
+        </g>
+
+        <text x="20" y="392" className="illustration__label">③ 专家级 benchmark 表现</text>
+        {[
+          { task: "美国律师资格考试", score: 90, prev: 10 },
+          { task: "GRE 数学", score: 80, prev: 25 },
+          { task: "MMLU 多任务", score: 86, prev: 70 },
+        ].map((b, i) => (
+          <g key={i} transform={`translate(20, ${408 + i * 36})`}>
+            <text x="0" y="16" className="illustration__label illustration__label--small">{b.task}</text>
+            <rect x="160" y="6" width="200" height="14" rx="2" className="illustration__block" />
+            <rect x="160" y="6" width={b.prev * 2} height="14" rx="2" className="illustration__bar illustration__bar--fake" style={{ opacity: 0.5 }} />
+            <rect x="160" y="6" width={b.score * 2} height="14" rx="2" className="illustration__bar illustration__bar--real" style={{ animationDelay: `${i * 100}ms` }} />
+            <text x="370" y="18" className="illustration__label illustration__label--small">GPT-3.5 {b.prev}% → GPT-4 {b.score}%</text>
+          </g>
+        ))}
+      </g>
+
+      {/* === 右半：LLaMA === */}
+      <g transform="translate(540, 58)">
+        <rect width="540" height="540" rx="14" className="illustration__group" />
+        <text x="20" y="28" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-alignment-ink)" }}>
+          LLaMA · 开源权重 + 社区生态
+        </text>
+        <text x="20" y="48" className="illustration__label illustration__label--small">
+          7B / 13B / 33B / 65B 四档，论文 + 权重全部公开
+        </text>
+
+        <g transform="translate(180, 76)">
+          <rect width="180" height="60" rx="10" className="illustration__proj illustration__proj--v" />
+          <text x="90" y="28" textAnchor="middle" className="illustration__block-label">LLaMA 基座</text>
+          <text x="90" y="46" textAnchor="middle" className="illustration__label illustration__label--small">在 1.4T tokens 上预训练</text>
+        </g>
+
+        {[
+          { col: 0, row: 0, label: "Alpaca", desc: "Stanford 用 GPT-3.5 生成 52K 指令", color: "q" },
+          { col: 1, row: 0, label: "Vicuna", desc: "ShareGPT 对话微调，质量接近 GPT-3.5", color: "v" },
+          { col: 2, row: 0, label: "Code LLaMA", desc: "代码继续训练，对标 Codex", color: "k" },
+          { col: 0, row: 1, label: "Llama 2 Chat", desc: "Meta 官方 RLHF 微调，可商用", color: "ffn" },
+          { col: 1, row: 1, label: "中文社区", desc: "Chinese-LLaMA / Baichuan / Qwen", color: "act" },
+          { col: 2, row: 1, label: "量化版本", desc: "GGML/GGUF · MacBook 上跑 7B", color: "o" },
+        ].map((d, i) => (
+          <g key={d.label} transform={`translate(${30 + d.col * 170}, ${180 + d.row * 100})`}>
+            <line
+              x1="80"
+              y1="0"
+              x2={250 - 30 - d.col * 170 + 90}
+              y2={-180 + 76 + 60 - d.row * 100}
+              className="illustration__residual"
+            />
+            <rect width="160" height="80" rx="8" className={`illustration__proj illustration__proj--${d.color}`} />
+            <text x="80" y="22" textAnchor="middle" className="illustration__block-label">{d.label}</text>
+            <text x="80" y="42" textAnchor="middle" className="illustration__label illustration__label--small">{d.desc}</text>
+          </g>
+        ))}
+
+        <g transform="translate(20, 410)">
+          <rect width="500" height="118" rx="10" className="illustration__block illustration__block--alt" />
+          <text x="14" y="26" className="illustration__label illustration__label--strong">
+            社区影响：Hugging Face 月下载从 100k → 千万级
+          </text>
+          <text x="14" y="50" className="illustration__label illustration__label--small">
+            • 学术：首次能复现"大模型 + RLHF"实验
+          </text>
+          <text x="14" y="68" className="illustration__label illustration__label--small">
+            • 行业：垂直公司开始本地部署、规避 API 风险
+          </text>
+          <text x="14" y="86" className="illustration__label illustration__label--small">
+            • QLoRA 让 7B 微调在单卡 24GB 即可
+          </text>
+          <text x="14" y="104" className="illustration__label illustration__label--small">
+            • 评测：Open LLM Leaderboard 成为社区共识
+          </text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+/* =====================================================================
+ * 2025 — DeepSeek R1: test-time compute + 可验证奖励 RL
+ * ===================================================================== */
+function DeepSeekR1Diagram() {
+  return (
+    <svg viewBox="0 0 1100 660" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        DeepSeek R1 · 推理时长链思考 + 可验证奖励替代 RLHF
+      </text>
+
+      <text x="30" y="62" className="illustration__label illustration__label--strong">
+        ① 推理时（test-time）：让模型"想更久" 而不是"训更大"
+      </text>
+
+      <g transform="translate(40, 80)">
+        <rect width="220" height="50" rx="6" className="illustration__block illustration__block--alt" />
+        <text x="14" y="22" className="illustration__label illustration__label--small">提示：</text>
+        <text x="14" y="38" className="illustration__label illustration__label--small">"24 = ? · ? · 4，求 ? · ?"</text>
+      </g>
+
+      <line x1="260" y1="105" x2="290" y2="105" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      <g transform="translate(290, 80)">
+        <rect width="540" height="120" rx="10" className="illustration__group illustration__group--inner" />
+        <text x="14" y="22" className="illustration__label illustration__label--small">
+          长链 chain-of-thought（每步生成几十到几千 token）：
+        </text>
+        {[
+          "<think> 24 = a·b·4，所以 a·b = 6 …",
+          "试 a=2, b=3：2·3·4 = 24 ✓",
+          "试 a=1, b=6：1·6·4 = 24 ✓",
+          "答案 = (2,3) 或 (1,6) </think>",
+        ].map((step, i) => (
+          <text key={i} x="20" y={48 + i * 18} className="illustration__label illustration__label--small">
+            {step}
+          </text>
+        ))}
+      </g>
+
+      <line x1="840" y1="140" x2="870" y2="140" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      <g transform="translate(870, 110)">
+        <rect width="200" height="60" rx="6" className="illustration__token--target" />
+        <text x="14" y="24" className="illustration__label illustration__label--small">最终回答：</text>
+        <text x="14" y="44" className="illustration__label illustration__label--small" style={{ fill: "var(--rose-700)", fontWeight: 700 }}>
+          (2,3) 或 (1,6)
+        </text>
+      </g>
+
+      <g transform="translate(40, 220)">
+        <text x="0" y="0" className="illustration__label illustration__label--small">
+          GPT-3 时代算力主要花在训练；R1 / o1 时代推理期算力同样可观（一次回答 ≈ 几千 token 思考）
+        </text>
+        <g transform="translate(0, 16)">
+          <text x="0" y="14" className="illustration__label illustration__label--small">GPT-3 (2020)</text>
+          <rect x="120" y="6" width="240" height="14" rx="2" className="illustration__bar" />
+          <rect x="360" y="6" width="20" height="14" rx="2" className="illustration__bar illustration__bar--fake" />
+          <text x="388" y="18" className="illustration__label illustration__label--small">训练 95% / 推理 5%</text>
+        </g>
+        <g transform="translate(0, 36)">
+          <text x="0" y="14" className="illustration__label illustration__label--small">R1 / o1 (2025)</text>
+          <rect x="120" y="6" width="140" height="14" rx="2" className="illustration__bar" />
+          <rect x="260" y="6" width="120" height="14" rx="2" className="illustration__bar illustration__bar--real" />
+          <text x="388" y="18" className="illustration__label illustration__label--small">训练 55% / 推理 45%</text>
+        </g>
+      </g>
+
+      <text x="30" y="320" className="illustration__label illustration__label--strong">
+        ② 训练时：用"可验证奖励"替代 RLHF 里需要训练的 reward model
+      </text>
+
+      <g transform="translate(40, 342)">
+        <rect width="320" height="260" rx="14" className="illustration__group" />
+        <text x="14" y="22" className="illustration__label illustration__label--strong">RLHF（2022）—— 难度高</text>
+        <g transform="translate(14, 36)">
+          <rect width="290" height="36" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="145" y="22" textAnchor="middle" className="illustration__block-label illustration__block-label--small">人类排序 → 训 RM_φ</text>
+        </g>
+        <line x1="160" y1="76" x2="160" y2="96" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <g transform="translate(14, 96)">
+          <rect width="290" height="36" rx="6" className="illustration__proj illustration__proj--v" />
+          <text x="145" y="22" textAnchor="middle" className="illustration__block-label illustration__block-label--small">RM 当奖励（嘈杂可钻空）</text>
+        </g>
+        <line x1="160" y1="132" x2="160" y2="152" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <g transform="translate(14, 152)">
+          <rect width="290" height="36" rx="6" className="illustration__proj illustration__proj--ffn" />
+          <text x="145" y="22" textAnchor="middle" className="illustration__block-label illustration__block-label--small">PPO 更新（要 critic、复杂）</text>
+        </g>
+        <text x="14" y="222" className="illustration__label illustration__label--small">优点：通用</text>
+        <text x="14" y="240" className="illustration__label illustration__label--small">缺点：RM 不准 → reward hacking</text>
+      </g>
+
+      <g transform="translate(370, 470)">
+        <line x1="0" y1="0" x2="30" y2="0" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <text x="15" y="-8" textAnchor="middle" className="illustration__label illustration__label--strong" style={{ fill: "var(--rose-700)" }}>
+          R1
+        </text>
+      </g>
+
+      <g transform="translate(414, 342)">
+        <rect width="320" height="260" rx="14" className="illustration__group" />
+        <text x="14" y="22" className="illustration__label illustration__label--strong" style={{ fill: "var(--rose-700)" }}>R1 风格 RL —— 简单暴力</text>
+        <g transform="translate(14, 36)">
+          <rect width="290" height="36" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="145" y="22" textAnchor="middle" className="illustration__block-label illustration__block-label--small">数学 + 代码（有标准答案）</text>
+        </g>
+        <line x1="160" y1="76" x2="160" y2="96" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <g transform="translate(14, 96)">
+          <rect width="290" height="36" rx="6" className="illustration__proj illustration__proj--q" />
+          <text x="145" y="22" textAnchor="middle" className="illustration__block-label illustration__block-label--small">生成 → 自动 verifier 打分</text>
+        </g>
+        <line x1="160" y1="132" x2="160" y2="152" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <g transform="translate(14, 152)">
+          <rect width="290" height="36" rx="6" className="illustration__proj illustration__proj--ffn" />
+          <text x="145" y="22" textAnchor="middle" className="illustration__block-label illustration__block-label--small">GRPO（无 critic 的 RL）</text>
+        </g>
+        <text x="14" y="222" className="illustration__label illustration__label--small" style={{ fill: "var(--rose-700)" }}>
+          奖励 = 答案对错 / 单测通过率
+        </text>
+        <text x="14" y="240" className="illustration__label illustration__label--small">无 RM、无 critic、奖励绝对可靠</text>
+      </g>
+
+      <g transform="translate(750, 342)">
+        <rect width="320" height="260" rx="14" className="illustration__group" />
+        <text x="14" y="22" className="illustration__label illustration__label--strong">
+          ③ 结果与意义
+        </text>
+        <text x="14" y="48" className="illustration__label illustration__label--small">
+          • DeepSeek R1（开源）数学/代码追平 o1
+        </text>
+        <text x="14" y="66" className="illustration__label illustration__label--small">
+          • 训练数据：纯合成（模型生成 + verifier 标）
+        </text>
+        <text x="14" y="84" className="illustration__label illustration__label--small">
+          • 训练成本 &lt;6M USD（vs GPT-4 ~100M）
+        </text>
+        <text x="14" y="102" className="illustration__label illustration__label--small">
+          • "推理 = 长链思考"成为新维度
+        </text>
+        <text x="14" y="140" className="illustration__label illustration__label--strong" style={{ fill: "var(--phase-alignment-ink)" }}>
+          叙事拐点
+        </text>
+        <text x="14" y="162" className="illustration__label illustration__label--small">
+          闭源不再是性能必然垄断者；
+        </text>
+        <text x="14" y="180" className="illustration__label illustration__label--small">
+          "可验证任务上 RL" 给了开源
+        </text>
+        <text x="14" y="198" className="illustration__label illustration__label--small">
+          一条不需要海量人类标注的捷径。
+        </text>
+        <text x="14" y="222" className="illustration__label illustration__label--small">
+          下一步：通用任务上"可验证奖励"
+        </text>
+        <text x="14" y="240" className="illustration__label illustration__label--small">
+          如何构造，仍是开放问题。
         </text>
       </g>
     </svg>
