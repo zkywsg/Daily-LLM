@@ -5,6 +5,7 @@ import { RelatedModules } from "./components/RelatedModules";
 import { TimelineAxis } from "./components/TimelineAxis";
 import { TimelineContent } from "./components/TimelineContent";
 import { TimelineWorkList } from "./components/TimelineWorkList";
+import { TrackView, isKnownTrack } from "./components/TrackView";
 import { getNodeByYear, timelineNodes } from "./data/timeline";
 import {
   PHASE_FAMILY_LABEL,
@@ -17,19 +18,27 @@ const DEFAULT_YEAR = "2012";
 type HashState = {
   year?: string;
   prehistory: boolean;
+  track?: string;
 };
 
 /**
- * 解析 hash:
+ * 解析 hash：
  * · 旧格式 `#2017` —— 兼容老链接
  * · 新格式 `#year=2017` / `#prehistory`
+ * · `#track=vision/cnn-architectures` —— 主题深挖长文页
+ * · `#anchor=xxx` —— TrackView 内章节锚点，主路由忽略它
  */
 function parseHash(hash: string): HashState {
-  const raw = hash.replace(/^#/, "");
+  // 锚点放到任意位置都能识别；从主路由里剥掉
+  let raw = hash.replace(/^#/, "");
+  raw = raw.split("#anchor=")[0];
   if (!raw) return { prehistory: false };
   if (raw === "prehistory") return { prehistory: true };
   if (raw.startsWith("year=")) {
     return { year: raw.slice("year=".length), prehistory: false };
+  }
+  if (raw.startsWith("track=")) {
+    return { track: raw.slice("track=".length), prehistory: false };
   }
   // legacy: pure year
   if (/^\d{4}$/.test(raw)) return { year: raw, prehistory: false };
@@ -39,18 +48,25 @@ function parseHash(hash: string): HashState {
 function initialState(): {
   year: string;
   prehistoryOpen: boolean;
+  track?: string;
 } {
   const parsed = parseHash(window.location.hash);
-  const year = parsed.year && getNodeByYear(parsed.year)
-    ? parsed.year
-    : DEFAULT_YEAR;
-  return { year, prehistoryOpen: parsed.prehistory };
+  const year =
+    parsed.year && getNodeByYear(parsed.year) ? parsed.year : DEFAULT_YEAR;
+  return {
+    year,
+    prehistoryOpen: parsed.prehistory,
+    track: parsed.track && isKnownTrack(parsed.track) ? parsed.track : undefined,
+  };
 }
 
 export default function App() {
   const initial = useMemo(initialState, []);
   const [activeYear, setActiveYear] = useState(initial.year);
   const [prehistoryOpen, setPrehistoryOpen] = useState(initial.prehistoryOpen);
+  const [activeTrack, setActiveTrack] = useState<string | undefined>(
+    initial.track,
+  );
   const timelineRef = useRef<HTMLDivElement | null>(null);
 
   const activeNode = useMemo(
@@ -61,6 +77,7 @@ export default function App() {
 
   function selectYear(year: string) {
     setActiveYear(year);
+    setActiveTrack(undefined);
     window.location.hash = `year=${year}`;
   }
 
@@ -74,7 +91,23 @@ export default function App() {
     window.location.hash = `year=${activeYear}`;
   }
 
+  function openTrack(trackId: string) {
+    setActiveTrack(trackId);
+    window.location.hash = `track=${trackId}`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function closeTrack() {
+    setActiveTrack(undefined);
+    window.location.hash = `year=${activeYear}`;
+    window.scrollTo({ top: 0 });
+  }
+
   function scrollToTimeline() {
+    if (activeTrack) {
+      closeTrack();
+      return;
+    }
     timelineRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -89,10 +122,22 @@ export default function App() {
         setActiveYear(parsed.year);
       }
       setPrehistoryOpen(parsed.prehistory);
+      setActiveTrack(
+        parsed.track && isKnownTrack(parsed.track) ? parsed.track : undefined,
+      );
     }
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
+
+  // 进入 TrackView 模式：只渲染 TrackView，隐藏时间线相关 UI
+  if (activeTrack) {
+    return (
+      <main className="app-shell app-shell--track" data-active-family={activeFamily}>
+        <TrackView trackId={activeTrack} onBack={closeTrack} />
+      </main>
+    );
+  }
 
   return (
     <main className="app-shell" data-active-family={activeFamily}>
@@ -112,7 +157,10 @@ export default function App() {
         </div>
       </header>
 
-      <ArchitectureMap onScrollToTimeline={scrollToTimeline} />
+      <ArchitectureMap
+        onScrollToTimeline={scrollToTimeline}
+        onOpenTrack={openTrack}
+      />
 
       <nav className="phase-rail" aria-label="叙事主线">
         {PHASE_FAMILY_ORDER.map((family) => {
@@ -149,6 +197,7 @@ export default function App() {
           <RelatedModules
             prerequisites={activeNode.prerequisites}
             tracks={activeNode.tracks}
+            onOpenTrack={openTrack}
           />
         </aside>
       </section>

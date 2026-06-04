@@ -9,11 +9,24 @@ type ArchitectureMapProps = {
   /** 当前用户视线在哪一层（默认 L1 时间线） */
   activeLayer?: "foundation" | "timeline" | "track";
   onScrollToTimeline: () => void;
+  /** 打开 web 内置长文页 */
+  onOpenTrack: (trackId: string) => void;
 };
 
-const LAYERS = [
+type LayerDef = {
+  id: "foundation" | "timeline" | "track";
+  code: string;
+  title: string;
+  desc: string;
+  cta: string;
+  href?: string;
+  /** 优先于 href：内部 web 跳转 */
+  trackId?: string;
+};
+
+const LAYERS: LayerDef[] = [
   {
-    id: "foundation" as const,
+    id: "foundation",
     code: "L0",
     title: "基础工具箱",
     desc: "线代 · 概率 · BP · 激活 · 归一化 · 嵌入 …",
@@ -21,25 +34,26 @@ const LAYERS = [
     href: "../foundations/",
   },
   {
-    id: "timeline" as const,
+    id: "timeline",
     code: "L1",
     title: "编年主线",
     desc: "2012 → 2025 · 每节点 = 旧瓶颈 / 突破 / 解决 / 新问题",
     cta: "在下方主轴浏览",
   },
   {
-    id: "track" as const,
+    id: "track",
     code: "L2",
     title: "主题深挖",
     desc: "vision · language · scale-multi · alignment · systems",
-    cta: "选一条主题往后追",
-    href: "../tracks/",
+    cta: "进 CNN 架构演进（已上线）",
+    trackId: "vision/cnn-architectures",
   },
 ];
 
 export function ArchitectureMap({
   activeLayer = "timeline",
   onScrollToTimeline,
+  onOpenTrack,
 }: ArchitectureMapProps) {
   return (
     <nav className="architecture-map" aria-label="知识库三层地图">
@@ -65,6 +79,22 @@ export function ArchitectureMap({
               data-active={isActive}
               data-layer={layer.id}
               onClick={onScrollToTimeline}
+            >
+              {Body}
+            </button>
+          );
+        }
+
+        // L2 内部跳转
+        if (layer.trackId) {
+          return (
+            <button
+              key={layer.id}
+              type="button"
+              className="architecture-map__card"
+              data-active={isActive}
+              data-layer={layer.id}
+              onClick={() => onOpenTrack(layer.trackId!)}
             >
               {Body}
             </button>
