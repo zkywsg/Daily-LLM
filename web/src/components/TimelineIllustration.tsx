@@ -38,7 +38,8 @@ const ILLUSTRATIONS: Record<string, Renderer> = {
     render: () => <ResNetDiagram />,
   },
   "2017": {
-    caption: "Transformer 注意力：每个 token 对所有其他 token 计算权重，并行而非递归",
+    caption:
+      "Transformer 编码器一个完整 block：token → 嵌入 + 位置编码 → Q/K/V 投影 → 多头注意力 → Add&Norm → FFN → Add&Norm；右上 ×6 表示这个 block 串联六次",
     render: () => <AttentionDiagram />,
   },
   "2020": {
@@ -304,77 +305,427 @@ function ResNetDiagram() {
 }
 
 /* =====================================================================
- * 2017 — Transformer attention
+ * 2017 — Transformer encoder (端到端完整 pipeline)
+ *
+ * 视图结构（从上到下）：
+ *   ① Token 输入 → ② Embedding 行 → ③ + 位置编码 sin/cos
+ *   ④ Encoder Block（带 ×6 徽标），内部：
+ *      a. Multi-Head Self-Attention
+ *           · X 同时投影 W_Q / W_K / W_V → Q, K, V
+ *           · 每头独立算 Q·Kᵀ/√d → softmax → @V
+ *           · 8 头并行（一头展开 + 七头堆叠）
+ *           · Concat → W_O 输出投影
+ *      b. Add & Norm 1（带从 X 跨过 MHA 的残差弧线）
+ *      c. Feed-Forward Network: Linear d→4d → GELU → Linear 4d→d
+ *      d. Add & Norm 2
+ *   ⑤ 上下文化输出 5 个向量（颜色更饱和）
  * ===================================================================== */
 function AttentionDiagram() {
-  // 5x5 attention matrix with varying intensity
-  const matrix = [
-    [0.9, 0.1, 0.05, 0.02, 0.0],
-    [0.3, 0.7, 0.2, 0.05, 0.02],
-    [0.1, 0.4, 0.6, 0.3, 0.05],
-    [0.05, 0.2, 0.5, 0.7, 0.3],
-    [0.0, 0.05, 0.3, 0.5, 0.85],
-  ];
   const tokens = ["The", "cat", "sat", "on", "mat"];
+  // 5 token 的 x 中心位置（左右居中布局）
+  const tokenXs = [120, 240, 360, 480, 600];
+  const tokenW = 56;
+
+  // 主头展开的 5x5 attention 矩阵
+  const mainHead = [
+    [0.92, 0.04, 0.02, 0.01, 0.01],
+    [0.18, 0.62, 0.14, 0.04, 0.02],
+    [0.08, 0.30, 0.46, 0.13, 0.03],
+    [0.02, 0.06, 0.18, 0.58, 0.16],
+    [0.01, 0.02, 0.06, 0.22, 0.69],
+  ];
 
   return (
-    <svg viewBox="0 0 720 200" role="img" className="illustration__svg">
-      <g transform="translate(60,30)">
-        {/* matrix cells */}
-        {matrix.map((row, r) =>
-          row.map((v, c) => (
-            <rect
-              key={`${r}-${c}`}
-              x={c * 28}
-              y={r * 28}
-              width="26"
-              height="26"
-              rx="3"
-              className="illustration__attn-cell"
-              style={{
-                opacity: 0.15 + v * 0.85,
-                animationDelay: `${(r * 5 + c) * 40}ms`,
-              }}
-            />
-          )),
-        )}
-        {/* column labels (Q) */}
-        {tokens.map((t, i) => (
-          <text key={`c-${i}`} x={i * 28 + 13} y={-8} className="illustration__label" textAnchor="middle">
+    <svg
+      viewBox="0 0 1100 760"
+      role="img"
+      className="illustration__svg illustration__svg--tall"
+    >
+      <defs>
+        <marker
+          id="arrow-head"
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerWidth="6"
+          markerHeight="6"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" className="illustration__arrow-head" />
+        </marker>
+      </defs>
+
+      {/* ============================================================ */}
+      {/* ① 输入 tokens                                                 */}
+      {/* ============================================================ */}
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        ① 输入 token 序列
+      </text>
+      {tokens.map((t, i) => (
+        <g
+          key={`tok-${i}`}
+          transform={`translate(${tokenXs[i] - tokenW / 2}, 44)`}
+          style={{ animationDelay: `${i * 90}ms` }}
+          className="illustration__appear"
+        >
+          <rect width={tokenW} height="30" rx="6" className="illustration__block illustration__block--alt" />
+          <text x={tokenW / 2} y="20" className="illustration__block-label" textAnchor="middle">
             {t}
           </text>
-        ))}
-        {/* row labels (K) */}
-        {tokens.map((t, i) => (
-          <text key={`r-${i}`} x={-10} y={i * 28 + 18} className="illustration__label" textAnchor="end">
-            {t}
+        </g>
+      ))}
+
+      {/* token → embedding 箭头 */}
+      {tokenXs.map((x, i) => (
+        <line
+          key={`a-${i}`}
+          x1={x}
+          y1="78"
+          x2={x}
+          y2="108"
+          className="illustration__arrow"
+          markerEnd="url(#arrow-head)"
+        />
+      ))}
+
+      {/* ============================================================ */}
+      {/* ② Embedding 行（每 token 一个 d 维向量，以一组小竖条表示）    */}
+      {/* ============================================================ */}
+      <text x="30" y="124" className="illustration__label illustration__label--strong">
+        ② 嵌入 (d=512)
+      </text>
+      {tokenXs.map((x, i) =>
+        Array.from({ length: 8 }).map((_, k) => (
+          <rect
+            key={`e-${i}-${k}`}
+            x={x - 24 + k * 6}
+            y="116"
+            width="4"
+            height="28"
+            rx="1"
+            className="illustration__pixel"
+            style={{ animationDelay: `${200 + i * 60 + k * 20}ms` }}
+          />
+        )),
+      )}
+
+      {/* ============================================================ */}
+      {/* ③ ⊕ 位置编码 sin/cos                                         */}
+      {/* ============================================================ */}
+      <text x="30" y="170" className="illustration__label illustration__label--strong">
+        ③ + 位置编码 (sin/cos)
+      </text>
+      <PositionalWave x={90} y={172} width={620} />
+      <text x="730" y="180" className="illustration__label">
+        让序列顺序进入向量空间
+      </text>
+
+      {/* 注入箭头 */}
+      <line x1="360" y1="200" x2="360" y2="232" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      {/* ============================================================ */}
+      {/* ④ Encoder Block 外框 + ×6 徽标                                */}
+      {/* ============================================================ */}
+      <g>
+        <rect
+          x="40"
+          y="232"
+          width="1020"
+          height="468"
+          rx="14"
+          className="illustration__group"
+        />
+        <g className="illustration__badge">
+          <rect x="940" y="222" width="92" height="26" rx="13" />
+          <text x="986" y="240" textAnchor="middle">
+            × 6 blocks
           </text>
-        ))}
+        </g>
+        <text x="56" y="252" className="illustration__label illustration__label--strong">
+          ④ Encoder Block · 内部完整流程
+        </text>
       </g>
 
-      {/* multi-head fanned-out hint */}
-      <g transform="translate(260,40)">
-        <text x="0" y="-10" className="illustration__label">
-          multi-head: 8 个子空间并行
-        </text>
-        {Array.from({ length: 8 }).map((_, i) => (
+      {/* -- 4a. Multi-Head Self-Attention 外框 -------------------------- */}
+      <rect
+        x="58"
+        y="262"
+        width="984"
+        height="232"
+        rx="10"
+        className="illustration__group illustration__group--inner"
+      />
+      <text x="72" y="280" className="illustration__label illustration__label--strong">
+        a. Multi-Head Self-Attention
+      </text>
+
+      {/* X 输入矩阵（5 行） */}
+      <g transform="translate(72, 292)">
+        <text x="0" y="-2" className="illustration__label">X (输入)</text>
+        {Array.from({ length: 5 }).map((_, r) => (
           <rect
-            key={i}
-            x={i * 18}
-            y={i * 6}
-            width="60"
-            height="18"
-            rx="3"
-            className="illustration__bar illustration__bar--head"
-            style={{ animationDelay: `${i * 80}ms` }}
+            key={`x-${r}`}
+            x="0"
+            y={r * 14 + 6}
+            width="56"
+            height="11"
+            rx="2"
+            className="illustration__featuremap"
+            style={{ animationDelay: `${400 + r * 50}ms` }}
           />
         ))}
       </g>
 
-      <text x="360" y="190" className="illustration__label" textAnchor="middle">
-        每个 token 对所有 token 计算权重 —— 没有 RNN，序列长度不再卡脖子
+      {/* X 同时分三路 → W_Q / W_K / W_V 投影 → Q / K / V */}
+      <g transform="translate(140, 296)">
+        {/* 三条分流线（彩色） */}
+        <path d="M 0 30 C 30 30, 50 0, 80 0" className="illustration__branch illustration__branch--q" fill="none" markerEnd="url(#arrow-head)" />
+        <path d="M 0 30 L 80 30" className="illustration__branch illustration__branch--k" fill="none" markerEnd="url(#arrow-head)" />
+        <path d="M 0 30 C 30 30, 50 60, 80 60" className="illustration__branch illustration__branch--v" fill="none" markerEnd="url(#arrow-head)" />
+
+        {/* W_Q W_K W_V 投影矩阵 */}
+        {(["W_Q", "W_K", "W_V"] as const).map((lbl, i) => (
+          <g key={lbl} transform={`translate(82, ${i * 30 - 8})`}>
+            <rect width="42" height="20" rx="4" className={`illustration__proj illustration__proj--${["q", "k", "v"][i]}`} />
+            <text x="21" y="14" textAnchor="middle" className="illustration__block-label illustration__block-label--small">
+              {lbl}
+            </text>
+          </g>
+        ))}
+
+        {/* Q/K/V 输出 */}
+        {(["Q", "K", "V"] as const).map((lbl, i) => (
+          <g key={lbl} transform={`translate(134, ${i * 30 - 8})`}>
+            <line x1="0" y1="10" x2="20" y2="10" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+            <text x="30" y="14" className="illustration__label illustration__label--inline">{lbl}</text>
+          </g>
+        ))}
+      </g>
+
+      {/* 单头注意力详细计算（QKᵀ/√d → softmax → @V） */}
+      <g transform="translate(360, 296)">
+        <text x="0" y="-4" className="illustration__label">
+          每头：scaled dot-product attention
+        </text>
+
+        {/* Q·Kᵀ 矩阵 */}
+        <g transform="translate(0, 4)">
+          <text x="36" y="-2" className="illustration__label illustration__label--small" textAnchor="middle">Q·Kᵀ / √d</text>
+          {mainHead.map((row, r) =>
+            row.map((_, c) => (
+              <rect
+                key={`qk-${r}-${c}`}
+                x={c * 14}
+                y={r * 14 + 4}
+                width="12"
+                height="12"
+                rx="1.5"
+                className="illustration__attn-cell illustration__attn-cell--raw"
+                style={{ animationDelay: `${600 + (r * 5 + c) * 25}ms` }}
+              />
+            )),
+          )}
+        </g>
+
+        <line x1="78" y1="44" x2="98" y2="44" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <text x="88" y="38" textAnchor="middle" className="illustration__label illustration__label--small">softmax</text>
+
+        {/* softmax 后概率矩阵 */}
+        <g transform="translate(102, 4)">
+          <text x="36" y="-2" className="illustration__label illustration__label--small" textAnchor="middle">attention 概率</text>
+          {mainHead.map((row, r) =>
+            row.map((v, c) => (
+              <rect
+                key={`sm-${r}-${c}`}
+                x={c * 14}
+                y={r * 14 + 4}
+                width="12"
+                height="12"
+                rx="1.5"
+                className="illustration__attn-cell"
+                style={{
+                  opacity: 0.18 + v * 0.82,
+                  animationDelay: `${900 + (r * 5 + c) * 25}ms`,
+                }}
+              />
+            )),
+          )}
+        </g>
+
+        <line x1="180" y1="44" x2="200" y2="44" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <text x="190" y="38" textAnchor="middle" className="illustration__label illustration__label--small">@V</text>
+
+        {/* head 输出向量 */}
+        <g transform="translate(204, 4)">
+          <text x="20" y="-2" className="illustration__label illustration__label--small" textAnchor="middle">head 输出</text>
+          {Array.from({ length: 5 }).map((_, r) => (
+            <rect
+              key={`ho-${r}`}
+              x="0"
+              y={r * 14 + 4}
+              width="40"
+              height="12"
+              rx="2"
+              className="illustration__featuremap"
+              style={{ animationDelay: `${1200 + r * 40}ms` }}
+            />
+          ))}
+        </g>
+      </g>
+
+      {/* ×8 头（堆叠表示） */}
+      <g transform="translate(660, 300)">
+        <text x="0" y="-4" className="illustration__label">8 头并行</text>
+        {Array.from({ length: 7 }).map((_, i) => (
+          <g key={i} transform={`translate(${i * 5}, ${i * 5})`} style={{ opacity: 1 - i * 0.1 }}>
+            <rect width="52" height="72" rx="4" className="illustration__head-stack" />
+          </g>
+        ))}
+        <text x="80" y="40" className="illustration__label illustration__label--small">
+          每头独立子空间
+        </text>
+        <text x="80" y="56" className="illustration__label illustration__label--small">
+          建模不同关系
+        </text>
+      </g>
+
+      {/* Concat + W_O */}
+      <g transform="translate(820, 296)">
+        <line x1="-20" y1="40" x2="0" y2="40" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+        <rect width="78" height="32" y="24" rx="6" className="illustration__block illustration__block--alt" />
+        <text x="39" y="44" textAnchor="middle" className="illustration__block-label">Concat</text>
+        <text x="39" y="64" textAnchor="middle" className="illustration__label illustration__label--small">8·d/8 = d</text>
+
+        <line x1="78" y1="40" x2="98" y2="40" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        <g transform="translate(98, 24)">
+          <rect width="78" height="32" rx="6" className="illustration__proj illustration__proj--o" />
+          <text x="39" y="20" textAnchor="middle" className="illustration__block-label">W_O</text>
+        </g>
+      </g>
+
+      {/* MHA 输出箭头到 Add&Norm */}
+      <line x1="552" y1="494" x2="552" y2="510" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      {/* -- 4b. Add & Norm 1 + 残差弧线 -------------------------------- */}
+      <g>
+        {/* 残差：从 X 入口绕过 MHA */}
+        <path
+          d="M 100 332 C 24 332, 24 528, 460 528"
+          className="illustration__residual"
+          fill="none"
+          markerEnd="url(#arrow-head)"
+        />
+        <text x="20" y="430" className="illustration__label illustration__label--small" transform="rotate(-90 20 430)">
+          residual (恒等捷径)
+        </text>
+
+        <g transform="translate(478, 510)">
+          <circle r="14" cx="14" cy="14" className="illustration__addnorm" />
+          <text x="14" y="19" textAnchor="middle" className="illustration__block-label">⊕</text>
+          <line x1="28" y1="14" x2="48" y2="14" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+          <rect x="50" y="0" width="88" height="28" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="94" y="18" textAnchor="middle" className="illustration__block-label">LayerNorm</text>
+        </g>
+      </g>
+
+      {/* 进入 FFN 的下行箭头 */}
+      <line x1="572" y1="538" x2="572" y2="560" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      {/* -- 4c. Feed-Forward Network ----------------------------------- */}
+      <rect x="58" y="560" width="984" height="80" rx="10" className="illustration__group illustration__group--inner" />
+      <text x="72" y="578" className="illustration__label illustration__label--strong">
+        c. Feed-Forward Network (position-wise，每个位置独立两层 MLP)
       </text>
+      <g transform="translate(180, 596)">
+        <rect width="160" height="32" rx="6" className="illustration__proj illustration__proj--ffn" />
+        <text x="80" y="20" textAnchor="middle" className="illustration__block-label">Linear · d → 4d</text>
+
+        <line x1="160" y1="16" x2="200" y2="16" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        <g transform="translate(200, 0)">
+          <rect width="92" height="32" rx="6" className="illustration__proj illustration__proj--act" />
+          <text x="46" y="20" textAnchor="middle" className="illustration__block-label">GELU</text>
+        </g>
+
+        <line x1="292" y1="16" x2="332" y2="16" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+        <g transform="translate(332, 0)">
+          <rect width="160" height="32" rx="6" className="illustration__proj illustration__proj--ffn" />
+          <text x="80" y="20" textAnchor="middle" className="illustration__block-label">Linear · 4d → d</text>
+        </g>
+
+        <text x="540" y="20" className="illustration__label illustration__label--small">
+          扩张 → 非线性 → 收缩
+        </text>
+      </g>
+
+      {/* FFN 输出箭头到 Add&Norm 2 */}
+      <line x1="552" y1="644" x2="552" y2="658" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+
+      {/* -- 4d. Add & Norm 2 ------------------------------------------- */}
+      <g>
+        <path
+          d="M 600 528 C 980 528, 980 670, 620 670"
+          className="illustration__residual"
+          fill="none"
+          markerEnd="url(#arrow-head)"
+        />
+        <text x="990" y="600" className="illustration__label illustration__label--small" transform="rotate(-90 990 600)">
+          residual
+        </text>
+
+        <g transform="translate(478, 660)">
+          <circle r="14" cx="14" cy="14" className="illustration__addnorm" />
+          <text x="14" y="19" textAnchor="middle" className="illustration__block-label">⊕</text>
+          <line x1="28" y1="14" x2="48" y2="14" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+          <rect x="50" y="0" width="88" height="28" rx="6" className="illustration__block illustration__block--alt" />
+          <text x="94" y="18" textAnchor="middle" className="illustration__block-label">LayerNorm</text>
+        </g>
+      </g>
+
+      {/* ============================================================ */}
+      {/* ⑤ 输出：5 个上下文化向量                                       */}
+      {/* ============================================================ */}
+      <line x1="572" y1="690" x2="572" y2="716" className="illustration__arrow" markerEnd="url(#arrow-head)" />
+      <text x="30" y="734" className="illustration__label illustration__label--strong">
+        ⑤ 输出 · 每个位置已聚合全局上下文（与输入同形状，可直接喂下一个 block）
+      </text>
+      {tokenXs.map((x, i) =>
+        Array.from({ length: 8 }).map((_, k) => (
+          <rect
+            key={`out-${i}-${k}`}
+            x={x - 24 + k * 6}
+            y="724"
+            width="4"
+            height="28"
+            rx="1"
+            className="illustration__featuremap illustration__featuremap--ctx"
+            style={{ animationDelay: `${1500 + i * 60 + k * 20}ms` }}
+          />
+        )),
+      )}
     </svg>
+  );
+}
+
+/* 位置编码 sin/cos 波形 —— 两条相位错开的连续波，slow 漂移 */
+function PositionalWave({ x, y, width }: { x: number; y: number; width: number }) {
+  const samples = 80;
+  const amp = 10;
+  const points = (phase: number) =>
+    Array.from({ length: samples }, (_, i) => {
+      const t = i / (samples - 1);
+      const px = x + t * width;
+      const py = y + 12 + Math.sin(t * Math.PI * 4 + phase) * amp;
+      return `${i === 0 ? "M" : "L"} ${px} ${py}`;
+    }).join(" ");
+
+  return (
+    <g>
+      <path d={points(0)} className="illustration__wave illustration__wave--sin" fill="none" />
+      <path d={points(Math.PI / 2)} className="illustration__wave illustration__wave--cos" fill="none" />
+    </g>
   );
 }
 

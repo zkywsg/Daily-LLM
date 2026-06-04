@@ -673,11 +673,12 @@ button:focus-visible, a:focus-visible {
 
 /* 通用 SVG 元素样式 */
 .illustration__label {
-  font-size: 11px;
+  font-size: 14px;
   fill: var(--ink-soft);
   font-family: inherit;
+  font-weight: 500;
 }
-.illustration__label--inline { fill: var(--ink-default); font-weight: 600; }
+.illustration__label--inline { fill: var(--ink-default); font-weight: 700; }
 
 .illustration__pixel {
   fill: var(--amber-100);
@@ -749,7 +750,7 @@ button:focus-visible, a:focus-visible {
 }
 .illustration__block-label {
   fill: var(--ink-strong);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -808,6 +809,145 @@ button:focus-visible, a:focus-visible {
   stroke-width: 2;
   stroke-dasharray: 4 3;
   animation: flow-march 1.6s linear infinite;
+}
+
+/* ---------- 2017 Transformer 端到端图专用 ---------- */
+
+/* 高的画布（>600px viewBox）不再被 width:100% 顶到太矮 */
+.illustration__svg--tall {
+  min-height: 520px;
+}
+
+/* 复杂结构图破 card 边界，吃掉左右内边距 36/38px，给细节更多横向空间 */
+.content-card--main > .illustration:has(.illustration__svg--tall) {
+  margin-left: -38px;
+  margin-right: -38px;
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+}
+
+/* 强调与小号标签 */
+.illustration__label--strong {
+  fill: var(--ink-strong);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+}
+.illustration__label--small {
+  font-size: 12px;
+}
+.illustration__block-label--small {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* 实线箭头（含 marker） */
+.illustration__arrow {
+  stroke: var(--ink-soft);
+  stroke-width: 1.4;
+  fill: none;
+}
+.illustration__arrow-head {
+  fill: var(--ink-soft);
+}
+
+/* 阶段分组外框（虚线） */
+.illustration__group {
+  fill: none;
+  stroke: color-mix(in srgb, var(--active-line) 55%, transparent);
+  stroke-width: 1.4;
+  stroke-dasharray: 6 4;
+}
+.illustration__group--inner {
+  stroke: color-mix(in srgb, var(--ink-muted) 45%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+/* ×N 徽标 */
+.illustration__badge rect {
+  fill: var(--active-soft);
+  stroke: var(--active-line);
+  stroke-width: 1.2;
+}
+.illustration__badge text {
+  fill: var(--active-ink);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+/* 位置编码 sin/cos 波 */
+.illustration__wave {
+  stroke-width: 1.4;
+  stroke-dasharray: 6 3;
+  animation: flow-march 3.5s linear infinite;
+  opacity: 0.85;
+}
+.illustration__wave--sin { stroke: var(--phase-vision-line); }
+.illustration__wave--cos { stroke: var(--phase-scale-line); animation-duration: 4.5s; }
+
+/* Q/K/V 三色分流线 */
+.illustration__branch {
+  stroke-width: 1.8;
+  stroke-dasharray: 4 3;
+  animation: flow-march 1.8s linear infinite;
+}
+.illustration__branch--q { stroke: var(--phase-vision-line); }
+.illustration__branch--k { stroke: var(--phase-scale-line); }
+.illustration__branch--v { stroke: var(--phase-alignment-line); }
+
+/* 投影矩阵盒（W_Q / W_K / W_V / W_O / FFN Linear / GELU） */
+.illustration__proj {
+  stroke-width: 1.4;
+}
+.illustration__proj--q { fill: color-mix(in srgb, var(--phase-vision-line) 14%, var(--surface-card)); stroke: var(--phase-vision-line); }
+.illustration__proj--k { fill: color-mix(in srgb, var(--phase-scale-line) 14%, var(--surface-card)); stroke: var(--phase-scale-line); }
+.illustration__proj--v { fill: color-mix(in srgb, var(--phase-alignment-line) 14%, var(--surface-card)); stroke: var(--phase-alignment-line); }
+.illustration__proj--o { fill: color-mix(in srgb, var(--active-line) 18%, var(--surface-card)); stroke: var(--active-line); }
+.illustration__proj--ffn { fill: color-mix(in srgb, var(--active-line) 12%, var(--surface-card)); stroke: var(--active-line); }
+.illustration__proj--act { fill: color-mix(in srgb, var(--phase-multimodal-line) 16%, var(--surface-card)); stroke: var(--phase-multimodal-line); }
+
+/* 注意力矩阵 - softmax 前（中性灰） */
+.illustration__attn-cell--raw {
+  fill: var(--ink-muted);
+  opacity: 0.55;
+}
+
+/* 多头堆叠的虚化 */
+.illustration__head-stack {
+  fill: color-mix(in srgb, var(--active-line) 14%, var(--surface-card));
+  stroke: var(--active-line);
+  stroke-width: 1;
+}
+
+/* 残差弧线（恒等捷径） */
+.illustration__residual {
+  stroke: color-mix(in srgb, var(--active-line) 70%, transparent);
+  stroke-width: 1.8;
+  stroke-dasharray: 5 4;
+  animation: flow-march 2.2s linear infinite;
+}
+
+/* ⊕ Add 圆 */
+.illustration__addnorm {
+  fill: var(--active-soft);
+  stroke: var(--active-line);
+  stroke-width: 1.6;
+}
+
+/* 上下文化输出向量（比输入更饱和） */
+.illustration__featuremap--ctx {
+  fill: var(--active-line);
+  opacity: 0.9;
+}
+
+/* token 盒子出场 */
+.illustration__appear {
+  animation: card-rise 480ms ease both;
+  transform-origin: center;
+  transform-box: fill-box;
 }
 
 /* =========================================================== */
