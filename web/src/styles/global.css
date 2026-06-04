@@ -336,11 +336,10 @@ button:focus-visible, a:focus-visible {
 .timeline-axis__nav--left  { left: 10px; }
 .timeline-axis__nav--right { right: 10px; }
 
-.timeline-axis__nodes {
+/* 外层滚动容器 —— 年份行 + 主题行共用一条横向滚动 */
+.timeline-axis__scroller {
   position: relative;
   z-index: 1;
-  display: flex;
-  gap: 4px;
   overflow-x: auto;
   padding: 0 52px 16px;
   scrollbar-color: var(--amber-300) transparent;
@@ -350,10 +349,72 @@ button:focus-visible, a:focus-visible {
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
           mask-image: linear-gradient(90deg, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
 }
-.timeline-axis__nodes::-webkit-scrollbar { height: 6px; }
-.timeline-axis__nodes::-webkit-scrollbar-thumb {
+.timeline-axis__scroller::-webkit-scrollbar { height: 6px; }
+.timeline-axis__scroller::-webkit-scrollbar-thumb {
   background: var(--amber-300);
   border-radius: var(--radius-pill);
+}
+
+.timeline-axis__nodes {
+  display: flex;
+  gap: 4px;
+}
+
+/* ---------- 主题主线行 ---------- */
+.timeline-axis__topics {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--hairline);
+}
+.timeline-axis__topic {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1.5px solid color-mix(in srgb, var(--phase-vision-line) 70%, transparent);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--phase-vision-soft), color-mix(in srgb, var(--phase-vision-line) 18%, var(--surface-card)));
+  color: var(--phase-vision-ink);
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.timeline-axis__topic[data-family="vision"] {
+  border-color: color-mix(in srgb, var(--phase-vision-line) 70%, transparent);
+  background: linear-gradient(90deg, var(--phase-vision-soft), color-mix(in srgb, var(--phase-vision-line) 22%, var(--surface-card)));
+  color: var(--phase-vision-ink);
+}
+.timeline-axis__topic:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.timeline-axis__topic-arrow {
+  flex: 0 0 auto;
+  font-size: 1.1rem;
+}
+.timeline-axis__topic-label {
+  flex: 1 1 auto;
+  font-size: 0.92rem;
+}
+.timeline-axis__topic-cta {
+  flex: 0 0 auto;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  color: var(--phase-vision-ink);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.timeline-axis__topic-spacer {
+  /* 占位空格，对齐到年份列；不显示任何内容 */
+  height: 1px;
 }
 
 /* ---------- 单个节点（按家族着色） ---------- */
@@ -1529,7 +1590,7 @@ a.work-item:hover::after, .module-links a:hover::after {
   .content-card--main { padding: 24px; }
   .timeline-axis { padding: 26px 12px 18px; }
   .timeline-axis__track { right: 32px; left: 32px; }
-  .timeline-axis__nodes { padding: 0 28px 16px; }
+  .timeline-axis__scroller { padding: 0 28px 16px; }
   .timeline-node { min-width: 92px; min-height: 124px; }
   .explain-grid { grid-template-columns: 1fr; }
   .timeline-axis__nav { display: none; }

@@ -188,6 +188,11 @@ export default function App() {
           nodes={timelineNodes}
           onSelect={selectYear}
           onOpenPrehistory={openPrehistory}
+          onJumpToTopic={(topicId) => {
+            document
+              .getElementById(topicId)
+              ?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
         />
       </div>
 

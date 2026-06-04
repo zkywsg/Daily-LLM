@@ -10,6 +10,7 @@ test("marks the active timeline node for assistive technology", () => {
       nodes={timelineNodes}
       onSelect={() => {}}
       onOpenPrehistory={() => {}}
+      onJumpToTopic={() => {}}
     />,
   );
 
@@ -27,6 +28,7 @@ test("calls onSelect when a node is clicked", async () => {
       nodes={timelineNodes}
       onSelect={(year) => selected.push(year)}
       onOpenPrehistory={() => {}}
+      onJumpToTopic={() => {}}
     />,
   );
 
