@@ -6,6 +6,7 @@ import { TimelineAxis } from "./components/TimelineAxis";
 import { TimelineContent } from "./components/TimelineContent";
 import { TimelineWorkList } from "./components/TimelineWorkList";
 import { TrackView, isKnownTrack } from "./components/TrackView";
+import { CnnTrack } from "./components/tracks/CnnTrack";
 import { getNodeByYear, timelineNodes } from "./data/timeline";
 import {
   PHASE_FAMILY_LABEL,
@@ -200,6 +201,22 @@ export default function App() {
             onOpenTrack={openTrack}
           />
         </aside>
+      </section>
+
+      {/* ===========================================================
+        * CNN 主题主线 · 编年视角下的一条独立子轨
+        * 与年份节点平级（在主时间线页内、不嵌入任何年份内容卡）
+        * =========================================================== */}
+      <section className="topic-track" aria-label="CNN 主题主线" id="cnn-track">
+        <header className="topic-track__head">
+          <span className="topic-track__tag">主题主线 · vision</span>
+          <h2>CNN · 卷积神经网络</h2>
+          <p>
+            从 2012 AlexNet 把 CNN 跑通，到 2022 ConvNeXt 把 ViT 的训练技术倒灌回来 ——
+            这十块积木撑起了整条视觉线。
+          </p>
+        </header>
+        <CnnTrack />
       </section>
 
       <PrehistoryDrawer open={prehistoryOpen} onClose={closePrehistory} />

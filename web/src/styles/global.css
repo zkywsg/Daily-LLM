@@ -1627,6 +1627,46 @@ a.work-item:hover::after, .module-links a:hover::after {
   gap: 24px;
 }
 
+/* ===== 主时间线页上的「主题主线」独立段 =====
+ * 与年份节点平级；不嵌入任何 year content card；
+ * 占据 app-shell 整宽，用 phase-vision 暖色调引导眼睛
+ */
+.topic-track {
+  margin-top: 56px;
+  padding: 32px 0 12px;
+  border-top: 1px dashed color-mix(in srgb, var(--phase-vision-line) 50%, var(--hairline));
+}
+.topic-track__head {
+  margin-bottom: 24px;
+}
+.topic-track__tag {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--phase-vision-soft);
+  color: var(--phase-vision-ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.topic-track__head h2 {
+  margin: 4px 0 8px;
+  color: var(--ink-strong);
+  font-size: clamp(1.55rem, 2.6vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.18;
+}
+.topic-track__head p {
+  margin: 0;
+  max-width: 720px;
+  color: var(--ink-soft);
+  font-size: 0.96rem;
+  line-height: 1.7;
+}
+
 .concept-card {
   border: 1px solid var(--hairline);
   border-radius: var(--radius-lg);

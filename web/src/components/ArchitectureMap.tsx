@@ -2,15 +2,15 @@
  * 三入口地图 —— 让首屏一眼看到知识库的三层结构。
  * · Layer 0 foundations  无时间维度的工具箱
  * · Layer 1 timeline     2012 起的编年主线（当前层）
- * · Layer 2 tracks       跨年代的主题深挖
+ * · Layer 2 tracks       跨年代的主题深挖（CNN 已上线，作为主页独立段）
  */
 
 type ArchitectureMapProps = {
   /** 当前用户视线在哪一层（默认 L1 时间线） */
   activeLayer?: "foundation" | "timeline" | "track";
   onScrollToTimeline: () => void;
-  /** 打开 web 内置长文页 */
-  onOpenTrack: (trackId: string) => void;
+  /** 打开 web 内置长文页（暂未在三入口里直接用，保留 prop 兼容） */
+  onOpenTrack?: (trackId: string) => void;
 };
 
 type LayerDef = {
@@ -20,8 +20,8 @@ type LayerDef = {
   desc: string;
   cta: string;
   href?: string;
-  /** 优先于 href：内部 web 跳转 */
-  trackId?: string;
+  /** 内部 anchor 滚动（CNN 主题主线就用这个） */
+  anchor?: string;
 };
 
 const LAYERS: LayerDef[] = [
@@ -43,17 +43,16 @@ const LAYERS: LayerDef[] = [
   {
     id: "track",
     code: "L2",
-    title: "主题深挖",
-    desc: "vision · language · scale-multi · alignment · systems",
-    cta: "进 CNN 架构演进（已上线）",
-    trackId: "vision/cnn-architectures",
+    title: "主题主线",
+    desc: "CNN（已上线）· language · scale · alignment · systems",
+    cta: "滚到下方 CNN 主线",
+    anchor: "cnn-track",
   },
 ];
 
 export function ArchitectureMap({
   activeLayer = "timeline",
   onScrollToTimeline,
-  onOpenTrack,
 }: ArchitectureMapProps) {
   return (
     <nav className="architecture-map" aria-label="知识库三层地图">
@@ -85,8 +84,7 @@ export function ArchitectureMap({
           );
         }
 
-        // L2 内部跳转
-        if (layer.trackId) {
+        if (layer.anchor) {
           return (
             <button
               key={layer.id}
@@ -94,7 +92,11 @@ export function ArchitectureMap({
               className="architecture-map__card"
               data-active={isActive}
               data-layer={layer.id}
-              onClick={() => onOpenTrack(layer.trackId!)}
+              onClick={() => {
+                document
+                  .getElementById(layer.anchor!)
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
             >
               {Body}
             </button>
