@@ -1,3 +1,13 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+  type SVGProps,
+} from "react";
 import type * as React from "react";
 
 /**
@@ -7,25 +17,199 @@ import type * as React from "react";
  *  - 全部使用 illustration__svg--tall，破 card 内边距吃满横向空间
  *  - 文字尺寸：label 14 / strong 17 / small 12（CSS 控制）
  *  - 每张图以"完整结构"为目标：不再做简化示意，而是把每一层 / 每一个连接 / 每一个公式都画出来
+ *
+ * v3 新增交互（2025-06）：
+ *  - HintContext / HoverHint：用 <g> 包住关键子模块，hover 显示浮动 tooltip
+ *  - 点击 → pin 详情面板（含公式 / 设计理由 / 复杂度），可关闭
+ *  - touch 设备友好：点击即可弹出 pin 面板
  */
 
+/* =====================================================================
+ * 交互：Hint Context + Hover/Pin Tooltip
+ * ===================================================================== */
+export type IllustrationHint = {
+  title: string;
+  /** 一句话定位 */
+  summary: string;
+  /** 关键公式（LaTeX 风但用纯文本即可） */
+  formula?: string;
+  /** 为什么这么设计 */
+  why?: string;
+  /** 复杂度 / 工程指标 */
+  metric?: string;
+  /** 一条相关链接（指到 foundations 或 tracks） */
+  link?: { label: string; href: string };
+};
+
+type HintContextValue = {
+  showHover: (e: React.MouseEvent, hint: IllustrationHint) => void;
+  hideHover: () => void;
+  pin: (hint: IllustrationHint) => void;
+} | null;
+
+const HintContext = createContext<HintContextValue>(null);
+
+/**
+ * 包住 SVG <g>，给子树挂上 hover/click 行为。
+ * 子树本身保持原样，仅在 hover 时通过 CSS 类高亮。
+ */
+export function HoverHint({
+  hint,
+  children,
+  ...gProps
+}: { hint: IllustrationHint; children: ReactNode } & SVGProps<SVGGElement>) {
+  const ctx = useContext(HintContext);
+  if (!ctx) return <g {...gProps}>{children}</g>;
+  return (
+    <g
+      {...gProps}
+      tabIndex={0}
+      className={`illustration__hint-target ${gProps.className ?? ""}`}
+      onMouseMove={(e) => ctx.showHover(e, hint)}
+      onMouseEnter={(e) => ctx.showHover(e, hint)}
+      onMouseLeave={() => ctx.hideHover()}
+      onClick={(e) => {
+        e.stopPropagation();
+        ctx.pin(hint);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          ctx.pin(hint);
+        }
+      }}
+    >
+      {children}
+    </g>
+  );
+}
+
+function HoverTooltip({
+  x,
+  y,
+  hint,
+}: {
+  x: number;
+  y: number;
+  hint: IllustrationHint;
+}) {
+  return (
+    <div className="illustration__hover-tooltip" style={{ left: x + 18, top: y + 18 }}>
+      <strong>{hint.title}</strong>
+      <p>{hint.summary}</p>
+      <span className="illustration__hover-tooltip__cta">点击查看细节 →</span>
+    </div>
+  );
+}
+
+function PinnedPanel({
+  hint,
+  onClose,
+}: {
+  hint: IllustrationHint;
+  onClose: () => void;
+}) {
+  return (
+    <aside className="illustration__pin" role="dialog" aria-label={hint.title}>
+      <header>
+        <strong>{hint.title}</strong>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="关闭"
+          className="illustration__pin__close"
+        >
+          ✕
+        </button>
+      </header>
+      <p className="illustration__pin__summary">{hint.summary}</p>
+      {hint.formula && (
+        <div className="illustration__pin__formula">
+          <span>公式</span>
+          <code>{hint.formula}</code>
+        </div>
+      )}
+      {hint.why && (
+        <div className="illustration__pin__section">
+          <h4>为什么这么设计</h4>
+          <p>{hint.why}</p>
+        </div>
+      )}
+      {hint.metric && (
+        <div className="illustration__pin__section">
+          <h4>复杂度 / 工程指标</h4>
+          <p>{hint.metric}</p>
+        </div>
+      )}
+      {hint.link && (
+        <a className="illustration__pin__link" href={hint.link.href}>
+          {hint.link.label} ↗
+        </a>
+      )}
+    </aside>
+  );
+}
+
+/* =====================================================================
+ * 主导出组件
+ * ===================================================================== */
 type TimelineIllustrationProps = {
   year: string;
 };
 
 export function TimelineIllustration({ year }: TimelineIllustrationProps) {
   const renderer = ILLUSTRATIONS[year];
+  const figureRef = useRef<HTMLElement | null>(null);
+
+  // 必须先调用 hooks，再判断 renderer 是否存在
+  const [hover, setHover] = useState<{
+    x: number;
+    y: number;
+    hint: IllustrationHint;
+  } | null>(null);
+  const [pinned, setPinned] = useState<IllustrationHint | null>(null);
+
+  const showHover = useCallback(
+    (e: React.MouseEvent, hint: IllustrationHint) => {
+      const rect = figureRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setHover({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        hint,
+      });
+    },
+    [],
+  );
+
+  const hideHover = useCallback(() => setHover(null), []);
+  const pin = useCallback((hint: IllustrationHint) => setPinned(hint), []);
+
   if (!renderer) return null;
 
   return (
-    <figure className="illustration" aria-label={renderer.caption}>
-      {renderer.render()}
+    <figure
+      className={`illustration ${pinned ? "illustration--has-pin" : ""}`}
+      aria-label={renderer.caption}
+      ref={figureRef}
+    >
+      <HintContext.Provider value={{ showHover, hideHover, pin }}>
+        {renderer.render()}
+      </HintContext.Provider>
+
+      {hover && !pinned && (
+        <HoverTooltip x={hover.x} y={hover.y} hint={hover.hint} />
+      )}
+      {pinned && (
+        <PinnedPanel hint={pinned} onClose={() => setPinned(null)} />
+      )}
+
       <figcaption>{renderer.caption}</figcaption>
     </figure>
   );
 }
 
-type Renderer = { caption: string; render: () => React.ReactElement };
+type Renderer = { caption: string; render: () => ReactElement };
 
 const ILLUSTRATIONS: Record<string, Renderer> = {
   "2012": {
@@ -696,26 +880,32 @@ function TransformerDiagram() {
       <text x="30" y="30" className="illustration__label illustration__label--strong">
         ① 输入 token 序列
       </text>
-      {tokens.map((t, i) => (
-        <g key={`tok-${i}`} transform={`translate(${tokenXs[i] - tokenW / 2}, 44)`} style={{ animationDelay: `${i * 90}ms` }} className="illustration__appear">
-          <rect width={tokenW} height="30" rx="6" className="illustration__block illustration__block--alt" />
-          <text x={tokenW / 2} y="20" className="illustration__block-label" textAnchor="middle">{t}</text>
-        </g>
-      ))}
+      <HoverHint hint={TF_HINTS.tokens}>
+        {tokens.map((t, i) => (
+          <g key={`tok-${i}`} transform={`translate(${tokenXs[i] - tokenW / 2}, 44)`} style={{ animationDelay: `${i * 90}ms` }} className="illustration__appear">
+            <rect width={tokenW} height="30" rx="6" className="illustration__block illustration__block--alt" />
+            <text x={tokenW / 2} y="20" className="illustration__block-label" textAnchor="middle">{t}</text>
+          </g>
+        ))}
+      </HoverHint>
 
       {tokenXs.map((x, i) => (
         <line key={`a-${i}`} x1={x} y1="78" x2={x} y2="108" className="illustration__arrow" markerEnd="url(#arrow-head)" />
       ))}
 
       <text x="30" y="124" className="illustration__label illustration__label--strong">② 嵌入 (d=512)</text>
-      {tokenXs.map((x, i) =>
-        Array.from({ length: 8 }).map((_, k) => (
-          <rect key={`e-${i}-${k}`} x={x - 24 + k * 6} y="116" width="4" height="28" rx="1" className="illustration__pixel" style={{ animationDelay: `${200 + i * 60 + k * 20}ms` }} />
-        )),
-      )}
+      <HoverHint hint={TF_HINTS.embedding}>
+        {tokenXs.map((x, i) =>
+          Array.from({ length: 8 }).map((_, k) => (
+            <rect key={`e-${i}-${k}`} x={x - 24 + k * 6} y="116" width="4" height="28" rx="1" className="illustration__pixel" style={{ animationDelay: `${200 + i * 60 + k * 20}ms` }} />
+          )),
+        )}
+      </HoverHint>
 
       <text x="30" y="170" className="illustration__label illustration__label--strong">③ + 位置编码 (sin/cos)</text>
-      <PositionalWave x={90} y={172} width={620} />
+      <HoverHint hint={TF_HINTS.positional}>
+        <PositionalWave x={90} y={172} width={620} />
+      </HoverHint>
       <text x="730" y="180" className="illustration__label">让序列顺序进入向量空间</text>
 
       <line x1="360" y1="200" x2="360" y2="232" className="illustration__arrow" markerEnd="url(#arrow-head)" />
@@ -739,7 +929,7 @@ function TransformerDiagram() {
         ))}
       </g>
 
-      <g transform="translate(140, 296)">
+      <HoverHint hint={TF_HINTS.qkv} transform="translate(140, 296)">
         <path d="M 0 30 C 30 30, 50 0, 80 0" className="illustration__branch illustration__branch--q" fill="none" markerEnd="url(#arrow-head)" />
         <path d="M 0 30 L 80 30" className="illustration__branch illustration__branch--k" fill="none" markerEnd="url(#arrow-head)" />
         <path d="M 0 30 C 30 30, 50 60, 80 60" className="illustration__branch illustration__branch--v" fill="none" markerEnd="url(#arrow-head)" />
@@ -757,9 +947,9 @@ function TransformerDiagram() {
             <text x="30" y="14" className="illustration__label illustration__label--inline">{lbl}</text>
           </g>
         ))}
-      </g>
+      </HoverHint>
 
-      <g transform="translate(360, 296)">
+      <HoverHint hint={TF_HINTS.attention} transform="translate(360, 296)">
         <text x="0" y="-4" className="illustration__label">每头：scaled dot-product attention</text>
 
         <g transform="translate(0, 4)">
@@ -792,9 +982,9 @@ function TransformerDiagram() {
             <rect key={`ho-${r}`} x="0" y={r * 14 + 4} width="40" height="12" rx="2" className="illustration__featuremap" style={{ animationDelay: `${1200 + r * 40}ms` }} />
           ))}
         </g>
-      </g>
+      </HoverHint>
 
-      <g transform="translate(660, 300)">
+      <HoverHint hint={TF_HINTS.multihead} transform="translate(660, 300)">
         <text x="0" y="-4" className="illustration__label">8 头并行</text>
         {Array.from({ length: 7 }).map((_, i) => (
           <g key={i} transform={`translate(${i * 5}, ${i * 5})`} style={{ opacity: 1 - i * 0.1 }}>
@@ -803,9 +993,9 @@ function TransformerDiagram() {
         ))}
         <text x="80" y="40" className="illustration__label illustration__label--small">每头独立子空间</text>
         <text x="80" y="56" className="illustration__label illustration__label--small">建模不同关系</text>
-      </g>
+      </HoverHint>
 
-      <g transform="translate(820, 296)">
+      <HoverHint hint={TF_HINTS.concat} transform="translate(820, 296)">
         <line x1="-20" y1="40" x2="0" y2="40" className="illustration__arrow" markerEnd="url(#arrow-head)" />
         <rect width="78" height="32" y="24" rx="6" className="illustration__block illustration__block--alt" />
         <text x="39" y="44" textAnchor="middle" className="illustration__block-label">Concat</text>
@@ -817,11 +1007,11 @@ function TransformerDiagram() {
           <rect width="78" height="32" rx="6" className="illustration__proj illustration__proj--o" />
           <text x="39" y="20" textAnchor="middle" className="illustration__block-label">W_O</text>
         </g>
-      </g>
+      </HoverHint>
 
       <line x1="552" y1="494" x2="552" y2="510" className="illustration__arrow" markerEnd="url(#arrow-head)" />
 
-      <g>
+      <HoverHint hint={TF_HINTS.addnorm1}>
         <path d="M 100 332 C 24 332, 24 528, 460 528" className="illustration__residual" fill="none" markerEnd="url(#arrow-head)" />
         <text x="20" y="430" className="illustration__label illustration__label--small" transform="rotate(-90 20 430)">residual (恒等捷径)</text>
 
@@ -832,13 +1022,13 @@ function TransformerDiagram() {
           <rect x="50" y="0" width="88" height="28" rx="6" className="illustration__block illustration__block--alt" />
           <text x="94" y="18" textAnchor="middle" className="illustration__block-label">LayerNorm</text>
         </g>
-      </g>
+      </HoverHint>
 
       <line x1="572" y1="538" x2="572" y2="560" className="illustration__arrow" markerEnd="url(#arrow-head)" />
 
       <rect x="58" y="560" width="984" height="80" rx="10" className="illustration__group illustration__group--inner" />
       <text x="72" y="578" className="illustration__label illustration__label--strong">c. Feed-Forward Network (position-wise，每个位置独立两层 MLP)</text>
-      <g transform="translate(180, 596)">
+      <HoverHint hint={TF_HINTS.ffn} transform="translate(180, 596)">
         <rect width="160" height="32" rx="6" className="illustration__proj illustration__proj--ffn" />
         <text x="80" y="20" textAnchor="middle" className="illustration__block-label">Linear · d → 4d</text>
 
@@ -857,11 +1047,11 @@ function TransformerDiagram() {
         </g>
 
         <text x="540" y="20" className="illustration__label illustration__label--small">扩张 → 非线性 → 收缩</text>
-      </g>
+      </HoverHint>
 
       <line x1="552" y1="644" x2="552" y2="658" className="illustration__arrow" markerEnd="url(#arrow-head)" />
 
-      <g>
+      <HoverHint hint={TF_HINTS.addnorm2}>
         <path d="M 600 528 C 980 528, 980 670, 620 670" className="illustration__residual" fill="none" markerEnd="url(#arrow-head)" />
         <text x="990" y="600" className="illustration__label illustration__label--small" transform="rotate(-90 990 600)">residual</text>
 
@@ -872,18 +1062,102 @@ function TransformerDiagram() {
           <rect x="50" y="0" width="88" height="28" rx="6" className="illustration__block illustration__block--alt" />
           <text x="94" y="18" textAnchor="middle" className="illustration__block-label">LayerNorm</text>
         </g>
-      </g>
+      </HoverHint>
 
       <line x1="572" y1="690" x2="572" y2="716" className="illustration__arrow" markerEnd="url(#arrow-head)" />
       <text x="30" y="734" className="illustration__label illustration__label--strong">⑤ 输出 · 每个位置已聚合全局上下文（与输入同形状，可直接喂下一个 block）</text>
-      {tokenXs.map((x, i) =>
-        Array.from({ length: 8 }).map((_, k) => (
-          <rect key={`out-${i}-${k}`} x={x - 24 + k * 6} y="724" width="4" height="28" rx="1" className="illustration__featuremap illustration__featuremap--ctx" style={{ animationDelay: `${1500 + i * 60 + k * 20}ms` }} />
-        )),
-      )}
+      <HoverHint hint={TF_HINTS.output}>
+        {tokenXs.map((x, i) =>
+          Array.from({ length: 8 }).map((_, k) => (
+            <rect key={`out-${i}-${k}`} x={x - 24 + k * 6} y="724" width="4" height="28" rx="1" className="illustration__featuremap illustration__featuremap--ctx" style={{ animationDelay: `${1500 + i * 60 + k * 20}ms` }} />
+          )),
+        )}
+      </HoverHint>
     </svg>
   );
 }
+
+/* Transformer 各子模块的 hint 内容 —— 把"为什么这么设计"讲清楚 */
+const TF_HINTS: Record<string, IllustrationHint> = {
+  tokens: {
+    title: "① 输入 Token 序列",
+    summary: "原始句子先用 BPE/WordPiece 切成 ~30K 词表里的 subword token，每个 token 是一个整数 ID。",
+    why: "字符级太碎、词级太大且 OOV 严重。subword 在两者间找平衡：常见词整词保留、生僻词拆成更小片段。",
+    metric: "GPT-2 用 50,257 词表；BERT 用 30,522；序列长度 n 决定后续 attention 复杂度 O(n²)。",
+    link: { label: "Tokenization", href: "../foundations/representations/tokenization/" },
+  },
+  embedding: {
+    title: "② Embedding Lookup",
+    summary: "每个 token ID 查嵌入矩阵 E ∈ ℝ^(V×d)，得到 d 维稠密向量。",
+    formula: "x_i = E[token_id_i]   shape: (n, d)",
+    why: "把「整数 ID」变成「语义向量」。同义词在空间里靠近；嵌入矩阵也是后续每一步梯度回传的归宿之一。",
+    metric: "d=512 (原版)、768 (BERT-base)、4096 (LLaMA-7B)；参数量 = V × d ≈ 25–500M。",
+    link: { label: "Embedding 表示", href: "../foundations/representations/embeddings/" },
+  },
+  positional: {
+    title: "③ Positional Encoding",
+    summary: "纯 attention 是顺序无关的；位置编码把「第几位」信息加入到 embedding 上。",
+    formula: "PE(pos, 2k)   = sin(pos / 10000^(2k/d))\nPE(pos, 2k+1) = cos(pos / 10000^(2k/d))",
+    why: "用不同频率的 sin/cos 让模型能「算出」相对距离（线性投影即可）。也可换成可学习 / RoPE / ALiBi 等变体。",
+    metric: "原版无参数；RoPE / ALiBi 是后来更受欢迎的相对位置方案，长上下文外推更稳。",
+  },
+  qkv: {
+    title: "④a-1 Q / K / V 投影",
+    summary: "同一个输入 X 经 3 个独立线性层得到 Query、Key、Value 三组矩阵。",
+    formula: "Q = X · W_Q\nK = X · W_K\nV = X · W_V    (W ∈ ℝ^(d×d))",
+    why: "让「想问什么 Q」、「我有什么 K」、「具体内容 V」分开表示。这是注意力机制能比 RNN 强的关键：信息检索式建模。",
+    metric: "三个矩阵各 d×d 参数；多头时拆成 h 个 d/h 的小矩阵并行。",
+  },
+  attention: {
+    title: "④a-2 Scaled Dot-Product Attention",
+    summary: "用 Q·Kᵀ 算出 token 两两相关性，softmax 归一化为概率，再去 V 里加权聚合。",
+    formula: "Attention(Q,K,V) = softmax( Q·Kᵀ / √d_k ) · V",
+    why: "÷√d_k 是为了防止内积随维度增大而过大、softmax 退化为 one-hot。每个 token 因此能「看到」序列任意位置。",
+    metric: "时间和空间复杂度 O(n²·d)，长上下文场景下成为主要瓶颈（FlashAttention / 稀疏注意力专门优化）。",
+    link: { label: "注意力机制", href: "../tracks/language/attention-mechanisms/" },
+  },
+  multihead: {
+    title: "④a-3 Multi-Head（8 头并行）",
+    summary: "把 d 切成 h 份，每头独立做一次 attention，关注的子空间不同（语法 / 实体 / 共指…）。",
+    formula: "head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)",
+    why: "单头 attention 容易陷在某一种关系上；多头让模型并行建模多种关系。可解释性研究里能看到不同头确实学到不同模式。",
+    metric: "原版 h=8、d_k=d/h=64；GPT-3 用 96 头、d=12288；总参数与单大头持平但表达更丰富。",
+  },
+  concat: {
+    title: "④a-4 Concat + W_O 输出投影",
+    summary: "8 头的输出拼回 d 维，再经一个线性层做最终融合。",
+    formula: "MHA(X) = Concat(head_1, …, head_h) · W_O",
+    why: "Concat 只是拼接，没有跨头交互；W_O 给模型机会「混合」各头信息。",
+    metric: "W_O 形状 d×d，再贡献 d² 参数。",
+  },
+  addnorm1: {
+    title: "④b Add & Norm（残差 + LayerNorm）",
+    summary: "把 MHA 输出加回输入（残差），再用 LayerNorm 把每个 token 的向量归一化。",
+    formula: "x' = LayerNorm(x + MHA(x))",
+    why: "残差让深层网络梯度直通（ResNet 同样思路）；LayerNorm 在 token 维度上稳住分布、加快收敛。GPT-2 之后改 Pre-Norm（先 norm 再加），训练更稳。",
+    metric: "LayerNorm 只有 2d 参数（gain、bias），开销可忽略；但顺序对训练稳定性极重要。",
+    link: { label: "残差连接", href: "../foundations/structures/residual-connections/" },
+  },
+  ffn: {
+    title: "④c Feed-Forward Network",
+    summary: "每个位置独立过一个两层 MLP：先升到 4d、过非线性、再降回 d。",
+    formula: "FFN(x) = W_2 · GELU(W_1 · x + b_1) + b_2",
+    why: "Attention 负责跨 token 信息流动，FFN 负责单 token 内部的特征变换。两者交替才能涌现真正的 representation power。FFN 也是参数大户（约占总参数 2/3）。",
+    metric: "原版 d=512、隐层 2048；GPT-3 d=12288、隐层 49152 —— FFN 才是真正「装知识」的地方。",
+  },
+  addnorm2: {
+    title: "④d Add & Norm（FFN 后的）",
+    summary: "同 ④b：把 FFN 输出加回 MHA 输出，再 LayerNorm。",
+    why: "两次 Add & Norm 让每个 sub-block 都是「输入 + 增量」，相当于把整个 encoder 视作 N 次细微修正的累加。",
+  },
+  output: {
+    title: "⑤ 上下文化输出",
+    summary: "每个位置的向量已聚合整句信息，shape 与输入相同（n, d）。可直接喂下一个 encoder block，或接 head 做下游任务。",
+    why: "形状不变让我们能堆叠 N 个 block（原版 N=6）；同样的接口也让 BERT 用 MLM、GPT 用 LM 都建立在这套 block 之上。",
+    metric: "GPT-3 用 96 层；LLaMA-3 70B 用 80 层；每一层都是这套 ①–④ 流程。",
+    link: { label: "Transformer 架构", href: "../tracks/language/transformer-architecture/" },
+  },
+};
 
 function PositionalWave({ x, y, width }: { x: number; y: number; width: number }) {
   const samples = 80;
