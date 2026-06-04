@@ -336,10 +336,11 @@ button:focus-visible, a:focus-visible {
 .timeline-axis__nav--left  { left: 10px; }
 .timeline-axis__nav--right { right: 10px; }
 
-/* 外层滚动容器 —— 年份行 + 主题行共用一条横向滚动 */
-.timeline-axis__scroller {
+.timeline-axis__nodes {
   position: relative;
   z-index: 1;
+  display: flex;
+  gap: 4px;
   overflow-x: auto;
   padding: 0 52px 16px;
   scrollbar-color: var(--amber-300) transparent;
@@ -349,72 +350,60 @@ button:focus-visible, a:focus-visible {
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
           mask-image: linear-gradient(90deg, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%);
 }
-.timeline-axis__scroller::-webkit-scrollbar { height: 6px; }
-.timeline-axis__scroller::-webkit-scrollbar-thumb {
+.timeline-axis__nodes::-webkit-scrollbar { height: 6px; }
+.timeline-axis__nodes::-webkit-scrollbar-thumb {
   background: var(--amber-300);
   border-radius: var(--radius-pill);
 }
 
-.timeline-axis__nodes {
-  display: flex;
-  gap: 4px;
-}
-
-/* ---------- 主题主线行 ---------- */
-.timeline-axis__topics {
-  display: flex;
-  gap: 4px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--hairline);
-}
-.timeline-axis__topic {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px;
-  border: 1.5px solid color-mix(in srgb, var(--phase-vision-line) 70%, transparent);
-  border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, var(--phase-vision-soft), color-mix(in srgb, var(--phase-vision-line) 18%, var(--surface-card)));
+/* ---------- 主题入口节点（最左端，与年份同行） ---------- */
+.timeline-node--topic {
+  /* 与普通年份节点同行同高，但区分视觉：用 phase-vision 暖琥珀做底色 + dashed 右边线 */
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--phase-vision-line) 14%, transparent),
+    color-mix(in srgb, var(--phase-vision-line) 4%, transparent)
+  );
+  border: 1.5px solid color-mix(in srgb, var(--phase-vision-line) 60%, transparent);
+  border-right: 2px dashed color-mix(in srgb, var(--phase-vision-line) 70%, transparent);
   color: var(--phase-vision-ink);
-  font: inherit;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-align: left;
-  cursor: pointer;
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  margin-right: 12px;  /* 与紧邻的 2012 拉开一点距离 */
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
-.timeline-axis__topic[data-family="vision"] {
-  border-color: color-mix(in srgb, var(--phase-vision-line) 70%, transparent);
-  background: linear-gradient(90deg, var(--phase-vision-soft), color-mix(in srgb, var(--phase-vision-line) 22%, var(--surface-card)));
+.timeline-node--topic:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--phase-vision-line) 22%, transparent),
+    color-mix(in srgb, var(--phase-vision-line) 8%, transparent)
+  );
+}
+.timeline-node--topic .timeline-node__year {
   color: var(--phase-vision-ink);
-}
-.timeline-axis__topic:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-.timeline-axis__topic-arrow {
-  flex: 0 0 auto;
   font-size: 1.1rem;
-}
-.timeline-axis__topic-label {
-  flex: 1 1 auto;
-  font-size: 0.92rem;
-}
-.timeline-axis__topic-cta {
-  flex: 0 0 auto;
-  padding: 2px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--surface-card);
-  color: var(--phase-vision-ink);
-  font-size: 0.74rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.04em;
 }
-.timeline-axis__topic-spacer {
-  /* 占位空格，对齐到年份列；不显示任何内容 */
-  height: 1px;
+.timeline-node__dot--topic {
+  width: auto;
+  height: auto;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  margin-top: 8px;
+  color: var(--phase-vision-ink);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.timeline-node--topic .timeline-node__title {
+  color: var(--phase-vision-ink);
+  font-weight: 700;
+}
+.timeline-node--topic .timeline-node__phase {
+  background: var(--phase-vision-soft);
+  color: var(--phase-vision-ink);
 }
 
 /* ---------- 单个节点（按家族着色） ---------- */
@@ -1590,7 +1579,7 @@ a.work-item:hover::after, .module-links a:hover::after {
   .content-card--main { padding: 24px; }
   .timeline-axis { padding: 26px 12px 18px; }
   .timeline-axis__track { right: 32px; left: 32px; }
-  .timeline-axis__scroller { padding: 0 28px 16px; }
+  .timeline-axis__nodes { padding: 0 28px 16px; }
   .timeline-node { min-width: 92px; min-height: 124px; }
   .explain-grid { grid-template-columns: 1fr; }
   .timeline-axis__nav { display: none; }

@@ -11,29 +11,27 @@ type TimelineAxisProps = {
 };
 
 /**
- * 主题主线条目：一条横跨多年的主题轨。
- * fromIndex / toIndex 指 nodes 数组中的索引（含两端）。
+ * 主题入口节点：站在主轴最左侧、与年份节点同一行，
+ * 表示"在这之后一段年份范围内属于某个主题"。
+ * 点击 → 滚到下方对应的主题概念图集合。
  */
-type TopicTrack = {
+type TopicEntry = {
   id: string;
-  label: string;
-  family: "vision" | "language" | "scale" | "multimodal" | "alignment" | "foundation";
-  fromYear: string;
-  toYear: string;
+  shortLabel: string; // 节点上的小字（比如 "CNN"）
+  fullLabel: string; // 节点下的副标题
+  family: "vision" | "language" | "scale" | "multimodal" | "alignment";
+  spanLabel: string; // 时间跨度文本（2012–2022）
 };
 
-const TOPIC_TRACKS: TopicTrack[] = [
+const TOPIC_ENTRIES: TopicEntry[] = [
   {
     id: "cnn-track",
-    label: "CNN · 卷积神经网络",
+    shortLabel: "CNN",
+    fullLabel: "卷积神经网络",
     family: "vision",
-    fromYear: "2012",
-    toYear: "2022",
+    spanLabel: "2012–2022",
   },
 ];
-
-const NODE_MIN_W = 96; // 与 .timeline-node min-width 对齐
-const NODE_GAP = 4; // 与 .timeline-axis__nodes gap 对齐
 
 export function TimelineAxis({
   activeYear,
@@ -63,7 +61,7 @@ export function TimelineAxis({
     <section className="timeline-panel" aria-labelledby="timeline-heading">
       <div className="timeline-panel__header">
         <h2 id="timeline-heading">横向主时间线 · 2012 起</h2>
-        <p>左右滚动浏览完整链路，点击年份查看下方内容；底部 CNN 主题条点击展开。</p>
+        <p>左右滚动浏览完整链路，点击年份查看；左端 CNN 主题节点可进 10 张概念图。</p>
         <button
           type="button"
           className="timeline-panel__prehistory"
@@ -95,95 +93,48 @@ export function TimelineAxis({
           ›
         </button>
 
-        <div className="timeline-axis__scroller" ref={scrollerRef}>
-          {/* 年份节点行 */}
-          <div className="timeline-axis__nodes">
-            {nodes.map((node) => {
-              const isActive = node.year === activeYear;
-              const family = phaseFamilyOf(node.phase);
+        <div className="timeline-axis__nodes" ref={scrollerRef}>
+          {/* 主题入口节点 —— 站在主轴最左端，与年份节点同行 */}
+          {TOPIC_ENTRIES.map((topic) => (
+            <button
+              key={topic.id}
+              type="button"
+              className="timeline-node timeline-node--topic"
+              data-family={topic.family}
+              onClick={() => onJumpToTopic(topic.id)}
+              aria-label={`${topic.shortLabel} 主题主线，跳到下方概念图`}
+            >
+              <span className="timeline-node__year">{topic.shortLabel}</span>
+              <span className="timeline-node__dot timeline-node__dot--topic" aria-hidden="true">
+                ⟶
+              </span>
+              <span className="timeline-node__title">{topic.fullLabel}</span>
+              <span className="timeline-node__phase">{topic.spanLabel}</span>
+            </button>
+          ))}
 
-              return (
-                <button
-                  aria-label={`${node.year} ${node.shortTitle}`}
-                  aria-current={isActive ? "step" : undefined}
-                  className="timeline-node"
-                  data-active={isActive}
-                  data-family={family}
-                  key={node.year}
-                  onClick={() => onSelect(node.year)}
-                  type="button"
-                >
-                  <span className="timeline-node__year">{node.year}</span>
-                  <span className="timeline-node__dot" aria-hidden="true" />
-                  <span className="timeline-node__title">{node.shortTitle}</span>
-                  <span className="timeline-node__phase">{node.phase}</span>
-                </button>
-              );
-            })}
-          </div>
+          {nodes.map((node) => {
+            const isActive = node.year === activeYear;
+            const family = phaseFamilyOf(node.phase);
 
-          {/* 主题主线行 —— 与年份对齐的横向 pill */}
-          <div className="timeline-axis__topics" aria-label="主题主线">
-            {(() => {
-              // 把年份轴划成 N 段，每个 topic 是一条从 fromIdx 到 toIdx 的 pill
-              const N = nodes.length;
-              const cells: { idx: number; topic?: TopicTrack; span: number }[] = [];
-              let i = 0;
-              while (i < N) {
-                const topic = TOPIC_TRACKS.find(
-                  (t) => nodes.findIndex((n) => n.year === t.fromYear) === i,
-                );
-                if (topic) {
-                  const from = i;
-                  const to = nodes.findIndex((n) => n.year === topic.toYear);
-                  const span = Math.max(1, to - from + 1);
-                  cells.push({ idx: i, topic, span });
-                  i += span;
-                } else {
-                  cells.push({ idx: i, span: 1 });
-                  i += 1;
-                }
-              }
-
-              return cells.map((cell) => {
-                const cellWidth =
-                  NODE_MIN_W * cell.span + NODE_GAP * (cell.span - 1);
-                const flexBasis = `${cellWidth}px`;
-                if (cell.topic) {
-                  return (
-                    <button
-                      key={cell.topic.id}
-                      type="button"
-                      className="timeline-axis__topic"
-                      data-family={cell.topic.family}
-                      onClick={() => onJumpToTopic(cell.topic!.id)}
-                      style={{
-                        flex: `${cell.span} 0 ${flexBasis}`,
-                        minWidth: flexBasis,
-                      }}
-                    >
-                      <span className="timeline-axis__topic-arrow">⟶</span>
-                      <span className="timeline-axis__topic-label">
-                        {cell.topic.label} · {cell.topic.fromYear}–{cell.topic.toYear}
-                      </span>
-                      <span className="timeline-axis__topic-cta">展开 10 张概念图 ↓</span>
-                    </button>
-                  );
-                }
-                return (
-                  <div
-                    key={`spacer-${cell.idx}`}
-                    className="timeline-axis__topic-spacer"
-                    aria-hidden="true"
-                    style={{
-                      flex: `1 0 ${flexBasis}`,
-                      minWidth: flexBasis,
-                    }}
-                  />
-                );
-              });
-            })()}
-          </div>
+            return (
+              <button
+                aria-label={`${node.year} ${node.shortTitle}`}
+                aria-current={isActive ? "step" : undefined}
+                className="timeline-node"
+                data-active={isActive}
+                data-family={family}
+                key={node.year}
+                onClick={() => onSelect(node.year)}
+                type="button"
+              >
+                <span className="timeline-node__year">{node.year}</span>
+                <span className="timeline-node__dot" aria-hidden="true" />
+                <span className="timeline-node__title">{node.shortTitle}</span>
+                <span className="timeline-node__phase">{node.phase}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>
