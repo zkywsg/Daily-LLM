@@ -1,7 +1,8 @@
 import { prehistoryNodes, timelineNodes } from "./timeline";
 
-test("timeline starts at 2012 and covers through 2025", () => {
+test("timeline starts at 1989 LeNet and covers through 2025", () => {
   expect(timelineNodes.map((node) => node.year)).toEqual([
+    "1989",
     "2012",
     "2013",
     "2014",

@@ -27,9 +27,48 @@ export type TimelineNode = {
 
 /**
  * Layer 1 · 编年主线
- * 起点 2012 AlexNet —— 1948/1958/1986/1997 已搬到 prehistoryNodes
+ * 起点 1989 LeNet（CNN 真正可训）→ 2012 AlexNet（CNN 工业化）→ 2025
+ * 1948/1958/1986/1997 仍在 prehistoryNodes（理论/算法奠基里程碑）
  */
 export const timelineNodes: TimelineNode[] = [
+  {
+    year: "1989",
+    title: "LeNet：CNN 真正可训",
+    shortTitle: "LeNet",
+    phase: "视觉线",
+    previousLimit:
+      "MLP 把图像压平丢失空间结构，参数随像素爆炸；视觉识别只能堆手工特征 + 浅层分类器。",
+    whatHappened:
+      "LeCun 等人把卷积层（局部连接 + 权重共享）+ 池化层 + 反向传播串成端到端网络，提出 LeNet 系列。",
+    solved:
+      "LeNet 在 MNIST 手写数字上端到端训练成功，AT&T 把它部署到银行支票数字识别 —— CNN 第一次工业落地。",
+    newProblems:
+      "受限于 CPU 算力和数据规模，网络只能浅（5–7 层），梯度消失和过拟合尚未解决；之后近 20 年 CNN 在视觉领域被 SVM 抢了风头，直到 2012 AlexNet。",
+    keyWorks: [
+      {
+        name: "Convolution + Pooling",
+        contribution:
+          "局部连接 + 权重共享让参数从 O(H·W·C) 缩到 O(k²·C)；至今未变的 CNN 基本积木。",
+        modulePath: "../tracks/vision/cnn-architectures/",
+      },
+      {
+        name: "LeNet-5",
+        contribution:
+          "1998 年定型版：Conv → Pool → Conv → Pool → FC → FC → Output；MNIST 99% 准确率。",
+      },
+      {
+        name: "端到端 BP 训练",
+        contribution: "首次把 1986 反向传播算法应用到视觉网络，从像素直接梯度回传到滤波器。",
+      },
+    ],
+    prerequisites: [
+      { label: "反向传播", path: "../foundations/deep-learning/backpropagation/" },
+      { label: "归纳偏置", path: "../foundations/structures/inductive-bias/" },
+    ],
+    tracks: [
+      { label: "CNN 架构演进", path: "../tracks/vision/cnn-architectures/" },
+    ],
+  },
   {
     year: "2012",
     title: "AlexNet：一声炮响，旧世界终结",

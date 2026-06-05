@@ -356,55 +356,6 @@ button:focus-visible, a:focus-visible {
   border-radius: var(--radius-pill);
 }
 
-/* ---------- 主题入口节点（最左端，与年份同行） ---------- */
-.timeline-node--topic {
-  /* 与普通年份节点同行同高，但区分视觉：用 phase-vision 暖琥珀做底色 + dashed 右边线 */
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--phase-vision-line) 14%, transparent),
-    color-mix(in srgb, var(--phase-vision-line) 4%, transparent)
-  );
-  border: 1.5px solid color-mix(in srgb, var(--phase-vision-line) 60%, transparent);
-  border-right: 2px dashed color-mix(in srgb, var(--phase-vision-line) 70%, transparent);
-  color: var(--phase-vision-ink);
-  margin-right: 12px;  /* 与紧邻的 2012 拉开一点距离 */
-  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
-}
-.timeline-node--topic:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--phase-vision-line) 22%, transparent),
-    color-mix(in srgb, var(--phase-vision-line) 8%, transparent)
-  );
-}
-.timeline-node--topic .timeline-node__year {
-  color: var(--phase-vision-ink);
-  font-size: 1.1rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-}
-.timeline-node__dot--topic {
-  width: auto;
-  height: auto;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  margin-top: 8px;
-  color: var(--phase-vision-ink);
-  font-size: 1.3rem;
-  font-weight: 800;
-  line-height: 1;
-}
-.timeline-node--topic .timeline-node__title {
-  color: var(--phase-vision-ink);
-  font-weight: 700;
-}
-.timeline-node--topic .timeline-node__phase {
-  background: var(--phase-vision-soft);
-  color: var(--phase-vision-ink);
-}
 
 /* ---------- 单个节点（按家族着色） ---------- */
 .timeline-node {

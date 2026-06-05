@@ -7,38 +7,14 @@ type TimelineAxisProps = {
   activeYear: string;
   onSelect: (year: string) => void;
   onOpenPrehistory: () => void;
-  onJumpToTopic: (topicId: string) => void;
+  onJumpToTopic?: (topicId: string) => void;
 };
-
-/**
- * 主题入口节点：站在主轴最左侧、与年份节点同一行，
- * 表示"在这之后一段年份范围内属于某个主题"。
- * 点击 → 滚到下方对应的主题概念图集合。
- */
-type TopicEntry = {
-  id: string;
-  shortLabel: string; // 节点上的小字（比如 "CNN"）
-  fullLabel: string; // 节点下的副标题
-  family: "vision" | "language" | "scale" | "multimodal" | "alignment";
-  spanLabel: string; // 时间跨度文本（2012–2022）
-};
-
-const TOPIC_ENTRIES: TopicEntry[] = [
-  {
-    id: "cnn-track",
-    shortLabel: "CNN",
-    fullLabel: "卷积神经网络",
-    family: "vision",
-    spanLabel: "2012–2022",
-  },
-];
 
 export function TimelineAxis({
   activeYear,
   nodes,
   onSelect,
   onOpenPrehistory,
-  onJumpToTopic,
 }: TimelineAxisProps) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const activeIndex = Math.max(
@@ -60,8 +36,8 @@ export function TimelineAxis({
   return (
     <section className="timeline-panel" aria-labelledby="timeline-heading">
       <div className="timeline-panel__header">
-        <h2 id="timeline-heading">横向主时间线 · 2012 起</h2>
-        <p>左右滚动浏览完整链路，点击年份查看；左端 CNN 主题节点可进 10 张概念图。</p>
+        <h2 id="timeline-heading">横向主时间线 · 1989 LeNet → 2025</h2>
+        <p>左右滚动浏览完整链路，点击年份查看下方内容。</p>
         <button
           type="button"
           className="timeline-panel__prehistory"
@@ -94,25 +70,6 @@ export function TimelineAxis({
         </button>
 
         <div className="timeline-axis__nodes" ref={scrollerRef}>
-          {/* 主题入口节点 —— 站在主轴最左端，与年份节点同行 */}
-          {TOPIC_ENTRIES.map((topic) => (
-            <button
-              key={topic.id}
-              type="button"
-              className="timeline-node timeline-node--topic"
-              data-family={topic.family}
-              onClick={() => onJumpToTopic(topic.id)}
-              aria-label={`${topic.shortLabel} 主题主线，跳到下方概念图`}
-            >
-              <span className="timeline-node__year">{topic.shortLabel}</span>
-              <span className="timeline-node__dot timeline-node__dot--topic" aria-hidden="true">
-                ⟶
-              </span>
-              <span className="timeline-node__title">{topic.fullLabel}</span>
-              <span className="timeline-node__phase">{topic.spanLabel}</span>
-            </button>
-          ))}
-
           {nodes.map((node) => {
             const isActive = node.year === activeYear;
             const family = phaseFamilyOf(node.phase);

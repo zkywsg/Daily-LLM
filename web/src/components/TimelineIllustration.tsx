@@ -212,6 +212,11 @@ export function TimelineIllustration({ year }: TimelineIllustrationProps) {
 type Renderer = { caption: string; render: () => ReactElement };
 
 const ILLUSTRATIONS: Record<string, Renderer> = {
+  "1989": {
+    caption:
+      "LeNet（1989 LeCun → 1998 LeNet-5）：第一次让 CNN 端到端可训。Conv→Pool→Conv→Pool→FC→Softmax，至今未变的 CNN 骨架",
+    render: () => <LeNetDiagram />,
+  },
   "2012": {
     caption:
       "AlexNet 完整 8 层：输入 224² → 5 个 Conv（含 ReLU/MaxPool）→ 3 个 FC → 1000 类 Softmax。逐层标注 spatial 维度 × 通道数",
@@ -2488,6 +2493,124 @@ function DeepSeekR1Diagram() {
           如何构造，仍是开放问题。
         </text>
       </g>
+    </svg>
+  );
+}
+
+/* =====================================================================
+ * 1989 — LeNet（CNN 真正可训）
+ * ===================================================================== */
+function LeNetDiagram() {
+  const layers = [
+    { label: "Input", spatial: "32×32", ch: 1, x: 50, w: 64, color: "input" },
+    { label: "C1 · Conv 5×5", spatial: "28×28", ch: 6, x: 170, w: 56, color: "conv" },
+    { label: "S2 · AvgPool 2×2", spatial: "14×14", ch: 6, x: 290, w: 48, color: "conv" },
+    { label: "C3 · Conv 5×5", spatial: "10×10", ch: 16, x: 410, w: 38, color: "conv" },
+    { label: "S4 · AvgPool 2×2", spatial: "5×5", ch: 16, x: 520, w: 28, color: "conv" },
+    { label: "C5 · Conv 5×5", spatial: "1×1", ch: 120, x: 620, w: 14, color: "fc" },
+    { label: "F6 · FC", spatial: "—", ch: 84, x: 720, w: 14, color: "fc" },
+    { label: "Output · Gaussian / Softmax", spatial: "—", ch: 10, x: 820, w: 14, color: "fc" },
+  ];
+
+  const layerH = (ch: number) =>
+    Math.max(40, Math.min(120, 24 + Math.log2(ch) * 12));
+
+  return (
+    <svg viewBox="0 0 1100 440" role="img" className="illustration__svg illustration__svg--tall">
+      <ArrowDefs />
+
+      <text x="30" y="30" className="illustration__label illustration__label--strong">
+        LeNet-5 · 7 层（2 Conv + 2 Pool + 2 FC + Output）· ~60K 参数 · MNIST 99% 准确率
+      </text>
+
+      {layers.map((L, i) => {
+        const h = layerH(L.ch);
+        const yMid = 200;
+        const yTop = yMid - h / 2;
+        const layerCls =
+          L.color === "input"
+            ? "illustration__layer illustration__layer--input"
+            : L.color === "conv"
+              ? "illustration__layer illustration__layer--conv"
+              : "illustration__layer illustration__layer--fc";
+        return (
+          <g key={L.label} style={{ animationDelay: `${i * 80}ms` }} className="illustration__appear">
+            <rect x={L.x + 6} y={yTop - 6} width={L.w} height={h} rx="3" className={`${layerCls} illustration__layer--back`} />
+            <rect x={L.x + 3} y={yTop - 3} width={L.w} height={h} rx="3" className={`${layerCls} illustration__layer--mid`} />
+            <rect x={L.x} y={yTop} width={L.w} height={h} rx="3" className={layerCls} />
+
+            <text x={L.x + L.w / 2} y={yTop - 14} textAnchor="middle" className="illustration__label illustration__label--small">
+              {L.ch} ch
+            </text>
+            <text x={L.x + L.w / 2} y={yTop + h + 16} textAnchor="middle" className="illustration__label illustration__label--small">
+              {L.spatial}
+            </text>
+          </g>
+        );
+      })}
+
+      {layers.map((L, i) => (
+        <text
+          key={`name-${i}`}
+          x={L.x + L.w / 2}
+          y="358"
+          textAnchor="end"
+          className="illustration__label illustration__label--small"
+          transform={`rotate(-30 ${L.x + L.w / 2} 358)`}
+        >
+          {L.label}
+        </text>
+      ))}
+
+      {layers.slice(0, -1).map((L, i) => {
+        const next = layers[i + 1];
+        const x1 = L.x + L.w + 4;
+        const x2 = next.x - 4;
+        return (
+          <line
+            key={`flow-${i}`}
+            x1={x1}
+            y1="200"
+            x2={x2}
+            y2="200"
+            className="illustration__flow"
+            style={{ animationDelay: `${i * 150}ms` }}
+          />
+        );
+      })}
+
+      {/* 输出：10 类概率柱（手写数字 0-9） */}
+      <g transform="translate(900, 160)">
+        <text x="0" y="-8" className="illustration__label illustration__label--small">手写数字 0–9</text>
+        {[
+          { label: "7", v: 0.88 },
+          { label: "1", v: 0.06 },
+          { label: "9", v: 0.04 },
+          { label: "...", v: 0.02 },
+        ].map((p, i) => (
+          <g key={p.label}>
+            <rect
+              x="0"
+              y={i * 20}
+              width={p.v * 80 + 4}
+              height="14"
+              rx="2"
+              className="illustration__bar"
+              style={{ animationDelay: `${800 + i * 80}ms` }}
+            />
+            <text x={p.v * 80 + 10} y={i * 20 + 12} className="illustration__label illustration__label--small">
+              {p.label} {(p.v * 100).toFixed(0)}%
+            </text>
+          </g>
+        ))}
+      </g>
+
+      <text x="30" y="402" className="illustration__label">
+        关键贡献：① 把卷积 + 池化作为可学积木  ② 用 BP 端到端梯度训练  ③ 权重共享让 CPU 时代也能跑
+      </text>
+      <text x="30" y="424" className="illustration__label illustration__label--small">
+        LeNet 的局限：浅（仅 5 层 weight）+ tanh 激活 + 数据少；2012 AlexNet 把它扩到 60M 参数、ReLU、GPU 训练才点燃 ImageNet
+      </text>
     </svg>
   );
 }
