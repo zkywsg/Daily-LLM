@@ -1,7 +1,8 @@
 # Daily-LLM 风格指南
 
-> **唯一权威参考**：`AGENTS.md`（项目根目录）。
+> **新入口**：[docs/writing-style.md](docs/writing-style.md)（写作风格）
+> 与 [docs/tech-conventions.md](docs/tech-conventions.md)（技术约定）。
 >
-> 所有模块结构、签名元素、Mermaid 色彩、代码规范、Notebook 结构均已统一收录于 `AGENTS.md`。新建或修改任何内容前，请先查阅该文件。
+> 项目元信息见 [AGENTS.md](AGENTS.md)。
 >
-> 本文件保留作为历史兼容入口，内容不再重复展开。
+> 本文件保留作为历史兼容入口。
