@@ -126,6 +126,8 @@ export const timelineNodes: TimelineNode[] = [
     keyWorks: [
       { name: "Attention", contribution: "让解码器按需回看输入位置，突破固定上下文瓶颈。", modulePath: "../tracks/language/attention-mechanisms/" },
       { name: "Adam", contribution: "结合动量和自适应学习率，成为深度学习默认优化器。" },
+      { name: "VGG", contribution: "纯 3×3 卷积反复堆叠到 16/19 层，证明深度本身就是性能来源。", modulePath: "../tracks/vision/cnn-architectures/" },
+      { name: "GoogLeNet / Inception", contribution: "用 1×1 降维 + 多尺度并行（Inception block），同等表达下省 12× 参数。", modulePath: "../tracks/vision/cnn-architectures/" },
     ],
     prerequisites: [
       { label: "编码器-解码器", path: "../foundations/structures/encoder-decoder/" },
@@ -149,6 +151,8 @@ export const timelineNodes: TimelineNode[] = [
     keyWorks: [
       { name: "Residual Connection", contribution: "给梯度和信息提供直通路径，缓解退化问题。", modulePath: "../foundations/structures/residual-connections/" },
       { name: "Batch Normalization", contribution: "稳定中间激活分布，提高训练速度和稳定性。", modulePath: "../foundations/deep-learning/normalization/" },
+      { name: "U-Net", contribution: "对称 encoder-decoder + skip connection，医学影像与语义分割的黄金范式。", modulePath: "../tracks/vision/cnn-architectures/" },
+      { name: "Faster R-CNN", contribution: "RPN 区域候选网络 + ROI 池化，让两阶段目标检测端到端可训。", modulePath: "../tracks/vision/object-detection/" },
     ],
     prerequisites: [
       { label: "残差连接", path: "../foundations/structures/residual-connections/" },
@@ -170,6 +174,8 @@ export const timelineNodes: TimelineNode[] = [
     keyWorks: [
       { name: "Policy Network", contribution: "缩小搜索动作空间，让搜索更有效率。" },
       { name: "Value Network", contribution: "评估局面胜率，减少深度展开成本。" },
+      { name: "YOLO", contribution: "把目标检测当成一次性回归问题，端到端预测所有框 —— 实时检测从此起步。", modulePath: "../tracks/vision/object-detection/" },
+      { name: "DenseNet", contribution: "每层接收前面所有层的输出，把特征复用推到极致；同等深度参数更少。", modulePath: "../tracks/vision/cnn-architectures/" },
     ],
     prerequisites: [
       { label: "概率与信息论", path: "../foundations/math/probability-information-theory/" },
@@ -191,6 +197,8 @@ export const timelineNodes: TimelineNode[] = [
     keyWorks: [
       { name: "Self-Attention", contribution: "每个 token 直接和其他 token 建立依赖。", modulePath: "../tracks/language/attention-mechanisms/" },
       { name: "Multi-Head Attention", contribution: "在多个子空间并行建模不同关系。", modulePath: "../tracks/language/transformer-architecture/" },
+      { name: "MobileNet v1", contribution: "depthwise + 1×1 pointwise 把标准卷积拆成两步，让 CNN 第一次能跑在手机 CPU 上。", modulePath: "../tracks/vision/lightweight-vision/" },
+      { name: "Mask R-CNN", contribution: "在 Faster R-CNN 上加 mask head + ROI Align，实例分割集大成。", modulePath: "../tracks/vision/segmentation-gan/" },
     ],
     prerequisites: [
       { label: "注意力入门", path: "../foundations/structures/attention-primer/" },
@@ -235,6 +243,7 @@ export const timelineNodes: TimelineNode[] = [
     keyWorks: [
       { name: "GPT-2", contribution: "1.5B 参数模型展示强生成能力和零样本潜力。" },
       { name: "T5", contribution: "把分类、翻译、摘要等任务统一成 text-to-text。" },
+      { name: "EfficientNet", contribution: "用 NAS 找种子模型 B0，再用「深度 / 宽度 / 分辨率」三轴等比缩放出 B1-B7，5.3M 参数即超 ResNet-50。", modulePath: "../tracks/vision/cnn-architectures/" },
     ],
     prerequisites: [
       { label: "数值精度", path: "../foundations/deep-learning/numerical-precision/" },
@@ -256,6 +265,7 @@ export const timelineNodes: TimelineNode[] = [
     keyWorks: [
       { name: "Scaling Laws", contribution: "用经验规律指导模型、数据和算力配比。", modulePath: "../tracks/scale-multimodal/scale/pre-training/" },
       { name: "GPT-3", contribution: "展示大模型涌现式 Few-shot 能力。" },
+      { name: "ViT (Vision Transformer)", contribution: "把图像切成 16×16 patch 当 token 喂 Transformer，纯注意力在 ImageNet 反超 CNN —— 视觉范式从 CNN 倒戈 Attention。", modulePath: "../tracks/vision/cnn-architectures/" },
     ],
     prerequisites: [
       { label: "概率与信息论", path: "../foundations/math/probability-information-theory/" },
@@ -300,6 +310,8 @@ export const timelineNodes: TimelineNode[] = [
     keyWorks: [
       { name: "RLHF", contribution: "把人类偏好转化为奖励信号，改善回答可用性。", modulePath: "../tracks/alignment/alignment/" },
       { name: "Instruction Tuning", contribution: "让模型更稳定地理解任务指令。" },
+      { name: "ConvNeXt", contribution: "把 ViT 的设计选择（大 kernel / LayerNorm / GELU / AdamW）逐项倒灌回 ResNet，CNN 反超 Swin —— 架构选择 > 卷积 vs 注意力。", modulePath: "../tracks/vision/cnn-architectures/" },
+      { name: "MAE (Masked Autoencoders)", contribution: "把 BERT 的 mask 思想搬到视觉：随机遮 75% 图像 patch 再重建，开启视觉自监督预训练新范式。", modulePath: "../tracks/vision/cnn-architectures/" },
     ],
     prerequisites: [
       { label: "损失函数", path: "../foundations/deep-learning/loss-functions/" },

@@ -833,56 +833,270 @@ function Concept9Transposed() {
 /* =====================================================================
  * ⑩ 架构演进 mini timeline
  * ===================================================================== */
+/* ---------- 演进图里每个里程碑的迷你架构缩图 ---------- */
+
+function MiniAlexNet() {
+  return (
+    <g>
+      {/* 5 conv 块（递减）+ 3 fc 细条 */}
+      {[
+        { x: 0, w: 28 }, { x: 32, w: 22 }, { x: 58, w: 18 },
+        { x: 80, w: 16 }, { x: 100, w: 14 },
+      ].map((b, i) => (
+        <rect key={i} x={b.x} y={26 - b.w / 2 + 14} width={b.w} height={b.w} rx="2"
+          className="illustration__layer illustration__layer--conv" />
+      ))}
+      {[120, 130, 140].map((x) => (
+        <rect key={x} x={x} y="22" width="6" height="32" rx="1"
+          className="illustration__layer illustration__layer--fc" />
+      ))}
+    </g>
+  );
+}
+
+function MiniVGG() {
+  // 强调"深而整齐"：一长串等大方块
+  return (
+    <g>
+      {Array.from({ length: 13 }).map((_, i) => (
+        <rect key={i} x={i * 9} y="22" width="7" height="32" rx="1.5"
+          className="illustration__layer illustration__layer--conv" />
+      ))}
+      {[120, 130, 140].map((x) => (
+        <rect key={x} x={x} y="22" width="6" height="32" rx="1"
+          className="illustration__layer illustration__layer--fc" />
+      ))}
+    </g>
+  );
+}
+
+function MiniGoogLeNet() {
+  // Inception：4 路并行 → concat
+  return (
+    <g>
+      <rect x="0" y="32" width="14" height="14" rx="2" className="illustration__featuremap" />
+      {[
+        { y: 8, label: "1×1" },
+        { y: 28, label: "3×3" },
+        { y: 48, label: "5×5" },
+        { y: 68, label: "pool" },
+      ].map((br, i) => (
+        <g key={i}>
+          <path d={`M 14 39 C 30 39, 40 ${br.y + 6}, 56 ${br.y + 6}`} className="illustration__branch illustration__branch--q" fill="none" />
+          <rect x="56" y={br.y} width="32" height="12" rx="2" className="illustration__proj illustration__proj--q" />
+          <text x="72" y={br.y + 9} textAnchor="middle" fontSize="8" className="illustration__block-label illustration__block-label--small">{br.label}</text>
+          <path d={`M 88 ${br.y + 6} C 100 ${br.y + 6}, 110 39, 124 39`} className="illustration__branch illustration__branch--k" fill="none" />
+        </g>
+      ))}
+      <rect x="124" y="32" width="22" height="14" rx="2" className="illustration__featuremap illustration__featuremap--ctx" />
+    </g>
+  );
+}
+
+function MiniResNet() {
+  // 残差：旁路 skip arc
+  return (
+    <g>
+      <rect x="0" y="32" width="14" height="14" rx="2" className="illustration__featuremap" />
+      {[30, 60, 90].map((x, i) => (
+        <rect key={i} x={x} y="32" width="20" height="14" rx="2" className="illustration__proj illustration__proj--ffn" />
+      ))}
+      <circle cx="125" cy="39" r="6" className="illustration__addnorm" />
+      <text x="125" y="42" textAnchor="middle" fontSize="10">⊕</text>
+      <rect x="140" y="32" width="14" height="14" rx="2" className="illustration__featuremap illustration__featuremap--ctx" />
+      {/* skip 弧 */}
+      <path d="M 7 32 C 7 6, 125 6, 125 32" className="illustration__residual" fill="none" />
+    </g>
+  );
+}
+
+function MiniDenseNet() {
+  // 稠密连接：每层接收前面所有层
+  return (
+    <g>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <rect key={i} x={i * 32} y="32" width="22" height="14" rx="2"
+          className={i === 0 ? "illustration__featuremap" : "illustration__proj illustration__proj--v"} />
+      ))}
+      {/* 所有跨层连接 */}
+      {[
+        { from: 0, to: 2 }, { from: 0, to: 3 }, { from: 0, to: 4 },
+        { from: 1, to: 3 }, { from: 1, to: 4 }, { from: 2, to: 4 },
+      ].map((c, i) => {
+        const x1 = c.from * 32 + 11;
+        const x2 = c.to * 32 + 11;
+        const dy = -8 - (c.to - c.from) * 3;
+        return (
+          <path key={i} d={`M ${x1} 32 C ${x1} ${dy}, ${x2} ${dy}, ${x2} 32`}
+            className="illustration__residual" fill="none" />
+        );
+      })}
+    </g>
+  );
+}
+
+function MiniSENet() {
+  // 通道重标定：feature → GAP → FC → FC → sigmoid → × feature
+  return (
+    <g>
+      <rect x="0" y="22" width="30" height="32" rx="2" className="illustration__featuremap" />
+      <path d="M 30 38 C 42 38, 42 12, 54 12" className="illustration__branch illustration__branch--q" fill="none" />
+      {[60, 86, 112].map((x, i) => (
+        <rect key={i} x={x} y="6" width="20" height="14" rx="2"
+          className={i === 0 ? "illustration__block illustration__block--alt" : "illustration__proj illustration__proj--v"} />
+      ))}
+      <text x="70" y="16" textAnchor="middle" fontSize="7">GAP</text>
+      <text x="96" y="16" textAnchor="middle" fontSize="7">FC</text>
+      <text x="122" y="16" textAnchor="middle" fontSize="7">σ</text>
+      <path d="M 132 12 C 140 12, 140 38, 134 38" className="illustration__branch illustration__branch--q" fill="none" />
+      <text x="138" y="42" fontSize="11">×</text>
+      <rect x="146" y="22" width="30" height="32" rx="2" className="illustration__featuremap illustration__featuremap--ctx" />
+    </g>
+  );
+}
+
+function MiniResNeXt() {
+  // Cardinality：分支并行
+  return (
+    <g>
+      <rect x="0" y="32" width="14" height="14" rx="2" className="illustration__featuremap" />
+      {[6, 24, 42, 60].map((y, i) => (
+        <g key={i}>
+          <path d={`M 14 39 C 28 39, 36 ${y + 5}, 50 ${y + 5}`} className="illustration__branch illustration__branch--q" fill="none" />
+          <rect x="50" y={y} width="36" height="10" rx="2" className="illustration__proj illustration__proj--ffn" />
+          <path d={`M 86 ${y + 5} C 100 ${y + 5}, 108 39, 122 39`} className="illustration__branch illustration__branch--v" fill="none" />
+        </g>
+      ))}
+      <circle cx="128" cy="39" r="6" className="illustration__addnorm" />
+      <text x="128" y="42" textAnchor="middle" fontSize="10">⊕</text>
+    </g>
+  );
+}
+
+function MiniMobileNet() {
+  // Depthwise + Pointwise
+  return (
+    <g>
+      <text x="0" y="14" fontSize="8" className="illustration__label illustration__label--small">DW 3×3</text>
+      {[0, 1, 2, 3].map((i) => (
+        <rect key={i} x="0" y={20 + i * 11} width="40" height="8" rx="1"
+          className="illustration__proj illustration__proj--q" />
+      ))}
+      <line x1="48" y1="38" x2="64" y2="38" className="illustration__arrow" />
+      <text x="56" y="14" fontSize="8" className="illustration__label illustration__label--small">PW 1×1</text>
+      <rect x="70" y="20" width="40" height="44" rx="2" className="illustration__proj illustration__proj--v" />
+      <line x1="118" y1="38" x2="134" y2="38" className="illustration__arrow" />
+      <rect x="140" y="22" width="20" height="40" rx="2" className="illustration__featuremap illustration__featuremap--ctx" />
+    </g>
+  );
+}
+
+function MiniEfficientNet() {
+  // 三轴等比缩放
+  return (
+    <g>
+      <rect x="20" y="22" width="44" height="44" rx="3" className="illustration__featuremap" />
+      {/* depth 轴：向上 */}
+      <line x1="42" y1="22" x2="42" y2="6" className="illustration__arrow" markerEnd="url(#cnn-arrow)" />
+      <text x="50" y="12" fontSize="9" className="illustration__label illustration__label--small">depth ↑</text>
+      {/* width 轴：向右 */}
+      <line x1="64" y1="44" x2="100" y2="44" className="illustration__arrow" markerEnd="url(#cnn-arrow)" />
+      <text x="106" y="46" fontSize="9" className="illustration__label illustration__label--small">width →</text>
+      {/* resolution 轴：右下 */}
+      <line x1="64" y1="66" x2="90" y2="86" className="illustration__arrow" markerEnd="url(#cnn-arrow)" />
+      <text x="96" y="86" fontSize="9" className="illustration__label illustration__label--small">res ↗</text>
+      <text x="120" y="76" fontSize="9" fontWeight="700" className="illustration__label illustration__label--small">
+        αᵈ·βʷ·γʳ ≤ 2
+      </text>
+    </g>
+  );
+}
+
+function MiniConvNeXt() {
+  // ResNet 骨架但用 ViT 风格组件
+  return (
+    <g>
+      <rect x="0" y="32" width="14" height="14" rx="2" className="illustration__featuremap" />
+      {/* 7×7 DW */}
+      <rect x="22" y="28" width="28" height="22" rx="3" className="illustration__proj illustration__proj--q" />
+      <text x="36" y="42" textAnchor="middle" fontSize="7">7×7 DW</text>
+      {/* LN */}
+      <rect x="56" y="28" width="20" height="22" rx="3" className="illustration__block illustration__block--alt" />
+      <text x="66" y="42" textAnchor="middle" fontSize="8">LN</text>
+      {/* 1×1 ×4 */}
+      <rect x="82" y="28" width="24" height="22" rx="3" className="illustration__proj illustration__proj--ffn" />
+      <text x="94" y="42" textAnchor="middle" fontSize="7">1×1↑4d</text>
+      {/* GELU */}
+      <rect x="112" y="28" width="20" height="22" rx="3" className="illustration__proj illustration__proj--act" />
+      <text x="122" y="42" textAnchor="middle" fontSize="8">GELU</text>
+      <circle cx="142" cy="39" r="6" className="illustration__addnorm" />
+      <text x="142" y="42" textAnchor="middle" fontSize="10">⊕</text>
+      {/* 残差弧 */}
+      <path d="M 7 32 C 7 6, 142 6, 142 32" className="illustration__residual" fill="none" />
+    </g>
+  );
+}
+
 function Concept10Evolution() {
-  const eras = [
-    { x: 60, year: "2012", name: "AlexNet", contrib: "把 CNN 跑通", family: "vision" },
-    { x: 170, year: "2014", name: "VGG", contrib: "深而整齐", family: "vision" },
-    { x: 280, year: "2014", name: "GoogLeNet", contrib: "1×1 + 多尺度", family: "vision" },
-    { x: 410, year: "2015", name: "ResNet", contrib: "残差跨深层", family: "vision" },
-    { x: 530, year: "2016", name: "DenseNet", contrib: "稠密连接复用", family: "vision" },
-    { x: 640, year: "2017", name: "SE-Net", contrib: "通道重标定", family: "vision" },
-    { x: 750, year: "2017", name: "ResNeXt", contrib: "Cardinality", family: "vision" },
-    { x: 850, year: "2017", name: "MobileNet", contrib: "Depthwise Sep", family: "scale" },
-    { x: 940, year: "2019", name: "EfficientNet", contrib: "三轴等比缩放", family: "scale" },
-    { x: 1030, year: "2022", name: "ConvNeXt", contrib: "ViT 反哺 CNN", family: "alignment" },
+  type Era = {
+    year: string;
+    name: string;
+    contrib: string;
+    render: () => React.ReactElement;
+  };
+  const eras: Era[] = [
+    { year: "2012", name: "AlexNet", contrib: "把 CNN 跑通", render: () => <MiniAlexNet /> },
+    { year: "2014", name: "VGG", contrib: "深而整齐", render: () => <MiniVGG /> },
+    { year: "2014", name: "GoogLeNet", contrib: "1×1 + 多尺度并行", render: () => <MiniGoogLeNet /> },
+    { year: "2015", name: "ResNet", contrib: "残差跨深层", render: () => <MiniResNet /> },
+    { year: "2016", name: "DenseNet", contrib: "稠密连接复用", render: () => <MiniDenseNet /> },
+    { year: "2017", name: "SE-Net", contrib: "通道重标定", render: () => <MiniSENet /> },
+    { year: "2017", name: "ResNeXt", contrib: "Cardinality 并行", render: () => <MiniResNeXt /> },
+    { year: "2017", name: "MobileNet", contrib: "DW + PW", render: () => <MiniMobileNet /> },
+    { year: "2019", name: "EfficientNet", contrib: "三轴等比缩放", render: () => <MiniEfficientNet /> },
+    { year: "2022", name: "ConvNeXt", contrib: "ViT 反哺 CNN", render: () => <MiniConvNeXt /> },
   ];
 
   return (
     <ConceptCard
       index="10"
       title="架构演进 10 步（2012 → 2022）"
-      caption="每一代都在修上一代的具体瓶颈：能不能跑通 → 深 → 贵 → 退化 → 复用 → 效率 → 反哺"
-      footer="2020 后 ViT 一度抢戏；ConvNeXt 证明 CNN 拿 ViT 的训练技术也能追平。"
+      caption="每一代都在修上一代的具体瓶颈 —— 把每个里程碑的「特征 shape」直接画出来"
+      footer="2020 ViT 一度抢戏；2022 ConvNeXt 反过来证明：架构选择 > 卷积 vs 注意力。"
     >
-      <svg viewBox="0 0 1100 280" className="illustration__svg illustration__svg--tall" role="img">
-        {/* 时间轴 */}
-        <line x1="40" y1="140" x2="1080" y2="140" className="illustration__rail" />
+      <svg viewBox="0 0 1100 560" className="illustration__svg illustration__svg--tall" role="img">
+        <ArrowDefs />
 
-        {eras.map((era, i) => (
-          <g key={era.name} transform={`translate(${era.x}, 0)`}>
-            <circle
-              cx="0"
-              cy="140"
-              r="10"
-              className="illustration__neuron illustration__neuron--big"
-              style={{ animationDelay: `${i * 80}ms` }}
-            />
-            <text x="0" y="120" textAnchor="middle" className="illustration__label illustration__label--small">{era.year}</text>
-            <text x="0" y="170" textAnchor="middle" className="illustration__label illustration__label--strong">{era.name}</text>
-            <text x="0" y="190" textAnchor="middle" className="illustration__label illustration__label--small" style={{ fill: "var(--ink-muted)" }}>
-              {era.contrib}
-            </text>
-          </g>
-        ))}
-
-        {/* 三段语义注解 */}
-        <g transform="translate(40, 220)">
-          <text x="0" y="0" className="illustration__label illustration__label--small">
-            <tspan style={{ fill: "var(--phase-vision-ink)" }}>● 视觉线主战场（2012-2017）</tspan>
-            <tspan x="240" style={{ fill: "var(--phase-scale-ink)" }}>● 效率维度（2017-2019）</tspan>
-            <tspan x="460" style={{ fill: "var(--phase-alignment-ink)" }}>● 反哺与汇流（2022+）</tspan>
-          </text>
-        </g>
+        {/* 5 列 × 2 行布局 */}
+        {eras.map((era, i) => {
+          const col = i % 5;
+          const row = Math.floor(i / 5);
+          const cellW = 210;
+          const cellH = 260;
+          const x = 20 + col * cellW;
+          const y = row * cellH + 12;
+          return (
+            <g key={era.name} transform={`translate(${x}, ${y})`}>
+              {/* 卡片底框 */}
+              <rect width={cellW - 12} height={cellH - 12} rx="10"
+                className="illustration__block" />
+              {/* 年份 */}
+              <text x="14" y="22" className="illustration__label illustration__label--small">
+                {era.year}
+              </text>
+              {/* 迷你架构 */}
+              <g transform="translate(14, 38)">{era.render()}</g>
+              {/* 名字 */}
+              <text x="14" y="178" className="illustration__label illustration__label--strong">
+                {era.name}
+              </text>
+              {/* 一句话 */}
+              <text x="14" y="200" className="illustration__label illustration__label--small">
+                {era.contrib}
+              </text>
+            </g>
+          );
+        })}
       </svg>
     </ConceptCard>
   );
