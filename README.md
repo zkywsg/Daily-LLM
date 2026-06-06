@@ -35,26 +35,28 @@
 
 <a id="timeline"></a>
 
-## 时间线：被逼出来的历史（2012–2025）
+## 时间线：15 个家族（2012–2025）
 
-| 年份 | 核心突破 | 之前卡在哪 |
-|------|---------|-----------|
-| 2012 | **AlexNet** — Top-5 错误率 15.3%，比第二名低 11 个百分点 | 视觉特征靠手工设计（SIFT/HOG），识别率多年停滞在 25–26% |
-| 2013 | **Word2Vec** — `king − man + woman ≈ queen` | One-Hot 无语义，"猫"与"狗"的距离等于"猫"与"飞机" |
-| 2014 | **GAN + Seq2Seq + Attention + Adam** — 四个基础件同年到位 | 模型只能分类不能生成；翻译靠规则对齐表；学习率需手动调 |
-| 2015 | **ResNet + Batch Norm** — 152 层，Top-5 低于人类水平 | 网络超 20 层后训练反而变差（退化问题） |
-| 2016 | **AlphaGo** — 4:1 击败世界冠军李世石 | 围棋搜索空间天文数字，专家预测 AI 至少还需十年 |
-| 2017 | **Transformer** — 纯 Attention 取代 RNN，完全并行 | LSTM 天生串行，句子越长训练越慢 |
-| 2018 | **BERT + GPT-1** — 预训练 + 微调范式，一词多义解决 | 静态词向量每词只有一个表示，下游任务需从头训练 |
-| 2019 | **GPT-2 + T5** — 1.5B 参数，NLP 任务统一为文本到文本 | BERT 路线内卷，无人知道单纯放大模型会发生什么 |
-| 2020 | **GPT-3 + Scaling Laws** — 175B 参数涌现 Few-shot 能力 | 普遍认为大模型必须在每个任务上微调才有效 |
-| 2021 | **CLIP + Codex + LoRA** — 图文对齐 / 代码生成 / 低成本微调 | 视觉与语言完全割裂；大模型微调只有巨头能做 |
-| 2022 | **ChatGPT + RLHF** — 5 天百万用户，史上最快消费应用增长 | GPT-3 是文本补全工具；无对齐机制，有害内容照单全说 |
-| 2023 | **GPT-4 + LLaMA** — 多模态推理质变，开源社区全面爆发 | 大模型权重是少数闭源公司专利，研究者无法触及 |
-| 2024 | **MoE + 长上下文 + o1** — 激活参数比例下降；推理时慢思考 | 大模型推理成本线性上涨；复杂推理一步错满盘皆输 |
-| 2025 | **DeepSeek R1 + Test-Time Compute** — 开源追平闭源推理能力 | 推理模型是 OpenAI 独门武器；"只有砸钱才能做"无人挑战 |
+| # | 家族 | 关键年份 | 一句话定位 |
+|---|------|---------|-----------|
+| 01 | [CNN 卷积神经网络](01-cnn/) | 2012– | 把视觉特征从手工设计交给反向传播 |
+| 02 | [RNN / LSTM / GRU](02-rnn-lstm/) | 1997, 2014– | 给神经网络装上"记忆" |
+| 03 | [Word Embedding](03-word-embedding/) | 2013– | 让"词"有了分布式的语义坐标 |
+| 04 | [GAN](04-gan/) | 2014– | 用对抗博弈学会"生成" |
+| 05 | [Transformer](05-transformer/) | 2017 | 用纯注意力替代循环，彻底并行 |
+| 06 | [BERT 系预训练](06-bert-family/) | 2018– | 双向预训练 + 微调成为 NLP 新范式 |
+| 07 | [GPT 系 + Scaling](07-gpt-scaling/) | 2018–2020 | 把规模做到底，涌现 Few-shot |
+| 08 | [视觉 Transformer (ViT)](08-vit/) | 2020– | Transformer 反攻视觉 |
+| 09 | [多模态对齐](09-multimodal-clip/) | 2021– | 让"图"和"文"住进同一个空间 |
+| 10 | [扩散模型](10-diffusion/) | 2020– | 生成的新王，从噪声到图像 |
+| 11 | [PEFT / LoRA](11-peft-lora/) | 2021– | 把大模型微调成本压到普通人能玩 |
+| 12 | [对齐与 RLHF](12-rlhf-alignment/) | 2022– | 把"会答"变成"答得好" |
+| 13 | [MoE 与高效推理](13-moe-efficient/) | 2023– | 大模型在不变贵的前提下变更大 |
+| 14 | [RAG 与 Agent](14-rag-agent/) | 2023– | 把模型接上外部世界 |
+| 15 | [推理模型 (o1/R1)](15-reasoning-o1-r1/) | 2024– | 推理时多想几步，能力再上一个台阶 |
 
-→ 完整展开（发生了什么 · 解决了什么 · 每年 10 个关键工作）见 [timeline/](timeline/)
+> 按年份速查：[TIMELINE.md](TIMELINE.md)（自动生成）
+> 横切基础：[foundations/](foundations/)
 
 ---
 
@@ -78,18 +80,14 @@ npm run dev
 
 <a id="modules"></a>
 
-## 模块索引
+## 仓库结构
 
-| Phase | 主题 | 时间段 | 入口 |
-|-------|------|--------|------|
-| 00 | Timeline — 被逼出来的历史 | 2012–2025 | [timeline/](timeline/) |
-| 00 | 前置准备 — 神经网络基础 | — | [foundations/](foundations/) |
-| 01 | 视觉线 — AlexNet → ResNet → GAN | 2012–2017 | [tracks/vision/](tracks/vision/) |
-| 02 | 语言线 — Word2Vec → Transformer → BERT | 2013–2019 | [tracks/language/](tracks/language/) |
-| 03 | 汇流：规模与多模态 — GPT-3 · ViT · CLIP | 2020–2021 | [tracks/scale-multimodal/](tracks/scale-multimodal/) |
-| 04 | 对齐与开源 — RLHF · DPO · LLaMA | 2022–2023 | [tracks/alignment/](tracks/alignment/) |
-| 05 | 系统与生产 — RAG · Agent · vLLM · MLOps | 2023–2025 | [tracks/systems/](tracks/systems/) |
-| 06 | 实战项目 — 企业级端到端系统 | 跨阶段 | [projects/](projects/) |
+- `01-cnn/` … `15-reasoning-o1-r1/` — 15 个架构/范式家族，按登场时间排序
+- `foundations/` — 横切基础（激活、反传、优化器、归一化、注意力机制…）
+- `projects/` — 跨家族实战项目
+- `web/` — 可视化网页
+- `TIMELINE.md` — 自动生成的按年份索引
+- `_archive/` — 旧 `timeline/` 与 `tracks/` 内容，作为家族内容重写时的素材源
 
 ---
 
