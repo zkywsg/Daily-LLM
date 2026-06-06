@@ -7,21 +7,17 @@
 
 - **仓库**：Daily-LLM，深度学习与大模型的双语学习知识库
 - **主要语言**：中文优先，英文为辅
-- **结构**：
-  - `timeline/` — 编年体时间线（2012–2025）
-  - `foundations/` — 神经网络基础前置
-  - `tracks/vision/` — 视觉线（2012–2017）
-  - `tracks/language/` — 语言线（2013–2019）
-  - `tracks/scale-multimodal/` — 汇流：规模与多模态（2020–2021）
-  - `tracks/alignment/` — 对齐与开源（2022–2023）
-  - `tracks/systems/` — 系统与生产（2023–2025）
+- **结构**：以架构家族为主轴
+  - `01-cnn/` … `15-reasoning-o1-r1/` — 15 个架构家族目录（仓库根目录）
+  - `foundations/` — 神经网络基础前置（9 个编号子目录：`01-neural-network-basics/` … `09-tokenization-embedding/`）
+  - `TIMELINE.md` — 由 `scripts/generate_timeline.py` 自动生成的编年体时间线
   - `projects/` — 实战项目
+  - `_archive/` — 历史遗留内容（只读，原 `timeline/`、`tracks/` 等）
 
 ## 核心原则
 
-### 时间线与模块双向同步
-当在 `timeline/README.md` 增加或修改某个条目时，必须同步更新对应模块的 README。
-反之亦然：模块新增内容时，检查时间线是否需要补充对应节点。
+### 时间线与家族目录双向同步
+时间线由 `scripts/generate_timeline.py` 从各家族目录的 frontmatter 自动生成到 `TIMELINE.md`，不要手工编辑 `TIMELINE.md`。新增或修改某个家族下的条目时，更新该条目的 frontmatter，并重新运行脚本刷新时间线。
 
 ### 网页开发固定端口
 优化或调试 `web/` 前端网页时，开发服务器端口固定使用 `5173`。
