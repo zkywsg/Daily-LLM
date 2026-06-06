@@ -5,4 +5,4 @@
 
 | 年份 | 名字 | 家族 | 关键思想 | 路径 |
 |------|------|------|---------|------|
-| 2012 | **AlexNet** | `01-cnn` | 卷积网络在 ImageNet 上一举把 Top-5 错误率从 26% 拉到 15.3%，宣告深度学习时代开始 | [01-cnn/02-alexnet.md](01-cnn/02-alexnet.md) |
+| 2012 | **AlexNet** | `01-cnn` | 把深 CNN + ReLU + Dropout + 双 GPU 训练打包一起拿出来，第一次把 ImageNet Top-5 错误率从 26% 砸到 15.3% | [01-cnn/02-alexnet.md](01-cnn/02-alexnet.md) |
