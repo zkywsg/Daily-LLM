@@ -116,7 +116,8 @@ graph TD
 ```
 *图 2：Bottleneck block 内部——1×1 降维 → 3×3 空间卷积 → 1×1 升维，shortcut 与主分支在 `F(x) + x` 处相加，再过 ReLU。*
 
-<!-- TODO(SVG): 残差块"弧形 shortcut + F(x)+x 标注"精品 SVG，将在后续 plan 中手写。当前用上面两张 Mermaid 作为最小覆盖。 -->
+![残差块与梯度高速公路](assets/05-resnet-residual.svg)
+*图 3：残差块的弧形 shortcut（上）与多块串联的梯度高速公路（下）。*
 
 **Projection shortcut**——当 stride > 1 或输入输出通道数不一致时（如 stage 之间过渡），shortcut 上的 $x$ 没法和主分支直接相加。这时 shortcut 自己也走一个 1×1 卷积做投影：
 
