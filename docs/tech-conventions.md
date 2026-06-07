@@ -23,6 +23,12 @@
 - 节点上标注 tensor shape，如 `[B, C, H, W]`
 - 跨家族对比图允许用"演进 / 链接"色把不同家族标出
 
+**Mermaid 节点标签约束（节点架构图）：**
+
+- 计算节点：必含操作名 + 关键超参，例 `Conv 11×11 / s=4 / 96`
+- 首末节点（input/output）：必含 tensor shape，例 `Input [B,3,224,224]`
+- 详见 `writing-style.md §1.6` 的架构图模板
+
 示例片段：
 
 ```mermaid
@@ -139,6 +145,15 @@ key_idea: "≤ 80 字的一句话核心"
 - 节点目录形态（升级版）：`NN-kebab-case/README.md` + 配套资源
 - foundations 子目录：`NN-kebab-case`，如 `02-activations`、`08-attention-mechanism`
 - 全部 ASCII 小写 + 连字符；不要下划线，不要中文文件名，不要驼峰
+
+### 4.5 图资产文件命名
+
+- 节点专属 SVG：`<family>/assets/<NN>-<node-name>-<purpose>.svg`
+  - 例：`01-cnn/assets/02-alexnet-arch.svg`、`01-cnn/assets/05-resnet-residual.svg`
+- 家族级 SVG：`<family>/assets/<purpose>.svg`（不带节点前缀）
+  - 例：`01-cnn/assets/family-evolution.svg`
+- 单个家族 assets 目录承担本家族所有图，按节点编号前缀排序
+- 全部 ASCII 小写 + 连字符
 
 ## 5. 跨家族 / foundations 引用语法
 
