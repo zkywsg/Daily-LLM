@@ -1,0 +1,100 @@
+:root {
+  /* —— 颜色 · 中性 —— */
+  --bg-canvas: #fafafa;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f4f4f5;
+  --ink-primary: #18181b;
+  --ink-secondary: #52525b;
+  --ink-muted: #a1a1aa;
+  --border: #e4e4e7;
+
+  /* —— 颜色 · 强调（沿用 tech-conventions §1） —— */
+  --accent-input: #fef3c7;
+  --accent-input-line: #d97706;
+  --accent-input-ink: #92400e;
+  --accent-compute: #fce7f3;
+  --accent-compute-line: #db2777;
+  --accent-compute-ink: #9d174d;
+  --accent-output: #ecfdf5;
+  --accent-output-line: #059669;
+  --accent-output-ink: #065f46;
+  --accent-link: #2563eb;
+  --accent-link-ink: #1e40af;
+  --accent-warn: #ea580c;
+
+  /* —— 15 家族色板 · 暖→冷渐变 —— */
+  --family-01: #db2777; /* CNN 玫红 */
+  --family-02: #e11d48; /* RNN/LSTM 红 */
+  --family-03: #f97316; /* Word Embedding 橙 */
+  --family-04: #f59e0b; /* GAN 琥珀 */
+  --family-05: #eab308; /* Transformer 金 */
+  --family-06: #84cc16; /* BERT 黄绿 */
+  --family-07: #22c55e; /* GPT/Scaling 绿 */
+  --family-08: #10b981; /* ViT 翠 */
+  --family-09: #14b8a6; /* CLIP 青 */
+  --family-10: #06b6d4; /* Diffusion 蓝绿 */
+  --family-11: #0ea5e9; /* PEFT 天蓝 */
+  --family-12: #3b82f6; /* RLHF 蓝 */
+  --family-13: #6366f1; /* MoE 靛 */
+  --family-14: #8b5cf6; /* RAG/Agent 紫 */
+  --family-15: #a855f7; /* o1/R1 推理 紫红 */
+
+  /* —— 字体 —— */
+  --font-sans: "Inter", "Noto Sans SC", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Courier New", monospace;
+  --font-serif: "Source Serif Pro", Georgia, serif;
+
+  /* —— 字号 · 模数 1.25 —— */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 1.875rem;
+  --fs-3xl: 2.25rem;
+  --fs-4xl: 3rem;
+  --fs-5xl: 4rem;
+
+  /* —— 间距 · 基于 4px —— */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* —— 圆角 —— */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* —— 阴影 —— */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+  /* —— 动效曲线 —— */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
+}
+
+[data-theme="dark"] {
+  --bg-canvas: #09090b;
+  --bg-surface: #18181b;
+  --bg-subtle: #27272a;
+  --ink-primary: #fafafa;
+  --ink-secondary: #d4d4d8;
+  --ink-muted: #71717a;
+  --border: #3f3f46;
+  /* 家族色板在 dark 下保持不变 */
+}
