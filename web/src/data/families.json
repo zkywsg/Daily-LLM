@@ -1,0 +1,261 @@
+{
+  "generatedAt": "2026-06-07T16:13:10.413264+00:00",
+  "families": [
+    {
+      "id": "01-cnn",
+      "label": "CNN 卷积神经网络",
+      "blurb": "把图像从手工特征解放出来，让模型自己学层级表征。",
+      "yearRange": [
+        1998,
+        2022
+      ],
+      "colorToken": "--family-01",
+      "nodes": [
+        {
+          "name": "LeNet-5",
+          "year": 1998,
+          "family": "01-cnn",
+          "order": 1,
+          "paper": "Gradient-Based Learning Applied to Document Recognition",
+          "authors": [
+            "Yann LeCun",
+            "Léon Bottou",
+            "Yoshua Bengio",
+            "Patrick Haffner"
+          ],
+          "key_idea": "把卷积+池化+全连接这套范式第一次系统化定义出来，在手写数字识别上跑通",
+          "path": "01-cnn/01-lenet.md",
+          "assets": []
+        },
+        {
+          "name": "AlexNet",
+          "year": 2012,
+          "family": "01-cnn",
+          "order": 2,
+          "paper": "ImageNet Classification with Deep Convolutional Neural Networks",
+          "authors": [
+            "Alex Krizhevsky",
+            "Ilya Sutskever",
+            "Geoffrey Hinton"
+          ],
+          "key_idea": "把深 CNN + ReLU + Dropout + 双 GPU 训练打包一起拿出来，第一次把 ImageNet Top-5 错误率从 26% 砸到 15.3%",
+          "path": "01-cnn/02-alexnet.md",
+          "assets": []
+        },
+        {
+          "name": "VGG",
+          "year": 2014,
+          "family": "01-cnn",
+          "order": 3,
+          "paper": "Very Deep Convolutional Networks for Large-Scale Image Recognition",
+          "authors": [
+            "Karen Simonyan",
+            "Andrew Zisserman"
+          ],
+          "key_idea": "把网络深度做到 16/19 层、并把所有卷积统一成 3×3，证明深度本身就是性能来源",
+          "path": "01-cnn/03-vgg.md",
+          "assets": []
+        },
+        {
+          "name": "GoogLeNet (Inception v1)",
+          "year": 2014,
+          "family": "01-cnn",
+          "order": 4,
+          "paper": "Going Deeper with Convolutions",
+          "authors": [
+            "Christian Szegedy",
+            "Wei Liu",
+            "Yangqing Jia",
+            "Pierre Sermanet",
+            "Scott Reed",
+            "Dragomir Anguelov",
+            "Dumitru Erhan",
+            "Vincent Vanhoucke",
+            "Andrew Rabinovich"
+          ],
+          "key_idea": "用 1×1 卷积降维 + 多尺度并行的 Inception 模块，把参数量压到 VGG 的 1/12 同时拿下 ImageNet 冠军",
+          "path": "01-cnn/04-inception.md",
+          "assets": []
+        },
+        {
+          "name": "ResNet",
+          "year": 2015,
+          "family": "01-cnn",
+          "order": 5,
+          "paper": "Deep Residual Learning for Image Recognition",
+          "authors": [
+            "Kaiming He",
+            "Xiangyu Zhang",
+            "Shaoqing Ren",
+            "Jian Sun"
+          ],
+          "key_idea": "用 shortcut 让网络只学残差修正而不是从零重建映射，把 152 层稳定训练变成可能",
+          "path": "01-cnn/05-resnet.md",
+          "assets": [
+            "01-cnn/assets/05-resnet-residual.svg"
+          ]
+        },
+        {
+          "name": "DenseNet",
+          "year": 2017,
+          "family": "01-cnn",
+          "order": 6,
+          "paper": "Densely Connected Convolutional Networks",
+          "authors": [
+            "Gao Huang",
+            "Zhuang Liu",
+            "Laurens van der Maaten",
+            "Kilian Q. Weinberger"
+          ],
+          "key_idea": "每层都直接接收前面所有层的输出（concat 而非加法），把特征复用推到极致",
+          "path": "01-cnn/06-densenet.md",
+          "assets": []
+        },
+        {
+          "name": "EfficientNet",
+          "year": 2019,
+          "family": "01-cnn",
+          "order": 7,
+          "paper": "EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks",
+          "authors": [
+            "Mingxing Tan",
+            "Quoc V. Le"
+          ],
+          "key_idea": "用复合缩放系数把 depth/width/resolution 三轴联合缩放公式化，得到帕累托最优的 B0–B7 模型族",
+          "path": "01-cnn/07-efficientnet.md",
+          "assets": []
+        },
+        {
+          "name": "ConvNeXt",
+          "year": 2022,
+          "family": "01-cnn",
+          "order": 8,
+          "paper": "A ConvNet for the 2020s",
+          "authors": [
+            "Zhuang Liu",
+            "Hanzi Mao",
+            "Chao-Yuan Wu",
+            "Christoph Feichtenhofer",
+            "Trevor Darrell",
+            "Saining Xie"
+          ],
+          "key_idea": "把 ViT 的所有现代化设计选择（大 kernel·LayerNorm·GELU·强增强）逐项搬回 ResNet，CNN 反超 ViT",
+          "path": "01-cnn/08-convnext.md",
+          "assets": []
+        }
+      ]
+    },
+    {
+      "id": "02-rnn-lstm",
+      "label": "RNN / LSTM / GRU 循环网络",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-02",
+      "nodes": []
+    },
+    {
+      "id": "03-word-embedding",
+      "label": "Word Embedding 词嵌入",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-03",
+      "nodes": []
+    },
+    {
+      "id": "04-gan",
+      "label": "GAN 生成对抗",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-04",
+      "nodes": []
+    },
+    {
+      "id": "05-transformer",
+      "label": "Transformer 架构",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-05",
+      "nodes": []
+    },
+    {
+      "id": "06-bert-family",
+      "label": "预训练语言模型（BERT 系）",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-06",
+      "nodes": []
+    },
+    {
+      "id": "07-gpt-scaling",
+      "label": "大语言模型（GPT 系 + Scaling）",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-07",
+      "nodes": []
+    },
+    {
+      "id": "08-vit",
+      "label": "视觉 Transformer (ViT)",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-08",
+      "nodes": []
+    },
+    {
+      "id": "09-multimodal-clip",
+      "label": "多模态对齐",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-09",
+      "nodes": []
+    },
+    {
+      "id": "10-diffusion",
+      "label": "扩散模型",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-10",
+      "nodes": []
+    },
+    {
+      "id": "11-peft-lora",
+      "label": "参数高效微调 (PEFT)",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-11",
+      "nodes": []
+    },
+    {
+      "id": "12-rlhf-alignment",
+      "label": "对齐与 RLHF",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-12",
+      "nodes": []
+    },
+    {
+      "id": "13-moe-efficient",
+      "label": "MoE 与高效推理",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-13",
+      "nodes": []
+    },
+    {
+      "id": "14-rag-agent",
+      "label": "RAG 与 Agent",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-14",
+      "nodes": []
+    },
+    {
+      "id": "15-reasoning-o1-r1",
+      "label": "推理模型（Test-time compute）",
+      "blurb": "（待补充）",
+      "yearRange": null,
+      "colorToken": "--family-15",
+      "nodes": []
+    }
+  ]
+}
