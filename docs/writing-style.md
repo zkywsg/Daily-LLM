@@ -42,19 +42,30 @@
     ### 直觉                     [可选 ###]
     ### 机制                     [可选 ###]
 ## 工程陷阱                      [可选 ##]
+## 训练细节                      [可选 ##]
 ## 关键代码                      [必填] · 一个 fenced PyTorch 块
 ## 影响 / 后续                    [必填] · 必须以 "→ 链接" 结尾
 ```
 
 ### 1.2 何时展开可选块
 
-| 工作复杂度 | 处理 | 例 |
-|---|---|---|
-| 引入 1 个新概念 | "核心思想"单段，不拆 | LeNet · GRU |
-| 引入 ≥ 2 个新概念 / 有特殊公式 | 拆 `### 直觉` + `### 机制` | ResNet · Transformer |
-| 有著名训练/部署坑 | 加 `## 工程陷阱` | Inception · EfficientNet · BatchNorm |
+| 工作类型 | `### 直觉/机制` | `## 工程陷阱` | `## 训练细节` |
+|---|---|---|---|
+| 1 概念引入型（LeNet · GRU） | 不拆 | 否 | 否 |
+| 标准节点（AlexNet · VGG · DenseNet） | 看情况 | 看情况 | **加**（如果有标志性超参可考） |
+| 大事件节点（ResNet · Transformer · GPT-3） | 拆 | 看情况 | **加** |
+| 概念/理论型（如 LayerNorm 作为节点） | 看情况 | 看情况 | 否（无标志性超参） |
+| 历史已模糊的早期工作 | 不拆 | 否 | 否 |
 
 判断不准时优先**少拆**——读者不喜欢面对一堆三级标题。
+
+`## 训练细节` 章节专门装：
+
+- 关键超参（lr / momentum / weight decay / dropout / batch size / 优化器）
+- 数据增强（裁剪、翻转、颜色扰动、Mixup/CutMix 等）
+- 测试时增强（TTA）
+- 训练资源 / 时长（如 "5 天 × 2 GTX 580"）
+- 关键基准数据点（如 ImageNet Top-5 错误率年表、消融实验代表性结果）
 
 ### 1.3 调性约束
 
@@ -107,11 +118,92 @@ ResNet 终结了 [VGG](03-vgg.md) 路线的内卷。
 ### 1.5 长度目标
 
 - 1 概念引入型节点：**800–1500 字**（LeNet · GRU）
-- 标准节点：**1500–2500 字**（AlexNet · VGG · DenseNet）
-- 大事件节点：**2500–4000 字**（ResNet · Transformer · GPT-3）
-- 超过 4000 字 → 升级为 `NN-name/README.md` + 配套资源子目录
+- 标准节点：**2000–3500 字**（AlexNet · VGG · DenseNet）
+- 大事件节点：**3000–5000 字**（ResNet · Transformer · GPT-3）
+- 超过 5000 字 → 升级为 `NN-name/README.md` + 配套资源子目录
 
 字数指汉字 + 英文单词混合计数的"视觉量"，不必精确，但偏差 ±30% 内。
+
+### 1.6 图的规范
+
+#### 1.6.1 图的配额
+
+```
+节点必填图配额（按节点类型分级，与 §1.5 长度分级一一对应）：
+  · 1 概念引入型: ≥ 1 张 Mermaid（架构图，含 shape 标注）
+  · 标准节点:     ≥ 1 张 Mermaid（架构图，含 shape 标注）
+  · 大事件节点:   ≥ 2 张图，至少 1 张 SVG（用于核心创新可视化，如残差/注意力/特征图）
+
+家族 README 必填图配额：
+  · 1 张 Mermaid（家族级演进图，按时间排出该家族所有节点）
+
+foundations 必填图配额：
+  · 0 张（图可选；公式才是主菜）
+```
+
+#### 1.6.2 图的格式选择
+
+- **Mermaid**（默认）—— 文本可 diff，GitHub 原生渲染。处理架构流图、流程图、家族演进图。
+- **SVG**（特技）—— 处理 Mermaid 搞不定的：残差弧、注意力热图、特征图可视化、感受野累积示意。手写为主，视觉语言对齐 `web/src/components/tracks/CnnTrack.tsx`。
+- **不引入** matplotlib/PNG。曲线/分布等数据可视化交给 Web 端，节点 markdown 不承担。
+
+#### 1.6.3 图标号与标题
+
+每张图（Mermaid 或 SVG）下方紧跟一行 caption：
+
+````markdown
+```mermaid
+... 图本体 ...
+```
+*图 1：AlexNet 5 conv + 3 fc 主干，含每层 shape 标注。*
+
+![残差块](assets/05-resnet-residual.svg)
+*图 2：残差块结构。`F(x) + x` 让深层网络可训练。*
+````
+
+- `*图 N：...*` 斜体一行，紧跟图本体
+- 编号在单个节点 / 单个家族 README 内连续：图 1、图 2、图 3
+- 标题 ≤ 30 字，说"看什么"而不是"怎么画"
+- 跨节点不复用编号
+
+#### 1.6.4 SVG 引用语法
+
+```markdown
+<!-- 节点内引用同家族 assets -->
+![AlexNet 架构图](assets/02-alexnet-arch.svg)
+
+<!-- 家族 README 引用同家族 assets -->
+![家族演进](assets/family-evolution.svg)
+```
+
+SVG 文件命名详见 `tech-conventions.md §4.5`。
+
+#### 1.6.5 Mermaid 架构图模板
+
+每个节点架构图都该照这个模板调：
+
+```mermaid
+graph TD
+    x["Input [B,3,224,224]"]:::input
+    c1["Conv 11×11 / s=4 / 96"]:::compute
+    p1["MaxPool 3×3 / s=2"]:::compute
+    c2["Conv 5×5 / 256"]:::compute
+    fc["FC 4096 + Dropout"]:::compute
+    y["Softmax 1000"]:::output
+
+    x --> c1 --> p1 --> c2 --> fc --> y
+
+    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
+    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
+    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
+```
+
+约束（subagent 写作时必须遵守）：
+
+- 每个**计算节点**标签必须含 **操作 + 关键超参**（如 `Conv 11×11 / s=4 / 96`、`FC 4096`）
+- **首末节点**（input/output）标签必须含 **tensor shape**（`[B, C, H, W]` 或 `[B, T, D]`）
+- `classDef` 颜色遵守 `tech-conventions.md §1` 配色
+- 默认 `graph TD`，连线灰 `#d6d3d1`
 
 ---
 
