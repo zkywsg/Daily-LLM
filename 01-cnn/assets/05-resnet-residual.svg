@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-shortcut" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-grad-decay" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="arr-grad-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- ============== UPPER PANEL: single Bottleneck ============== -->
+  <text x="400" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Bottleneck Residual Block
+  </text>
+
+  <!-- Input x -->
+  <rect x="30" y="190" width="60" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="60" y="215" text-anchor="middle" font-size="14" fill="#92400e">x</text>
+  <text x="60" y="254" text-anchor="middle" font-size="11" fill="#92400e">[B,256,H,W]</text>
+
+  <!-- 1×1 Conv ↓ 64 -->
+  <rect x="120" y="190" width="80" height="40" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="160" y="208" text-anchor="middle" font-size="13" fill="#9d174d">1×1 Conv ↓</text>
+  <text x="160" y="223" text-anchor="middle" font-size="11" fill="#9d174d">64</text>
+
+  <!-- ReLU 1 -->
+  <rect x="210" y="190" width="50" height="40" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="235" y="215" text-anchor="middle" font-size="13" fill="#065f46">ReLU</text>
+
+  <!-- 3×3 Conv 64 -->
+  <rect x="270" y="190" width="80" height="40" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="310" y="208" text-anchor="middle" font-size="13" fill="#9d174d">3×3 Conv</text>
+  <text x="310" y="223" text-anchor="middle" font-size="11" fill="#9d174d">64</text>
+
+  <!-- ReLU 2 -->
+  <rect x="360" y="190" width="50" height="40" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="385" y="215" text-anchor="middle" font-size="13" fill="#065f46">ReLU</text>
+
+  <!-- 1×1 Conv ↑ 256 -->
+  <rect x="420" y="190" width="80" height="40" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="460" y="208" text-anchor="middle" font-size="13" fill="#9d174d">1×1 Conv ↑</text>
+  <text x="460" y="223" text-anchor="middle" font-size="11" fill="#9d174d">256</text>
+
+  <!-- ⊕ Add node -->
+  <circle cx="540" cy="210" r="18" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="540" y="216" text-anchor="middle" font-size="18" fill="#92400e" font-weight="700">⊕</text>
+
+  <!-- ReLU final -->
+  <rect x="578" y="190" width="50" height="40" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="603" y="215" text-anchor="middle" font-size="13" fill="#065f46">ReLU</text>
+
+  <!-- Output y -->
+  <rect x="660" y="190" width="60" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="690" y="215" text-anchor="middle" font-size="14" fill="#92400e">y</text>
+
+  <!-- Main path arrows -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="92"  y1="210" x2="118" y2="210" marker-end="url(#arr-main)"/>
+    <line x1="202" y1="210" x2="208" y2="210" marker-end="url(#arr-main)"/>
+    <line x1="262" y1="210" x2="268" y2="210" marker-end="url(#arr-main)"/>
+    <line x1="352" y1="210" x2="358" y2="210" marker-end="url(#arr-main)"/>
+    <line x1="412" y1="210" x2="418" y2="210" marker-end="url(#arr-main)"/>
+    <line x1="502" y1="210" x2="520" y2="210" marker-end="url(#arr-main)"/>
+    <line x1="560" y1="210" x2="576" y2="210" marker-end="url(#arr-main)"/>
+    <line x1="630" y1="210" x2="658" y2="210" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- Shortcut arc: from Input top to ⊕ top -->
+  <path d="M 60 190 C 60 80, 540 80, 540 192"
+        stroke="#2563eb" stroke-width="3" fill="none"
+        marker-end="url(#arr-shortcut)"/>
+
+  <!-- identity label on arc -->
+  <text x="300" y="78" text-anchor="middle" font-size="13"
+        fill="#1e40af" font-style="italic" font-weight="600">
+    identity
+  </text>
+
+  <!-- F(x)+x label near ⊕ -->
+  <text x="555" y="178" text-anchor="start" font-size="14"
+        fill="#1f2937" font-style="italic">
+    F(x) + x
+  </text>
+
+  <!-- F(x) description below main path -->
+  <text x="285" y="285" text-anchor="middle" font-size="11" fill="#6b7280">
+    F(x) = 1×1↓ → 3×3 → 1×1↑（"瓶颈"结构，节省 ~75% 参数）
+  </text>
+
+  <!-- ============== DIVIDER ============== -->
+  <line x1="40" y1="380" x2="760" y2="380"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== LOWER PANEL: gradient highway ============== -->
+  <text x="400" y="416" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Gradient Highway · 多块串联时梯度回传路径
+  </text>
+
+  <!-- 6 simplified blocks: x = 80, 195, 310, 425, 540, 655 -->
+  <!-- Block 1 -->
+  <rect x="80" y="460" width="70" height="30" rx="4"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="115" y="480" text-anchor="middle" font-size="11" fill="#9d174d">Block 1</text>
+  <path d="M 85 460 C 85 440, 145 440, 145 460"
+        stroke="#2563eb" stroke-width="1.5" fill="none"/>
+
+  <!-- Block 2 -->
+  <rect x="195" y="460" width="70" height="30" rx="4"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="230" y="480" text-anchor="middle" font-size="11" fill="#9d174d">Block 2</text>
+  <path d="M 200 460 C 200 440, 260 440, 260 460"
+        stroke="#2563eb" stroke-width="1.5" fill="none"/>
+
+  <!-- Block 3 -->
+  <rect x="310" y="460" width="70" height="30" rx="4"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="345" y="480" text-anchor="middle" font-size="11" fill="#9d174d">Block 3</text>
+  <path d="M 315 460 C 315 440, 375 440, 375 460"
+        stroke="#2563eb" stroke-width="1.5" fill="none"/>
+
+  <!-- Block 4 -->
+  <rect x="425" y="460" width="70" height="30" rx="4"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="460" y="480" text-anchor="middle" font-size="11" fill="#9d174d">Block 4</text>
+  <path d="M 430 460 C 430 440, 490 440, 490 460"
+        stroke="#2563eb" stroke-width="1.5" fill="none"/>
+
+  <!-- Block 5 -->
+  <rect x="540" y="460" width="70" height="30" rx="4"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="575" y="480" text-anchor="middle" font-size="11" fill="#9d174d">Block 5</text>
+  <path d="M 545 460 C 545 440, 605 440, 605 460"
+        stroke="#2563eb" stroke-width="1.5" fill="none"/>
+
+  <!-- Block 6 -->
+  <rect x="655" y="460" width="70" height="30" rx="4"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="690" y="480" text-anchor="middle" font-size="11" fill="#9d174d">Block 6</text>
+  <path d="M 660 460 C 660 440, 720 440, 720 460"
+        stroke="#2563eb" stroke-width="1.5" fill="none"/>
+
+  <!-- Forward path arrows between blocks -->
+  <g stroke="#9d174d" stroke-width="1" fill="none">
+    <line x1="150" y1="475" x2="193" y2="475" marker-end="url(#arr-main)"/>
+    <line x1="265" y1="475" x2="308" y2="475" marker-end="url(#arr-main)"/>
+    <line x1="380" y1="475" x2="423" y2="475" marker-end="url(#arr-main)"/>
+    <line x1="495" y1="475" x2="538" y2="475" marker-end="url(#arr-main)"/>
+    <line x1="610" y1="475" x2="653" y2="475" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ∂L/∂y starting label (right end) -->
+  <text x="740" y="448" text-anchor="middle" font-size="12"
+        fill="#1f2937" font-weight="600">∂L/∂y</text>
+
+  <!-- Main path gradient: red dashed, decaying (right→left) -->
+  <g fill="none" stroke="#dc2626" stroke-dasharray="4,3">
+    <path d="M 720 520 L 660 520" stroke-width="2"/>
+    <path d="M 605 520 L 545 520" stroke-width="1.7"/>
+    <path d="M 490 520 L 430 520" stroke-width="1.4"/>
+    <path d="M 375 520 L 315 520" stroke-width="1.1"/>
+    <path d="M 260 520 L 200 520" stroke-width="0.8"/>
+    <path d="M 145 520 L 95 520" stroke-width="0.5"
+          marker-end="url(#arr-grad-decay)"/>
+  </g>
+
+  <!-- Shortcut gradient: blue solid, constant -->
+  <line x1="720" y1="555" x2="95" y2="555"
+        stroke="#2563eb" stroke-width="2.5"
+        marker-end="url(#arr-grad-blue)"/>
+
+  <!-- Gradient path labels -->
+  <text x="180" y="514" font-size="11" fill="#dc2626">∂L/∂x（主路：衰减）</text>
+  <text x="180" y="572" font-size="11" fill="#2563eb">∂L/∂x（shortcut：不衰减）</text>
+</svg>
