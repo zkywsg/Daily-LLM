@@ -1,0 +1,76 @@
+.container {
+  padding: 0;
+  background: var(--bg-canvas);
+}
+
+.hero {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: var(--space-6);
+  font-size: var(--fs-sm);
+  color: var(--ink-secondary);
+}
+
+.title {
+  font-size: var(--fs-5xl);
+  margin: var(--space-4) 0;
+  background: linear-gradient(
+    90deg,
+    var(--family-01) 0%,
+    var(--accent-link) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.metaLine {
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+  margin: var(--space-1) 0;
+}
+
+.keyIdea {
+  font-size: var(--fs-lg);
+  color: var(--ink-secondary);
+  font-style: italic;
+  max-width: 700px;
+  margin: var(--space-6) auto 0;
+  line-height: 1.5;
+}
+
+.stage {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: var(--space-24) var(--space-8);
+  min-height: 100vh;
+}
+
+.stageAlt {
+  background: var(--bg-surface);
+}
+
+.footer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-16) var(--space-8);
+  font-family: var(--font-serif);
+  font-size: var(--fs-md);
+  line-height: 1.7;
+}
+
+.footerSection {
+  margin: var(--space-12) 0;
+}
+
+.footerSection h2 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-2xl);
+  margin-bottom: var(--space-4);
+}
