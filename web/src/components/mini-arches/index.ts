@@ -10,3 +10,4 @@ export { MiniSENet } from "./MiniSENet";
 export { MiniEfficientNet } from "./MiniEfficientNet";
 export { MiniConvNeXt } from "./MiniConvNeXt";
 export type { MiniArchProps } from "./types";
+export { getMiniArch } from "./getMiniArch";

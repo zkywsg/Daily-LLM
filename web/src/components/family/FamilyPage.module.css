@@ -1,0 +1,74 @@
+.container {
+  padding: var(--space-12) var(--space-8);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: var(--space-6);
+  font-size: var(--fs-sm);
+  color: var(--ink-secondary);
+}
+
+.familyId {
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.title {
+  font-size: var(--fs-3xl);
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.blurb {
+  font-size: var(--fs-lg);
+  color: var(--ink-secondary);
+  font-style: italic;
+  margin-bottom: var(--space-12);
+  padding-left: var(--space-4);
+  border-left: 4px solid var(--accent, var(--accent-link));
+}
+
+.subtimeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-8) 0;
+}
+
+.nodeCard {
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--ink-primary);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.nodeCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.nodeYear {
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+}
+
+.nodeName {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin: var(--space-2) 0;
+}
+
+.nodeIdea {
+  font-size: var(--fs-sm);
+  color: var(--ink-secondary);
+  line-height: 1.4;
+  margin: var(--space-2) 0 0;
+}
