@@ -1,0 +1,105 @@
+/* Mini-arch SVG illustration classes
+ * 复制自旧 web/src/styles/global.css（commit 7ff2eb6 之前的版本）。
+ * 这些规则被 MiniAlexNet / MiniVGG / MiniGoogLeNet / MiniResNet /
+ * MiniDenseNet / MiniSENet 内部 SVG 使用。
+ */
+
+/* ---- 特征图 / 上下文化特征图 ---- */
+.illustration__featuremap {
+  fill: color-mix(in srgb, var(--active-line) 14%, var(--surface-card));
+  stroke: var(--active-line);
+  stroke-width: 0.8;
+  animation: pixel-pulse 2.6s ease-in-out infinite;
+}
+
+.illustration__featuremap--ctx {
+  fill: var(--active-line);
+  opacity: 0.9;
+}
+
+@keyframes pixel-pulse {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 1; }
+}
+
+/* ---- 通用 block ---- */
+.illustration__block {
+  fill: var(--surface-card);
+  stroke: var(--active-line);
+  stroke-width: 1.4;
+}
+.illustration__block--alt {
+  fill: var(--active-soft);
+  stroke: var(--active-line);
+}
+.illustration__block-label {
+  fill: var(--ink-strong);
+  font-size: 14px;
+  font-weight: 700;
+}
+.illustration__block-label--small {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ---- Q/K/V 三色分流线 ---- */
+.illustration__branch {
+  stroke-width: 1.8;
+  stroke-dasharray: 4 3;
+  animation: flow-march 1.8s linear infinite;
+  fill: none;
+}
+.illustration__branch--q { stroke: var(--phase-vision-line); }
+.illustration__branch--k { stroke: var(--phase-scale-line); }
+.illustration__branch--v { stroke: var(--phase-alignment-line); }
+
+@keyframes flow-march {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -16; }
+}
+
+/* ---- 投影矩阵盒（W_Q / W_K / W_V / W_O / FFN / GELU） ---- */
+.illustration__proj {
+  stroke-width: 1.4;
+}
+.illustration__proj--q   { fill: color-mix(in srgb, var(--phase-vision-line) 14%, var(--surface-card)); stroke: var(--phase-vision-line); }
+.illustration__proj--k   { fill: color-mix(in srgb, var(--phase-scale-line) 14%, var(--surface-card)); stroke: var(--phase-scale-line); }
+.illustration__proj--v   { fill: color-mix(in srgb, var(--phase-alignment-line) 14%, var(--surface-card)); stroke: var(--phase-alignment-line); }
+.illustration__proj--o   { fill: color-mix(in srgb, var(--active-line) 18%, var(--surface-card)); stroke: var(--active-line); }
+.illustration__proj--ffn { fill: color-mix(in srgb, var(--active-line) 12%, var(--surface-card)); stroke: var(--active-line); }
+.illustration__proj--act { fill: color-mix(in srgb, var(--phase-multimodal-line) 16%, var(--surface-card)); stroke: var(--phase-multimodal-line); }
+
+/* ---- 残差弧线（恒等捷径） ---- */
+.illustration__residual {
+  stroke: color-mix(in srgb, var(--active-line) 70%, transparent);
+  stroke-width: 1.8;
+  stroke-dasharray: 5 4;
+  animation: flow-march 2.2s linear infinite;
+  fill: none;
+}
+
+/* ---- ⊕ Add 圆 ---- */
+.illustration__addnorm {
+  fill: var(--active-soft);
+  stroke: var(--active-line);
+  stroke-width: 1.6;
+}
+
+/* ---- CNN 立方体层（AlexNet / VGG 等） ---- */
+.illustration__layer {
+  stroke-width: 1.4;
+}
+.illustration__layer--input {
+  fill: color-mix(in srgb, var(--amber-300) 50%, var(--surface-card));
+  stroke: var(--amber-700);
+}
+.illustration__layer--conv {
+  fill: color-mix(in srgb, var(--active-line) 18%, var(--surface-card));
+  stroke: var(--active-line);
+}
+.illustration__layer--fc {
+  fill: color-mix(in srgb, var(--phase-multimodal-line) 14%, var(--surface-card));
+  stroke: var(--phase-multimodal-line);
+}
+.illustration__layer--back { opacity: 0.35; }
+.illustration__layer--mid  { opacity: 0.7; }
