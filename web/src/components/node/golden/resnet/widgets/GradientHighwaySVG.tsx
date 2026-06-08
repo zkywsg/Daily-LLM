@@ -85,8 +85,9 @@ export function GradientHighwaySVG({ stackDepth, width = 560, height = 360 }: Pr
       )}
 
       <text
-        x={width - PADDING_X + 5}
-        y={BLOCK_Y - 5}
+        x={width - PADDING_X}
+        y={BLOCK_Y - 10}
+        textAnchor="end"
         fontSize={12}
         fontWeight={600}
         fill="var(--ink-primary)"
