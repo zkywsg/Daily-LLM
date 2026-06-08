@@ -1,0 +1,43 @@
+.container {
+  padding: var(--space-12) var(--space-8);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-12);
+}
+
+.title {
+  font-size: var(--fs-4xl);
+  margin-bottom: var(--space-3);
+}
+
+.subtitle {
+  font-size: var(--fs-lg);
+  color: var(--ink-secondary);
+}
+
+.toggle {
+  display: inline-flex;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-full);
+  padding: var(--space-1);
+  margin: var(--space-6) auto;
+}
+
+.toggleBtn {
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--ink-secondary);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.toggleBtnActive {
+  background: var(--bg-surface);
+  color: var(--ink-primary);
+  box-shadow: var(--shadow-sm);
+}
