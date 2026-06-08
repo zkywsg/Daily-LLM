@@ -4,6 +4,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { StackDepthSlider } from "../widgets/StackDepthSlider";
 import { GradientHighwaySVG } from "../widgets/GradientHighwaySVG";
+import styles from "./Stage.module.css";
 
 interface Props {
   mechanismProse: string;
@@ -17,14 +18,7 @@ export function GradientHighwayStage({
   onStackDepthChange,
 }: Props) {
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "var(--space-8)",
-        alignItems: "start",
-      }}
-    >
+    <div className={styles.grid}>
       <div>
         <h2 style={{ fontSize: "var(--fs-2xl)", marginBottom: "var(--space-4)" }}>
           梯度高速公路
@@ -45,7 +39,7 @@ export function GradientHighwayStage({
         </p>
       </div>
 
-      <div style={{ position: "sticky", top: "var(--space-8)" }}>
+      <div className={styles.stickyPanel}>
         <GradientHighwaySVG stackDepth={stackDepth} />
       </div>
     </div>

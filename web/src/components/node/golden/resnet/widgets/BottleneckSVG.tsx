@@ -31,8 +31,7 @@ export function BottleneckSVG({ blockType, width = 560, height = 360 }: Props) {
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      width={width}
-      height={height}
+      style={{ maxWidth: "100%", height: "auto", display: "block" }}
       role="img"
       aria-label={`${blockType === "basic" ? "BasicBlock" : "Bottleneck"} 残差块结构`}
     >

@@ -4,6 +4,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { DepthSlider } from "../widgets/DepthSlider";
 import { DegradationCurves } from "../widgets/DegradationCurves";
+import styles from "./Stage.module.css";
 
 interface Props {
   beforeStuckOnProse: string;
@@ -19,14 +20,7 @@ export function DegradationStage({
   onDepthChange,
 }: Props) {
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "var(--space-8)",
-        alignItems: "start",
-      }}
-    >
+    <div className={styles.grid}>
       <div>
         <h2 style={{ fontSize: "var(--fs-2xl)", marginBottom: "var(--space-4)" }}>
           之前卡在哪
@@ -65,7 +59,7 @@ export function DegradationStage({
         </p>
       </div>
 
-      <div style={{ position: "sticky", top: "var(--space-8)" }}>
+      <div className={styles.stickyPanel}>
         <DegradationCurves depth={depth} />
       </div>
     </div>

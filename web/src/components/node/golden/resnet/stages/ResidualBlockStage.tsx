@@ -4,6 +4,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { BlockTypeToggle } from "../widgets/BlockTypeToggle";
 import { BottleneckSVG } from "../widgets/BottleneckSVG";
+import styles from "./Stage.module.css";
 
 interface Props {
   intuitionProse: string;
@@ -17,14 +18,7 @@ export function ResidualBlockStage({
   onBlockTypeChange,
 }: Props) {
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "var(--space-8)",
-        alignItems: "start",
-      }}
-    >
+    <div className={styles.grid}>
       <div>
         <h2 style={{ fontSize: "var(--fs-2xl)", marginBottom: "var(--space-4)" }}>
           残差的直觉
@@ -45,7 +39,7 @@ export function ResidualBlockStage({
         </p>
       </div>
 
-      <div style={{ position: "sticky", top: "var(--space-8)" }}>
+      <div className={styles.stickyPanel}>
         <BottleneckSVG blockType={blockType} />
       </div>
     </div>

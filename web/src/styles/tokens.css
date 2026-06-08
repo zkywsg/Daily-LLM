@@ -86,6 +86,13 @@
   --dur-fast: 150ms;
   --dur-base: 250ms;
   --dur-slow: 400ms;
+
+  /* —— 响应式断点（mobile-first @media min-width 使用）—— */
+  --bp-sm: 640px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+  --bp-2xl: 1536px;
 }
 
 [data-theme="dark"] {

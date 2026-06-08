@@ -1,7 +1,13 @@
 .container {
-  padding: var(--space-12) var(--space-8);
+  padding: var(--space-6) var(--space-4);
   max-width: 1400px;
   margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: var(--space-12) var(--space-8);
+  }
 }
 
 .header {
@@ -10,7 +16,7 @@
 }
 
 .title {
-  font-size: var(--fs-4xl);
+  font-size: clamp(2rem, 4vw + 1rem, 3rem);
   margin-bottom: var(--space-3);
 }
 

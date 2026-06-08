@@ -31,8 +31,7 @@ export function GradientHighwaySVG({ stackDepth, width = 560, height = 360 }: Pr
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      width={width}
-      height={height}
+      style={{ maxWidth: "100%", height: "auto", display: "block" }}
       role="img"
       aria-label={`${stackDepth} 块串联的梯度高速公路`}
     >

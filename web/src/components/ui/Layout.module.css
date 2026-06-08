@@ -1,0 +1,32 @@
+.header,
+.footer {
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface);
+}
+
+.header {
+  border-bottom: 1px solid var(--border);
+}
+
+.footer {
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+}
+
+.logo {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+
+@media (min-width: 768px) {
+  .header,
+  .footer {
+    padding: var(--space-4) var(--space-8);
+  }
+
+  .logo {
+    font-size: var(--fs-lg);
+  }
+}

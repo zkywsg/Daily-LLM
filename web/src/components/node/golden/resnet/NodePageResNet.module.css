@@ -6,8 +6,14 @@
 .hero {
   max-width: 1000px;
   margin: 0 auto;
-  padding: var(--space-12) var(--space-8);
+  padding: var(--space-8) var(--space-4);
   text-align: center;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    padding: var(--space-12) var(--space-8);
+  }
 }
 
 .back {
@@ -18,7 +24,7 @@
 }
 
 .title {
-  font-size: var(--fs-5xl);
+  font-size: clamp(2rem, 5vw + 1rem, 4rem);
   margin: var(--space-4) 0;
   background: linear-gradient(
     90deg,
@@ -48,8 +54,14 @@
 .stage {
   max-width: 1300px;
   margin: 0 auto;
-  padding: var(--space-24) var(--space-8);
+  padding: var(--space-12) var(--space-4);
   min-height: 100vh;
+}
+
+@media (min-width: 768px) {
+  .stage {
+    padding: var(--space-24) var(--space-8);
+  }
 }
 
 .stageAlt {
@@ -59,10 +71,16 @@
 .footer {
   max-width: 800px;
   margin: 0 auto;
-  padding: var(--space-16) var(--space-8);
+  padding: var(--space-12) var(--space-4);
   font-family: var(--font-serif);
   font-size: var(--fs-md);
   line-height: 1.7;
+}
+
+@media (min-width: 768px) {
+  .footer {
+    padding: var(--space-16) var(--space-8);
+  }
 }
 
 .footerSection {

@@ -34,8 +34,7 @@ export function DegradationCurves({ depth, width = 560, height = 360 }: Props) {
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      width={width}
-      height={height}
+      style={{ maxWidth: "100%", height: "auto", display: "block" }}
       role="img"
       aria-label={`训练损失曲线对比 ${depth} 层 plain 与 ResNet`}
     >
