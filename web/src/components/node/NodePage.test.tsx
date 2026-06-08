@@ -4,9 +4,10 @@ import { MemoryRouter, Routes, Route } from "react-router";
 import { NodePage } from "./NodePage";
 
 describe("NodePage", () => {
-  it("renders node meta (name + year) for known node", () => {
+  it("renders node meta (name + year) for known non-golden node", () => {
+    // Use AlexNet (non-golden), since 05-resnet now routes to lazy-loaded NodePageResNet
     render(
-      <MemoryRouter initialEntries={["/families/01-cnn/05-resnet"]}>
+      <MemoryRouter initialEntries={["/families/01-cnn/02-alexnet"]}>
         <Routes>
           <Route
             path="/families/:familyId/:nodeSlug"
@@ -15,8 +16,8 @@ describe("NodePage", () => {
         </Routes>
       </MemoryRouter>
     );
-    expect(screen.getByText(/ResNet/)).toBeInTheDocument();
-    expect(screen.getByText(/2015/)).toBeInTheDocument();
+    expect(screen.getByText(/AlexNet/)).toBeInTheDocument();
+    expect(screen.getByText(/2012/)).toBeInTheDocument();
   });
 
   it("redirects to 404 for unknown node", () => {
