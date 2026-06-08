@@ -56,7 +56,7 @@ export const BASIC_BLOCK_PARAMS = 2 * (3 * 3 * 64 * 64); // 73,728
 
 /** Bottleneck 参数量（1×1↓256→64 + 3×3 64 + 1×1↑64→256） */
 export const BOTTLENECK_PARAMS =
-  1 * 1 * 256 * 64 + 3 * 3 * 64 * 64 + 1 * 1 * 64 * 256; // 70,144
+  1 * 1 * 256 * 64 + 3 * 3 * 64 * 64 + 1 * 1 * 64 * 256; // 69,632
 
 /** 梯度公路：每经过一个 plain block，梯度幅度衰减系数 */
 export const GRADIENT_DECAY_PER_BLOCK = 0.85;
