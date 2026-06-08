@@ -1,9 +1,10 @@
 import { useParams, Link, Navigate } from "react-router";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import type { FamiliesData, FamilyId } from "../../types/family";
 import familiesJson from "../../data/families.json";
 import { familyColorVar } from "../../lib/colors";
 import { MarkdownRenderer } from "./MarkdownRenderer";
+import { goldenSamples } from "./golden";
 import styles from "./NodePage.module.css";
 
 const data = familiesJson as unknown as FamiliesData;
@@ -25,6 +26,24 @@ export function NodePage() {
     familyId: FamilyId;
     nodeSlug: string;
   }>();
+
+  const goldenKey = `${familyId}/${nodeSlug}`;
+  const GoldenComponent = goldenSamples[goldenKey];
+
+  if (GoldenComponent) {
+    return (
+      <Suspense
+        fallback={
+          <div style={{ padding: "var(--space-16)", textAlign: "center" }}>
+            Loading golden sample…
+          </div>
+        }
+      >
+        <GoldenComponent />
+      </Suspense>
+    );
+  }
+
   const family = data.families.find((f) => f.id === familyId);
   const node = family?.nodes.find(
     (n) => n.path.split("/").pop()?.replace(/\.md$/, "") === nodeSlug
