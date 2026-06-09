@@ -62,7 +62,7 @@ export function GradientHighwayStage({
 
         <p style={{ fontSize: "var(--fs-sm)", color: "var(--ink-muted)" }}>
           滑动改变堆叠块数。切换"有/无 shortcut"对比深网梯度命运。
-          点 ▶ 看红色（主路衰减）和蓝色（shortcut 恒粗）粒子同时反传——红球到达 input 时几乎消失，蓝球毫发无损。
+          Hover 某块看数学公式 + 具体衰减百分比。点 ▶ 看红蓝粒子同时反传。
         </p>
       </div>
 

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { GRADIENT_DECAY_PER_BLOCK } from "../lib/curves";
 
@@ -21,6 +22,7 @@ export function GradientHighwaySVG({
   height = 360,
   playKey = 0,
 }: Props) {
+  const [hover, setHover] = useState<number | null>(null);
   const innerW = width - 2 * PADDING_X;
   const visibleCount = Math.min(stackDepth, 8);
   const blockGap =
@@ -56,7 +58,12 @@ export function GradientHighwaySVG({
       </text>
 
       {blocks.map((b) => (
-        <g key={b.index}>
+        <g
+          key={b.index}
+          onMouseEnter={() => setHover(b.index)}
+          onMouseLeave={() => setHover(null)}
+          style={{ cursor: "help" }}
+        >
           <rect x={b.x} y={BLOCK_Y} width={BLOCK_W} height={BLOCK_H} rx={4}
             fill="#fce7f3" stroke="#db2777" strokeWidth={1.5} />
           <text x={b.x + BLOCK_W / 2} y={BLOCK_Y + 19} textAnchor="middle" fontSize={10} fill="#9d174d">
@@ -183,6 +190,54 @@ export function GradientHighwaySVG({
           ⚠️ 无 shortcut：梯度仅靠主路传，深网时几乎消失
         </text>
       )}
+
+      {/* Hover 数学浮窗 */}
+      {hover !== null && (() => {
+        const blockObj = blocks[hover];
+        if (!blockObj) return null;
+
+        const layersFromTop = stackDepth - hover - 1;
+        const mainPathRemain = Math.pow(GRADIENT_DECAY_PER_BLOCK, layersFromTop);
+        const mainPathPct = (mainPathRemain * 100).toFixed(1);
+
+        const tooltipW = 220;
+        const tooltipH = 100;
+        const tooltipX = Math.min(
+          Math.max(blockObj.x + BLOCK_W / 2 - tooltipW / 2, 5),
+          width - tooltipW - 5
+        );
+        const tooltipY = Math.max(BLOCK_Y - tooltipH - 10, 5);
+
+        return (
+          <g transform={`translate(${tooltipX}, ${tooltipY})`} pointerEvents="none">
+            <rect
+              x={0}
+              y={0}
+              width={tooltipW}
+              height={tooltipH}
+              rx={6}
+              fill="var(--bg-surface)"
+              stroke="var(--border)"
+              strokeWidth={1}
+              filter="drop-shadow(0 4px 12px rgba(0,0,0,0.08))"
+            />
+            <text x={10} y={18} fontSize={11} fill="var(--ink-secondary)">
+              Block B{hover + 1} 反传梯度
+            </text>
+            <text x={10} y={42} fontSize={11.5} fontFamily="var(--font-mono)" fill="var(--ink-primary)">
+              <tspan>∂L/∂x_l = ∂L/∂x_L · (1 + ∂F/∂x_l)</tspan>
+            </text>
+            <text x={10} y={66} fontSize={12} fill="#dc2626">
+              主路：≈ {mainPathPct}% {layersFromTop > 30 ? "（已消失）" : ""}
+            </text>
+            {showShortcut && (
+              <text x={10} y={86} fontSize={12} fill="#2563eb">
+                Shortcut：≈ 100%（恒粗）
+              </text>
+            )}
+          </g>
+        );
+      })()}
     </svg>
   );
 }
