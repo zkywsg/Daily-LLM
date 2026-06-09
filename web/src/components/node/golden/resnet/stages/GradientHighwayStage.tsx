@@ -1,3 +1,4 @@
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -22,6 +23,7 @@ export function GradientHighwayStage({
   highwayShortcut,
   onHighwayShortcutChange,
 }: Props) {
+  const [playKey, setPlayKey] = useState(0);
   return (
     <div className={styles.grid}>
       <div>
@@ -37,19 +39,39 @@ export function GradientHighwayStage({
           </ReactMarkdown>
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--space-2)" }}>
           <StackDepthSlider value={stackDepth} onChange={onStackDepthChange} />
           <HighwayShortcutToggle value={highwayShortcut} onChange={onHighwayShortcutChange} />
+          <button
+            onClick={() => setPlayKey((k) => k + 1)}
+            style={{
+              padding: "var(--space-2) var(--space-4)",
+              borderRadius: "var(--radius-full)",
+              background: "var(--accent-link)",
+              color: "var(--bg-surface)",
+              fontSize: "var(--fs-sm)",
+              fontWeight: 500,
+              border: "none",
+              cursor: "pointer",
+              marginLeft: "var(--space-3)",
+            }}
+          >
+            ▶ 播放梯度反传
+          </button>
         </div>
 
         <p style={{ fontSize: "var(--fs-sm)", color: "var(--ink-muted)" }}>
-          滑动改变堆叠块数。主路梯度按 0.85^N 衰减，shortcut 路径无衰减直达底层。
-          切换"有/无 shortcut"对比深网梯度命运。
+          滑动改变堆叠块数。切换"有/无 shortcut"对比深网梯度命运。
+          点 ▶ 看红色（主路衰减）和蓝色（shortcut 恒粗）粒子同时反传——红球到达 input 时几乎消失，蓝球毫发无损。
         </p>
       </div>
 
       <div className={styles.stickyPanel}>
-        <GradientHighwaySVG stackDepth={stackDepth} showShortcut={highwayShortcut} />
+        <GradientHighwaySVG
+          stackDepth={stackDepth}
+          showShortcut={highwayShortcut}
+          playKey={playKey}
+        />
       </div>
     </div>
   );

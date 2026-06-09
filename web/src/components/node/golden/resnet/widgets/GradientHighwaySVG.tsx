@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { GRADIENT_DECAY_PER_BLOCK } from "../lib/curves";
 
 interface Props {
@@ -5,6 +6,7 @@ interface Props {
   showShortcut?: boolean;
   width?: number;
   height?: number;
+  playKey?: number;
 }
 
 const PADDING_X = 30;
@@ -17,6 +19,7 @@ export function GradientHighwaySVG({
   showShortcut = true,
   width = 560,
   height = 360,
+  playKey = 0,
 }: Props) {
   const innerW = width - 2 * PADDING_X;
   const visibleCount = Math.min(stackDepth, 8);
@@ -130,6 +133,40 @@ export function GradientHighwaySVG({
           y2={BLOCK_Y + 90}
           stroke="#2563eb"
           strokeWidth={2.5}
+        />
+      )}
+
+      {/* 反传播粒子（仅 playKey > 0 时播放） */}
+      {playKey > 0 && (
+        <motion.circle
+          key={`grad-particle-red-${playKey}`}
+          cy={BLOCK_Y + 60}
+          r={6}
+          fill="#dc2626"
+          style={{ filter: "drop-shadow(0 0 8px #dc2626)" }}
+          initial={{ cx: width - PADDING_X, r: 6, opacity: 0.95 }}
+          animate={{
+            cx: PADDING_X,
+            r: Math.max(1, 6 * Math.pow(GRADIENT_DECAY_PER_BLOCK, stackDepth)),
+            opacity: Math.max(0.1, Math.pow(GRADIENT_DECAY_PER_BLOCK, stackDepth)),
+          }}
+          transition={{ duration: 2, ease: "easeIn" }}
+        />
+      )}
+
+      {playKey > 0 && showShortcut && (
+        <motion.circle
+          key={`grad-particle-blue-${playKey}`}
+          cy={BLOCK_Y + 90}
+          r={6}
+          fill="#2563eb"
+          style={{ filter: "drop-shadow(0 0 8px #2563eb)" }}
+          initial={{ cx: width - PADDING_X, opacity: 0.95 }}
+          animate={{
+            cx: PADDING_X,
+            opacity: 0.95,
+          }}
+          transition={{ duration: 2, ease: "linear" }}
         />
       )}
 
