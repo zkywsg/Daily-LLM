@@ -4,6 +4,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { BlockTypeToggle } from "../widgets/BlockTypeToggle";
 import { BottleneckSVG } from "../widgets/BottleneckSVG";
+import { ResNet50Overview } from "../widgets/ResNet50Overview";
 import { ShortcutToggle } from "../widgets/ShortcutToggle";
 import styles from "./Stage.module.css";
 
@@ -23,11 +24,24 @@ export function ResidualBlockStage({
   onShowShortcutChange,
 }: Props) {
   return (
-    <div className={styles.grid}>
-      <div>
-        <h2 style={{ fontSize: "var(--fs-2xl)", marginBottom: "var(--space-4)" }}>
-          残差的直觉
-        </h2>
+    <div>
+      <ResNet50Overview />
+      <p
+        style={{
+          fontSize: "var(--fs-sm)",
+          color: "var(--ink-muted)",
+          marginTop: "var(--space-2)",
+          marginBottom: "var(--space-8)",
+        }}
+      >
+        上图是 ResNet-50 整体架构：4 个 Stage 各重复 (3, 4, 6, 3) 个 Bottleneck 块，共 16 块 × 3 层 = 48 层 + conv1 + fc = <strong>50 层</strong>。下面我们 zoom 进单个 Bottleneck 看内部结构。
+      </p>
+
+      <div className={styles.grid}>
+        <div>
+          <h2 style={{ fontSize: "var(--fs-2xl)", marginBottom: "var(--space-4)" }}>
+            残差的直觉
+          </h2>
         <div style={{ fontFamily: "var(--font-serif)", lineHeight: 1.7 }}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
@@ -48,8 +62,9 @@ export function ResidualBlockStage({
         </p>
       </div>
 
-      <div className={styles.stickyPanel}>
-        <BottleneckSVG blockType={blockType} showShortcut={showShortcut} />
+        <div className={styles.stickyPanel}>
+          <BottleneckSVG blockType={blockType} showShortcut={showShortcut} />
+        </div>
       </div>
     </div>
   );
