@@ -2,6 +2,7 @@ import { GRADIENT_DECAY_PER_BLOCK } from "../lib/curves";
 
 interface Props {
   stackDepth: number;
+  showShortcut?: boolean;
   width?: number;
   height?: number;
 }
@@ -11,7 +12,12 @@ const BLOCK_W = 50;
 const BLOCK_H = 30;
 const BLOCK_Y = 160;
 
-export function GradientHighwaySVG({ stackDepth, width = 560, height = 360 }: Props) {
+export function GradientHighwaySVG({
+  stackDepth,
+  showShortcut = true,
+  width = 560,
+  height = 360,
+}: Props) {
   const innerW = width - 2 * PADDING_X;
   const visibleCount = Math.min(stackDepth, 8);
   const blockGap =
@@ -53,12 +59,14 @@ export function GradientHighwaySVG({ stackDepth, width = 560, height = 360 }: Pr
           <text x={b.x + BLOCK_W / 2} y={BLOCK_Y + 19} textAnchor="middle" fontSize={10} fill="#9d174d">
             B{b.index + 1}
           </text>
-          <path
-            d={`M ${b.x + 5} ${BLOCK_Y} C ${b.x + 5} ${BLOCK_Y - 20}, ${b.x + BLOCK_W - 5} ${BLOCK_Y - 20}, ${b.x + BLOCK_W - 5} ${BLOCK_Y}`}
-            stroke="#2563eb"
-            strokeWidth={1.5}
-            fill="none"
-          />
+          {showShortcut && (
+            <path
+              d={`M ${b.x + 5} ${BLOCK_Y} C ${b.x + 5} ${BLOCK_Y - 20}, ${b.x + BLOCK_W - 5} ${BLOCK_Y - 20}, ${b.x + BLOCK_W - 5} ${BLOCK_Y}`}
+              stroke="#2563eb"
+              strokeWidth={1.5}
+              fill="none"
+            />
+          )}
           {b.index < visibleCount - 1 && (
             <line
               x1={b.x + BLOCK_W}
@@ -114,21 +122,30 @@ export function GradientHighwaySVG({ stackDepth, width = 560, height = 360 }: Pr
           );
         })}
 
-      <line
-        x1={width - PADDING_X}
-        y1={BLOCK_Y + 90}
-        x2={PADDING_X}
-        y2={BLOCK_Y + 90}
-        stroke="#2563eb"
-        strokeWidth={2.5}
-      />
+      {showShortcut && (
+        <line
+          x1={width - PADDING_X}
+          y1={BLOCK_Y + 90}
+          x2={PADDING_X}
+          y2={BLOCK_Y + 90}
+          stroke="#2563eb"
+          strokeWidth={2.5}
+        />
+      )}
 
       <text x={PADDING_X} y={BLOCK_Y + 55} fontSize={11} fill="#dc2626">
         主路：到达 input 时残留 {(totalDecay * 100).toFixed(1)}%
       </text>
-      <text x={PADDING_X} y={BLOCK_Y + 110} fontSize={11} fill="#2563eb">
-        shortcut：恒粗，无衰减
-      </text>
+
+      {showShortcut ? (
+        <text x={PADDING_X} y={BLOCK_Y + 110} fontSize={11} fill="#2563eb">
+          shortcut：恒粗，无衰减
+        </text>
+      ) : (
+        <text x={PADDING_X} y={BLOCK_Y + 110} fontSize={11} fill="#dc2626" fontWeight={600}>
+          ⚠️ 无 shortcut：梯度仅靠主路传，深网时几乎消失
+        </text>
+      )}
     </svg>
   );
 }

@@ -24,6 +24,7 @@ export default function NodePageResNet() {
   );
   const [showShortcut, setShowShortcut] = useState(true);
   const [stackDepth, setStackDepth] = useState(6);
+  const [highwayShortcut, setHighwayShortcut] = useState(true);
 
   return (
     <div className={styles.container}>
@@ -67,6 +68,8 @@ export default function NodePageResNet() {
           mechanismProse={prose.mechanism}
           stackDepth={stackDepth}
           onStackDepthChange={setStackDepth}
+          highwayShortcut={highwayShortcut}
+          onHighwayShortcutChange={setHighwayShortcut}
         />
       </section>
 
