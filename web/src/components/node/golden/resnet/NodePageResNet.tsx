@@ -22,6 +22,7 @@ export default function NodePageResNet() {
   const [blockType, setBlockType] = useState<"basic" | "bottleneck">(
     "bottleneck"
   );
+  const [showShortcut, setShowShortcut] = useState(true);
   const [stackDepth, setStackDepth] = useState(6);
 
   return (
@@ -56,6 +57,8 @@ export default function NodePageResNet() {
           intuitionProse={prose.intuition}
           blockType={blockType}
           onBlockTypeChange={setBlockType}
+          showShortcut={showShortcut}
+          onShowShortcutChange={setShowShortcut}
         />
       </section>
 
