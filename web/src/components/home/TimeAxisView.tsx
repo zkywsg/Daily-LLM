@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router";
 import { scaleLinear } from "d3-scale";
 import type { FamiliesData, NodeData } from "../../types/family";
 import { familyColorVar } from "../../lib/colors";
@@ -17,6 +18,7 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
   const allNodes = data.families.flatMap((f) => f.nodes);
   const [hovered, setHovered] = useState<NodeData | null>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const navigate = useNavigate();
 
   if (allNodes.length === 0) {
     return <div>暂无节点数据</div>;
@@ -100,6 +102,10 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
               });
             }}
             onMouseLeave={() => setHovered(null)}
+            onClick={() => {
+              const slug = n.path.split("/").pop()!.replace(/\.md$/, "");
+              navigate(`/families/${n.family}/${slug}`);
+            }}
             style={{ cursor: "pointer" }}
             layoutId={`node-${n.path}`}
           />
