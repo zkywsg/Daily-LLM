@@ -1,15 +1,23 @@
+import { useState } from "react";
 import { scaleLinear } from "d3-scale";
 import { line } from "d3-shape";
 import { plainCurve, resnetCurve } from "../lib/curves";
 
 interface Props {
-  /** 当前选中的网络深度 */
   depth: number;
   width?: number;
   height?: number;
 }
 
 const PADDING = { top: 30, right: 30, bottom: 50, left: 60 };
+
+interface HoverPoint {
+  series: "plain" | "resnet";
+  epoch: number;
+  loss: number;
+  px: number;
+  py: number;
+}
 
 export function DegradationCurves({ depth, width = 560, height = 360 }: Props) {
   const plain = plainCurve(depth);
@@ -30,6 +38,32 @@ export function DegradationCurves({ depth, width = 560, height = 360 }: Props) {
 
   const xTicks = [0, 50, 100, 150, 200];
   const yTicks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6];
+
+  // Hover state
+  const [hover, setHover] = useState<HoverPoint | null>(null);
+
+  // Sample points along each curve for hover targets (every 10 epochs)
+  const hoverTargets: HoverPoint[] = [];
+  for (let i = 10; i < plain.length; i += 10) {
+    const p = plain[i];
+    hoverTargets.push({
+      series: "plain",
+      epoch: p.epoch,
+      loss: p.loss,
+      px: xScale(p.epoch),
+      py: yScale(p.loss),
+    });
+  }
+  for (let i = 10; i < resnet.length; i += 10) {
+    const p = resnet[i];
+    hoverTargets.push({
+      series: "resnet",
+      epoch: p.epoch,
+      loss: p.loss,
+      px: xScale(p.epoch),
+      py: yScale(p.loss),
+    });
+  }
 
   return (
     <svg
@@ -77,6 +111,7 @@ export function DegradationCurves({ depth, width = 560, height = 360 }: Props) {
           training error
         </text>
 
+        {/* 曲线 */}
         <path
           d={plainPath}
           stroke="#dc2626"
@@ -85,6 +120,56 @@ export function DegradationCurves({ depth, width = 560, height = 360 }: Props) {
           strokeDasharray={depth > 30 ? "5,3" : "none"}
         />
         <path d={resnetPath} stroke="#2563eb" strokeWidth={2.5} fill="none" />
+
+        {/* Hover 目标：透明 circle 覆盖在曲线上每隔 10 epoch 一个 */}
+        {hoverTargets.map((p, i) => (
+          <circle
+            key={`hover-${p.series}-${i}`}
+            cx={p.px}
+            cy={p.py}
+            r={10}
+            fill="transparent"
+            onMouseEnter={() => setHover(p)}
+            onMouseLeave={() => setHover(null)}
+            style={{ cursor: "crosshair" }}
+          />
+        ))}
+
+        {/* Hover 高亮：绘制 active 点的真实 dot */}
+        {hover && (
+          <>
+            <circle
+              cx={hover.px}
+              cy={hover.py}
+              r={5}
+              fill={hover.series === "plain" ? "#dc2626" : "#2563eb"}
+              stroke="var(--bg-canvas)"
+              strokeWidth={2}
+            />
+            {/* Tooltip 背景 + 文字 */}
+            <g
+              transform={`translate(${Math.min(hover.px + 12, innerW - 130)}, ${Math.max(hover.py - 28, 0)})`}
+              pointerEvents="none"
+            >
+              <rect
+                x={0}
+                y={0}
+                width={130}
+                height={48}
+                rx={4}
+                fill="var(--bg-surface)"
+                stroke="var(--border)"
+                strokeWidth={1}
+              />
+              <text x={8} y={18} fontSize={11} fill="var(--ink-secondary)">
+                {hover.series === "plain" ? "plain" : "ResNet"}
+              </text>
+              <text x={8} y={34} fontSize={12} fill="var(--ink-primary)">
+                epoch {hover.epoch} · {hover.loss.toFixed(3)}
+              </text>
+            </g>
+          </>
+        )}
 
         <g transform={`translate(${innerW - 140}, 10)`}>
           <line x1={0} y1={6} x2={20} y2={6} stroke="#dc2626" strokeWidth={2} />

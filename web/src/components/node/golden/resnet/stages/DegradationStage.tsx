@@ -4,6 +4,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { DepthSlider } from "../widgets/DepthSlider";
 import { DegradationCurves } from "../widgets/DegradationCurves";
+import { ImageNetMilestones } from "../widgets/ImageNetMilestones";
 import styles from "./Stage.module.css";
 
 interface Props {
@@ -61,6 +62,9 @@ export function DegradationStage({
 
       <div className={styles.stickyPanel}>
         <DegradationCurves depth={depth} />
+        <div style={{ marginTop: "var(--space-6)" }}>
+          <ImageNetMilestones />
+        </div>
       </div>
     </div>
   );
