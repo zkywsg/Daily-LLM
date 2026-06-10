@@ -14,9 +14,9 @@ key_idea: "用复合缩放系数把 depth/width/resolution 三轴联合缩放公
 
 [ResNet](05-resnet.md) 之后，CNN 的"做大"这件事被拆成了三个旋钮：**加深**（更多层）、**加宽**（更多通道）、**加分辨率**（更大输入图）。每条路都各自被验证过——ResNet 把深度从 22 推到 152，WideResNet 把宽度乘到 10 倍，多尺度训练把输入从 224 拉到 600。三条线各自能换来精度，但三者之间的关系没人系统问过。
 
-实际操作里，社区的做法是"一次只动一个旋钮，凭直觉"。要更高精度？把 ResNet-50 改成 ResNet-200。要参数更少？走 [Inception](04-inception.md) 路线手工配通道。要在限定 FLOPs 预算下挤精度？MobileNet 砸宽度、砸输入分辨率，每一组超参都靠手调。**没人系统地回答过一个基础问题**：固定 FLOPs 预算下，深度、宽度、分辨率三者该怎么联合分配才最优？
+实际操作中，常见的做法是"一次只调一个旋钮，凭经验"。需要更高精度时把 ResNet-50 改为 ResNet-200；需要参数更少时走 [Inception](04-inception.md) 路线手工配通道；要在限定 FLOPs 预算下提升精度时，MobileNet 减小宽度、降低输入分辨率，每组超参依赖手工调试。**尚未有系统性的研究回答一个基础问题**：固定 FLOPs 预算下，深度、宽度、分辨率三者应如何联合分配？
 
-更尴尬的是，单独加任意一轴都很快遇到边际收益递减——只加深，到 200 层后精度饱和；只加宽，参数爆炸但精度跟不上；只加分辨率，FLOPs 平方级涨而精度只线性涨几个点。Tan 和 Le 在做 NAS 工作（MnasNet）时注意到一件事：**手工调的模型族里，越大的模型恰好倾向于同时加深、加宽、加分辨率，且三者的比例大致稳定**。这条经验性的观察直接催生了 EfficientNet——能不能把"三轴联合放大"写成一个数学公式？
+另一个问题是，单独增加任一轴都会较快出现边际收益递减——只加深时 200 层后精度饱和；只加宽时参数显著上升但精度提升有限；只加分辨率时 FLOPs 按平方增长而精度仅线性提升几个点。Tan 和 Le 在做 NAS 工作（MnasNet）时观察到：**手工调试的模型族中，规模较大的模型倾向于同时加深、加宽、加分辨率，且三者的比例相对稳定**。这一经验性的观察推动了 EfficientNet——能否将"三轴联合放大"形式化为一个数学公式？
 
 ## 核心思想
 
@@ -61,17 +61,17 @@ graph TD
 ```
 *图 1：EfficientNet-B0 主干，7 个 stage 的 MBConv 堆叠。MBConv1/6 中数字为 expansion ratio，每 stage 标 kernel / 输出通道 / block 数 / stride。*
 
-**三轴等比 vs 单轴砸**——论文里最有说服力的消融是把"同样的 FLOPs 预算"分别砸在三种缩放策略上做对照：只加深、只加宽、只加分辨率、三轴等比。**同 FLOPs 下三轴联合缩放比任何单轴策略高 0.5–2.5 个百分点的 Top-1**。这条曲线就是"复合缩放"作为论文标题的实验依据——φ 这个公式不是审美选择，是实测出来的帕累托线。
+**三轴等比 vs 单轴缩放**——论文中的关键消融是在"相同 FLOPs 预算"下对比四种缩放策略：只加深、只加宽、只加分辨率、三轴等比。**同 FLOPs 下三轴联合缩放比任一单轴策略高 0.5–2.5 个 Top-1 百分点**。这条曲线为"复合缩放"提供了实证依据——φ 这一公式是基于实测的帕累托线，而非经验性选择。
 
-最终结果是一个完整的模型族 B0–B7。B0 用 5.3M 参数拿到 77.1% Top-1，B7 用 66M 参数拿到 **84.3% Top-1（2019 ImageNet SOTA）**。同精度下 EfficientNet-B7 比 GPipe 小 8.4×、比 ResNeXt-101 小数倍——"参数效率"这条 Inception 开启的赛道，到 EfficientNet 才被推到极致。
+最终得到一个完整的模型族 B0–B7。B0 用 5.3M 参数达到 77.1% Top-1，B7 用 66M 参数达到 **84.3% Top-1（2019 ImageNet SOTA）**。同精度下 EfficientNet-B7 比 GPipe 小 8.4×、比 ResNeXt-101 小数倍——"参数效率"这一由 Inception 开启的路线，在 EfficientNet 上进一步推进。
 
 ## 工程陷阱
 
-**α, β, γ 是在 B0 上搜的，换基础架构未必最优**。这套常数 (1.2, 1.1, 1.15) 是在 EfficientNet-B0（MBConv + SE）这个特定种子模型上 grid search 出来的。把它直接搬到 ResNet、ConvNeXt 或别的 backbone 上做"compound scaling"，比例并不一定最优。Tan 和 Le 自己在 **EfficientNet-V2（2021）** 里就发现：**width 应该更激进、resolution 不应该涨得这么快**——大分辨率训练时显存爆炸 + 训练速度大幅下降，得不偿失。V2 把搜索范围重做了一遍，得到的最优比例与 V1 不同。教训是：**复合缩放是个框架，但具体 α, β, γ 是 backbone-dependent**，迁移时要重搜，不要照抄。
+**α, β, γ 是在 B0 上搜得的，换基础架构未必最优**。这组常数 (1.2, 1.1, 1.15) 是在 EfficientNet-B0（MBConv + SE）这一特定种子模型上 grid search 得到的。直接搬到 ResNet、ConvNeXt 或其他 backbone 上做 "compound scaling"，比例不一定最优。Tan 和 Le 在 **EfficientNet-V2（2021）** 中发现：**width 应当更激进、resolution 增长应放缓**——大分辨率训练显存开销大、训练速度下降明显。V2 重新搜索了范围，最优比例与 V1 不同。**复合缩放是一个框架，但具体 α, β, γ 是 backbone 相关的**，迁移到其他架构时需要重搜。
 
-**Stochastic Depth 是大模型保精度的关键开关，早期实现常漏掉它**。EfficientNet-B0 训练时 stochastic depth 的丢弃率是 0，看起来无关紧要——但 B4 之后丢弃率线性涨到 0.2（B7），论文里 ablation 显示 **B7 关掉 stochastic depth 直接掉 0.7–1.0 个 Top-1**。2019 年很多第三方复现（包括 PyTorch torchvision 早期版本）默认忽略这个超参，结果 B5–B7 跑出来比论文低 1 个多百分点，社区花了几个月才定位到这个差异。教训：**模型放大时正则也要同步放大，stochastic depth 这种"按 block 概率丢弃"是 EfficientNet 大模型族的隐藏标配**，不是 optional。
+**Stochastic Depth 是大模型保精度的关键超参，早期实现常忽略**。EfficientNet-B0 训练时 stochastic depth 的丢弃率为 0，看似无关紧要——但 B4 之后丢弃率线性增长至 0.2（B7），论文消融实验显示 **B7 关闭 stochastic depth 时 Top-1 下降 0.7–1.0 个百分点**。2019 年多数第三方复现（包括 PyTorch torchvision 早期版本）默认忽略这一超参，结果 B5–B7 比论文低约 1 个百分点，社区耗时数月才定位到这一差异。**模型放大时正则强度也需要同步增加**，stochastic depth 是 EfficientNet 大模型族的重要组件。
 
-**Depthwise conv 的 FLOPs 便宜不等于 wall-clock 速度快**。MBConv 大量用 depthwise 3×3/5×5，理论 FLOPs 远低于普通卷积——但在 2019 年的 GPU 上（V100、T4），depthwise conv 的 cuDNN 实现优化程度远不如标准卷积，实测 wall-clock 时间常常**只快 1.5–2×**，而非 FLOPs 比例所暗示的 8–9×。这导致一个反直觉现象：**EfficientNet-B0 的 FLOPs 是 ResNet-50 的 1/10，但实际推理速度只快 2–3 倍**。同精度下 EfficientNet-B3（FLOPs 与 ResNet-50 相当）的延迟反而比 ResNet-50 高。教训：**部署做选型时不能只看 FLOPs，必须实测目标硬件上的 latency**。这也是 EfficientNet-V2 把 stage 1–3 换回普通卷积（Fused-MBConv）的直接原因——小分辨率高通道阶段，depthwise 的硬件不友好性最严重，干脆换回普通 conv 整体更快。
+**Depthwise conv 的 FLOPs 便宜不等于 wall-clock 速度快**。MBConv 大量使用 depthwise 3×3/5×5，理论 FLOPs 远低于普通卷积——但在 2019 年的 GPU 上（V100、T4），depthwise conv 的 cuDNN 实现优化程度低于标准卷积，实测 wall-clock 时间**只快 1.5–2×**，而非 FLOPs 比例所暗示的 8–9×。这导致一个反直觉现象：**EfficientNet-B0 的 FLOPs 是 ResNet-50 的 1/10，但实际推理速度只快 2–3 倍**。同精度下 EfficientNet-B3（FLOPs 与 ResNet-50 相当）的延迟反而比 ResNet-50 高。**部署选型时不能仅依据 FLOPs，需在目标硬件上实测 latency**。这也是 EfficientNet-V2 把 stage 1–3 换回普通卷积（Fused-MBConv）的原因——小分辨率高通道阶段，depthwise 的硬件不友好性较明显，换回普通 conv 整体更快。
 
 ## 训练细节
 
@@ -111,7 +111,7 @@ graph TD
 | EfficientNet-B5 | 30M | 9.9B | 83.6% |
 | **EfficientNet-B7** | **66M** | **37B** | **84.3%** |
 
-B7 用 1/8.4 的参数追平了 GPipe 的 SOTA——这条记录就是 2019 年那条新的帕累托线，到 2022 年才被 ConvNeXt 真正越过。
+B7 用 1/8.4 的参数追平了 GPipe 的 SOTA——这一结果定义了 2019 年新的帕累托线，2022 年被 ConvNeXt 超越。
 
 ## 关键代码
 
@@ -169,9 +169,9 @@ class MBConv(nn.Module):
 
 ## 影响 / 后续
 
-EfficientNet 在 2019–2021 年这两年里几乎统治了"参数效率"这一坐标轴的所有 leaderboard——detection、segmentation、医学影像、移动端部署，凡是要在精度和参数间找帕累托点的场景，EfficientNet 都是默认起跑线。它把"compound scaling"作为一个**架构正交的设计范式**留了下来：后来 RegNet、EfficientNet-V2、NFNet 都借用了"单参数控制模型族放大"的思路，只是把 α/β/γ 重搜或换成可学习的。
+EfficientNet 在 2019–2021 年间在"参数效率"坐标轴上占据主导地位——detection、segmentation、医学影像、移动端部署等需要在精度与参数间寻找帕累托点的场景，EfficientNet 常作为默认基线。它把 "compound scaling" 留作一个**架构无关的设计范式**：后来 RegNet、EfficientNet-V2、NFNet 都借用了"用单参数控制模型族放大"的思路，只是重新搜索 α/β/γ 或将其改为可学习。
 
-但 EfficientNet 自身的局限也很快显现。**Wall-clock 速度对不齐 FLOPs** 这件事被工业界反复抱怨；2020 年之后 ConvNeXt / ViT 兴起，CNN 这条线上的 SOTA 优势在 2022 年被 ConvNeXt 用"训练 recipe 现代化"的方式反超——同样的 ResNet 骨架，只要把 AdamW + Swish + LayerScale + 大模型训练技巧搬过来，就能在精度上越过 EfficientNet-B7 的帕累托线。这件事的教训是：**架构本身的设计空间已被挖到边际，未来几年的 CNN 进展更多来自训练侧而不是结构侧**。
+EfficientNet 自身的局限也较快显现。**Wall-clock 速度与 FLOPs 不一致**是工业界长期关注的问题；2020 年后 ConvNeXt / ViT 兴起，CNN 在 SOTA 上的优势 2022 年被 ConvNeXt 通过"训练 recipe 现代化"的方式追平——同样的 ResNet 骨架，只要把 AdamW + Swish + LayerScale + 大模型训练技巧引入，就能在精度上超过 EfficientNet-B7 的帕累托线。这也提示：**架构本身的设计空间已接近边际收益，未来几年 CNN 的提升更多来自训练侧而非结构侧**。
 
 → [08-convnext.md](08-convnext.md) · 把 ViT 的训练方法反哺到 CNN，超越 EfficientNet 帕累托线
 → [../foundations/04-normalization/](../foundations/04-normalization/) · MBConv 里 BN 和 inverted bottleneck 的搭配

@@ -12,17 +12,17 @@ key_idea: "每层都直接接收前面所有层的输出（concat 而非加法�
 
 ## 前作进展
 
-[ResNet](05-resnet.md) 用 $y = F(x) + x$ 这条 shortcut 把 152 层的训练问题彻底解决，残差连接成了 2015–2016 年所有深网络的默认配置。但 ResNet 留下了一个不那么显眼、却让 Cornell 和 Tsinghua 的研究组反复琢磨的小问题——**加法（add）这件事，本身是有损的**。
+[ResNet](05-resnet.md) 用 $y = F(x) + x$ 这条 shortcut 有效解决了 152 层的训练问题，残差连接成为 2015–2016 年深层网络的默认配置。但 ResNet 留下了一个值得关注的问题——**加法（add）操作在信息保留上有损失**。
 
-`F(x) + x` 把不同层学到的特征**叠加在同一个张量上**。对优化来说这是好事，shortcut 给梯度一条干净的回流路径；但从信息保留的角度看，加法是一种**混叠**——浅层学到的边缘特征和深层学到的语义特征被加成一个张量，下游层再也分不清"这个数值是哪一层贡献的"。如果某一层学到的特征不需要被后面继续修改、只想被原样借用呢？加法做不到这件事。
+`F(x) + x` 把不同层学到的特征**叠加到同一个张量上**。对优化来说这是优点，shortcut 给梯度一条干净的回流路径；但从信息保留的角度看，加法是一种**混叠**——浅层的边缘特征与深层的语义特征被加成一个张量，下游层无法区分"这个数值由哪一层贡献"。如果某一层的特征不需要被后续修改、只需要被原样使用，加法无法满足这种需求。
 
-另一个观察是，ResNet 论文里 He 等人做过随机丢弃残差块（stochastic depth）的实验，发现训练时随机扔掉 30%–50% 的 block 网络照样能训出来，甚至更好。这说明 ResNet 里**很多层其实是冗余的**——它们的输出只贡献了一点点修正量，扔了也无所谓。这意味着深网络的真正瓶颈不是"层不够深"，而是"特征没被充分复用"——每个 block 学到的东西只在紧接着的一两个 block 里被用一下就被加进总和里消散了。
+另一个观察是，ResNet 论文中 He 等人做过随机丢弃残差块（stochastic depth）的实验，发现训练时随机丢弃 30%–50% 的 block 网络仍能正常训练，部分配置下结果更优。这说明 ResNet 中**存在较多冗余层**——它们的输出仅贡献少量修正，去除后影响不大。这表明深层网络的瓶颈不在"层不够深"，而在"特征复用不充分"——每个 block 学到的内容只在紧接着的一两个 block 里被使用一次，之后就被加法叠到总和中。
 
-普遍的共识在 2016 年下半年开始松动："如果连 ResNet 都浪费这么多容量，是不是该换种连接方式？"
+2016 年下半年，社区开始讨论："ResNet 是否存在容量浪费？是否应当尝试新的连接方式？"
 
 ## 核心思想
 
-DenseNet 的回答简单到反直觉：**不要加，要拼**。在一个 Dense block 内，第 ℓ 层不再只接收前一层的输出，而是接收前面**所有 ℓ-1 层**的输出拼接（concat）成的特征图：
+DenseNet 的方案简单直接：**用 concat 替代 add**。在一个 Dense block 内，第 ℓ 层不再只接收前一层的输出，而是接收前面**所有 ℓ-1 层**的输出拼接（concat）成的特征图：
 
 $$
 x_\ell = H_\ell([x_0, x_1, \ldots, x_{\ell-1}])
@@ -67,7 +67,7 @@ graph TD
 ```
 *图 1：Dense block 内部稠密连接——第 ℓ 层 concat 前面所有层的输出作为输入，每层贡献 k 个新通道。*
 
-**Growth rate $k$ 才是 DenseNet 真正的尺度变量**。每层 $H_\ell$ 只产生 $k$ 个新通道（典型 $k = 32$），所以即使一个 Dense block 含 12 层、每层都接收前面全部输出，整条链上的通道数也只是 $k_0 + (\ell-1) \cdot k$ 这种线性增长——不是想象中的指数爆炸。Growth rate 控制每层"往公共记忆里多写几页"，剩下的全靠复用。
+**Growth rate $k$ 是 DenseNet 的关键尺度变量**。每层 $H_\ell$ 只产生 $k$ 个新通道（典型 $k = 32$），因此即使一个 Dense block 含 12 层、每层都接收前面全部输出，整条链上的通道数也只是 $k_0 + (\ell-1) \cdot k$ 的线性增长，不会指数膨胀。Growth rate 控制每层新增的通道数量，已有特征则通过 concat 被后续层复用。
 
 整个 DenseNet 把网络切成**若干 Dense block**，block 内部稠密连接、block 之间用 **transition layer（1×1 Conv + 2×2 AvgPool）** 做下采样并压缩通道数（DenseNet-BC 版本里 transition 还会把通道数减半，进一步控制规模）。主流变体 DenseNet-121 / 169 / 201 / 264，数字指总有参层数；DenseNet-121 是最常用基线，4 个 Dense block 分别含 6 / 12 / 24 / 16 层，growth rate $k=32$。
 
@@ -96,7 +96,7 @@ graph TD
 
 **特征复用与隐式深度监督**——把所有前层 concat 进来这件事带来两个一起到场的好处。第一，浅层学到的低阶特征（边缘、纹理）可以被任何一个深层直接拿来用，不必经过中间层的层层加法稀释；浅层与深层之间有**直接通路**，深层不需要重新发明边缘检测器。第二，梯度从 loss 流回去时也走同一条 concat 路径——loss 对 $H_1$ 输出的导数等于所有后续层（$H_2, H_3, \ldots, H_L$）对 $H_1$ 输出依赖项的导数之和。这条结构让浅层永远能拿到"来自所有深层的多份监督信号"，相当于在每一层都隐式架了一个深度监督头。**ResNet 给梯度一条高速公路，DenseNet 给每层一束高速公路**——继承了 ResNet 那个 `+1` 的本质，只是把"加"换成"拼"。
 
-DenseNet 在 ImageNet 上的成绩点明了这条路线的真正卖点：**DenseNet-121 用 7M 参数**就能逼近 ResNet-50（25.6M 参数）的精度（Top-5 ~6%），参数效率比 ResNet 高一个 multiplier。CVPR 2017 把 Best Paper 给了它——这是继 ResNet 之后视觉社区第二次连续把最高奖颁给一个"连接方式"的工作。
+DenseNet 在 ImageNet 上的结果体现了该路线的核心优势：**DenseNet-121 用 7M 参数**可接近 ResNet-50（25.6M 参数）的精度（Top-5 ~6%），参数效率约为 ResNet 的数倍。该工作获 CVPR 2017 Best Paper——继 ResNet 之后，视觉社区连续两届将最高奖授予以连接方式为核心创新的工作。
 
 ## 训练细节
 
@@ -123,13 +123,13 @@ DenseNet 在 ImageNet 上的成绩点明了这条路线的真正卖点：**Dense
 
 **训练资源**：4 块 Tesla K40 GPU 并行；DenseNet-121 在 ImageNet 上训练约 1 周。
 
-**显存代价**——这是 DenseNet 工程上最绕不开的痛点，必须单独拎出来。Concat 让 Dense block 内部第 ℓ 层的输入通道数线性增长到 $k_0 + (\ell-1) \cdot k$。看起来不算多（DenseNet-121 第三个 block 最后一层输入约 $256 + 23 \times 32 = 992$ 通道），但**问题不在计算量，在显存**：
+**显存代价**——这是 DenseNet 工程上的主要挑战。Concat 让 Dense block 内部第 ℓ 层的输入通道数线性增长到 $k_0 + (\ell-1) \cdot k$。数值看似不算多（DenseNet-121 第三个 block 最后一层输入约 $256 + 23 \times 32 = 992$ 通道），但**问题主要在显存而非计算量**：
 
-- ResNet 一个 block 算完，前一个 block 的中间激活就可以释放
-- DenseNet 一个 block 内**所有前层的中间激活都必须保留在显存里**——因为后面所有层都要 concat 它们做反向传播
+- ResNet 一个 block 算完后，前一个 block 的中间激活可以释放
+- DenseNet 一个 block 内**所有前层的中间激活都需保留在显存中**——后续层 concat 时需要它们做反向传播
 - 朴素实现下 DenseNet-121 训练时显存占用比 ResNet-50 多 2–3 倍
 
-2017 年原始实现因此跑同样 batch size 时显存压力很大。工业界后来用 **memory-efficient DenseNet**（NVIDIA 的实现，反向时重算中间激活）才把显存吃掉的大头还回来，代价是训练时间增加 ~15%。**这也是为什么尽管 DenseNet-121 参数效率明显更高，工业界的视觉 backbone 默认依然是 ResNet-50**——后者的"算完即释放"特性对部署、对多机训练、对 detection / segmentation 这种本身已经吃显存的下游任务更友好。
+2017 年原始实现因此在相同 batch size 下显存压力较大。工业界后续采用 **memory-efficient DenseNet**（NVIDIA 实现，反向时重算中间激活）回收了部分显存，代价是训练时间增加约 15%。**这也是为什么尽管 DenseNet-121 参数效率更高，工业界的视觉 backbone 默认仍是 ResNet-50**——后者"算完即释放"的特性对部署、多机训练以及 detection / segmentation 等显存密集的下游任务更友好。
 
 **ImageNet 错误率（Top-5）：**
 
@@ -189,11 +189,11 @@ class DenseBlock(nn.Module):
 
 ## 影响 / 后续
 
-DenseNet 留给后续视觉架构的遗产分成两半，一半被广泛采纳，另一半反而被有意丢弃。
+DenseNet 对后续视觉架构的影响分为两部分：一部分被广泛采用，另一部分在工程实践中较少使用。
 
-**被采纳的一半是"特征复用"这个抽象**——后续几乎所有架构都把"如何让浅层特征被深层直接用到"当成了一类显式的设计变量。U-Net 的 encoder-decoder skip、Feature Pyramid Network（FPN）的多尺度融合、HRNet 在所有分辨率上并行保持表征，都是"DenseNet 思想"在不同尺度上的变种：让信息不要被中间层吃掉，让浅层与深层之间永远有直接通路。Transformer 时代的 [ViT](../08-vit/) 虽然不用 concat，但每个 block 里的 residual 加上 token 级别的全连接注意力，本质上也在做同样的事——让任何位置任何深度的特征都能被全网随时取用。
+**被采用的部分是"特征复用"这一思路**——后续多数架构都把"如何让浅层特征被深层直接使用"作为显式的设计变量。U-Net 的 encoder-decoder skip、Feature Pyramid Network（FPN）的多尺度融合、HRNet 在所有分辨率上并行保持表征，都可视为 DenseNet 思想在不同尺度上的变体：信息不被中间层覆盖，浅层与深层之间保持直接通路。Transformer 时代的 [ViT](../08-vit/) 虽然不用 concat，但每个 block 中的 residual 加上 token 级全连接注意力本质上达成了类似效果——任何位置和深度的特征都能被全网访问。
 
-**被丢弃的一半是"concat 这种连接方式本身"**——工业界用 ResNet 不用 DenseNet 的主要原因不在精度，而在 **显存代价 + 推理友好性**。ResNet 的 add 让每个 block 算完后前面的中间激活立刻可以释放；DenseNet 的 concat 在训练时必须保留全部前层激活，在边缘部署时也要面对 channel 数线性增长带来的 memory bandwidth 问题。同样精度下，工业部署几乎一致选择 ResNet 系——这是为什么 Faster R-CNN / Mask R-CNN / DeepLab / CLIP 视觉塔的默认 backbone 都是 ResNet-50/101，而不是参数更少的 DenseNet-121。**架构的胜负不只看精度，还看显存账本**——DenseNet 是这条经验最经典的反例。
+**工程上较少使用的部分是"concat 连接方式本身"**——工业界更常选择 ResNet 而非 DenseNet 的原因主要不在精度，而在 **显存代价与推理友好性**。ResNet 的 add 让每个 block 算完后前面的中间激活可立即释放；DenseNet 的 concat 在训练时需保留全部前层激活，部署时也面对 channel 数线性增长带来的 memory bandwidth 问题。在同等精度下，工业部署多数选择 ResNet 系——这也是 Faster R-CNN / Mask R-CNN / DeepLab / CLIP 视觉塔的默认 backbone 为 ResNet-50/101 而非 DenseNet-121 的原因。**架构选择不仅看精度，也要考虑显存开销**——DenseNet 是这一权衡的一个典型例子。
 
 EfficientNet 在 2019 年把这件事推进一步：与其在"加法 vs 拼接"里二选一，不如把 depth / width / resolution 三轴系统化地缩放，让架构搜索本身决定每个尺度上哪种连接更划算。
 

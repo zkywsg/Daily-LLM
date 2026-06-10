@@ -12,15 +12,15 @@ key_idea: "把 ViT 的所有现代化设计选择（大 kernel·LayerNorm·GELU�
 
 ## 前作进展
 
-2020 年 [ViT](../08-vit/) 把 Transformer 直接搬到视觉，用纯注意力 + 大规模预训练把 ImageNet Top-1 一把推到 85% 以上，紧跟着 Swin Transformer 在 2021 年又把分层 / 滑窗注意力做出来，在 detection / segmentation 上全面接管 CNN 的位置。两年时间，视觉社区的共识从"CNN 是默认 backbone"一路滑到"CNN 是不是要被 Transformer 替代了"——CVPR 2021 上几乎一半的 backbone 论文都换成了 Transformer 变种。
+2020 年 [ViT](../08-vit/) 把 Transformer 直接应用到视觉，用纯注意力 + 大规模预训练把 ImageNet Top-1 提升至 85% 以上；Swin Transformer 在 2021 年又提出分层 / 滑窗注意力，在 detection / segmentation 上取代 CNN 的主流地位。两年时间内，视觉社区的关注点从"CNN 是默认 backbone"转向"CNN 是否会被 Transformer 替代"——CVPR 2021 上多数 backbone 论文转向 Transformer 变种。
 
-但有件事一直让人不踏实：ViT 和 Swin 的胜利里，到底有多少来自**注意力机制本身**，又有多少来自**和注意力一起搬过来的那一整套现代化设计**？ViT 用 LayerNorm 不用 BatchNorm、用 GELU 不用 ReLU、训练用 AdamW + Mixup + CutMix + RandAugment + Stochastic Depth + Label Smoothing 的全家桶，[ResNet](05-resnet.md) 2015 年的训练 recipe（SGD + 简单增强 + Dropout）一样都没用。**这是同一条赛道的公平比较吗**？
+但一个值得讨论的问题是：ViT 和 Swin 的优势中，有多少来自**注意力机制本身**，又有多少来自**和注意力一同引入的现代化设计组合**？ViT 用 LayerNorm 不用 BatchNorm、用 GELU 不用 ReLU、训练用 AdamW + Mixup + CutMix + RandAugment + Stochastic Depth + Label Smoothing 等组件，[ResNet](05-resnet.md) 2015 年的训练 recipe（SGD + 简单增强 + Dropout）则均未使用。**这是否构成公平的对比**？
 
-Saining Xie（[ResNeXt](05-resnet.md) 一作）和 Zhuang Liu（[DenseNet](06-densenet.md) 一作）——两个 CNN 家族的老熟人——决定把这件事彻底验一遍。他们提的问题非常干净：**不发明任何新算子**，从 ResNet-50（76.1% Top-1）出发，把 Swin Transformer 用到的每一项现代化设计逐条搬过来，每搬一项就跑一次 ImageNet 看精度涨多少。最后能涨到哪里？
+Saining Xie（[ResNeXt](05-resnet.md) 一作）和 Zhuang Liu（[DenseNet](06-densenet.md) 一作）选择对这一问题进行系统对比。他们提的研究问题较为直接：**不引入任何新算子**，从 ResNet-50（76.1% Top-1）出发，把 Swin Transformer 用到的每一项现代化设计逐条引入，每引入一项就在 ImageNet 上测试精度变化。最终能达到怎样的精度？
 
 ## 核心思想
 
-ConvNeXt 的全部贡献是一张"现代化路线图"——把 ResNet-50 当起点，按顺序加 7 类改造，每一步对应 ViT/Swin 用到的某个设计。最终得到的网络**没有任何注意力机制**，仍然全部由卷积构成，但在 ImageNet 上反超同等规模的 Swin Transformer。
+ConvNeXt 的核心贡献是一张"现代化路线图"——把 ResNet-50 当起点，按顺序加入 7 类改造，每一步对应 ViT/Swin 中的某个设计。最终得到的网络**不含任何注意力机制**，仍然全部由卷积构成，但在 ImageNet 上超过同等规模的 Swin Transformer。
 
 ```mermaid
 graph TD
@@ -65,9 +65,9 @@ graph TD
 
 **Patchify stem**——原版 ResNet 的 stem 是 7×7 stride=2 conv + 3×3 maxpool，把分辨率一次性砍到 1/4，但卷积核之间有重叠。ViT 用的是不重叠的 16×16 patch（即 16×16 stride=16 conv），Swin 用 4×4 stride=4。ConvNeXt 取 4×4 stride=4——精度涨 0.1 点，本身意义不大，但**把后续所有 block 的输入对齐到"非重叠 patch"格式**，让 stage 之间的独立 downsample 层成为可能。
 
-**Depthwise 7×7**——这一步是论文中最关键的"算子级"改造。把 ResNet 原本的 3×3 卷积换成 **depthwise 7×7 卷积**——depthwise 让 FLOPs 不爆炸（参数从 $C^2 k^2$ 降到 $C k^2$），7×7 让感受野扩到接近 Swin 的局部窗口（Swin-T window=7）。论文做过消融：3×3/5×5/7×7/9×9/11×11 五档，**精度到 7×7 饱和**，再大不涨。这条经验把"大 kernel 卷积 = 注意力的替代品"这件事的边界画清楚了——不需要做到 attention 那种全局，7×7 局部感受野配合层叠就够用。
+**Depthwise 7×7**——这一步是论文中关键的"算子级"改造。把 ResNet 原本的 3×3 卷积换成 **depthwise 7×7 卷积**——depthwise 控制 FLOPs（参数从 $C^2 k^2$ 降到 $C k^2$），7×7 把感受野扩到接近 Swin 的局部窗口（Swin-T window=7）。论文做过消融：3×3/5×5/7×7/9×9/11×11 五档，**精度在 7×7 饱和**，更大 kernel 不再带来提升。这一结果明确了"大 kernel 卷积可作为局部注意力的替代"这一观察的有效范围——不需要做到 attention 的全局，7×7 局部感受野配合层叠即可。
 
-**LayerNorm 取代 BatchNorm**——这是另一个关键替换。ResNet 时代每个 conv 后面都跟一个 BN，但 BN 依赖 batch 统计、对小 batch 不稳定、推理时还要切到 running mean 模式，工程上一直有麻烦（详见 [foundations/04-normalization](../foundations/04-normalization/)）。Transformer 全家桶用 LayerNorm——只对单样本的特征维做归一化，无 batch 依赖。ConvNeXt 把 BN 全替换成 LN（按 channel 维归一化的 2D 版本），精度涨 0.1 点不算亮眼，但**让训练在小 batch / 多机分布式下显著更稳**，工程价值远大于这 0.1 点。
+**LayerNorm 取代 BatchNorm**——另一个关键替换。ResNet 时代每个 conv 后接一个 BN，但 BN 依赖 batch 统计、对小 batch 不稳定、推理时需切换到 running mean 模式，工程上存在一些不便（详见 [foundations/04-normalization](../foundations/04-normalization/)）。Transformer 配套使用 LayerNorm——只对单样本的特征维做归一化，无 batch 依赖。ConvNeXt 把 BN 全替换为 LN（按 channel 维归一化的 2D 版本），精度提升 0.1 个点，但**训练在小 batch / 多机分布式下更稳定**，工程价值大于该 0.1 个点。
 
 **减少 activation 和 norm 的数量**——ResNet 的每个 conv 后都跟 BN 和 ReLU，一个 Bottleneck block 内 3 个 conv 就有 3 组 BN + 3 个 ReLU。Transformer block 不是这样——一个 block 内只有一次 LN（在 attention 之前）和一次 LN（在 FFN 之前），激活函数 GELU 也只在 FFN 中间出现一次。ConvNeXt 照搬这个思路：**每个 block 内只保留 1 个 LayerNorm（在 depthwise conv 之后）和 1 个 GELU**（在两次 pointwise conv 之间）。少这几层归一化和激活，反而涨了 0.5 点——说明 ResNet 时代到处堆 BN+ReLU 的做法有冗余。
 
@@ -104,7 +104,7 @@ ConvNeXt 的"训练 recipe 全套现代化"在 ResNet-50 那一行就给出了 +
 
 **AdamW 取代 SGD** 是这套 recipe 里另一个有结构性影响的选择。SGD 在 CNN 时代是默认优化器，但它对学习率 schedule 和初始化非常敏感；AdamW 把 weight decay 从梯度更新里解耦出来（详见 [foundations/03-optimizers](../foundations/03-optimizers/)），在 Transformer 时代成了大模型训练的默认配置。ConvNeXt 把这条经验搬回 CNN——在 batch 4096、cosine schedule、20 epoch warmup 的现代训练设定下，AdamW 比 SGD 稳得多，最终精度也更高。
 
-**强数据增强的全家桶** 是另一条隐藏关键。Mixup + CutMix + RandAugment + RandomErasing + Label Smoothing + Stochastic Depth——这六件套是 DeiT（2021）为了让 ViT 在 ImageNet-1K 上不靠 JFT-300M 预训练就跑出高精度而打磨出来的。把它直接搬到 ResNet-50 上训 300 epoch，光靠这个就能从 76.1% 涨到 78.8%。这条事实在 2022 年之前其实社区已经有人发现（如 *ResNet Strikes Back*, Wightman 2021），ConvNeXt 只是把它正式纳入 baseline。
+**强数据增强组合** 是另一项关键。Mixup + CutMix + RandAugment + RandomErasing + Label Smoothing + Stochastic Depth——这套组合由 DeiT（2021）为让 ViT 在 ImageNet-1K 上不依赖 JFT-300M 预训练也能达到高精度而调出。把这套组合应用到 ResNet-50 训练 300 epoch，仅此一项即可将精度从 76.1% 提升到 78.8%。这一结果在 2022 年之前已有研究观察到（如 *ResNet Strikes Back*, Wightman 2021），ConvNeXt 将其正式纳入 baseline。
 
 **训练资源**：ConvNeXt-T 在 8 块 A100 上训 300 epoch 约 2 天，ConvNeXt-XL 在 32 块 A100 上训 ImageNet-22K 预训练约 1 周 + ImageNet-1K 微调 1 天。
 
@@ -129,7 +129,7 @@ ConvNeXt 的"训练 recipe 全套现代化"在 ResNet-50 那一行就给出了 +
 | Swin-XL（CLIP/SwinV2） | 350M | 87.6% |
 | **ConvNeXt-XL** | **350M** | **87.8%** |
 
-87.8% 这条线就是 2022 年 CNN 反超 Swin 的标志数字——同参数下 ConvNeXt 比 Swin 持平或略高，同时**推理 throughput 比 Swin 高 ~20%**（卷积比 window attention 更 GPU 友好）。
+87.8% 这一数值是 2022 年 CNN 在 ImageNet 上对齐并略超 Swin 的代表性结果——同参数下 ConvNeXt 与 Swin 持平或略高，同时**推理 throughput 比 Swin 高约 20%**（卷积比 window attention 更 GPU 友好）。
 
 ## 关键代码
 
@@ -172,11 +172,11 @@ class ConvNeXtBlock(nn.Module):
 
 ## 影响 / 后续
 
-ConvNeXt 是 CNN 家族这条主线上**最后一个"反扑性质"的大事件**。它的成绩——ImageNet-22K 预训练下 **87.8% Top-1**，吞吐量比 Swin 还高——让"CNN 是否被 Transformer 替代"这个 2020–2021 年悬而未决的问题有了答案：在视觉这个具体任务上，**架构设计的现代化选择比卷积 vs 注意力的算子之争更重要**，CNN 的局部归纳偏置 + Transformer 的现代训练方法是一组互补而非互斥的组合。
+ConvNeXt 是 CNN 家族这条主线上**近期具有重要影响的工作之一**。其结果——ImageNet-22K 预训练下 **87.8% Top-1**，吞吐量高于 Swin——对"CNN 是否被 Transformer 替代"这一 2020–2021 年讨论较多的问题给出了一定的回答：在视觉这一具体任务上，**架构设计的现代化选择对结果的影响大于卷积 vs 注意力的算子之争**，CNN 的局部归纳偏置 + Transformer 的现代训练方法可以视为互补而非互斥的组合。
 
-但 ConvNeXt 的"赢"也只是局部的。**视觉这条主线在 2022 年之后还是移交给了 ViT 路线**——不是因为 ViT 在 ImageNet 上更强，而是因为更下游的故事（多模态、视觉-语言对齐、大规模自监督预训练、SAM 这种通用视觉基础模型、CLIP 这种跨模态对齐）几乎全部沿着 Transformer 路线在长。ConvNeXt 自己 2023 年出了 V2 版本，加了 GRN（Global Response Normalization）和 MAE 风格的自监督预训练，把 CNN 在自监督方向上也跟到了 ViT 的水平——但社区注意力已经转向多模态大模型，纯视觉 backbone 的研究热度全面下降。
+但 ConvNeXt 的优势是局部的。**2022 年之后视觉主线整体转向 ViT 路线**——原因不在 ImageNet 单任务的精度，而在更下游的方向（多模态、视觉-语言对齐、大规模自监督预训练、SAM 这类通用视觉基础模型、CLIP 这类跨模态对齐）多数沿 Transformer 路线展开。ConvNeXt 2023 年发布 V2 版本，加入 GRN（Global Response Normalization）和 MAE 风格的自监督预训练，使 CNN 在自监督方向上跟上 ViT 的水平——但社区关注度已转向多模态大模型，纯视觉 backbone 的研究关注度有所下降。
 
-回望整条 CNN 弧线：[AlexNet](02-alexnet.md) 让端到端学到的特征碾压手工特征 → [VGG](03-vgg.md) / [Inception](04-inception.md) 把深度推到 20 层 → [ResNet](05-resnet.md) 用 shortcut 解锁 152 层 → [DenseNet](06-densenet.md) / [EfficientNet](07-efficientnet.md) 在参数效率赛道上做到极致 → ConvNeXt 用现代训练方法证明 CNN 没过时。这条十年的路在 ConvNeXt 这里画上了一个不算句号但已经很完整的逗号。视觉主线之后的故事，要去 ViT 那条线上读。
+回望整条 CNN 演化路径：[AlexNet](02-alexnet.md) 让端到端学到的特征超过手工特征 → [VGG](03-vgg.md) / [Inception](04-inception.md) 把深度推到 20 层 → [ResNet](05-resnet.md) 用 shortcut 实现 152 层稳定训练 → [DenseNet](06-densenet.md) / [EfficientNet](07-efficientnet.md) 在参数效率方向上持续优化 → ConvNeXt 用现代训练方法说明 CNN 在视觉任务上仍具竞争力。这条十年的路径在 ConvNeXt 处形成了一个相对完整的阶段。视觉主线之后的发展请参考 ViT 章节。
 
 → [../08-vit/](../08-vit/) · 视觉主线已移交，多模态 / 大模型大多从 ViT 路线展开
 → [../foundations/02-activations/](../foundations/02-activations/) · GELU 是 Transformer/ConvNeXt 的标配
