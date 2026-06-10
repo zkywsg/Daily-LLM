@@ -8,14 +8,14 @@ import { ImageNetMilestones } from "../widgets/ImageNetMilestones";
 import styles from "./Stage.module.css";
 
 interface Props {
-  beforeStuckOnProse: string;
+  previousWorkProse: string;
   coreInsightProse: string;
   depth: number;
   onDepthChange: (d: number) => void;
 }
 
 export function DegradationStage({
-  beforeStuckOnProse,
+  previousWorkProse,
   coreInsightProse,
   depth,
   onDepthChange,
@@ -24,14 +24,14 @@ export function DegradationStage({
     <div className={styles.grid}>
       <div>
         <h2 style={{ fontSize: "var(--fs-2xl)", marginBottom: "var(--space-4)" }}>
-          之前卡在哪
+          前作进展
         </h2>
         <div style={{ fontFamily: "var(--font-serif)", lineHeight: 1.7 }}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeKatex]}
           >
-            {beforeStuckOnProse}
+            {previousWorkProse}
           </ReactMarkdown>
         </div>
 

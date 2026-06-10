@@ -46,7 +46,7 @@ export default function NodePageResNet() {
 
       <section className={styles.stage}>
         <DegradationStage
-          beforeStuckOnProse={prose.beforeStuckOn}
+          previousWorkProse={prose.previousWork}
           coreInsightProse={prose.coreInsight}
           depth={depth}
           onDepthChange={setDepth}

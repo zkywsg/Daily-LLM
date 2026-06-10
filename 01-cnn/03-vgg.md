@@ -10,7 +10,7 @@ key_idea: "把网络深度做到 16/19 层、并把所有卷积统一成 3×3，
 
 # VGG (2014)
 
-## 之前卡在哪
+## 前作进展
 
 [AlexNet](02-alexnet.md) 在 2012 年用 8 层 CNN 把 ImageNet Top-5 错误率从 26% 一脚踹到 15.3%，社区瞬间相信了"CNN + GPU"这条路。但**接下来该往哪走**，并没有共识。
 
@@ -67,8 +67,6 @@ $$
 
 也就是说，用 3 个 3×3 替换 1 个 7×7，**参数量降到 55%，同时网络深度增加了 2 层、ReLU 非线性多了 2 次**——既更省又更深，几乎没有代价。这是 VGG 全文的中心结论：小 kernel 堆叠是赚到的，不是省到的。
 
-> 你要记住：VGG 真正的洞察不是"更深更好"，而是**网络的"深"和单层 kernel 的"大"是两件可以解耦的事**，而且小 kernel 堆深，比大 kernel 摊薄，参数效率更高、非线性更丰富。
-
 整张网络的**结构极其规整**：所有卷积 3×3/s=1/p=1，所有池化 2×2/s=2，每段 block 内通道不变、跨 block 翻倍。这种"统一性（uniformity）"在 VGG 之前没有被严肃追求过——AlexNet 那种"第一层 11×11、第二层 5×5、后面 3×3"的混搭从此被淘汰，**统一的小 kernel + 模块化 block 成了所有后续视觉网络的默认起点**（Inception 的 stem 之外都是 3×3 + 1×1；ResNet 的 basic block 是两层 3×3；这种"3×3 砖头"思维直接来自 VGG）。
 
 但 VGG 也付出了沉重代价。VGG-16 有大约 **138M 参数**，其中绝大多数堆在最后三个全连接层——尤其 fc6 把 $7 \times 7 \times 512 = 25088$ 维特征压到 4096 维，单这一层就吃掉约 **102M 参数**，占全网 74%。卷积层加起来只有 14.7M。这是一个尴尬的事实：**VGG 名义上是个"深 CNN"，但它的参数主要在 FC**。这个观察后来直接催生了 Inception 用全局平均池化替代 fc6 的设计（GoogLeNet 仅 6.8M 参数），也是 1×1 卷积降维登场的导火索。
@@ -119,7 +117,6 @@ import torch.nn as nn
 # 每个 block 的 (重复次数, 输出通道) ——VGG-16 的配置
 VGG16_CFG = [(2, 64), (2, 128), (3, 256), (3, 512), (3, 512)]
 
-
 def make_block(in_c: int, out_c: int, n_conv: int) -> nn.Sequential:
     layers = []
     for i in range(n_conv):
@@ -129,7 +126,6 @@ def make_block(in_c: int, out_c: int, n_conv: int) -> nn.Sequential:
         ]
     layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
     return nn.Sequential(*layers)
-
 
 class VGG16(nn.Module):
     def __init__(self, num_classes: int = 1000):

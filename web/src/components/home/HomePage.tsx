@@ -17,7 +17,7 @@ export function HomePage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>被逼出来的历史</h1>
+        <h1 className={styles.title}>深度学习与大模型演化路径</h1>
         <p className={styles.subtitle}>
           深度学习与大模型 · 1998–2025 · {data.families.length} 家族
         </p>

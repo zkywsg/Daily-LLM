@@ -7,7 +7,7 @@ export function Layout({ children }: { children: ReactNode }) {
     <>
       <header className={styles.header}>
         <Link to="/" className={styles.logo}>
-          Daily-LLM · 被逼出来的历史
+          Daily-LLM · 深度学习与大模型
         </Link>
       </header>
       <main style={{ flex: 1 }}>{children}</main>

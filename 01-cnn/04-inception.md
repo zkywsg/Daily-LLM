@@ -10,7 +10,7 @@ key_idea: "用 1×1 卷积降维 + 多尺度并行的 Inception 模块，把参�
 
 # GoogLeNet / Inception v1 (2014)
 
-## 之前卡在哪
+## 前作进展
 
 2014 年的视觉社区里，"更深更好"这件事已经被 [VGG](03-vgg.md) 证得很扎实——把所有卷积统一成 3×3、堆到 16/19 层，Top-5 错误率直接干到 7.3%，逼近人类水平。但 VGG 也把另一个尴尬事实摆到了台面上：**它的 138M 参数里，102M 全堆在最后一层 fc6 上**，整个网络名义上是"深 CNN"，实际上是"巨型 FC 套了个卷积前缀"。
 
@@ -89,8 +89,6 @@ y = \text{Concat}\Big(\, f_{1\times 1}(x),\; f_{3\times 3}(g^{(2)}_{1\times 1}(x
 $$
 
 每条分支的 $g_{1\times 1}$ 把输入通道压低后再走更贵的 3×3 / 5×5。这种"先压再算"的结构后来在 ResNet 的 bottleneck block、MobileNet 的 inverted residual 里被反复借用。
-
-> 你要记住：Inception 真正的发明不是"多尺度并行"，而是**把 1×1 卷积当成降维瓶颈**——既要分支表达能力，又不能让通道数和参数量爆炸，这两件事的同时满足才是它存在的意义。
 
 **用 GAP 取代大 FC** —— GoogLeNet 还干了另一件大胆的事：抛弃 VGG/AlexNet 那两层 4096 维的 FC。最后一个 Inception block 输出 $7 \times 7 \times 1024$，直接做 Global Average Pooling 把每个通道平均成 1 个数，得到 1024 维向量，然后只接一层 FC 到 1000 类。这步把参数从 VGG 的 102M 砍到约 1M，**这一招直接解释了 5M 整网参数预算从哪挤出来的**。GAP 这个技巧（连同 1×1 卷积）来自 Lin 等人 2013 年的 "Network in Network"，Inception 是它在大规模工程上的第一次胜利。
 
@@ -177,7 +175,6 @@ class InceptionBlock(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # 4 分支并行，输出在通道维拼接 → [B, c1+c2+c3+c4, H, W]
         return torch.cat([self.b1(x), self.b2(x), self.b3(x), self.b4(x)], dim=1)
-
 
 # Inception-3a 的官方配置：in=192, (c1, c2r, c2, c3r, c3, c4) = (64, 96, 128, 16, 32, 32)
 # 输出通道数 = 64 + 128 + 32 + 32 = 256

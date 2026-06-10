@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-07T16:13:10.413264+00:00",
+  "generatedAt": "2026-06-10T14:16:30.013008+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -38,7 +38,7 @@
             "Ilya Sutskever",
             "Geoffrey Hinton"
           ],
-          "key_idea": "把深 CNN + ReLU + Dropout + 双 GPU 训练打包一起拿出来，第一次把 ImageNet Top-5 错误率从 26% 砸到 15.3%",
+          "key_idea": "首次在 ImageNet 大规模数据集上端到端训练深层 CNN（5 conv + 3 fc），Top-5 错误率达到 15.3%",
           "path": "01-cnn/02-alexnet.md",
           "assets": []
         },

@@ -8,7 +8,7 @@ year: 2015
 
 # ResNet (2015)
 
-## 之前卡在哪
+## 前作进展
 
 第一段卡点。
 第二段卡点。
@@ -47,15 +47,15 @@ import torch
 describe("extractProse", () => {
   it("removes frontmatter", () => {
     const result = extractProse(sampleMarkdown);
-    expect(result.beforeStuckOn).not.toContain("---");
-    expect(result.beforeStuckOn).not.toContain("name:");
+    expect(result.previousWork).not.toContain("---");
+    expect(result.previousWork).not.toContain("name:");
   });
 
-  it("extracts 之前卡在哪 section", () => {
+  it("extracts 前作进展 section", () => {
     const result = extractProse(sampleMarkdown);
-    expect(result.beforeStuckOn).toContain("第一段卡点");
-    expect(result.beforeStuckOn).toContain("第二段卡点");
-    expect(result.beforeStuckOn).not.toContain("总览段落");
+    expect(result.previousWork).toContain("第一段卡点");
+    expect(result.previousWork).toContain("第二段卡点");
+    expect(result.previousWork).not.toContain("总览段落");
   });
 
   it("extracts 核心思想 section (only its own prose, before any ###)", () => {
@@ -95,9 +95,9 @@ describe("extractProse", () => {
   });
 
   it("returns empty string for missing section gracefully", () => {
-    const minimal = "# Title\n\n## 之前卡在哪\n\nonly this section.\n";
+    const minimal = "# Title\n\n## 前作进展\n\nonly this section.\n";
     const result = extractProse(minimal);
-    expect(result.beforeStuckOn).toContain("only this section");
+    expect(result.previousWork).toContain("only this section");
     expect(result.coreInsight).toBe("");
     expect(result.trainingDetails).toBe("");
   });

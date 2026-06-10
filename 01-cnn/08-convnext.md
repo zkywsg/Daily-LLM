@@ -10,7 +10,7 @@ key_idea: "把 ViT 的所有现代化设计选择（大 kernel·LayerNorm·GELU�
 
 # ConvNeXt (2022)
 
-## 之前卡在哪
+## 前作进展
 
 2020 年 [ViT](../08-vit/) 把 Transformer 直接搬到视觉，用纯注意力 + 大规模预训练把 ImageNet Top-1 一把推到 85% 以上，紧跟着 Swin Transformer 在 2021 年又把分层 / 滑窗注意力做出来，在 detection / segmentation 上全面接管 CNN 的位置。两年时间，视觉社区的共识从"CNN 是默认 backbone"一路滑到"CNN 是不是要被 Transformer 替代了"——CVPR 2021 上几乎一半的 backbone 论文都换成了 Transformer 变种。
 
@@ -60,8 +60,6 @@ graph TD
 | **独立 downsample 层**（LN + 2×2 s=2 conv） | Swin patch merging | +0.5 | 82.0% |
 
 最终 **ConvNeXt-T 拿到 82.1% Top-1**，比同算力的 Swin-T（81.3%）高 0.8 点。把同一套配方放大到 T / S / B / L / XL 五档，**ConvNeXt-XL 在 ImageNet-22K 预训练 + 微调下达到 87.8% Top-1**，与 Swin-XL 持平或更优，同时 wall-clock 吞吐量更高（卷积比注意力更 GPU 友好）。
-
-> 你要记住：ConvNeXt 不是证明"卷积比注意力强"，而是证明**架构设计的现代化选择比"卷积 vs 注意力"的算子之争更重要**。CNN 这两年的差距，很大一部分是训练 recipe 没跟上，不是结构本身的天花板到了。
 
 **改造细节中几条值得拎出来讲的：**
 

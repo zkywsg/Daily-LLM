@@ -21,7 +21,7 @@ function renderAt(path: string) {
 describe("App router", () => {
   it("renders HomePage at /", () => {
     renderAt("/");
-    expect(screen.getAllByText(/被逼出来的历史/)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/深度学习与大模型/)[0]).toBeInTheDocument();
   });
 
   it("renders 404 at unknown route", () => {

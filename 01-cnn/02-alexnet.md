@@ -5,26 +5,26 @@ family: "01-cnn"
 order: 2
 paper: "ImageNet Classification with Deep Convolutional Neural Networks"
 authors: ["Alex Krizhevsky", "Ilya Sutskever", "Geoffrey Hinton"]
-key_idea: "把深 CNN + ReLU + Dropout + 双 GPU 训练打包一起拿出来，第一次把 ImageNet Top-5 错误率从 26% 砸到 15.3%"
+key_idea: "首次在 ImageNet 大规模数据集上端到端训练深层 CNN（5 conv + 3 fc），Top-5 错误率达到 15.3%"
 ---
 
 # AlexNet (2012)
 
-## 之前卡在哪
+## 前作进展
 
-2012 年之前，图像识别的主流是 SIFT、HOG 这类**人手设计的局部特征** + SVM 这种线性/核分类器。ImageNet 这种规模的视觉竞赛，多年来 Top-5 错误率卡在 25–26% 之间寸步难行——每年的进展更多靠特征工程的拼凑，而不是真正的能力跃迁。
+2012 年之前，ImageNet 大规模图像分类任务上，主流方法以 SIFT、HOG 等手工设计的局部特征结合 SVM、Fisher Vector 等分类器为主。2010–2011 年的 ILSVRC 冠军方法 Top-5 错误率维持在 25–28% 区间，年度进展主要来自特征工程的迭代。
 
-神经网络这条路，社区其实没忘——[反向传播](../foundations/01-neural-network-basics/)早在 80 年代就被提出过，LeNet-5 也跑通过手写数字。但深一点的网络一上来就遇到三个看上去无解的麻烦：
+神经网络方向的早期工作包括[反向传播](../foundations/01-neural-network-basics/)（1980 年代）与 LeNet-5（1998）在手写数字识别上的应用，但深层网络在大规模视觉任务上落地面临三类工程瓶颈：
 
-- **算力**：训练几百万张 224×224 的图像，CPU 算力差几个数量级
-- **过拟合**：参数量到千万级，没有正则手段，几乎必然过拟合
-- **梯度**：Sigmoid/Tanh 这类饱和激活让深层梯度迅速衰减
+- **算力**：训练数百万张 224×224 图像，CPU 时代算力存在数量级差距
+- **过拟合**：参数量达千万级，缺少有效正则手段
+- **梯度**：Sigmoid/Tanh 等饱和激活函数导致深层梯度衰减
 
-主流观点是：神经网络这条路在视觉上"很可能永远比不过手工特征"。AlexNet 出现之前的几年，几乎没有 vision 大会论文严肃地把 CNN 当 baseline。
+这一时期 CNN 在主流视觉会议中较少被作为 baseline 使用。
 
 ## 核心思想
 
-AlexNet 不是某一个新想法的胜利，而是**一组耦合招式**第一次被同时拿出来：8 层卷积/全连接（5 conv + 3 fc）+ [ReLU 激活](../foundations/02-activations/) + [Dropout](../foundations/07-regularization/) + 数据增强 + 双 GPU 并行训练 + 比赛级 CUDA 实现。这一组里少一样，可能都跑不出来。
+AlexNet 的贡献在于将一组工程要素首次系统化组合：8 层卷积/全连接（5 conv + 3 fc）+ [ReLU 激活](../foundations/02-activations/) + [Dropout](../foundations/07-regularization/) + 数据增强 + 双 GPU 并行训练 + 比赛级 CUDA 实现。这些要素相互依赖，缺一项都难以达到论文报告的精度。
 
 ```mermaid
 graph TD
@@ -56,7 +56,7 @@ $$
 y_{i,j,k} = \sum_{c,u,v} w_{c,u,v,k} \cdot x_{i+u,\, j+v,\, c} + b_k
 $$
 
-参数数量与图像尺寸**解耦**（只取决于卷积核与通道），相比把图像压平喂全连接，参数量降几个数量级，同时把"邻居像素更可能相关"这件事写进了结构里。
+参数数量与图像尺寸解耦（只取决于卷积核与通道），相比将图像压平喂全连接的方式参数量降低数个数量级，同时将"邻居像素更可能相关"这一先验直接编码进网络结构。
 
 **最后一层 Softmax + 交叉熵** 把 1000 维 logits 转成概率分布并最大化对正确类的对数似然：
 
@@ -64,9 +64,9 @@ $$
 p_k = \frac{e^{z_k}}{\sum_{j} e^{z_j}}, \quad \mathcal{L} = -\log p_{y}
 $$
 
-> 你要记住：AlexNet 真正改写游戏的不是"更深一点的 CNN"，而是**第一次证明端到端学到的特征在视觉上能稳定碾压所有手工特征**。从这一刻起，"先设计特征再分类"这条 30 年的主路死了。
+AlexNet 的核心论据是：在 ImageNet 规模的数据集上，端到端学到的特征首次系统性优于手工设计的视觉特征。这一结果标志着视觉社区从"特征工程 + 浅分类器"向"端到端表征学习"的转移。
 
-ReLU 取代 Sigmoid 是另一个看似小但极其关键的改动。原本梯度在深层迅速衰减，训练几乎不收敛；换成 `max(0, x)` 后梯度在正区间恒等于 1，深网才真的能"训得动"。这条经验后来变成了所有现代视觉模型的默认配置（[激活函数演化](../foundations/02-activations/)）。
+ReLU 取代 Sigmoid 是另一个看似小但影响较大的改动。Sigmoid/Tanh 在深层网络中梯度衰减严重，训练难以收敛；ReLU `max(0, x)` 在正区间梯度恒为 1，使深层网络可以稳定训练。这一选择后续成为视觉模型的默认配置（[激活函数演化](../foundations/02-activations/)）。
 
 **LRN（Local Response Normalization）** —— 原始论文用 LRN 在 ReLU 之后做一种"侧向抑制"：相邻通道相互压制，让响应大的位置更突出。形式上：
 
@@ -74,9 +74,9 @@ $$
 b_{x,y,k} = a_{x,y,k} \left/ \left( c_0 + \alpha \sum_{j=\max(0,k-n/2)}^{\min(K-1,k+n/2)} a_{x,y,j}^2 \right)^{\beta} \right.
 $$
 
-参数取 $c_0=2, n=5, \alpha=10^{-4}, \beta=0.75$。**这一层在后续工作里被快速抛弃**——VGG 与 Inception 都证明 LRN 对最终精度几乎无贡献，BatchNorm 出现后更是彻底取代了它。今天读 AlexNet 代码看到 LRN，知道是历史遗物即可，不要照抄。
+参数取 $c_0=2, n=5, \alpha=10^{-4}, \beta=0.75$。**这一层在后续工作中被逐步弃用**——VGG 与 Inception 的消融结果显示 LRN 对最终精度贡献有限，BatchNorm 出现后则在主流工作中替代了它。今天读 AlexNet 代码看到 LRN，知作为历史实现保留即可，无需复现。
 
-**双 GPU 切分（Group Conv 的祖宗）** —— AlexNet 论文里通道维被切成两半，分别放在两块 GTX 580（每块 3 GB 显存）上跑。只有部分层（如 conv3、fc 层）跨 GPU 通信，其它层各自独立。这种切分**纯粹是显存约束下的工程妥协**，但它在后续以"分组卷积（group convolution）"的名义在 ResNeXt、MobileNet 里重生，成了高效模型的标配。今天用单卡跑 AlexNet，把通道合并即可，不必复现切分。
+**双 GPU 切分（分组卷积的早期形态）** —— AlexNet 论文里通道维被切成两半，分别放在两块 GTX 580（每块 3 GB 显存）上跑。只有部分层（如 conv3、fc 层）跨 GPU 通信，其它层各自独立。这种切分是当时显存约束下的工程方案，其思路在后续以"分组卷积（group convolution）"的形式出现在 ResNeXt、MobileNet 等高效模型中。今天用单卡跑 AlexNet，把通道合并即可，不必复现切分。
 
 **感受野的累积** —— 5 个卷积层叠下来，最后一个 conv 输出位置看到的输入感受野显著扩大。粗略估算（忽略 padding 边界）：
 
@@ -93,7 +93,7 @@ $$
 
 最后一层每个空间位置看到的"上下文"约 195×195，已经覆盖 224 输入的大部分。
 
-数据增强（随机裁剪、左右翻转、PCA 颜色扰动）和 Dropout（在两层 4096 维的 FC 之间）则一起把过拟合压了下去——千万级参数 + 百万级图像本来一定会过拟合，但加上这两招后训练曲线和验证曲线之间的鸿沟被缩到可以接受的范围。
+数据增强（随机裁剪、左右翻转、PCA 颜色扰动）与 Dropout（用于两层 4096 维 FC 之间）联合控制了过拟合——千万级参数 + 百万级图像的设置下，这两类正则手段将训练与验证误差的差距控制在可接受范围内。
 
 ## 训练细节
 
@@ -128,7 +128,7 @@ $$
 | 2012 | **AlexNet 5-model ensemble** | **16.4%** |
 | 2012 | **AlexNet 7-model + 预训练** | **15.3%** |
 
-15.3% 这个最终上榜数字比第二名领先约 10 个百分点——这个差距让"CNN 是否真的能赢"的争论一夜终结。
+15.3% 的最终成绩比第二名领先约 10 个百分点，是 ILSVRC 历史上的一次显著差距，也使 CNN 在大规模视觉任务上的竞争力得到广泛认可。
 
 ## 关键代码
 
@@ -174,11 +174,11 @@ class AlexNet(nn.Module):
 
 ## 影响 / 后续
 
-AlexNet 的成绩——Top-5 错误率 **15.3%**，比第二名（26.2%）领先 10 个百分点以上——直接让 ImageNet 2012 成了视觉社区的转折点。从这一刻起，CNN 不再是"一种 baseline"，而是**唯一 baseline**；手工特征工程作为一个研究方向迅速萎缩。
+AlexNet 在 ImageNet 2012 上的结果（Top-5 错误率 **15.3%**，第二名 26.2%）使 CNN 在大规模视觉任务中成为主流 baseline，手工特征工程作为主导研究方向的占比迅速下降。
 
-但 AlexNet 自己留下的局限同样明显。它的"深"只到 8 层，再往上叠会出现退化——训练误差先降后升，看上去像优化问题而不是过拟合。**这个洞要等到 ResNet 才被真正填上**。同时它的 11×11 大卷积、复杂双 GPU 切分、五种学习率调度、LRN 这些工程上的"原始痕迹"，在后续几年里被逐个抛弃。
+AlexNet 自身也留下若干待解决问题。其网络深度仅 8 层，继续加深会出现训练误差先降后升的退化现象，属于优化问题而非过拟合，这一现象在 ResNet 中被系统处理。同时其 11×11 大卷积、双 GPU 切分、多段学习率调度、LRN 等工程实现在后续工作中陆续被简化或替换。
 
-→ [03-vgg.md](03-vgg.md) · 把"深 CNN"标准化成纯 3×3 堆叠，证明深度本身的价值
-→ [05-resnet.md](05-resnet.md) · 用残差连接终结"再深就退化"的问题
-→ [../foundations/04-normalization/](../foundations/04-normalization/) · BatchNorm 出现后训练稳定性才真正被解决（AlexNet 用的 LRN 已淘汰）
-→ [../foundations/02-activations/](../foundations/02-activations/) · ReLU 取代饱和激活，是后续所有视觉模型的默认起点
+→ [03-vgg.md](03-vgg.md) · 把"深 CNN"标准化成纯 3×3 堆叠，验证深度对精度的贡献
+→ [05-resnet.md](05-resnet.md) · 用残差连接处理深层网络的退化问题
+→ [../foundations/04-normalization/](../foundations/04-normalization/) · BatchNorm 在后续工作中替代 LRN，提升训练稳定性
+→ [../foundations/02-activations/](../foundations/02-activations/) · ReLU 取代饱和激活，是后续视觉模型的默认起点

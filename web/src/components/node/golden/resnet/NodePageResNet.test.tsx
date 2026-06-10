@@ -22,7 +22,7 @@ describe("NodePageResNet", () => {
 
   it("renders all 3 stage h2 headings", () => {
     renderPage();
-    expect(screen.getByText("之前卡在哪")).toBeInTheDocument();
+    expect(screen.getByText("前作进展")).toBeInTheDocument();
     expect(screen.getByText("残差的直觉")).toBeInTheDocument();
     // "梯度高速公路" 出现多次（如 stage 标题 + 章节内文本），用 getAllByText
     expect(screen.getAllByText("梯度高速公路").length).toBeGreaterThan(0);

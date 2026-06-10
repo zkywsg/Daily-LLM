@@ -10,7 +10,7 @@ key_idea: "每层都直接接收前面所有层的输出（concat 而非加法�
 
 # DenseNet (2017)
 
-## 之前卡在哪
+## 前作进展
 
 [ResNet](05-resnet.md) 用 $y = F(x) + x$ 这条 shortcut 把 152 层的训练问题彻底解决，残差连接成了 2015–2016 年所有深网络的默认配置。但 ResNet 留下了一个不那么显眼、却让 Cornell 和 Tsinghua 的研究组反复琢磨的小问题——**加法（add）这件事，本身是有损的**。
 
@@ -66,8 +66,6 @@ graph TD
     classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
 ```
 *图 1：Dense block 内部稠密连接——第 ℓ 层 concat 前面所有层的输出作为输入，每层贡献 k 个新通道。*
-
-> 你要记住：ResNet 的 shortcut 让"恒等映射"成为默认行为，DenseNet 的 concat 让"特征复用"成为默认行为。前者是优化技巧，后者是参数效率技巧。
 
 **Growth rate $k$ 才是 DenseNet 真正的尺度变量**。每层 $H_\ell$ 只产生 $k$ 个新通道（典型 $k = 32$），所以即使一个 Dense block 含 12 层、每层都接收前面全部输出，整条链上的通道数也只是 $k_0 + (\ell-1) \cdot k$ 这种线性增长——不是想象中的指数爆炸。Growth rate 控制每层"往公共记忆里多写几页"，剩下的全靠复用。
 

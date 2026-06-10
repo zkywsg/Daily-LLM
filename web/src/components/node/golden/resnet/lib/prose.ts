@@ -1,6 +1,6 @@
 export interface ProseSections {
-  /** ## 之前卡在哪 章节正文 */
-  beforeStuckOn: string;
+  /** ## 前作进展 章节正文 */
+  previousWork: string;
   /** ## 核心思想 章节自己的正文（不含 ### 子段） */
   coreInsight: string;
   /** ### 直觉 子段正文 */
@@ -22,7 +22,7 @@ export function extractProse(markdown: string): ProseSections {
   const body = markdown.replace(/^---[\s\S]*?---\n?/, "");
 
   const sections: ProseSections = {
-    beforeStuckOn: "",
+    previousWork: "",
     coreInsight: "",
     intuition: "",
     mechanism: "",
@@ -32,7 +32,7 @@ export function extractProse(markdown: string): ProseSections {
   };
 
   const h2Map: Record<string, keyof ProseSections> = {
-    "之前卡在哪": "beforeStuckOn",
+    "前作进展": "previousWork",
     "核心思想": "coreInsight",
     "训练细节": "trainingDetails",
     "关键代码": "keyCode",
