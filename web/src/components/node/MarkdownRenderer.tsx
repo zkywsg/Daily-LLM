@@ -34,6 +34,24 @@ export function MarkdownRenderer({ markdown, sourcePath }: MarkdownRendererProps
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeHighlight, rehypeKatex]}
         components={{
+          p({ children, ...props }) {
+            // 一段里只有单一 em 节点 → figure caption(`*图 N: ...*` 这种写法)
+            const arr = Array.isArray(children) ? children : [children];
+            const meaningful = arr.filter(
+              (c) => !(typeof c === "string" && /^\s*$/.test(c))
+            );
+            const isCaption =
+              meaningful.length === 1 &&
+              typeof meaningful[0] === "object" &&
+              meaningful[0] !== null &&
+              "type" in (meaningful[0] as Record<string, unknown>) &&
+              (meaningful[0] as { type: unknown }).type === "em";
+            return (
+              <p className={isCaption ? "figureCaption" : undefined} {...props}>
+                {children}
+              </p>
+            );
+          },
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || "");
             const lang = match?.[1];

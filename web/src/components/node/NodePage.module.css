@@ -89,10 +89,13 @@
   margin: var(--space-4) 0;
 }
 
-.body :global(em) {
-  display: block;
+/* 图注样式(由 MarkdownRenderer 给 p 加 figureCaption 类) */
+.body :global(p.figureCaption) {
   text-align: center;
   color: var(--ink-muted);
   font-size: var(--fs-sm);
   margin-top: var(--space-2);
+}
+.body :global(p.figureCaption em) {
+  font-style: italic;
 }

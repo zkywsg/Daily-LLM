@@ -21,8 +21,8 @@ describe("FamilyPage", () => {
     expect(screen.getAllByText(/ResNet/).length).toBeGreaterThan(0);
   });
 
-  it("shows '待补充' for empty family (02-rnn-lstm)", () => {
-    renderFamily("02-rnn-lstm");
+  it("shows '待补充' for empty family (03-word-embedding)", () => {
+    renderFamily("03-word-embedding");
     expect(screen.getAllByText(/待补充/).length).toBeGreaterThan(0);
   });
 

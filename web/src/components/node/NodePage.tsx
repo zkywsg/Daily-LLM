@@ -76,7 +76,11 @@ export function NodePage() {
   }
 
   const accent = familyColorVar(family.id);
-  const body = markdown?.replace(/^---[\s\S]*?---\n?/, "") ?? "";
+  const body =
+    markdown
+      ?.replace(/^---[\s\S]*?---\n?/, "")
+      // 剥离正文首个 H1 —— 页面 hero 已渲染节点标题,正文里的 `# Name (Year)` 会重复
+      .replace(/^\s*#\s+[^\n]+\n+/, "") ?? "";
 
   return (
     <div className={styles.container}>
