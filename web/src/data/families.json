@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T15:51:53.260340+00:00",
+  "generatedAt": "2026-06-11T15:55:12.094946+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -151,7 +151,7 @@
       "blurb": "把序列建模交给一个会\"记事\"的隐状态,让网络一步一步往前读。",
       "yearRange": [
         1986,
-        2014
+        2015
       ],
       "colorToken": "--family-02",
       "nodes": [
@@ -216,6 +216,21 @@
           ],
           "key_idea": "用一个 encoder RNN 把任意长输入压成上下文向量,再用一个 decoder RNN 从这个向量生成任意长输出,统一所有序列到序列任务",
           "path": "02-rnn-lstm/04-seq2seq.md",
+          "assets": []
+        },
+        {
+          "name": "Bahdanau Attention",
+          "year": 2015,
+          "family": "02-rnn-lstm",
+          "order": 5,
+          "paper": "Neural Machine Translation by Jointly Learning to Align and Translate",
+          "authors": [
+            "Dzmitry Bahdanau",
+            "Kyunghyun Cho",
+            "Yoshua Bengio"
+          ],
+          "key_idea": "在 Seq2Seq 上加 attention 让 decoder 每一步对 encoder 全部时刻学一个加权分布,绕开固定长度上下文向量的信息瓶颈",
+          "path": "02-rnn-lstm/05-attention.md",
           "assets": []
         }
       ]
