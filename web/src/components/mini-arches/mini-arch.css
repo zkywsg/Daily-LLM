@@ -4,6 +4,20 @@
  * MiniDenseNet / MiniSENet 内部 SVG 使用。
  */
 
+/* —— 旧变量名 → 当前 tokens 的别名(旧 global.css 体系已废弃) —— */
+:root {
+  --active-line: var(--accent-compute-line);
+  --active-soft: var(--accent-compute);
+  --surface-card: var(--bg-surface);
+  --ink-strong: var(--ink-primary);
+  --amber-300: var(--accent-input);
+  --amber-700: var(--accent-input-line);
+  --phase-vision-line: var(--family-09);
+  --phase-scale-line: var(--family-07);
+  --phase-alignment-line: var(--family-12);
+  --phase-multimodal-line: var(--family-14);
+}
+
 /* ---- 特征图 / 上下文化特征图 ---- */
 .illustration__featuremap {
   fill: color-mix(in srgb, var(--active-line) 14%, var(--surface-card));
