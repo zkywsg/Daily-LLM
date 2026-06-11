@@ -71,6 +71,7 @@ interface LayerStackProps extends LayerGeom {
   isHovered: boolean;
   onHoverStart: () => void;
   onHoverEnd: () => void;
+  onToggle: () => void;
 }
 
 function LayerStack({
@@ -81,6 +82,7 @@ function LayerStack({
   isHovered,
   onHoverStart,
   onHoverEnd,
+  onToggle,
 }: LayerStackProps) {
   const frontY = BASE_Y - frontSize;
 
@@ -99,10 +101,11 @@ function LayerStack({
     <motion.g
       onMouseEnter={onHoverStart}
       onMouseLeave={onHoverEnd}
+      onClick={onToggle}
       animate={{ scale: isHovered ? 1.05 : 1 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
       style={{
-        cursor: "help",
+        cursor: "pointer",
         transformOrigin: `${x + frontSize / 2}px ${frontY + frontSize / 2}px`,
       }}
     >
@@ -139,9 +142,15 @@ export function ResNet50Overview() {
       <h3 style={{ fontSize: "var(--fs-lg)", margin: "0 0 var(--space-3)" }}>
         ResNet-50 整体架构
       </h3>
+      <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
       <svg
-        viewBox={`0 0 ${totalWidth} 320`}
-        style={{ maxWidth: "100%", height: "auto", display: "block" }}
+        viewBox={`0 0 ${totalWidth} 280`}
+        style={{
+          width: "100%",
+          minWidth: 760,
+          height: "auto",
+          display: "block",
+        }}
         role="img"
         aria-label="ResNet-50 整体架构总览，9 层层叠平面"
       >
@@ -179,13 +188,16 @@ export function ResNet50Overview() {
               isHovered={hoverId === g.layer.id}
               onHoverStart={() => setHoverId(g.layer.id)}
               onHoverEnd={() => setHoverId(null)}
+              onToggle={() =>
+                setHoverId((cur) => (cur === g.layer.id ? null : g.layer.id))
+              }
             />
             {/* layer label */}
             <text
               x={g.centerX}
-              y={BASE_Y + 22}
+              y={BASE_Y + 24}
               textAnchor="middle"
-              fontSize={10}
+              fontSize={13}
               fill="var(--ink-primary)"
               fontWeight={500}
             >
@@ -194,9 +206,9 @@ export function ResNet50Overview() {
             {/* spatial × channels */}
             <text
               x={g.centerX}
-              y={BASE_Y + 36}
+              y={BASE_Y + 42}
               textAnchor="middle"
-              fontSize={9}
+              fontSize={11}
               fill="var(--ink-muted)"
             >
               {g.layer.spatial > 1
@@ -206,9 +218,9 @@ export function ResNet50Overview() {
             {/* semantic label */}
             <text
               x={g.centerX}
-              y={BASE_Y + 52}
+              y={BASE_Y + 62}
               textAnchor="middle"
-              fontSize={10}
+              fontSize={13}
               fill={g.layer.stroke}
               fontWeight={600}
             >
@@ -242,7 +254,7 @@ export function ResNet50Overview() {
                 x={Math.max(0, Math.min(hoveredGeom.centerX - 70, totalWidth - 140)) + 70}
                 y={27}
                 textAnchor="middle"
-                fontSize={11}
+                fontSize={12}
                 fill="var(--ink-secondary)"
               >
                 {hoveredGeom.layer.label}
@@ -251,7 +263,7 @@ export function ResNet50Overview() {
                 x={Math.max(0, Math.min(hoveredGeom.centerX - 70, totalWidth - 140)) + 70}
                 y={45}
                 textAnchor="middle"
-                fontSize={11}
+                fontSize={12}
                 fontFamily="var(--font-mono)"
                 fill="var(--ink-primary)"
               >
@@ -261,6 +273,7 @@ export function ResNet50Overview() {
           )}
         </AnimatePresence>
       </svg>
+      </div>
       <p
         style={{
           fontSize: "var(--fs-sm)",

@@ -1,3 +1,6 @@
+/** 本页 markdown 正本的 repo-root-relative 路径,供相对链接/图片解析 */
+export const RESNET_SOURCE_PATH = "01-cnn/05-resnet.md";
+
 export interface ProseSections {
   /** ## 前作进展 章节正文 */
   previousWork: string;
@@ -19,7 +22,10 @@ export interface ProseSections {
  * 从节点 markdown 全文按 H2/H3 章节切出 prose 段。
  */
 export function extractProse(markdown: string): ProseSections {
-  const body = markdown.replace(/^---[\s\S]*?---\n?/, "");
+  const body = markdown
+    .replace(/^---[\s\S]*?---\n?/, "")
+    // 剔除 mermaid 图及紧随的"*图 N：…*"图注——本页已有交互版 SVG 表达同一内容
+    .replace(/```mermaid\n[\s\S]*?```\n(\*图 ?\d[^\n]*\*\n?)?/g, "");
 
   const sections: ProseSections = {
     previousWork: "",

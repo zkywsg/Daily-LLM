@@ -1,7 +1,5 @@
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import { MarkdownRenderer } from "../../../MarkdownRenderer";
+import { RESNET_SOURCE_PATH } from "../lib/prose";
 import { BlockTypeToggle } from "../widgets/BlockTypeToggle";
 import { BottleneckSVG } from "../widgets/BottleneckSVG";
 import { ResNet50Overview } from "../widgets/ResNet50Overview";
@@ -43,12 +41,10 @@ export function ResidualBlockStage({
             残差的直觉
           </h2>
         <div style={{ fontFamily: "var(--font-serif)", lineHeight: 1.7 }}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-          >
-            {intuitionProse}
-          </ReactMarkdown>
+          <MarkdownRenderer
+            markdown={intuitionProse}
+            sourcePath={RESNET_SOURCE_PATH}
+          />
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>

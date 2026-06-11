@@ -97,7 +97,7 @@ export function NodePage() {
           <p style={{ color: "var(--accent-warn)" }}>加载失败: {loadError}</p>
         )}
         {!markdown && !loadError && <p>加载中…</p>}
-        {markdown && <MarkdownRenderer markdown={body} />}
+        {markdown && <MarkdownRenderer markdown={body} sourcePath={node.path} />}
       </div>
     </div>
   );

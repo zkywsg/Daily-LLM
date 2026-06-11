@@ -1,15 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeHighlight from "rehype-highlight";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
-import "highlight.js/styles/github.css";
 
 import resnetMarkdown from "../../../../../../01-cnn/05-resnet.md?raw";
-import { extractProse } from "./lib/prose";
+import { MarkdownRenderer } from "../../MarkdownRenderer";
+import { extractProse, RESNET_SOURCE_PATH } from "./lib/prose";
 import { DegradationStage } from "./stages/DegradationStage";
 import { ResidualBlockStage } from "./stages/ResidualBlockStage";
 import { GradientHighwayStage } from "./stages/GradientHighwayStage";
@@ -76,30 +70,24 @@ export default function NodePageResNet() {
       <section className={styles.footer}>
         <div className={styles.footerSection}>
           <h2>训练细节</h2>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeHighlight, rehypeKatex]}
-          >
-            {prose.trainingDetails}
-          </ReactMarkdown>
+          <MarkdownRenderer
+            markdown={prose.trainingDetails}
+            sourcePath={RESNET_SOURCE_PATH}
+          />
         </div>
         <div className={styles.footerSection}>
           <h2>关键代码</h2>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeHighlight, rehypeKatex]}
-          >
-            {prose.keyCode}
-          </ReactMarkdown>
+          <MarkdownRenderer
+            markdown={prose.keyCode}
+            sourcePath={RESNET_SOURCE_PATH}
+          />
         </div>
         <div className={styles.footerSection}>
           <h2>影响 / 后续</h2>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-          >
-            {prose.aftermath}
-          </ReactMarkdown>
+          <MarkdownRenderer
+            markdown={prose.aftermath}
+            sourcePath={RESNET_SOURCE_PATH}
+          />
         </div>
       </section>
     </div>

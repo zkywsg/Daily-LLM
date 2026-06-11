@@ -1,7 +1,5 @@
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import { MarkdownRenderer } from "../../../MarkdownRenderer";
+import { RESNET_SOURCE_PATH } from "../lib/prose";
 import { DepthSlider } from "../widgets/DepthSlider";
 import { DegradationCurves } from "../widgets/DegradationCurves";
 import { ImageNetMilestones } from "../widgets/ImageNetMilestones";
@@ -27,12 +25,10 @@ export function DegradationStage({
           前作进展
         </h2>
         <div style={{ fontFamily: "var(--font-serif)", lineHeight: 1.7 }}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-          >
-            {previousWorkProse}
-          </ReactMarkdown>
+          <MarkdownRenderer
+            markdown={previousWorkProse}
+            sourcePath={RESNET_SOURCE_PATH}
+          />
         </div>
 
         <h2
@@ -45,12 +41,10 @@ export function DegradationStage({
           核心思想
         </h2>
         <div style={{ fontFamily: "var(--font-serif)", lineHeight: 1.7 }}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-          >
-            {coreInsightProse}
-          </ReactMarkdown>
+          <MarkdownRenderer
+            markdown={coreInsightProse}
+            sourcePath={RESNET_SOURCE_PATH}
+          />
         </div>
 
         <DepthSlider value={depth} onChange={onDepthChange} />

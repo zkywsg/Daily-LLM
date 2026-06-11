@@ -59,3 +59,32 @@ pre {
   display: flex;
   flex-direction: column;
 }
+
+/* markdown 正文里的表格(MarkdownRenderer 输出) */
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-4) 0;
+  font-size: var(--fs-sm);
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+.markdown-body th {
+  background: var(--bg-subtle, rgba(0, 0, 0, 0.03));
+  font-weight: 600;
+}
+
+.markdown-body tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+}

@@ -1,8 +1,6 @@
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import { MarkdownRenderer } from "../../../MarkdownRenderer";
+import { RESNET_SOURCE_PATH } from "../lib/prose";
 import { StackDepthSlider } from "../widgets/StackDepthSlider";
 import { GradientHighwaySVG } from "../widgets/GradientHighwaySVG";
 import { HighwayShortcutToggle } from "../widgets/HighwayShortcutToggle";
@@ -31,12 +29,10 @@ export function GradientHighwayStage({
           梯度高速公路
         </h2>
         <div style={{ fontFamily: "var(--font-serif)", lineHeight: 1.7 }}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-          >
-            {mechanismProse}
-          </ReactMarkdown>
+          <MarkdownRenderer
+            markdown={mechanismProse}
+            sourcePath={RESNET_SOURCE_PATH}
+          />
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "var(--space-2)" }}>

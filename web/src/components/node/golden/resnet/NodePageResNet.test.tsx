@@ -65,6 +65,8 @@ describe("NodePageResNet", () => {
     renderPage();
     expect(screen.getByText("训练细节")).toBeInTheDocument();
     expect(screen.getByText("关键代码")).toBeInTheDocument();
-    expect(screen.getByText(/影响.*后续/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /影响.*后续/ })
+    ).toBeInTheDocument();
   });
 });
