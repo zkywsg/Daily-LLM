@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T15:09:02.312637+00:00",
+  "generatedAt": "2026-06-11T15:45:16.227054+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -151,7 +151,7 @@
       "blurb": "把序列建模交给一个会\"记事\"的隐状态,让网络一步一步往前读。",
       "yearRange": [
         1986,
-        1986
+        1997
       ],
       "colorToken": "--family-02",
       "nodes": [
@@ -169,6 +169,20 @@
           ],
           "key_idea": "把上一时刻的隐状态接回当前时刻输入,用一组共享权重在时间上递推,任意长度序列被压进一个固定维度向量",
           "path": "02-rnn-lstm/01-rnn.md",
+          "assets": []
+        },
+        {
+          "name": "LSTM",
+          "year": 1997,
+          "family": "02-rnn-lstm",
+          "order": 2,
+          "paper": "Long Short-Term Memory",
+          "authors": [
+            "Sepp Hochreiter",
+            "Jürgen Schmidhuber"
+          ],
+          "key_idea": "用三道门 + 一条细胞状态高速公路绕开梯度连乘,让循环网络第一次能稳定学到 100+ 步的长依赖",
+          "path": "02-rnn-lstm/02-lstm.md",
           "assets": []
         }
       ]
