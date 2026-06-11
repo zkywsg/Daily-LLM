@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-10T14:49:32.202666+00:00",
+  "generatedAt": "2026-06-11T15:09:02.312637+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -148,10 +148,30 @@
     {
       "id": "02-rnn-lstm",
       "label": "RNN / LSTM / GRU 循环网络",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "blurb": "把序列建模交给一个会\"记事\"的隐状态,让网络一步一步往前读。",
+      "yearRange": [
+        1986,
+        1986
+      ],
       "colorToken": "--family-02",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "RNN",
+          "year": 1986,
+          "family": "02-rnn-lstm",
+          "order": 1,
+          "paper": "Learning Internal Representations by Error Propagation / Finding Structure in Time",
+          "authors": [
+            "David Rumelhart",
+            "Geoffrey Hinton",
+            "Ronald Williams",
+            "Jeffrey Elman"
+          ],
+          "key_idea": "把上一时刻的隐状态接回当前时刻输入,用一组共享权重在时间上递推,任意长度序列被压进一个固定维度向量",
+          "path": "02-rnn-lstm/01-rnn.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "03-word-embedding",
