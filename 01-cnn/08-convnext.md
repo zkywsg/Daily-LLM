@@ -23,7 +23,7 @@ Saining Xie（[ResNeXt](05-resnet.md) 一作）和 Zhuang Liu（[DenseNet](06-de
 ConvNeXt 的核心贡献是一张"现代化路线图"——把 ResNet-50 当起点，按顺序加入 7 类改造，每一步对应 ViT/Swin 中的某个设计。最终得到的网络**不含任何注意力机制**，仍然全部由卷积构成，但在 ImageNet 上超过同等规模的 Swin Transformer。
 
 ```mermaid
-graph TD
+graph LR
     x["Input [B,3,224,224]"]:::input
     stem["Stem: Conv 4×4 / s=4 / 96 (patchify)"]:::compute
     s1["Stage 1: ConvNeXt Block × 3 / 96ch"]:::compute

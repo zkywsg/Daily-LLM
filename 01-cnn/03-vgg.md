@@ -23,7 +23,7 @@ key_idea: "把网络深度做到 16/19 层、并把所有卷积统一成 3×3，
 VGG 的方案非常简洁：**把所有卷积层统一为 3×3、stride=1、padding=1，通过逐层堆叠到 16 / 19 层**。第一层不再是 11×11 也不是 7×7，统一为 3×3；池化层统一为 2×2 MaxPool / stride=2。整体设计原则可概括为：**使用最小的卷积单元，通过堆叠获得深度**。
 
 ```mermaid
-graph TD
+graph LR
     x["Input [B,3,224,224]"]:::input
     b1["Conv 3×3 / 64 × 2"]:::compute
     p1["MaxPool 2×2 / s=2"]:::compute

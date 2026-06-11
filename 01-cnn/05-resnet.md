@@ -37,7 +37,7 @@ $$
 那个 `+x` 就是 **shortcut connection / skip connection**——一条从输入直接跨过几层卷积、加到输出上的旁路。
 
 ```mermaid
-graph TD
+graph LR
     x["Input [B,3,224,224]"]:::input
     s1["Conv 7×7 / s=2 / 64"]:::compute
     p1["MaxPool 3×3 / s=2"]:::compute
@@ -91,7 +91,7 @@ x → Conv 3×3 → BN → ReLU → Conv 3×3 → BN → (+x) → ReLU → out
 **Bottleneck**（用于 ResNet-50 / 101 / 152）——3 层卷积，1×1 先降维、3×3 在低维上算、1×1 再升回去。这套"先压再算再升"借鉴自 [Inception](04-inception.md) 的 1×1 瓶颈，但目的稍有不同：Inception 用它防止分支爆炸，ResNet 用它把深网的单 block 算力压下来。
 
 ```mermaid
-graph TD
+graph LR
     in["Input [B,256,H,W]"]:::input
     c1["1×1 Conv / 64 (降维)"]:::compute
     bn1["BN + ReLU"]:::compute

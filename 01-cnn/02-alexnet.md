@@ -27,7 +27,7 @@ key_idea: "首次在 ImageNet 大规模数据集上端到端训练深层 CNN（5
 AlexNet 的贡献在于将一组工程要素首次系统化组合：8 层卷积/全连接（5 conv + 3 fc）+ [ReLU 激活](../foundations/02-activations/) + [Dropout](../foundations/07-regularization/) + 数据增强 + 双 GPU 并行训练 + 比赛级 CUDA 实现。这些要素相互依赖，缺一项都难以达到论文报告的精度。
 
 ```mermaid
-graph TD
+graph LR
     x["Input [B,3,224,224]"]:::input
     c1["Conv 11×11 / s=4 / 96"]:::compute
     p1["MaxPool 3×3 / s=2 + LRN"]:::compute

@@ -39,7 +39,7 @@ $$
 种子模型 EfficientNet-B0 自身是用 NAS 在"FLOPs ≈ 400M、精度最优"的目标下搜出来的——和 MnasNet 同一套搜索空间。结构上 B0 由一个 stem（3×3 conv）+ 7 个 stage 的 **MBConv**（Mobile Inverted Bottleneck Conv，源自 MobileNet v2）堆叠 + head（1×1 conv + GAP + FC）构成。MBConv 内部用 **inverted bottleneck**（1×1 升维 → depthwise 3×3 → 1×1 降维）+ **Squeeze-Excitation**（源自 SE-Net）+ Swish 激活，这些都是横切组件——本节不展开，留给 [foundations/02-activations](../foundations/02-activations/) 和后续 MobileNet/SENet 专题。
 
 ```mermaid
-graph TD
+graph LR
     x["Input [B,3,224,224]"]:::input
     stem["Stem: Conv 3×3 / s=2 / 32"]:::compute
     s1["Stage 1: MBConv1 / k=3×3 / 16ch × 1"]:::compute

@@ -31,7 +31,7 @@ $$
 这里 $[\cdot]$ 表示沿通道维度的拼接，$H_\ell$ 是"BN + ReLU + 3×3 Conv"组合（pre-activation 风格，受 He 2016 *Identity Mappings* 启发）。每层的输出**永远不会被覆盖、不会被叠加、不会被混叠**——它就摆在那儿，谁想用谁拿。
 
 ```mermaid
-graph TD
+graph LR
     x0["x₀: Input [B,k₀,H,W]"]:::input
     h1["H₁: BN-ReLU-Conv3×3"]:::compute
     h2["H₂: BN-ReLU-Conv3×3"]:::compute
@@ -72,7 +72,7 @@ graph TD
 整个 DenseNet 把网络切成**若干 Dense block**，block 内部稠密连接、block 之间用 **transition layer（1×1 Conv + 2×2 AvgPool）** 做下采样并压缩通道数（DenseNet-BC 版本里 transition 还会把通道数减半，进一步控制规模）。主流变体 DenseNet-121 / 169 / 201 / 264，数字指总有参层数；DenseNet-121 是最常用基线，4 个 Dense block 分别含 6 / 12 / 24 / 16 层，growth rate $k=32$。
 
 ```mermaid
-graph TD
+graph LR
     in["Input [B,3,224,224]"]:::input
     stem["Conv 7×7 / s=2 / 64 + MaxPool"]:::compute
     db1["Dense Block 1 × 6 (k=32)"]:::compute

@@ -25,7 +25,7 @@ GoogLeNet 没有继续往"更深更窄"那条路上走，而是回到一个更�
 VGG 的做法是"统一使用一个尺度（3×3）再堆深"，依靠堆叠扩大感受野。Inception 的做法是：**在同一层并行使用多种尺度的卷积，再把结果拼接**——1×1 看通道关系、3×3 看小邻域、5×5 看更大邻域、3×3 MaxPool 提供位置不变性。最后在通道维度 concat，由下一层自适应学习如何加权这些通道。
 
 ```mermaid
-graph TD
+graph LR
     x["Input [B,3,224,224]"]:::input
     stem["Stem: Conv 7×7/s=2/64 + MaxPool 3×3/s=2 + Conv 3×3/192 + MaxPool 3×3/s=2"]:::compute
     i3a["Inception 3a/3b (× 2)"]:::compute
