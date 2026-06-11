@@ -33,6 +33,15 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
         const { svg } = await mermaid.render(id, code);
         if (!cancelled && ref.current) {
           ref.current.innerHTML = svg;
+          // 大图保持原始尺寸靠容器横向滚动,而不是缩成不可读的小字
+          const svgEl = ref.current.querySelector("svg");
+          const vbWidth = svgEl?.viewBox?.baseVal?.width;
+          if (svgEl && vbWidth) {
+            svgEl.style.width = `${Math.ceil(vbWidth)}px`;
+            svgEl.style.maxWidth = "none";
+            svgEl.style.display = "block";
+            svgEl.style.margin = "0 auto";
+          }
         }
       } catch (e) {
         if (!cancelled) {
@@ -54,5 +63,14 @@ export function MermaidBlock({ code }: MermaidBlockProps) {
       </pre>
     );
   }
-  return <div ref={ref} style={{ margin: "var(--space-6) 0" }} />;
+  return (
+    <div
+      ref={ref}
+      style={{
+        margin: "var(--space-6) 0",
+        overflowX: "auto",
+        WebkitOverflowScrolling: "touch",
+      }}
+    />
+  );
 }
