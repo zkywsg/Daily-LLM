@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T15:45:16.227054+00:00",
+  "generatedAt": "2026-06-11T15:48:24.033613+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -151,7 +151,7 @@
       "blurb": "把序列建模交给一个会\"记事\"的隐状态,让网络一步一步往前读。",
       "yearRange": [
         1986,
-        1997
+        2014
       ],
       "colorToken": "--family-02",
       "nodes": [
@@ -183,6 +183,22 @@
           ],
           "key_idea": "用三道门 + 一条细胞状态高速公路绕开梯度连乘,让循环网络第一次能稳定学到 100+ 步的长依赖",
           "path": "02-rnn-lstm/02-lstm.md",
+          "assets": []
+        },
+        {
+          "name": "GRU",
+          "year": 2014,
+          "family": "02-rnn-lstm",
+          "order": 3,
+          "paper": "Learning Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation",
+          "authors": [
+            "Kyunghyun Cho",
+            "Bart van Merriënboer",
+            "Dzmitry Bahdanau",
+            "Yoshua Bengio"
+          ],
+          "key_idea": "把 LSTM 三道门简成两门、去掉细胞状态,参数减少 25% 而性能基本持平,成为 LSTM 的常用轻量替代",
+          "path": "02-rnn-lstm/03-gru.md",
           "assets": []
         }
       ]
