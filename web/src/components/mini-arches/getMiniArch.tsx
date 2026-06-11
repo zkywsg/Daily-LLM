@@ -9,6 +9,11 @@ import {
   MiniDenseNet,
   MiniEfficientNet,
   MiniConvNeXt,
+  MiniRNN,
+  MiniLSTM,
+  MiniGRU,
+  MiniSeq2Seq,
+  MiniAttention,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -20,6 +25,11 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "06-densenet": MiniDenseNet,
   "07-efficientnet": MiniEfficientNet,
   "08-convnext": MiniConvNeXt,
+  "01-rnn": MiniRNN,
+  "02-lstm": MiniLSTM,
+  "03-gru": MiniGRU,
+  "04-seq2seq": MiniSeq2Seq,
+  "05-attention": MiniAttention,
 };
 
 export function getMiniArch(
