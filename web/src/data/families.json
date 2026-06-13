@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T15:55:12.094946+00:00",
+  "generatedAt": "2026-06-13T07:46:26.018892+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -254,10 +254,34 @@
     {
       "id": "05-transformer",
       "label": "Transformer 架构",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "blurb": "把 attention 推到极致,扔掉循环和卷积,让序列建模获得完全并行 + 全局上下文。",
+      "yearRange": [
+        2017,
+        2017
+      ],
       "colorToken": "--family-05",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "Transformer",
+          "year": 2017,
+          "family": "05-transformer",
+          "order": 1,
+          "paper": "Attention Is All You Need",
+          "authors": [
+            "Ashish Vaswani",
+            "Noam Shazeer",
+            "Niki Parmar",
+            "Jakob Uszkoreit",
+            "Llion Jones",
+            "Aidan N. Gomez",
+            "Łukasz Kaiser",
+            "Illia Polosukhin"
+          ],
+          "key_idea": "用 self-attention 替代循环,让序列建模获得完全并行 + 全局上下文,encoder-decoder 骨架保留但内部全是 attention 和 FFN",
+          "path": "05-transformer/01-transformer.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "06-bert-family",
