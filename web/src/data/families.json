@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T18:35:25.855341+00:00",
+  "generatedAt": "2026-06-13T18:38:56.255487+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -257,7 +257,7 @@
       "blurb": "把 attention 推到极致,扔掉循环和卷积,让序列建模获得完全并行 + 全局上下文。",
       "yearRange": [
         2017,
-        2020
+        2021
       ],
       "colorToken": "--family-05",
       "nodes": [
@@ -315,6 +315,23 @@
           ],
           "key_idea": "用滑窗局部 attention + 少量全局 token 把 attention 复杂度从 O(N²) 降到 O(N),让 Transformer 第一次能在 4K–16K 长上下文上跑训练和推理",
           "path": "05-transformer/03-sparse-attention.md",
+          "assets": []
+        },
+        {
+          "name": "RoPE",
+          "year": 2021,
+          "family": "05-transformer",
+          "order": 4,
+          "paper": "RoFormer: Enhanced Transformer with Rotary Position Embedding",
+          "authors": [
+            "Jianlin Su",
+            "Yu Lu",
+            "Shengfeng Pan",
+            "Bo Wen",
+            "Yunfeng Liu"
+          ],
+          "key_idea": "把位置信息编码进 Q/K 的旋转里而不是加在 token embedding 上,attention 内积天然只依赖相对位置,长上下文外推显著更好",
+          "path": "05-transformer/04-rope.md",
           "assets": []
         }
       ]
