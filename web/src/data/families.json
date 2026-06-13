@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T19:18:43.967540+00:00",
+  "generatedAt": "2026-06-13T19:21:49.620866+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -367,7 +367,7 @@
       "blurb": "把语言模型当基础设施:用无监督生成预训练 + 规模化扩展,让一个模型不微调就能做几乎所有 NLP 任务。",
       "yearRange": [
         2018,
-        2020
+        2023
       ],
       "colorToken": "--family-07",
       "nodes": [
@@ -442,6 +442,25 @@
           ],
           "key_idea": "把 LM loss 随参数 N / 数据 D / 算力 C 的关系刻画成幂律;Kaplan 给出粗略最优,Chinchilla 修正最优配比是 N:D ≈ 1:20,催生 LLaMA 等高数据小模型",
           "path": "07-gpt-scaling/04-scaling-laws.md",
+          "assets": []
+        },
+        {
+          "name": "GPT-4 / LLaMA",
+          "year": 2023,
+          "family": "07-gpt-scaling",
+          "order": 5,
+          "paper": "GPT-4 Technical Report / LLaMA: Open and Efficient Foundation Language Models",
+          "authors": [
+            "OpenAI",
+            "Hugo Touvron",
+            "Thibaut Lavril",
+            "Gautier Izacard",
+            "Xavier Martinet",
+            "Marie-Anne Lachaux",
+            "et al."
+          ],
+          "key_idea": "GPT-4 把 LLM 推到万亿级 + 多模态闭源;LLaMA 给社区第一个工业级开源基础模型;现代 LLM 配方(Pre-RMSNorm + RoPE + GQA + SwiGLU)在两者上同时定型",
+          "path": "07-gpt-scaling/05-gpt4-llama.md",
           "assets": []
         }
       ]
