@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T18:38:56.255487+00:00",
+  "generatedAt": "2026-06-13T18:41:52.474146+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -257,7 +257,7 @@
       "blurb": "把 attention 推到极致,扔掉循环和卷积,让序列建模获得完全并行 + 全局上下文。",
       "yearRange": [
         2017,
-        2021
+        2022
       ],
       "colorToken": "--family-05",
       "nodes": [
@@ -332,6 +332,23 @@
           ],
           "key_idea": "把位置信息编码进 Q/K 的旋转里而不是加在 token embedding 上,attention 内积天然只依赖相对位置,长上下文外推显著更好",
           "path": "05-transformer/04-rope.md",
+          "assets": []
+        },
+        {
+          "name": "FlashAttention",
+          "year": 2022,
+          "family": "05-transformer",
+          "order": 5,
+          "paper": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+          "authors": [
+            "Tri Dao",
+            "Daniel Y. Fu",
+            "Stefano Ermon",
+            "Atri Rudra",
+            "Christopher Ré"
+          ],
+          "key_idea": "把 attention 从 HBM 搬到 SRAM 算,分块 + 重计算把 O(N²) 显存压成 O(N) 而结果完全等价,attention 训练/推理快 2-4× 且支持更长序列",
+          "path": "05-transformer/05-flash-attention.md",
           "assets": []
         }
       ]
