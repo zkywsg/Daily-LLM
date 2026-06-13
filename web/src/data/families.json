@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T19:12:06.736144+00:00",
+  "generatedAt": "2026-06-13T19:15:36.425827+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -367,7 +367,7 @@
       "blurb": "把语言模型当基础设施:用无监督生成预训练 + 规模化扩展,让一个模型不微调就能做几乎所有 NLP 任务。",
       "yearRange": [
         2018,
-        2019
+        2020
       ],
       "colorToken": "--family-07",
       "nodes": [
@@ -403,6 +403,26 @@
           ],
           "key_idea": "把 GPT-1 的 117M 参数推到 1.5B + WebText 40B token,zero-shot 任务能力首次涌现,LM 第一次显示出'不微调也能做下游任务'的通用性",
           "path": "07-gpt-scaling/02-gpt2.md",
+          "assets": []
+        },
+        {
+          "name": "GPT-3",
+          "year": 2020,
+          "family": "07-gpt-scaling",
+          "order": 3,
+          "paper": "Language Models are Few-Shot Learners",
+          "authors": [
+            "Tom B. Brown",
+            "Benjamin Mann",
+            "Nick Ryder",
+            "Melanie Subbiah",
+            "Jared Kaplan",
+            "Prafulla Dhariwal",
+            "Arvind Neelakantan",
+            "et al."
+          ],
+          "key_idea": "把 GPT-2 推到 175B 参数,in-context learning 涌现 — 仅靠 prompt 里 few-shot 例子就能学新任务,完全消除微调对监督数据的依赖,LLM 时代正式开启",
+          "path": "07-gpt-scaling/03-gpt3.md",
           "assets": []
         }
       ]
