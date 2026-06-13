@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T18:41:52.474146+00:00",
+  "generatedAt": "2026-06-13T19:04:37.485305+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -363,11 +363,31 @@
     },
     {
       "id": "07-gpt-scaling",
-      "label": "大语言模型（GPT 系 + Scaling）",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "label": "大语言模型(GPT 系 + Scaling)",
+      "blurb": "把语言模型当基础设施:用无监督生成预训练 + 规模化扩展,让一个模型不微调就能做几乎所有 NLP 任务。",
+      "yearRange": [
+        2018,
+        2018
+      ],
       "colorToken": "--family-07",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "GPT-1",
+          "year": 2018,
+          "family": "07-gpt-scaling",
+          "order": 1,
+          "paper": "Improving Language Understanding by Generative Pre-Training",
+          "authors": [
+            "Alec Radford",
+            "Karthik Narasimhan",
+            "Tim Salimans",
+            "Ilya Sutskever"
+          ],
+          "key_idea": "用 decoder-only Transformer + 无监督自回归预训练 + 任务微调,第一次系统跑通预训练范式;同年 BERT 用 encoder-only 验证了双向版本",
+          "path": "07-gpt-scaling/01-gpt1.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "08-vit",
