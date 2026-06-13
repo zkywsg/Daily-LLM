@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T19:15:36.425827+00:00",
+  "generatedAt": "2026-06-13T19:18:43.967540+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -423,6 +423,25 @@
           ],
           "key_idea": "把 GPT-2 推到 175B 参数,in-context learning 涌现 — 仅靠 prompt 里 few-shot 例子就能学新任务,完全消除微调对监督数据的依赖,LLM 时代正式开启",
           "path": "07-gpt-scaling/03-gpt3.md",
+          "assets": []
+        },
+        {
+          "name": "Scaling Laws",
+          "year": 2020,
+          "family": "07-gpt-scaling",
+          "order": 4,
+          "paper": "Scaling Laws for Neural Language Models / Training Compute-Optimal Large Language Models",
+          "authors": [
+            "Jared Kaplan",
+            "Sam McCandlish",
+            "Tom Henighan",
+            "Jordan Hoffmann",
+            "Sebastian Borgeaud",
+            "Arthur Mensch",
+            "et al."
+          ],
+          "key_idea": "把 LM loss 随参数 N / 数据 D / 算力 C 的关系刻画成幂律;Kaplan 给出粗略最优,Chinchilla 修正最优配比是 N:D ≈ 1:20,催生 LLaMA 等高数据小模型",
+          "path": "07-gpt-scaling/04-scaling-laws.md",
           "assets": []
         }
       ]
