@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T19:04:37.485305+00:00",
+  "generatedAt": "2026-06-13T19:12:06.736144+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -367,7 +367,7 @@
       "blurb": "把语言模型当基础设施:用无监督生成预训练 + 规模化扩展,让一个模型不微调就能做几乎所有 NLP 任务。",
       "yearRange": [
         2018,
-        2018
+        2019
       ],
       "colorToken": "--family-07",
       "nodes": [
@@ -385,6 +385,24 @@
           ],
           "key_idea": "用 decoder-only Transformer + 无监督自回归预训练 + 任务微调,第一次系统跑通预训练范式;同年 BERT 用 encoder-only 验证了双向版本",
           "path": "07-gpt-scaling/01-gpt1.md",
+          "assets": []
+        },
+        {
+          "name": "GPT-2",
+          "year": 2019,
+          "family": "07-gpt-scaling",
+          "order": 2,
+          "paper": "Language Models are Unsupervised Multitask Learners",
+          "authors": [
+            "Alec Radford",
+            "Jeffrey Wu",
+            "Rewon Child",
+            "David Luan",
+            "Dario Amodei",
+            "Ilya Sutskever"
+          ],
+          "key_idea": "把 GPT-1 的 117M 参数推到 1.5B + WebText 40B token,zero-shot 任务能力首次涌现,LM 第一次显示出'不微调也能做下游任务'的通用性",
+          "path": "07-gpt-scaling/02-gpt2.md",
           "assets": []
         }
       ]
