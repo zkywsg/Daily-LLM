@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T18:32:15.773470+00:00",
+  "generatedAt": "2026-06-13T18:35:25.855341+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -257,7 +257,7 @@
       "blurb": "把 attention 推到极致,扔掉循环和卷积,让序列建模获得完全并行 + 全局上下文。",
       "yearRange": [
         2017,
-        2019
+        2020
       ],
       "colorToken": "--family-05",
       "nodes": [
@@ -297,6 +297,24 @@
           ],
           "key_idea": "用段级循环把上一段隐状态作为这段的记忆 + 相对位置编码替代绝对 PE,让 Transformer 第一次跨越固定窗口处理长上下文",
           "path": "05-transformer/02-transformer-xl.md",
+          "assets": []
+        },
+        {
+          "name": "Sparse Attention",
+          "year": 2020,
+          "family": "05-transformer",
+          "order": 3,
+          "paper": "Longformer / Big Bird: Transformers for Longer Sequences",
+          "authors": [
+            "Iz Beltagy",
+            "Matthew Peters",
+            "Arman Cohan",
+            "Manzil Zaheer",
+            "Guru Guruganesh",
+            "Avinava Dubey"
+          ],
+          "key_idea": "用滑窗局部 attention + 少量全局 token 把 attention 复杂度从 O(N²) 降到 O(N),让 Transformer 第一次能在 4K–16K 长上下文上跑训练和推理",
+          "path": "05-transformer/03-sparse-attention.md",
           "assets": []
         }
       ]
