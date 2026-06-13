@@ -14,6 +14,11 @@ import {
   MiniGRU,
   MiniSeq2Seq,
   MiniAttention,
+  MiniTransformer,
+  MiniTransformerXL,
+  MiniSparseAttention,
+  MiniRoPE,
+  MiniFlashAttention,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -30,6 +35,11 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "03-gru": MiniGRU,
   "04-seq2seq": MiniSeq2Seq,
   "05-attention": MiniAttention,
+  "01-transformer": MiniTransformer,
+  "02-transformer-xl": MiniTransformerXL,
+  "03-sparse-attention": MiniSparseAttention,
+  "04-rope": MiniRoPE,
+  "05-flash-attention": MiniFlashAttention,
 };
 
 export function getMiniArch(
