@@ -23,6 +23,7 @@
 | 2019 | **Transformer-XL** | `05-transformer` | 用段级循环把上一段隐状态作为这段的记忆 + 相对位置编码替代绝对 PE,让 Transformer 第一次跨越固定窗口处理长上下文 | [05-transformer/02-transformer-xl.md](05-transformer/02-transformer-xl.md) |
 | 2019 | **RoBERTa** | `06-bert-family` | 去掉 NSP + 动态 masking + 大 batch + 10× 数据 + 更长训练,证明 BERT 严重训练不足,GLUE 再涨 5+ 分而架构完全不动 | [06-bert-family/02-roberta.md](06-bert-family/02-roberta.md) |
 | 2019 | **ALBERT** | `06-bert-family` | 用跨层参数共享 + embedding 因式分解把 BERT-large 参数从 334M 压到 18M 而效果接近,同时把 NSP 改成更难的 SOP(句子顺序预测) | [06-bert-family/03-albert.md](06-bert-family/03-albert.md) |
+| 2019 | **DistilBERT** | `06-bert-family` | 用知识蒸馏把 12 层 BERT teacher 压成 6 层 student,40% 参数 60% 速度保留 97% 性能,工业 BERT 部署的事实默认 | [06-bert-family/04-distilbert.md](06-bert-family/04-distilbert.md) |
 | 2019 | **GPT-2** | `07-gpt-scaling` | 把 GPT-1 的 117M 参数推到 1.5B + WebText 40B token,zero-shot 任务能力首次涌现,LM 第一次显示出'不微调也能做下游任务'的通用性 | [07-gpt-scaling/02-gpt2.md](07-gpt-scaling/02-gpt2.md) |
 | 2020 | **Sparse Attention** | `05-transformer` | 用滑窗局部 attention + 少量全局 token 把 attention 复杂度从 O(N²) 降到 O(N),让 Transformer 第一次能在 4K–16K 长上下文上跑训练和推理 | [05-transformer/03-sparse-attention.md](05-transformer/03-sparse-attention.md) |
 | 2020 | **GPT-3** | `07-gpt-scaling` | 把 GPT-2 推到 175B 参数,in-context learning 涌现 — 仅靠 prompt 里 few-shot 例子就能学新任务,完全消除微调对监督数据的依赖,LLM 时代正式开启 | [07-gpt-scaling/03-gpt3.md](07-gpt-scaling/03-gpt3.md) |

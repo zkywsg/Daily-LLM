@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T07:00:17.854742+00:00",
+  "generatedAt": "2026-06-14T07:02:52.726217+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -414,6 +414,22 @@
           ],
           "key_idea": "用跨层参数共享 + embedding 因式分解把 BERT-large 参数从 334M 压到 18M 而效果接近,同时把 NSP 改成更难的 SOP(句子顺序预测)",
           "path": "06-bert-family/03-albert.md",
+          "assets": []
+        },
+        {
+          "name": "DistilBERT",
+          "year": 2019,
+          "family": "06-bert-family",
+          "order": 4,
+          "paper": "DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter",
+          "authors": [
+            "Victor Sanh",
+            "Lysandre Debut",
+            "Julien Chaumond",
+            "Thomas Wolf"
+          ],
+          "key_idea": "用知识蒸馏把 12 层 BERT teacher 压成 6 层 student,40% 参数 60% 速度保留 97% 性能,工业 BERT 部署的事实默认",
+          "path": "06-bert-family/04-distilbert.md",
           "assets": []
         }
       ]
