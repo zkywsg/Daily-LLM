@@ -24,6 +24,10 @@ import {
   MiniGPT3,
   MiniScalingLaws,
   MiniGPT4Llama,
+  MiniLearningToSummarize,
+  MiniInstructGPT,
+  MiniConstitutionalAI,
+  MiniDPO,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -50,6 +54,10 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "03-gpt3": MiniGPT3,
   "04-scaling-laws": MiniScalingLaws,
   "05-gpt4-llama": MiniGPT4Llama,
+  "01-learning-to-summarize": MiniLearningToSummarize,
+  "02-instructgpt": MiniInstructGPT,
+  "03-constitutional-ai": MiniConstitutionalAI,
+  "04-dpo": MiniDPO,
 };
 
 export function getMiniArch(
