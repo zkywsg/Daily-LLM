@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T06:01:41.968251+00:00",
+  "generatedAt": "2026-06-14T06:06:29.159683+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -546,6 +546,25 @@
           ],
           "key_idea": "把 RLHF 三阶段从摘要单一任务推广到通用指令跟随,1.3B 对齐版超过 175B 未对齐版,直接催生 ChatGPT",
           "path": "12-rlhf-alignment/02-instructgpt.md",
+          "assets": []
+        },
+        {
+          "name": "Constitutional AI",
+          "year": 2022,
+          "family": "12-rlhf-alignment",
+          "order": 3,
+          "paper": "Constitutional AI: Harmlessness from AI Feedback",
+          "authors": [
+            "Yuntao Bai",
+            "Saurav Kadavath",
+            "Sandipan Kundu",
+            "Amanda Askell",
+            "Jackson Kernion",
+            "Andy Jones",
+            "et al."
+          ],
+          "key_idea": "用一套书面原则(constitution)让 AI 自评自身输出,生成 AI feedback 替代人类偏好标注 — 把对齐从'人力密集'压成'算力密集',是 Claude 系列的核心方法",
+          "path": "12-rlhf-alignment/03-constitutional-ai.md",
           "assets": []
         }
       ]
