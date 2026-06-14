@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T15:20:31.443982+00:00",
+  "generatedAt": "2026-06-14T15:23:01.067156+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -544,7 +544,7 @@
       "blurb": "把 Transformer 从 NLP 整体搬到视觉:图像切成 patch 当 token,attention 替代卷积,在足够大数据上击败 CNN。",
       "yearRange": [
         2020,
-        2021
+        2022
       ],
       "colorToken": "--family-08",
       "nodes": [
@@ -604,6 +604,20 @@
           ],
           "key_idea": "用 shifted window attention 把复杂度从 O(N²) 降到 O(N) + 层级化下采样产出多尺度特征图,让 ViT 第一次能直接做 detection / segmentation",
           "path": "08-vit/03-swin.md",
+          "assets": []
+        },
+        {
+          "name": "DiT",
+          "year": 2022,
+          "family": "08-vit",
+          "order": 4,
+          "paper": "Scalable Diffusion Models with Transformers",
+          "authors": [
+            "William Peebles",
+            "Saining Xie"
+          ],
+          "key_idea": "把 diffusion 模型的 U-Net backbone 替换成 ViT-style Transformer,展示更好的 scaling 性质,成为 Stable Diffusion 3 / Sora 的基座",
+          "path": "08-vit/04-dit.md",
           "assets": []
         }
       ]
