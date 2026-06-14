@@ -32,6 +32,10 @@ import {
   MiniRoBERTa,
   MiniALBERT,
   MiniDistilBERT,
+  MiniViT,
+  MiniDeiT,
+  MiniSwin,
+  MiniDiT,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -66,6 +70,10 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "02-roberta": MiniRoBERTa,
   "03-albert": MiniALBERT,
   "04-distilbert": MiniDistilBERT,
+  "01-vit": MiniViT,
+  "02-deit": MiniDeiT,
+  "03-swin": MiniSwin,
+  "04-dit": MiniDiT,
 };
 
 export function getMiniArch(
