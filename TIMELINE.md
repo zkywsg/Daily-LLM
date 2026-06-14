@@ -45,6 +45,7 @@
 | 2022 | **InstructGPT** | `12-rlhf-alignment` | 把 RLHF 三阶段从摘要单一任务推广到通用指令跟随,1.3B 对齐版超过 175B 未对齐版,直接催生 ChatGPT | [12-rlhf-alignment/02-instructgpt.md](12-rlhf-alignment/02-instructgpt.md) |
 | 2022 | **Constitutional AI** | `12-rlhf-alignment` | 用一套书面原则(constitution)让 AI 自评自身输出,生成 AI feedback 替代人类偏好标注 — 把对齐从'人力密集'压成'算力密集',是 Claude 系列的核心方法 | [12-rlhf-alignment/03-constitutional-ai.md](12-rlhf-alignment/03-constitutional-ai.md) |
 | 2022 | **Chain-of-Thought** | `15-reasoning-o1-r1` | 在 prompt 里给 few-shot 例子展示'问题→推理步骤→答案'格式,LLM 模仿后大数学题准确率从 17% 涨到 60%+;开启 LLM 推理能力的新研究方向 | [15-reasoning-o1-r1/01-cot.md](15-reasoning-o1-r1/01-cot.md) |
+| 2022 | **Self-Consistency** | `15-reasoning-o1-r1` | 对同 prompt 采样 N 条 CoT 推理路径,投票选最一致答案;GSM8K 60% → 75%;第一次系统化 test-time compute scaling | [15-reasoning-o1-r1/02-self-consistency.md](15-reasoning-o1-r1/02-self-consistency.md) |
 | 2023 | **GPT-4 / LLaMA** | `07-gpt-scaling` | GPT-4 把 LLM 推到万亿级 + 多模态闭源;LLaMA 给社区第一个工业级开源基础模型;现代 LLM 配方(Pre-RMSNorm + RoPE + GQA + SwiGLU)在两者上同时定型 | [07-gpt-scaling/05-gpt4-llama.md](07-gpt-scaling/05-gpt4-llama.md) |
 | 2023 | **LLaVA** | `09-multimodal-clip` | Visual instruction tuning:用 GPT-4 自动生成视觉指令数据,把 CLIP 视觉特征用单 linear projection 接到 LLaMA,把开源 VLM 范式定型在 GPT-4V 之前 | [09-multimodal-clip/04-llava.md](09-multimodal-clip/04-llava.md) |
 | 2023 | **Flow Matching / Rectified Flow** | `10-diffusion` | 把 diffusion 的 ε-prediction 推广到任意流形的'速度场学习',训练更稳 + 采样路径更直 + 数学更简洁,SD3 / Flux 默认 | [10-diffusion/04-flow-matching.md](10-diffusion/04-flow-matching.md) |

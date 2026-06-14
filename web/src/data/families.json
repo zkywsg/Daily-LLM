@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T17:03:16.828153+00:00",
+  "generatedAt": "2026-06-14T17:05:33.748795+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -930,6 +930,26 @@
           ],
           "key_idea": "在 prompt 里给 few-shot 例子展示'问题→推理步骤→答案'格式,LLM 模仿后大数学题准确率从 17% 涨到 60%+;开启 LLM 推理能力的新研究方向",
           "path": "15-reasoning-o1-r1/01-cot.md",
+          "assets": []
+        },
+        {
+          "name": "Self-Consistency",
+          "year": 2022,
+          "family": "15-reasoning-o1-r1",
+          "order": 2,
+          "paper": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+          "authors": [
+            "Xuezhi Wang",
+            "Jason Wei",
+            "Dale Schuurmans",
+            "Quoc Le",
+            "Ed Chi",
+            "Sharan Narang",
+            "Aakanksha Chowdhery",
+            "Denny Zhou"
+          ],
+          "key_idea": "对同 prompt 采样 N 条 CoT 推理路径,投票选最一致答案;GSM8K 60% → 75%;第一次系统化 test-time compute scaling",
+          "path": "15-reasoning-o1-r1/02-self-consistency.md",
           "assets": []
         }
       ]
