@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T15:23:01.067156+00:00",
+  "generatedAt": "2026-06-14T16:09:39.945071+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -633,10 +633,29 @@
     {
       "id": "10-diffusion",
       "label": "扩散模型",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "blurb": "把生成问题转化为\"从噪声逐步去噪\"的反向过程,稳定训练、高质量、可控条件,2022 之后视觉生成的事实统治者。",
+      "yearRange": [
+        2020,
+        2020
+      ],
       "colorToken": "--family-10",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "DDPM",
+          "year": 2020,
+          "family": "10-diffusion",
+          "order": 1,
+          "paper": "Denoising Diffusion Probabilistic Models",
+          "authors": [
+            "Jonathan Ho",
+            "Ajay Jain",
+            "Pieter Abbeel"
+          ],
+          "key_idea": "把 2015 年的 diffusion 思想工程化:U-Net 预测噪声 + 简单 MSE 损失 + 1000 步去噪采样,稳定训练且质量超 GAN",
+          "path": "10-diffusion/01-ddpm.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "11-peft-lora",
