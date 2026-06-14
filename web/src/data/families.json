@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T06:06:29.159683+00:00",
+  "generatedAt": "2026-06-14T06:10:29.550190+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -503,7 +503,7 @@
       "blurb": "基础 LLM 学到的是\"接下来最像人类写的下一个 token\";对齐做的是让它\"按用户希望的方式回答\",这是从语言模型到对话助手的最后一公里。",
       "yearRange": [
         2020,
-        2022
+        2023
       ],
       "colorToken": "--family-12",
       "nodes": [
@@ -565,6 +565,24 @@
           ],
           "key_idea": "用一套书面原则(constitution)让 AI 自评自身输出,生成 AI feedback 替代人类偏好标注 — 把对齐从'人力密集'压成'算力密集',是 Claude 系列的核心方法",
           "path": "12-rlhf-alignment/03-constitutional-ai.md",
+          "assets": []
+        },
+        {
+          "name": "DPO",
+          "year": 2023,
+          "family": "12-rlhf-alignment",
+          "order": 4,
+          "paper": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+          "authors": [
+            "Rafael Rafailov",
+            "Archit Sharma",
+            "Eric Mitchell",
+            "Stefano Ermon",
+            "Christopher D. Manning",
+            "Chelsea Finn"
+          ],
+          "key_idea": "通过数学推导把 RLHF 的 RL 目标转化成监督学习损失,跳过 reward model 和 PPO,工程上和 SFT 一样简单且效果接近,2024 开源 LLM 默认对齐方法",
+          "path": "12-rlhf-alignment/04-dpo.md",
           "assets": []
         }
       ]
