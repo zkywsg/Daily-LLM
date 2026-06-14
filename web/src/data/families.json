@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T07:12:45.933682+00:00",
+  "generatedAt": "2026-06-14T15:18:06.328644+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -544,7 +544,7 @@
       "blurb": "把 Transformer 从 NLP 整体搬到视觉:图像切成 patch 当 token,attention 替代卷积,在足够大数据上击败 CNN。",
       "yearRange": [
         2020,
-        2020
+        2021
       ],
       "colorToken": "--family-08",
       "nodes": [
@@ -566,6 +566,24 @@
           ],
           "key_idea": "把图像切成 16×16 的 patch 当 token,用纯 Transformer encoder 处理,在 JFT-300M 上预训练后击败 CNN,证明视觉归纳偏置不是必需的",
           "path": "08-vit/01-vit.md",
+          "assets": []
+        },
+        {
+          "name": "DeiT",
+          "year": 2021,
+          "family": "08-vit",
+          "order": 2,
+          "paper": "Training data-efficient image transformers & distillation through attention",
+          "authors": [
+            "Hugo Touvron",
+            "Matthieu Cord",
+            "Matthijs Douze",
+            "Francisco Massa",
+            "Alexandre Sablayrolles",
+            "Hervé Jégou"
+          ],
+          "key_idea": "用 distillation token + 强增强 + AdamW + 蒸馏让 ViT 在 ImageNet-1K 上从零训练击败 ResNet,不再依赖 JFT-300M,把 ViT 带给学界",
+          "path": "08-vit/02-deit.md",
           "assets": []
         }
       ]
