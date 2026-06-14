@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T16:24:21.082920+00:00",
+  "generatedAt": "2026-06-14T16:26:58.690404+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -666,6 +666,25 @@
           ],
           "key_idea": "在 CLIP 对比之上加入生成和匹配两个任务联合训练;BLIP-2 进一步用 Q-Former 桥接冻结视觉编码器和冻结 LLM,把训练成本降一个数量级",
           "path": "09-multimodal-clip/02-blip.md",
+          "assets": []
+        },
+        {
+          "name": "Flamingo",
+          "year": 2022,
+          "family": "09-multimodal-clip",
+          "order": 3,
+          "paper": "Flamingo: a Visual Language Model for Few-Shot Learning",
+          "authors": [
+            "Jean-Baptiste Alayrac",
+            "Jeff Donahue",
+            "Pauline Luc",
+            "Antoine Miech",
+            "Iain Barr",
+            "Yana Hasson",
+            "et al."
+          ],
+          "key_idea": "冻结大 LLM(Chinchilla 70B)+ Perceiver Resampler 视觉适配 + 间隔 cross-attention 注入,8 例 in-context 学新视觉任务的少样本 VLM 范式",
+          "path": "09-multimodal-clip/03-flamingo.md",
           "assets": []
         }
       ]
