@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T17:05:33.748795+00:00",
+  "generatedAt": "2026-06-14T17:08:00.639726+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -907,7 +907,7 @@
       "blurb": "把 LLM 的算力从训练阶段挪到推理阶段:让模型\"想得更久\"而不是\"训得更大\",开启 LLM 能力的第二条扩展轴。",
       "yearRange": [
         2022,
-        2022
+        2024
       ],
       "colorToken": "--family-15",
       "nodes": [
@@ -950,6 +950,19 @@
           ],
           "key_idea": "对同 prompt 采样 N 条 CoT 推理路径,投票选最一致答案;GSM8K 60% → 75%;第一次系统化 test-time compute scaling",
           "path": "15-reasoning-o1-r1/02-self-consistency.md",
+          "assets": []
+        },
+        {
+          "name": "OpenAI o1",
+          "year": 2024,
+          "family": "15-reasoning-o1-r1",
+          "order": 3,
+          "paper": "Learning to Reason with LLMs (OpenAI 技术博客)",
+          "authors": [
+            "OpenAI Reasoning Team"
+          ],
+          "key_idea": "把长链推理作为训练目标,用 RL 让 LLM 自己学到反思/回溯/自验证;test-time compute 成为继训练算力之后的新 scaling 轴,在数学/科学/代码 benchmark 上击败 GPT-4 多倍",
+          "path": "15-reasoning-o1-r1/03-o1.md",
           "assets": []
         }
       ]
