@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T16:09:39.945071+00:00",
+  "generatedAt": "2026-06-14T16:12:01.088662+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -636,7 +636,7 @@
       "blurb": "把生成问题转化为\"从噪声逐步去噪\"的反向过程,稳定训练、高质量、可控条件,2022 之后视觉生成的事实统治者。",
       "yearRange": [
         2020,
-        2020
+        2022
       ],
       "colorToken": "--family-10",
       "nodes": [
@@ -653,6 +653,23 @@
           ],
           "key_idea": "把 2015 年的 diffusion 思想工程化:U-Net 预测噪声 + 简单 MSE 损失 + 1000 步去噪采样,稳定训练且质量超 GAN",
           "path": "10-diffusion/01-ddpm.md",
+          "assets": []
+        },
+        {
+          "name": "LDM / Stable Diffusion",
+          "year": 2022,
+          "family": "10-diffusion",
+          "order": 2,
+          "paper": "High-Resolution Image Synthesis with Latent Diffusion Models",
+          "authors": [
+            "Robin Rombach",
+            "Andreas Blattmann",
+            "Dominik Lorenz",
+            "Patrick Esser",
+            "Björn Ommer"
+          ],
+          "key_idea": "把 diffusion 从 pixel 空间移到 VAE latent 空间,推理显存降 64×,2022 年 8 月以开源方式释出 Stable Diffusion 把文生图带到消费 GPU",
+          "path": "10-diffusion/02-ldm.md",
           "assets": []
         }
       ]
