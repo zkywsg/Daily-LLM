@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T16:26:58.690404+00:00",
+  "generatedAt": "2026-06-14T16:29:55.971599+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -628,7 +628,7 @@
       "blurb": "让图像和文本在同一向量空间里对齐,跨模态从\"专门设计的接口\"变成\"自然语言驱动的通用能力\"。",
       "yearRange": [
         2021,
-        2022
+        2023
       ],
       "colorToken": "--family-09",
       "nodes": [
@@ -685,6 +685,22 @@
           ],
           "key_idea": "冻结大 LLM(Chinchilla 70B)+ Perceiver Resampler 视觉适配 + 间隔 cross-attention 注入,8 例 in-context 学新视觉任务的少样本 VLM 范式",
           "path": "09-multimodal-clip/03-flamingo.md",
+          "assets": []
+        },
+        {
+          "name": "LLaVA",
+          "year": 2023,
+          "family": "09-multimodal-clip",
+          "order": 4,
+          "paper": "Visual Instruction Tuning",
+          "authors": [
+            "Haotian Liu",
+            "Chunyuan Li",
+            "Qingyang Wu",
+            "Yong Jae Lee"
+          ],
+          "key_idea": "Visual instruction tuning:用 GPT-4 自动生成视觉指令数据,把 CLIP 视觉特征用单 linear projection 接到 LLaMA,把开源 VLM 范式定型在 GPT-4V 之前",
+          "path": "09-multimodal-clip/04-llava.md",
           "assets": []
         }
       ]
