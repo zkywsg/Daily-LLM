@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T07:02:52.726217+00:00",
+  "generatedAt": "2026-06-14T07:12:45.933682+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -541,10 +541,34 @@
     {
       "id": "08-vit",
       "label": "视觉 Transformer (ViT)",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "blurb": "把 Transformer 从 NLP 整体搬到视觉:图像切成 patch 当 token,attention 替代卷积,在足够大数据上击败 CNN。",
+      "yearRange": [
+        2020,
+        2020
+      ],
       "colorToken": "--family-08",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "ViT",
+          "year": 2020,
+          "family": "08-vit",
+          "order": 1,
+          "paper": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+          "authors": [
+            "Alexey Dosovitskiy",
+            "Lucas Beyer",
+            "Alexander Kolesnikov",
+            "Dirk Weissenborn",
+            "Xiaohua Zhai",
+            "Thomas Unterthiner",
+            "Mostafa Dehghani",
+            "et al."
+          ],
+          "key_idea": "把图像切成 16×16 的 patch 当 token,用纯 Transformer encoder 处理,在 JFT-300M 上预训练后击败 CNN,证明视觉归纳偏置不是必需的",
+          "path": "08-vit/01-vit.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "09-multimodal-clip",
