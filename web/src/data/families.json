@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T16:17:00.612041+00:00",
+  "generatedAt": "2026-06-14T16:21:44.522911+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -624,11 +624,34 @@
     },
     {
       "id": "09-multimodal-clip",
-      "label": "多模态对齐",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "label": "多模态对齐 (CLIP / 跨模态)",
+      "blurb": "让图像和文本在同一向量空间里对齐,跨模态从\"专门设计的接口\"变成\"自然语言驱动的通用能力\"。",
+      "yearRange": [
+        2021,
+        2021
+      ],
       "colorToken": "--family-09",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "CLIP",
+          "year": 2021,
+          "family": "09-multimodal-clip",
+          "order": 1,
+          "paper": "Learning Transferable Visual Models From Natural Language Supervision",
+          "authors": [
+            "Alec Radford",
+            "Jong Wook Kim",
+            "Chris Hallacy",
+            "Aditya Ramesh",
+            "Gabriel Goh",
+            "Sandhini Agarwal",
+            "et al."
+          ],
+          "key_idea": "用 4 亿对网络图文数据做对比学习,让图像和文本编码到同一向量空间,zero-shot 分类直接匹配监督 SOTA;成为后续所有多模态系统的对齐基座",
+          "path": "09-multimodal-clip/01-clip.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "10-diffusion",
