@@ -38,6 +38,7 @@
 | 2022 | **FlashAttention** | `05-transformer` | 把 attention 从 HBM 搬到 SRAM 算,分块 + 重计算把 O(N²) 显存压成 O(N) 而结果完全等价,attention 训练/推理快 2-4× 且支持更长序列 | [05-transformer/05-flash-attention.md](05-transformer/05-flash-attention.md) |
 | 2022 | **DiT** | `08-vit` | 把 diffusion 模型的 U-Net backbone 替换成 ViT-style Transformer,展示更好的 scaling 性质,成为 Stable Diffusion 3 / Sora 的基座 | [08-vit/04-dit.md](08-vit/04-dit.md) |
 | 2022 | **LDM / Stable Diffusion** | `10-diffusion` | 把 diffusion 从 pixel 空间移到 VAE latent 空间,推理显存降 64×,2022 年 8 月以开源方式释出 Stable Diffusion 把文生图带到消费 GPU | [10-diffusion/02-ldm.md](10-diffusion/02-ldm.md) |
+| 2022 | **Imagen / Classifier-Free Guidance** | `10-diffusion` | 用大文本编码器(T5-XXL)+ classifier-free guidance,把文本理解和可控性推到 SOTA;CFG 成为所有现代 diffusion 模型的标配 | [10-diffusion/03-imagen.md](10-diffusion/03-imagen.md) |
 | 2022 | **InstructGPT** | `12-rlhf-alignment` | 把 RLHF 三阶段从摘要单一任务推广到通用指令跟随,1.3B 对齐版超过 175B 未对齐版,直接催生 ChatGPT | [12-rlhf-alignment/02-instructgpt.md](12-rlhf-alignment/02-instructgpt.md) |
 | 2022 | **Constitutional AI** | `12-rlhf-alignment` | 用一套书面原则(constitution)让 AI 自评自身输出,生成 AI feedback 替代人类偏好标注 — 把对齐从'人力密集'压成'算力密集',是 Claude 系列的核心方法 | [12-rlhf-alignment/03-constitutional-ai.md](12-rlhf-alignment/03-constitutional-ai.md) |
 | 2023 | **GPT-4 / LLaMA** | `07-gpt-scaling` | GPT-4 把 LLM 推到万亿级 + 多模态闭源;LLaMA 给社区第一个工业级开源基础模型;现代 LLM 配方(Pre-RMSNorm + RoPE + GQA + SwiGLU)在两者上同时定型 | [07-gpt-scaling/05-gpt4-llama.md](07-gpt-scaling/05-gpt4-llama.md) |

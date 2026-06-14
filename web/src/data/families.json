@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T16:12:01.088662+00:00",
+  "generatedAt": "2026-06-14T16:14:35.817454+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -670,6 +670,25 @@
           ],
           "key_idea": "把 diffusion 从 pixel 空间移到 VAE latent 空间,推理显存降 64×,2022 年 8 月以开源方式释出 Stable Diffusion 把文生图带到消费 GPU",
           "path": "10-diffusion/02-ldm.md",
+          "assets": []
+        },
+        {
+          "name": "Imagen / Classifier-Free Guidance",
+          "year": 2022,
+          "family": "10-diffusion",
+          "order": 3,
+          "paper": "Photorealistic Text-to-Image Diffusion Models with Deep Language Understanding",
+          "authors": [
+            "Chitwan Saharia",
+            "William Chan",
+            "Saurabh Saxena",
+            "Lala Li",
+            "Jay Whang",
+            "Emily Denton",
+            "et al."
+          ],
+          "key_idea": "用大文本编码器(T5-XXL)+ classifier-free guidance,把文本理解和可控性推到 SOTA;CFG 成为所有现代 diffusion 模型的标配",
+          "path": "10-diffusion/03-imagen.md",
           "assets": []
         }
       ]
