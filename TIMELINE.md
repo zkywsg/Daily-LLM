@@ -21,6 +21,7 @@
 | 2018 | **GPT-1** | `07-gpt-scaling` | 用 decoder-only Transformer + 无监督自回归预训练 + 任务微调,第一次系统跑通预训练范式;同年 BERT 用 encoder-only 验证了双向版本 | [07-gpt-scaling/01-gpt1.md](07-gpt-scaling/01-gpt1.md) |
 | 2019 | **EfficientNet** | `01-cnn` | 用复合缩放系数把 depth/width/resolution 三轴联合缩放公式化，得到帕累托最优的 B0–B7 模型族 | [01-cnn/07-efficientnet.md](01-cnn/07-efficientnet.md) |
 | 2019 | **Transformer-XL** | `05-transformer` | 用段级循环把上一段隐状态作为这段的记忆 + 相对位置编码替代绝对 PE,让 Transformer 第一次跨越固定窗口处理长上下文 | [05-transformer/02-transformer-xl.md](05-transformer/02-transformer-xl.md) |
+| 2019 | **RoBERTa** | `06-bert-family` | 去掉 NSP + 动态 masking + 大 batch + 10× 数据 + 更长训练,证明 BERT 严重训练不足,GLUE 再涨 5+ 分而架构完全不动 | [06-bert-family/02-roberta.md](06-bert-family/02-roberta.md) |
 | 2019 | **GPT-2** | `07-gpt-scaling` | 把 GPT-1 的 117M 参数推到 1.5B + WebText 40B token,zero-shot 任务能力首次涌现,LM 第一次显示出'不微调也能做下游任务'的通用性 | [07-gpt-scaling/02-gpt2.md](07-gpt-scaling/02-gpt2.md) |
 | 2020 | **Sparse Attention** | `05-transformer` | 用滑窗局部 attention + 少量全局 token 把 attention 复杂度从 O(N²) 降到 O(N),让 Transformer 第一次能在 4K–16K 长上下文上跑训练和推理 | [05-transformer/03-sparse-attention.md](05-transformer/03-sparse-attention.md) |
 | 2020 | **GPT-3** | `07-gpt-scaling` | 把 GPT-2 推到 175B 参数,in-context learning 涌现 — 仅靠 prompt 里 few-shot 例子就能学新任务,完全消除微调对监督数据的依赖,LLM 时代正式开启 | [07-gpt-scaling/03-gpt3.md](07-gpt-scaling/03-gpt3.md) |

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T06:53:39.098052+00:00",
+  "generatedAt": "2026-06-14T06:57:34.284189+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -359,7 +359,7 @@
       "blurb": "用 encoder-only Transformer + 双向 masked LM 学到真正的\"上下文敏感词表征\",GLUE 全面 SOTA 把 NLP 拖进预训练时代。",
       "yearRange": [
         2018,
-        2018
+        2019
       ],
       "colorToken": "--family-06",
       "nodes": [
@@ -377,6 +377,25 @@
           ],
           "key_idea": "用 encoder-only Transformer + masked LM 学双向上下文表征,GLUE 11 任务全面 SOTA,把 NLP 拖进预训练时代",
           "path": "06-bert-family/01-bert.md",
+          "assets": []
+        },
+        {
+          "name": "RoBERTa",
+          "year": 2019,
+          "family": "06-bert-family",
+          "order": 2,
+          "paper": "RoBERTa: A Robustly Optimized BERT Pretraining Approach",
+          "authors": [
+            "Yinhan Liu",
+            "Myle Ott",
+            "Naman Goyal",
+            "Jingfei Du",
+            "Mandar Joshi",
+            "Danqi Chen",
+            "et al."
+          ],
+          "key_idea": "去掉 NSP + 动态 masking + 大 batch + 10× 数据 + 更长训练,证明 BERT 严重训练不足,GLUE 再涨 5+ 分而架构完全不动",
+          "path": "06-bert-family/02-roberta.md",
           "assets": []
         }
       ]
