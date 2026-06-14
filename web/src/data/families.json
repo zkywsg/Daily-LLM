@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-13T19:21:49.620866+00:00",
+  "generatedAt": "2026-06-14T05:56:58.890087+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -500,10 +500,35 @@
     {
       "id": "12-rlhf-alignment",
       "label": "对齐与 RLHF",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "blurb": "基础 LLM 学到的是\"接下来最像人类写的下一个 token\";对齐做的是让它\"按用户希望的方式回答\",这是从语言模型到对话助手的最后一公里。",
+      "yearRange": [
+        2020,
+        2020
+      ],
       "colorToken": "--family-12",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "Learning to Summarize from Human Feedback",
+          "year": 2020,
+          "family": "12-rlhf-alignment",
+          "order": 1,
+          "paper": "Learning to Summarize from Human Feedback",
+          "authors": [
+            "Nisan Stiennon",
+            "Long Ouyang",
+            "Jeff Wu",
+            "Daniel Ziegler",
+            "Ryan Lowe",
+            "Chelsea Voss",
+            "Alec Radford",
+            "Dario Amodei",
+            "Paul Christiano"
+          ],
+          "key_idea": "用人工偏好比较训练 reward model + PPO 微调 LLM,摘要质量超过监督学习 baseline 和参考摘要,确立 RLHF 在 NLP 上的完整方案",
+          "path": "12-rlhf-alignment/01-learning-to-summarize.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "13-moe-efficient",
