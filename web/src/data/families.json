@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T06:57:34.284189+00:00",
+  "generatedAt": "2026-06-14T07:00:17.854742+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -396,6 +396,24 @@
           ],
           "key_idea": "去掉 NSP + 动态 masking + 大 batch + 10× 数据 + 更长训练,证明 BERT 严重训练不足,GLUE 再涨 5+ 分而架构完全不动",
           "path": "06-bert-family/02-roberta.md",
+          "assets": []
+        },
+        {
+          "name": "ALBERT",
+          "year": 2019,
+          "family": "06-bert-family",
+          "order": 3,
+          "paper": "ALBERT: A Lite BERT for Self-supervised Learning of Language Representations",
+          "authors": [
+            "Zhenzhong Lan",
+            "Mingda Chen",
+            "Sebastian Goodman",
+            "Kevin Gimpel",
+            "Piyush Sharma",
+            "Radu Soricut"
+          ],
+          "key_idea": "用跨层参数共享 + embedding 因式分解把 BERT-large 参数从 334M 压到 18M 而效果接近,同时把 NSP 改成更难的 SOP(句子顺序预测)",
+          "path": "06-bert-family/03-albert.md",
           "assets": []
         }
       ]
