@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T06:10:29.550190+00:00",
+  "generatedAt": "2026-06-14T06:53:39.098052+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -355,11 +355,31 @@
     },
     {
       "id": "06-bert-family",
-      "label": "预训练语言模型（BERT 系）",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "label": "预训练语言模型(BERT 系)",
+      "blurb": "用 encoder-only Transformer + 双向 masked LM 学到真正的\"上下文敏感词表征\",GLUE 全面 SOTA 把 NLP 拖进预训练时代。",
+      "yearRange": [
+        2018,
+        2018
+      ],
       "colorToken": "--family-06",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "BERT",
+          "year": 2018,
+          "family": "06-bert-family",
+          "order": 1,
+          "paper": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+          "authors": [
+            "Jacob Devlin",
+            "Ming-Wei Chang",
+            "Kenton Lee",
+            "Kristina Toutanova"
+          ],
+          "key_idea": "用 encoder-only Transformer + masked LM 学双向上下文表征,GLUE 11 任务全面 SOTA,把 NLP 拖进预训练时代",
+          "path": "06-bert-family/01-bert.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "07-gpt-scaling",
