@@ -28,6 +28,10 @@ import {
   MiniInstructGPT,
   MiniConstitutionalAI,
   MiniDPO,
+  MiniBERT,
+  MiniRoBERTa,
+  MiniALBERT,
+  MiniDistilBERT,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -58,6 +62,10 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "02-instructgpt": MiniInstructGPT,
   "03-constitutional-ai": MiniConstitutionalAI,
   "04-dpo": MiniDPO,
+  "01-bert": MiniBERT,
+  "02-roberta": MiniRoBERTa,
+  "03-albert": MiniALBERT,
+  "04-distilbert": MiniDistilBERT,
 };
 
 export function getMiniArch(
