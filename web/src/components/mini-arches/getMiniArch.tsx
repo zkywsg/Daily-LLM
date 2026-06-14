@@ -19,6 +19,11 @@ import {
   MiniSparseAttention,
   MiniRoPE,
   MiniFlashAttention,
+  MiniGPT1,
+  MiniGPT2,
+  MiniGPT3,
+  MiniScalingLaws,
+  MiniGPT4Llama,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -40,6 +45,11 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "03-sparse-attention": MiniSparseAttention,
   "04-rope": MiniRoPE,
   "05-flash-attention": MiniFlashAttention,
+  "01-gpt1": MiniGPT1,
+  "02-gpt2": MiniGPT2,
+  "03-gpt3": MiniGPT3,
+  "04-scaling-laws": MiniScalingLaws,
+  "05-gpt4-llama": MiniGPT4Llama,
 };
 
 export function getMiniArch(
