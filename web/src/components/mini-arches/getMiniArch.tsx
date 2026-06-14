@@ -36,6 +36,14 @@ import {
   MiniDeiT,
   MiniSwin,
   MiniDiT,
+  MiniDDPM,
+  MiniLDM,
+  MiniImagen,
+  MiniFlowMatching,
+  MiniCLIP,
+  MiniBLIP,
+  MiniFlamingo,
+  MiniLLaVA,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -74,6 +82,14 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "02-deit": MiniDeiT,
   "03-swin": MiniSwin,
   "04-dit": MiniDiT,
+  "01-ddpm": MiniDDPM,
+  "02-ldm": MiniLDM,
+  "03-imagen": MiniImagen,
+  "04-flow-matching": MiniFlowMatching,
+  "01-clip": MiniCLIP,
+  "02-blip": MiniBLIP,
+  "03-flamingo": MiniFlamingo,
+  "04-llava": MiniLLaVA,
 };
 
 export function getMiniArch(
