@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T16:29:55.971599+00:00",
+  "generatedAt": "2026-06-14T17:03:16.828153+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -903,11 +903,36 @@
     },
     {
       "id": "15-reasoning-o1-r1",
-      "label": "推理模型（Test-time compute）",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "label": "推理模型(Test-time Compute)",
+      "blurb": "把 LLM 的算力从训练阶段挪到推理阶段:让模型\"想得更久\"而不是\"训得更大\",开启 LLM 能力的第二条扩展轴。",
+      "yearRange": [
+        2022,
+        2022
+      ],
       "colorToken": "--family-15",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "Chain-of-Thought",
+          "year": 2022,
+          "family": "15-reasoning-o1-r1",
+          "order": 1,
+          "paper": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "authors": [
+            "Jason Wei",
+            "Xuezhi Wang",
+            "Dale Schuurmans",
+            "Maarten Bosma",
+            "Brian Ichter",
+            "Fei Xia",
+            "Ed Chi",
+            "Quoc V. Le",
+            "Denny Zhou"
+          ],
+          "key_idea": "在 prompt 里给 few-shot 例子展示'问题→推理步骤→答案'格式,LLM 模仿后大数学题准确率从 17% 涨到 60%+;开启 LLM 推理能力的新研究方向",
+          "path": "15-reasoning-o1-r1/01-cot.md",
+          "assets": []
+        }
+      ]
     }
   ]
 }
