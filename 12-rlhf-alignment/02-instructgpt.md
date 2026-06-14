@@ -1,0 +1,205 @@
+---
+name: "InstructGPT"
+year: 2022
+family: "12-rlhf-alignment"
+order: 2
+paper: "Training language models to follow instructions with human feedback"
+authors: ["Long Ouyang", "Jeff Wu", "Xu Jiang", "Diogo Almeida", "Carroll L. Wainwright", "Pamela Mishkin", "Chong Zhang", "et al."]
+key_idea: "把 RLHF 三阶段从摘要单一任务推广到通用指令跟随,1.3B 对齐版超过 175B 未对齐版,直接催生 ChatGPT"
+---
+
+## 前作进展
+
+[2020 Learning to Summarize](01-learning-to-summarize.md) 证明了 RLHF 在单一文本生成任务上可行,但留下两个明确问题:
+
+**1. RLHF 能不能通用化?**——摘要任务的"好坏"相对清晰(覆盖关键信息、流畅、忠实),但通用任务(写代码、回答问题、做推理)的"好坏"是模糊的多维概念。能不能用同一套 RLHF 流程对齐到所有任务?
+
+**2. GPT-3 的行为问题需要工程解**——GPT-3 上线 API 一年后,OpenAI 收集了大量真实用户使用数据,暴露 GPT-3 严重的行为问题:不跟随指令(用户说"翻译这段",GPT-3 可能续写而不是翻译)、说谎(自信编造事实)、不安全(响应恶意请求)、不擅长简单任务(算术、列表整理)。这些问题不是"模型能力不足",而是"模型不知道用户想要什么"——典型的对齐问题
+
+OpenAI 团队 2022 年 1 月发表 *Training Language Models to Follow Instructions with Human Feedback*(InstructGPT)给出的答案是:**用 RLHF 把 GPT-3 对齐到指令跟随任务**。这一工作的核心数据:
+
+- 雇佣 **40 名全职标注员**(主要在肯尼亚和菲律宾)
+- 收集 **13K 条 SFT demonstrations**(标注员自己写"好的回答")
+- 收集 **33K 对偏好比较**(同一 prompt 多个模型输出,标注哪个更好)
+- 用这些数据对 GPT-3 做 SFT → RM → PPO 三阶段对齐
+- 产出 InstructGPT 模型(1.3B / 6B / 175B 三个版本)
+
+**结果震撼**:**1.3B InstructGPT 在大多数任务上的人工偏好评分超过 175B 原版 GPT-3**——对齐胜过 100× 规模。这一发现直接定义了 LLM 部署的新范式:**不要部署基础模型,部署对齐模型**。10 个月后(2022 年 11 月)发布的 ChatGPT 就是 InstructGPT 三阶段流程在 GPT-3.5 上的部署版,引爆 LLM 进入消费市场。
+
+## 核心思想:RLHF 通用化
+
+InstructGPT 论文的方法论几乎完全照搬 [Learning to Summarize](01-learning-to-summarize.md):
+
+1. **Stage 1 SFT** —— 在 13K 人工写的 demonstrations 上微调 GPT-3
+2. **Stage 2 RM** —— 收集 33K 偏好对,训练 reward model
+3. **Stage 3 PPO** —— 用 RM 当 reward + KL 惩罚 + PPO 微调 SFT 模型
+
+但关键差异是**数据多样性**:Learning to Summarize 只覆盖摘要单一任务,InstructGPT 的 prompt 覆盖了几乎所有 NLP 使用场景:
+
+| 任务类别 | 占比 | 示例 |
+|------|------|------|
+| 生成 | 45% | "写一个关于 X 的短故事" |
+| 开放 QA | 13% | "为什么天空是蓝色的?" |
+| 头脑风暴 | 11% | "5 个适合周末做的活动" |
+| 聊天 | 8% | "Hi, how are you?" |
+| 改写 | 7% | "把这段话改得更正式" |
+| 摘要 | 4% | (Learning to Summarize 那种) |
+| 分类 | 3% | "这条评论是正面还是负面?" |
+| 其他 | 9% | 代码、提取、推理等 |
+
+这些 prompt 一部分来自 OpenAI API 用户的真实查询(脱敏后),一部分由标注员合成。**用真实分布的 prompt 训练**是 InstructGPT 比之前所有 RLHF 工作都关键的一步——它让模型学到的对齐能力直接覆盖部署场景。
+
+## "对齐胜过规模"的实证
+
+InstructGPT 论文最重要的图是 Figure 1——**人工评分胜率**:
+
+| 模型 | API prompt 上的人工胜率(vs 175B GPT-3) |
+|------|------|
+| 175B GPT-3(基础) | 50% (基准) |
+| 175B GPT-3 + few-shot prompting | 56% |
+| **1.3B InstructGPT** | **71%** |
+| 6B InstructGPT | 84% |
+| 175B InstructGPT | 88% |
+
+**1.3B InstructGPT 击败 175B GPT-3,差距 21 个百分点**——这是 LLM 历史最反直觉的结果之一。具体打破的几个常识:
+
+- "更大模型更好":False —— 对齐后小 100× 的模型显著更好
+- "RLHF 是小修改":False —— 是行为质变,不是分数微调
+- "需要 175B 才能做对齐":False —— 1.3B + RLHF 足够支撑通用助手
+
+各维度细分(Truthful QA、TriviaQA、毒性测试等):
+
+| 维度 | 175B GPT-3 | 175B InstructGPT |
+|------|------|------|
+| 跟随指令(API) | 50% 胜 | **88% 胜** |
+| Truthful QA(诚实度) | 28% | **40%** |
+| Toxicity(更低更好) | 0.094 | **0.071** |
+| 闭卷 QA(TriviaQA) | 54% | 53%(基本持平) |
+| Common-sense reasoning | 持平 | 持平 |
+
+观察:**InstructGPT 在"指令跟随、诚实、安全"上提升巨大,在"知识量、推理"上持平**——这印证了对齐改变的是行为而不是能力。GPT-3 的知识量没变,只是学会了用更恰当的方式使用知识。
+
+## Alignment Tax
+
+InstructGPT 论文里坦诚指出一个反直觉现象:**对齐后的模型在某些标准 NLP benchmark 上反而比基础模型差**。这被称为 **alignment tax**:
+
+| Benchmark | GPT-3 | InstructGPT | 变化 |
+|------|------|------|------|
+| LAMBADA | 76.2 | 73.1 | -3.1 |
+| HellaSwag | 78.9 | 78.3 | -0.6 |
+| SQuAD v2 | 84.5 | 82.9 | -1.6 |
+| WSC(Winograd Schema) | 87.5 | 81.2 | -6.3 |
+
+为什么?**RLHF 把模型推向了"用户偏好的输出风格",这一风格可能不是 benchmark 评测的最优策略**。比如 InstructGPT 倾向于给出详细解释而非直接答案,SQuAD 评测期望短答案,这一不匹配导致 EM 分数下降。
+
+OpenAI 用一个 trick 缓解 alignment tax——**在 PPO 训练中混入预训练 LM loss**:
+
+$$
+\mathcal{L} = \mathbb{E}[r(x, y)] - \beta \cdot \text{KL} + \gamma \cdot \mathbb{E}_{x \sim D_{\text{pretrain}}}[\log p(x)]
+$$
+
+第三项让模型同时优化 RLHF 目标和预训练目标,防止过度漂移。`γ = 27.8` 在论文里用,效果是把 alignment tax 减到几乎为 0,同时保持指令跟随能力。这一技巧被后续所有 RLHF 工作沿用(包括 Anthropic、Google、Meta 的对齐方案)。
+
+## ChatGPT 是 InstructGPT 的部署版
+
+ChatGPT(2022 年 11 月 30 日发布)的技术架构核心就是 InstructGPT 三阶段流程,差异主要在:
+
+**1. backbone 升级到 GPT-3.5**——OpenAI 没公开 GPT-3.5 细节,但应该是 GPT-3 175B 加更多数据、更长训练、可能加部分 code
+
+**2. 对话格式特化**——InstructGPT 用单轮 prompt,ChatGPT 用多轮对话(system + user + assistant 三角色)。SFT 数据格式相应改造
+
+**3. 安全对齐加强**——ChatGPT 在拒绝有害请求方面比 InstructGPT 更严格,论文没明说但用户体验明显
+
+**4. 工程化部署**——streaming 输出、缓存优化、多用户负载,这些是 ChatGPT 上线后才完善的工程
+
+但 ChatGPT 没单独发表 paper——OpenAI 的官方位置是"ChatGPT 是 InstructGPT 在对话设置下的版本"。从对齐方法论看,ChatGPT 没引入新东西,只是把 InstructGPT 流程做出了消费产品。
+
+## 数据规模(标注员的工作)
+
+InstructGPT 的标注数据是这家族最重要的工程资产之一:
+
+| 数据类型 | 数量 | 用途 |
+|------|------|------|
+| SFT demonstrations | ~13K | Stage 1 SFT |
+| RM 偏好比较 | ~33K | Stage 2 RM |
+| PPO prompts(无 label) | ~31K | Stage 3 generation prompts |
+
+40 名标注员的工作流:
+
+- **demonstration writing**:给定一个 prompt,自己写一个高质量回答(2–10 分钟/条)
+- **ranking**:给同一 prompt 的 4–9 个模型输出按好坏排序(3–8 分钟/任务)
+- **red-teaming**:主动尝试让模型给出有害输出,标记失败案例(用于改进 safety RM)
+
+OpenAI 的标注指南有 35 页,详细定义"helpful, truthful, harmless"三个原则的可操作判断标准。这一标注体系本身是工程精品,后来 Anthropic、DeepMind 的对齐工作都参考它,Constitutional AI 进一步把这套人工指南转化成"AI 自评的 constitution"。
+
+标注成本估算:**40 标注员 × 6 个月 × $50K/年 ≈ $1M 人力 + 工具开发 + 管理成本**,实际总投入应该在 $2-5M 之间。这是 ChatGPT 之前 RLHF 没普及的核心障碍——只有顶级公司能负担。
+
+## 训练细节
+
+| 维度 | InstructGPT 175B |
+|------|------|
+| Backbone | GPT-3 175B |
+| Stage 1 SFT | 13K demonstrations,16 epoch,cosine lr schedule |
+| Stage 2 RM | RM 用 6B GPT-3(不是 175B,因为 RM 显存占用大且 6B 已足够),33K pairs,1 epoch |
+| Stage 3 PPO | 256K episodes,KL 系数 β=0.02,pretrain loss 系数 γ=27.8 |
+| RLHF 总训练时间 | 数周(混合 V100 + A100) |
+| 标注成本 | ~$2-5M |
+| 计算成本 | ~$200-500K(预估) |
+
+注意 **RM 比 actor 小**(6B vs 175B)。这是工程常识:RM 只需要给 reward,不需要完整生成能力;6B 已能学好"哪个回答更好"。后续所有 RLHF 工作都用比 actor 小的 RM(典型 RM 是 actor 的 1/10 到 1/30)。
+
+## 关键代码
+
+InstructGPT 的代码结构和 [Learning to Summarize](01-learning-to-summarize.md) 一样,差异主要在数据处理和 prompt 混合。这里展示混合 pretrain loss 的关键 trick:
+
+```python
+def ppo_loss_with_pretrain(actor, ref_model, reward_model,
+                           prompts, pretrain_batch):
+    """带 pretrain loss 的 PPO step,缓解 alignment tax"""
+    # 1. 标准 PPO loss(RLHF prompts 上)
+    responses = actor.generate(prompts)
+    rewards = reward_model(prompts, responses)
+    log_probs_actor = actor.log_probs(prompts, responses)
+    log_probs_ref = ref_model.log_probs(prompts, responses)
+    kl = log_probs_actor - log_probs_ref
+    advantages = compute_advantages(rewards - beta * kl)
+    loss_rlhf = -(log_probs_actor * advantages).mean()
+
+    # 2. pretrain LM loss(预训练数据上)— 防止模型忘记基础能力
+    logits = actor(pretrain_batch.input_ids).logits
+    loss_pretrain = F.cross_entropy(
+        logits[:, :-1].flatten(0, 1),
+        pretrain_batch.input_ids[:, 1:].flatten(),
+    )
+
+    # 3. 加权混合
+    total_loss = loss_rlhf + gamma * loss_pretrain
+    return total_loss
+```
+
+`gamma = 27.8` 是 OpenAI 在 175B 上调出来的,小模型上要重新调。直觉上 gamma 越大,模型越保留预训练能力但 RLHF 效果越弱;反之则更激进对齐但 benchmark 退化。
+
+## 影响 / 后续
+
+InstructGPT 是 LLM 历史的另一个分水岭——**它定义了商业 LLM 的部署形态**。具体影响:
+
+**1. ChatGPT 直接来自 InstructGPT 三阶段流程**——2022 年 11 月 30 日 ChatGPT 上线,5 天用户突破 100 万,2 个月突破 1 亿,引爆 LLM 进入消费市场。所有这些都建立在 InstructGPT 对齐方法论之上
+
+**2. "对齐胜过规模"成为新共识**——LLaMA-2-7B-Chat、Mistral-7B-Instruct、Qwen-7B-Chat 等开源对齐版本能在消费硬件上跑且效果接近大模型,直接受 InstructGPT "1.3B 击败 175B" 实验启发
+
+**3. SFT 数据集成为新资产**——Alpaca、Vicuna、UltraChat 等开源 SFT 数据集都仿照 InstructGPT 数据格式构造,InstructGPT 论文 Table 14 的"任务类型分布"几乎成了 SFT 数据建设的标准模板
+
+**4. 标注员工作流标准化**——OpenAI 的 35 页标注指南成为对齐工作的参考模板,Anthropic、Scale AI、Surge AI 等公司围绕"高质量标注 + 红队"建立了完整商业模式
+
+**5. Alignment tax 概念引入对齐讨论**——InstructGPT 论文第一次系统地讨论了"对齐可能损害某些能力",这一观察推动了后续对齐研究关注"如何对齐而不降低能力"的方向
+
+**6. 暴露了 RLHF 的可扩展性问题**——InstructGPT 流程依赖大量人工标注 + 复杂 PPO 工程,只有顶级公司能跑。这一痛点推动了:
+
+- [Constitutional AI](03-constitutional-ai.md) 用 AI 替代人工标注,把对齐成本压到 0
+- [DPO](04-dpo.md) 去掉 RL 和 RM,工程上和 SFT 一样简单
+
+→ [03-constitutional-ai.md](03-constitutional-ai.md) · 用 AI feedback 替代 InstructGPT 的 33K 人工偏好对
+→ [04-dpo.md](04-dpo.md) · 跳过 RM 和 PPO,把 RLHF 推导成监督学习等价形式
+→ [01-learning-to-summarize.md](01-learning-to-summarize.md) · 父方法,三阶段流程的奠基
+→ [../07-gpt-scaling/03-gpt3.md](../07-gpt-scaling/03-gpt3.md) · 父结构,InstructGPT 是 GPT-3 的对齐版
+→ [../07-gpt-scaling/05-gpt4-llama.md](../07-gpt-scaling/05-gpt4-llama.md) · LLaMA-2-Chat 等开源对齐模型采用 InstructGPT 流程
