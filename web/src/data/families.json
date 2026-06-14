@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T16:21:44.522911+00:00",
+  "generatedAt": "2026-06-14T16:24:21.082920+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -628,7 +628,7 @@
       "blurb": "让图像和文本在同一向量空间里对齐,跨模态从\"专门设计的接口\"变成\"自然语言驱动的通用能力\"。",
       "yearRange": [
         2021,
-        2021
+        2022
       ],
       "colorToken": "--family-09",
       "nodes": [
@@ -649,6 +649,23 @@
           ],
           "key_idea": "用 4 亿对网络图文数据做对比学习,让图像和文本编码到同一向量空间,zero-shot 分类直接匹配监督 SOTA;成为后续所有多模态系统的对齐基座",
           "path": "09-multimodal-clip/01-clip.md",
+          "assets": []
+        },
+        {
+          "name": "BLIP / BLIP-2",
+          "year": 2022,
+          "family": "09-multimodal-clip",
+          "order": 2,
+          "paper": "BLIP: Bootstrapping Language-Image Pre-training / BLIP-2: Q-Former for Vision-Language Pre-training",
+          "authors": [
+            "Junnan Li",
+            "Dongxu Li",
+            "Caiming Xiong",
+            "Steven Hoi",
+            "Silvio Savarese"
+          ],
+          "key_idea": "在 CLIP 对比之上加入生成和匹配两个任务联合训练;BLIP-2 进一步用 Q-Former 桥接冻结视觉编码器和冻结 LLM,把训练成本降一个数量级",
+          "path": "09-multimodal-clip/02-blip.md",
           "assets": []
         }
       ]
