@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T15:18:06.328644+00:00",
+  "generatedAt": "2026-06-14T15:20:31.443982+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -584,6 +584,26 @@
           ],
           "key_idea": "用 distillation token + 强增强 + AdamW + 蒸馏让 ViT 在 ImageNet-1K 上从零训练击败 ResNet,不再依赖 JFT-300M,把 ViT 带给学界",
           "path": "08-vit/02-deit.md",
+          "assets": []
+        },
+        {
+          "name": "Swin Transformer",
+          "year": 2021,
+          "family": "08-vit",
+          "order": 3,
+          "paper": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+          "authors": [
+            "Ze Liu",
+            "Yutong Lin",
+            "Yue Cao",
+            "Han Hu",
+            "Yixuan Wei",
+            "Zheng Zhang",
+            "Stephen Lin",
+            "Baining Guo"
+          ],
+          "key_idea": "用 shifted window attention 把复杂度从 O(N²) 降到 O(N) + 层级化下采样产出多尺度特征图,让 ViT 第一次能直接做 detection / segmentation",
+          "path": "08-vit/03-swin.md",
           "assets": []
         }
       ]
