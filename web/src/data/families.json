@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T16:14:35.817454+00:00",
+  "generatedAt": "2026-06-14T16:17:00.612041+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -636,7 +636,7 @@
       "blurb": "把生成问题转化为\"从噪声逐步去噪\"的反向过程,稳定训练、高质量、可控条件,2022 之后视觉生成的事实统治者。",
       "yearRange": [
         2020,
-        2022
+        2023
       ],
       "colorToken": "--family-10",
       "nodes": [
@@ -689,6 +689,25 @@
           ],
           "key_idea": "用大文本编码器(T5-XXL)+ classifier-free guidance,把文本理解和可控性推到 SOTA;CFG 成为所有现代 diffusion 模型的标配",
           "path": "10-diffusion/03-imagen.md",
+          "assets": []
+        },
+        {
+          "name": "Flow Matching / Rectified Flow",
+          "year": 2023,
+          "family": "10-diffusion",
+          "order": 4,
+          "paper": "Flow Matching for Generative Modeling / Rectified Flow",
+          "authors": [
+            "Yaron Lipman",
+            "Ricky T. Q. Chen",
+            "Heli Ben-Hamu",
+            "Maximilian Nickel",
+            "Xingchao Liu",
+            "Chengyue Gong",
+            "Qiang Liu"
+          ],
+          "key_idea": "把 diffusion 的 ε-prediction 推广到任意流形的'速度场学习',训练更稳 + 采样路径更直 + 数学更简洁,SD3 / Flux 默认",
+          "path": "10-diffusion/04-flow-matching.md",
           "assets": []
         }
       ]
