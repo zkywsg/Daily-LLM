@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-15T15:59:46.171160+00:00",
+  "generatedAt": "2026-06-15T16:12:05.101699+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -790,10 +790,84 @@
     {
       "id": "11-peft-lora",
       "label": "参数高效微调 (PEFT)",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "blurb": "不动 base 模型权重,只训几百万到几千万参数,就让 7B-70B LLM 适配新任务——把 LLM 微调成本从十万美元降到几十美元。",
+      "yearRange": [
+        2019,
+        2023
+      ],
       "colorToken": "--family-11",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "Adapter Tuning",
+          "year": 2019,
+          "family": "11-peft-lora",
+          "order": 1,
+          "paper": "Parameter-Efficient Transfer Learning for NLP",
+          "authors": [
+            "Neil Houlsby",
+            "Andrei Giurgiu",
+            "Stanislaw Jastrzebski",
+            "Bruna Morrone",
+            "Quentin de Laroussilhe",
+            "Andrea Gesmundo",
+            "Mona Attariyan",
+            "Sylvain Gelly"
+          ],
+          "key_idea": "在每层 Transformer 插入 small bottleneck adapter 模块(down → ReLU → up + residual),base 模型完全冻结,只训 3% 参数达到全参微调 96% 性能;PEFT 起源,后续 LoRA / Prefix Tuning 都受其启发",
+          "path": "11-peft-lora/01-adapter.md",
+          "assets": []
+        },
+        {
+          "name": "Prefix Tuning",
+          "year": 2021,
+          "family": "11-peft-lora",
+          "order": 2,
+          "paper": "Prefix-Tuning: Optimizing Continuous Prompts for Generation",
+          "authors": [
+            "Xiang Lisa Li",
+            "Percy Liang"
+          ],
+          "key_idea": "在每层 attention 的 K/V 前面加一段可学习的\"soft prefix\" embedding,base 模型完全冻结,只训这段 prefix(~0.1% 参数);极致参数效率,1000+ task 用同一 base 共享",
+          "path": "11-peft-lora/02-prefix-tuning.md",
+          "assets": []
+        },
+        {
+          "name": "LoRA",
+          "year": 2021,
+          "family": "11-peft-lora",
+          "order": 3,
+          "paper": "LoRA: Low-Rank Adaptation of Large Language Models",
+          "authors": [
+            "Edward J. Hu",
+            "Yelong Shen",
+            "Phillip Wallis",
+            "Zeyuan Allen-Zhu",
+            "Yuanzhi Li",
+            "Shean Wang",
+            "Lu Wang",
+            "Weizhu Chen"
+          ],
+          "key_idea": "把权重更新 ΔW 分解为低秩矩阵 B·A(r 远小于 d),只训 BA 的 ~0.1% 参数;推理时 W = W₀ + BA 可合并回原权重,零额外延迟;PEFT 时代的工业标准",
+          "path": "11-peft-lora/03-lora.md",
+          "assets": []
+        },
+        {
+          "name": "QLoRA",
+          "year": 2023,
+          "family": "11-peft-lora",
+          "order": 4,
+          "paper": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "authors": [
+            "Tim Dettmers",
+            "Artidoro Pagnoni",
+            "Ari Holtzman",
+            "Luke Zettlemoyer"
+          ],
+          "key_idea": "Base 模型量化到 4-bit NF4(NormalFloat)+ LoRA 微调,配 double quantization + paged optimizer;让 65B 模型能在单卡 48GB(实际 24GB 也能)GPU 上微调,LLM 微调彻底个人化",
+          "path": "11-peft-lora/04-qlora.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "12-rlhf-alignment",
