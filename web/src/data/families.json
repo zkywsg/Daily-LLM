@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-15T15:43:16.320699+00:00",
+  "generatedAt": "2026-06-15T15:59:46.171160+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -887,11 +887,79 @@
     },
     {
       "id": "13-moe-efficient",
-      "label": "MoE 与高效推理",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "label": "MoE 与高效大模型",
+      "blurb": "把\"参数规模\"和\"激活计算\"解耦——MoE 让模型有 T 级参数但每 token 只激活百分之几,在固定算力下把参数池放大十倍。",
+      "yearRange": [
+        2017,
+        2024
+      ],
       "colorToken": "--family-13",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "Outrageously Large Neural Networks (Sparsely-Gated MoE)",
+          "year": 2017,
+          "family": "13-moe-efficient",
+          "order": 1,
+          "paper": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+          "authors": [
+            "Noam Shazeer",
+            "Azalia Mirhoseini",
+            "Krzysztof Maziarz",
+            "Andy Davis",
+            "Quoc Le",
+            "Geoffrey Hinton",
+            "Jeff Dean"
+          ],
+          "key_idea": "在 LSTM 之间插入 sparsely-gated MoE 层:每 token 用 gate 选 top-K 个 expert(1370 亿参数中只激活几亿),配 auxiliary loss 防止 expert 塌缩;首次证明稀疏激活能突破 dense 模型的参数 / 算力锁死",
+          "path": "13-moe-efficient/01-sparsely-gated-moe.md",
+          "assets": []
+        },
+        {
+          "name": "Switch Transformer",
+          "year": 2021,
+          "family": "13-moe-efficient",
+          "order": 2,
+          "paper": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+          "authors": [
+            "William Fedus",
+            "Barret Zoph",
+            "Noam Shazeer"
+          ],
+          "key_idea": "把 MoE 移植到 Transformer + 简化为 top-1 gating(每 token 只走一个 expert,代替 Shazeer top-K),配 load balancing loss 和 selective precision;首次做到 1.6T 参数模型,T5-XXL 4× 加速同质量",
+          "path": "13-moe-efficient/02-switch-transformer.md",
+          "assets": []
+        },
+        {
+          "name": "Mixtral 8×7B",
+          "year": 2024,
+          "family": "13-moe-efficient",
+          "order": 3,
+          "paper": "Mixtral of Experts",
+          "authors": [
+            "Albert Q. Jiang",
+            "Alexandre Sablayrolles",
+            "Antoine Roux",
+            "Arthur Mensch",
+            "et al. (Mistral AI)"
+          ],
+          "key_idea": "第一个完全开源的生产级 MoE LLM,8 个 7B expert + top-2 gating,46.7B 总参 / 13B 激活;质量超 LLaMA-2-70B 但推理速度像 13B 模型,开源社区第一次拿到可用 MoE",
+          "path": "13-moe-efficient/03-mixtral.md",
+          "assets": []
+        },
+        {
+          "name": "DeepSeek-V3",
+          "year": 2024,
+          "family": "13-moe-efficient",
+          "order": 4,
+          "paper": "DeepSeek-V3 Technical Report",
+          "authors": [
+            "DeepSeek-AI"
+          ],
+          "key_idea": "671B 总参 / 37B 激活的开源 MoE 旗舰,集成 fine-grained experts(256 细粒度 expert)+ shared experts + aux-loss-free load balancing + MTP(Multi-Token Prediction)等十余项创新;首次让开源 MoE 追上 GPT-4 级闭源模型,也是 DeepSeek-R1 的 base",
+          "path": "13-moe-efficient/04-deepseek-v3.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "14-rag-agent",

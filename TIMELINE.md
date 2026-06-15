@@ -17,6 +17,7 @@
 | 2015 | **Bahdanau Attention** | `02-rnn-lstm` | 在 Seq2Seq 上加 attention 让 decoder 每一步对 encoder 全部时刻学一个加权分布,绕开固定长度上下文向量的信息瓶颈 | [02-rnn-lstm/05-attention.md](02-rnn-lstm/05-attention.md) |
 | 2017 | **DenseNet** | `01-cnn` | 每层都直接接收前面所有层的输出（concat 而非加法），把特征复用推到极致 | [01-cnn/06-densenet.md](01-cnn/06-densenet.md) |
 | 2017 | **Transformer** | `05-transformer` | 用 self-attention 替代循环,让序列建模获得完全并行 + 全局上下文,encoder-decoder 骨架保留但内部全是 attention 和 FFN | [05-transformer/01-transformer.md](05-transformer/01-transformer.md) |
+| 2017 | **Outrageously Large Neural Networks (Sparsely-Gated MoE)** | `13-moe-efficient` | 在 LSTM 之间插入 sparsely-gated MoE 层:每 token 用 gate 选 top-K 个 expert(1370 亿参数中只激活几亿),配 auxiliary loss 防止 expert 塌缩;首次证明稀疏激活能突破 dense 模型的参数 / 算力锁死 | [13-moe-efficient/01-sparsely-gated-moe.md](13-moe-efficient/01-sparsely-gated-moe.md) |
 | 2018 | **BERT** | `06-bert-family` | 用 encoder-only Transformer + masked LM 学双向上下文表征,GLUE 11 任务全面 SOTA,把 NLP 拖进预训练时代 | [06-bert-family/01-bert.md](06-bert-family/01-bert.md) |
 | 2018 | **GPT-1** | `07-gpt-scaling` | 用 decoder-only Transformer + 无监督自回归预训练 + 任务微调,第一次系统跑通预训练范式;同年 BERT 用 encoder-only 验证了双向版本 | [07-gpt-scaling/01-gpt1.md](07-gpt-scaling/01-gpt1.md) |
 | 2019 | **EfficientNet** | `01-cnn` | 用复合缩放系数把 depth/width/resolution 三轴联合缩放公式化，得到帕累托最优的 B0–B7 模型族 | [01-cnn/07-efficientnet.md](01-cnn/07-efficientnet.md) |
@@ -36,6 +37,7 @@
 | 2021 | **DeiT** | `08-vit` | 用 distillation token + 强增强 + AdamW + 蒸馏让 ViT 在 ImageNet-1K 上从零训练击败 ResNet,不再依赖 JFT-300M,把 ViT 带给学界 | [08-vit/02-deit.md](08-vit/02-deit.md) |
 | 2021 | **Swin Transformer** | `08-vit` | 用 shifted window attention 把复杂度从 O(N²) 降到 O(N) + 层级化下采样产出多尺度特征图,让 ViT 第一次能直接做 detection / segmentation | [08-vit/03-swin.md](08-vit/03-swin.md) |
 | 2021 | **CLIP** | `09-multimodal-clip` | 用 4 亿对网络图文数据做对比学习,让图像和文本编码到同一向量空间,zero-shot 分类直接匹配监督 SOTA;成为后续所有多模态系统的对齐基座 | [09-multimodal-clip/01-clip.md](09-multimodal-clip/01-clip.md) |
+| 2021 | **Switch Transformer** | `13-moe-efficient` | 把 MoE 移植到 Transformer + 简化为 top-1 gating(每 token 只走一个 expert,代替 Shazeer top-K),配 load balancing loss 和 selective precision;首次做到 1.6T 参数模型,T5-XXL 4× 加速同质量 | [13-moe-efficient/02-switch-transformer.md](13-moe-efficient/02-switch-transformer.md) |
 | 2022 | **ConvNeXt** | `01-cnn` | 把 ViT 的所有现代化设计选择（大 kernel·LayerNorm·GELU·强增强）逐项搬回 ResNet，CNN 反超 ViT | [01-cnn/08-convnext.md](01-cnn/08-convnext.md) |
 | 2022 | **FlashAttention** | `05-transformer` | 把 attention 从 HBM 搬到 SRAM 算,分块 + 重计算把 O(N²) 显存压成 O(N) 而结果完全等价,attention 训练/推理快 2-4× 且支持更长序列 | [05-transformer/05-flash-attention.md](05-transformer/05-flash-attention.md) |
 | 2022 | **DiT** | `08-vit` | 把 diffusion 模型的 U-Net backbone 替换成 ViT-style Transformer,展示更好的 scaling 性质,成为 Stable Diffusion 3 / Sora 的基座 | [08-vit/04-dit.md](08-vit/04-dit.md) |
@@ -54,5 +56,7 @@
 | 2023 | **DPO** | `12-rlhf-alignment` | 通过数学推导把 RLHF 的 RL 目标转化成监督学习损失,跳过 reward model 和 PPO,工程上和 SFT 一样简单且效果接近,2024 开源 LLM 默认对齐方法 | [12-rlhf-alignment/04-dpo.md](12-rlhf-alignment/04-dpo.md) |
 | 2023 | **Toolformer** | `14-rag-agent` | 让 LLM 在预训练语料上自监督学习何时何处插入工具调用——给候选位置加 tool call,如果调用后 perplexity 降低就保留;tool use 从 prompt 技巧内化为模型本身能力 | [14-rag-agent/03-toolformer.md](14-rag-agent/03-toolformer.md) |
 | 2023 | **AutoGPT** | `14-rag-agent` | 把 ReAct 推到极限——LLM 拿到高级目标后自己分解为子任务、规划执行步骤、循环调工具直到完成,无人干预;启动自主 agent 范式 | [14-rag-agent/04-autogpt.md](14-rag-agent/04-autogpt.md) |
+| 2024 | **Mixtral 8×7B** | `13-moe-efficient` | 第一个完全开源的生产级 MoE LLM,8 个 7B expert + top-2 gating,46.7B 总参 / 13B 激活;质量超 LLaMA-2-70B 但推理速度像 13B 模型,开源社区第一次拿到可用 MoE | [13-moe-efficient/03-mixtral.md](13-moe-efficient/03-mixtral.md) |
+| 2024 | **DeepSeek-V3** | `13-moe-efficient` | 671B 总参 / 37B 激活的开源 MoE 旗舰,集成 fine-grained experts(256 细粒度 expert)+ shared experts + aux-loss-free load balancing + MTP(Multi-Token Prediction)等十余项创新;首次让开源 MoE 追上 GPT-4 级闭源模型,也是 DeepSeek-R1 的 base | [13-moe-efficient/04-deepseek-v3.md](13-moe-efficient/04-deepseek-v3.md) |
 | 2024 | **OpenAI o1** | `15-reasoning-o1-r1` | 把长链推理作为训练目标,用 RL 让 LLM 自己学到反思/回溯/自验证;test-time compute 成为继训练算力之后的新 scaling 轴,在数学/科学/代码 benchmark 上击败 GPT-4 多倍 | [15-reasoning-o1-r1/03-o1.md](15-reasoning-o1-r1/03-o1.md) |
 | 2025 | **DeepSeek-R1** | `15-reasoning-o1-r1` | 开源 o1 风格推理模型;先用纯 RL(GRPO)无 SFT cold start 训练 R1-Zero 验证推理行为可从 RL 中涌现,再用少量 cold-start SFT + 多阶段 RL 训练 R1 达到 o1 同级性能,推理 trace 全公开 | [15-reasoning-o1-r1/04-deepseek-r1.md](15-reasoning-o1-r1/04-deepseek-r1.md) |
