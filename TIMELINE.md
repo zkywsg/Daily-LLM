@@ -51,3 +51,4 @@
 | 2023 | **Flow Matching / Rectified Flow** | `10-diffusion` | 把 diffusion 的 ε-prediction 推广到任意流形的'速度场学习',训练更稳 + 采样路径更直 + 数学更简洁,SD3 / Flux 默认 | [10-diffusion/04-flow-matching.md](10-diffusion/04-flow-matching.md) |
 | 2023 | **DPO** | `12-rlhf-alignment` | 通过数学推导把 RLHF 的 RL 目标转化成监督学习损失,跳过 reward model 和 PPO,工程上和 SFT 一样简单且效果接近,2024 开源 LLM 默认对齐方法 | [12-rlhf-alignment/04-dpo.md](12-rlhf-alignment/04-dpo.md) |
 | 2024 | **OpenAI o1** | `15-reasoning-o1-r1` | 把长链推理作为训练目标,用 RL 让 LLM 自己学到反思/回溯/自验证;test-time compute 成为继训练算力之后的新 scaling 轴,在数学/科学/代码 benchmark 上击败 GPT-4 多倍 | [15-reasoning-o1-r1/03-o1.md](15-reasoning-o1-r1/03-o1.md) |
+| 2025 | **DeepSeek-R1** | `15-reasoning-o1-r1` | 开源 o1 风格推理模型;先用纯 RL(GRPO)无 SFT cold start 训练 R1-Zero 验证推理行为可从 RL 中涌现,再用少量 cold-start SFT + 多阶段 RL 训练 R1 达到 o1 同级性能,推理 trace 全公开 | [15-reasoning-o1-r1/04-deepseek-r1.md](15-reasoning-o1-r1/04-deepseek-r1.md) |

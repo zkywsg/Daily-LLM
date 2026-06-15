@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-14T17:08:00.639726+00:00",
+  "generatedAt": "2026-06-15T15:26:57.121361+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -907,7 +907,7 @@
       "blurb": "把 LLM 的算力从训练阶段挪到推理阶段:让模型\"想得更久\"而不是\"训得更大\",开启 LLM 能力的第二条扩展轴。",
       "yearRange": [
         2022,
-        2024
+        2025
       ],
       "colorToken": "--family-15",
       "nodes": [
@@ -963,6 +963,19 @@
           ],
           "key_idea": "把长链推理作为训练目标,用 RL 让 LLM 自己学到反思/回溯/自验证;test-time compute 成为继训练算力之后的新 scaling 轴,在数学/科学/代码 benchmark 上击败 GPT-4 多倍",
           "path": "15-reasoning-o1-r1/03-o1.md",
+          "assets": []
+        },
+        {
+          "name": "DeepSeek-R1",
+          "year": 2025,
+          "family": "15-reasoning-o1-r1",
+          "order": 4,
+          "paper": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+          "authors": [
+            "DeepSeek-AI"
+          ],
+          "key_idea": "开源 o1 风格推理模型;先用纯 RL(GRPO)无 SFT cold start 训练 R1-Zero 验证推理行为可从 RL 中涌现,再用少量 cold-start SFT + 多阶段 RL 训练 R1 达到 o1 同级性能,推理 trace 全公开",
+          "path": "15-reasoning-o1-r1/04-deepseek-r1.md",
           "assets": []
         }
       ]
