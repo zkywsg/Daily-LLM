@@ -44,6 +44,10 @@ import {
   MiniBLIP,
   MiniFlamingo,
   MiniLLaVA,
+  MiniCoT,
+  MiniSelfConsistency,
+  MiniO1,
+  MiniDeepSeekR1,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -90,6 +94,10 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "02-blip": MiniBLIP,
   "03-flamingo": MiniFlamingo,
   "04-llava": MiniLLaVA,
+  "01-cot": MiniCoT,
+  "02-self-consistency": MiniSelfConsistency,
+  "03-o1": MiniO1,
+  "04-deepseek-r1": MiniDeepSeekR1,
 };
 
 export function getMiniArch(
