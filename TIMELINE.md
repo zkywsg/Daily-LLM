@@ -31,6 +31,7 @@
 | 2020 | **ViT** | `08-vit` | 把图像切成 16×16 的 patch 当 token,用纯 Transformer encoder 处理,在 JFT-300M 上预训练后击败 CNN,证明视觉归纳偏置不是必需的 | [08-vit/01-vit.md](08-vit/01-vit.md) |
 | 2020 | **DDPM** | `10-diffusion` | 把 2015 年的 diffusion 思想工程化:U-Net 预测噪声 + 简单 MSE 损失 + 1000 步去噪采样,稳定训练且质量超 GAN | [10-diffusion/01-ddpm.md](10-diffusion/01-ddpm.md) |
 | 2020 | **Learning to Summarize from Human Feedback** | `12-rlhf-alignment` | 用人工偏好比较训练 reward model + PPO 微调 LLM,摘要质量超过监督学习 baseline 和参考摘要,确立 RLHF 在 NLP 上的完整方案 | [12-rlhf-alignment/01-learning-to-summarize.md](12-rlhf-alignment/01-learning-to-summarize.md) |
+| 2020 | **RAG** | `14-rag-agent` | 把 dense retriever(DPR)和 seq2seq 生成器联合训练,把外部知识库接进 LM 输入侧;开放域 QA 不再依赖参数化知识,可以查 | [14-rag-agent/01-rag.md](14-rag-agent/01-rag.md) |
 | 2021 | **RoPE** | `05-transformer` | 把位置信息编码进 Q/K 的旋转里而不是加在 token embedding 上,attention 内积天然只依赖相对位置,长上下文外推显著更好 | [05-transformer/04-rope.md](05-transformer/04-rope.md) |
 | 2021 | **DeiT** | `08-vit` | 用 distillation token + 强增强 + AdamW + 蒸馏让 ViT 在 ImageNet-1K 上从零训练击败 ResNet,不再依赖 JFT-300M,把 ViT 带给学界 | [08-vit/02-deit.md](08-vit/02-deit.md) |
 | 2021 | **Swin Transformer** | `08-vit` | 用 shifted window attention 把复杂度从 O(N²) 降到 O(N) + 层级化下采样产出多尺度特征图,让 ViT 第一次能直接做 detection / segmentation | [08-vit/03-swin.md](08-vit/03-swin.md) |
@@ -44,11 +45,14 @@
 | 2022 | **Imagen / Classifier-Free Guidance** | `10-diffusion` | 用大文本编码器(T5-XXL)+ classifier-free guidance,把文本理解和可控性推到 SOTA;CFG 成为所有现代 diffusion 模型的标配 | [10-diffusion/03-imagen.md](10-diffusion/03-imagen.md) |
 | 2022 | **InstructGPT** | `12-rlhf-alignment` | 把 RLHF 三阶段从摘要单一任务推广到通用指令跟随,1.3B 对齐版超过 175B 未对齐版,直接催生 ChatGPT | [12-rlhf-alignment/02-instructgpt.md](12-rlhf-alignment/02-instructgpt.md) |
 | 2022 | **Constitutional AI** | `12-rlhf-alignment` | 用一套书面原则(constitution)让 AI 自评自身输出,生成 AI feedback 替代人类偏好标注 — 把对齐从'人力密集'压成'算力密集',是 Claude 系列的核心方法 | [12-rlhf-alignment/03-constitutional-ai.md](12-rlhf-alignment/03-constitutional-ai.md) |
+| 2022 | **ReAct** | `14-rag-agent` | 把 LLM 的推理(Thought)和行动(Action)交错进行,thought 推理下一步要查什么,action 调外部工具,observation 反馈给 LLM 继续推理;Agent 范式的起源 | [14-rag-agent/02-react.md](14-rag-agent/02-react.md) |
 | 2022 | **Chain-of-Thought** | `15-reasoning-o1-r1` | 在 prompt 里给 few-shot 例子展示'问题→推理步骤→答案'格式,LLM 模仿后大数学题准确率从 17% 涨到 60%+;开启 LLM 推理能力的新研究方向 | [15-reasoning-o1-r1/01-cot.md](15-reasoning-o1-r1/01-cot.md) |
 | 2022 | **Self-Consistency** | `15-reasoning-o1-r1` | 对同 prompt 采样 N 条 CoT 推理路径,投票选最一致答案;GSM8K 60% → 75%;第一次系统化 test-time compute scaling | [15-reasoning-o1-r1/02-self-consistency.md](15-reasoning-o1-r1/02-self-consistency.md) |
 | 2023 | **GPT-4 / LLaMA** | `07-gpt-scaling` | GPT-4 把 LLM 推到万亿级 + 多模态闭源;LLaMA 给社区第一个工业级开源基础模型;现代 LLM 配方(Pre-RMSNorm + RoPE + GQA + SwiGLU)在两者上同时定型 | [07-gpt-scaling/05-gpt4-llama.md](07-gpt-scaling/05-gpt4-llama.md) |
 | 2023 | **LLaVA** | `09-multimodal-clip` | Visual instruction tuning:用 GPT-4 自动生成视觉指令数据,把 CLIP 视觉特征用单 linear projection 接到 LLaMA,把开源 VLM 范式定型在 GPT-4V 之前 | [09-multimodal-clip/04-llava.md](09-multimodal-clip/04-llava.md) |
 | 2023 | **Flow Matching / Rectified Flow** | `10-diffusion` | 把 diffusion 的 ε-prediction 推广到任意流形的'速度场学习',训练更稳 + 采样路径更直 + 数学更简洁,SD3 / Flux 默认 | [10-diffusion/04-flow-matching.md](10-diffusion/04-flow-matching.md) |
 | 2023 | **DPO** | `12-rlhf-alignment` | 通过数学推导把 RLHF 的 RL 目标转化成监督学习损失,跳过 reward model 和 PPO,工程上和 SFT 一样简单且效果接近,2024 开源 LLM 默认对齐方法 | [12-rlhf-alignment/04-dpo.md](12-rlhf-alignment/04-dpo.md) |
+| 2023 | **Toolformer** | `14-rag-agent` | 让 LLM 在预训练语料上自监督学习何时何处插入工具调用——给候选位置加 tool call,如果调用后 perplexity 降低就保留;tool use 从 prompt 技巧内化为模型本身能力 | [14-rag-agent/03-toolformer.md](14-rag-agent/03-toolformer.md) |
+| 2023 | **AutoGPT** | `14-rag-agent` | 把 ReAct 推到极限——LLM 拿到高级目标后自己分解为子任务、规划执行步骤、循环调工具直到完成,无人干预;启动自主 agent 范式 | [14-rag-agent/04-autogpt.md](14-rag-agent/04-autogpt.md) |
 | 2024 | **OpenAI o1** | `15-reasoning-o1-r1` | 把长链推理作为训练目标,用 RL 让 LLM 自己学到反思/回溯/自验证;test-time compute 成为继训练算力之后的新 scaling 轴,在数学/科学/代码 benchmark 上击败 GPT-4 多倍 | [15-reasoning-o1-r1/03-o1.md](15-reasoning-o1-r1/03-o1.md) |
 | 2025 | **DeepSeek-R1** | `15-reasoning-o1-r1` | 开源 o1 风格推理模型;先用纯 RL(GRPO)无 SFT cold start 训练 R1-Zero 验证推理行为可从 RL 中涌现,再用少量 cold-start SFT + 多阶段 RL 训练 R1 达到 o1 同级性能,推理 trace 全公开 | [15-reasoning-o1-r1/04-deepseek-r1.md](15-reasoning-o1-r1/04-deepseek-r1.md) |

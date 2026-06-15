@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-15T15:26:57.121361+00:00",
+  "generatedAt": "2026-06-15T15:43:16.320699+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -896,10 +896,92 @@
     {
       "id": "14-rag-agent",
       "label": "RAG 与 Agent",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "blurb": "让 LLM 突破\"参数即知识\"和\"一问一答\"两个根本限制——RAG 把外部知识接进来,Agent 把外部行动接出去。",
+      "yearRange": [
+        2020,
+        2023
+      ],
       "colorToken": "--family-14",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "RAG",
+          "year": 2020,
+          "family": "14-rag-agent",
+          "order": 1,
+          "paper": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+          "authors": [
+            "Patrick Lewis",
+            "Ethan Perez",
+            "Aleksandra Piktus",
+            "Fabio Petroni",
+            "Vladimir Karpukhin",
+            "Naman Goyal",
+            "Heinrich Küttler",
+            "Mike Lewis",
+            "Wen-tau Yih",
+            "Tim Rocktäschel",
+            "Sebastian Riedel",
+            "Douwe Kiela"
+          ],
+          "key_idea": "把 dense retriever(DPR)和 seq2seq 生成器联合训练,把外部知识库接进 LM 输入侧;开放域 QA 不再依赖参数化知识,可以查",
+          "path": "14-rag-agent/01-rag.md",
+          "assets": []
+        },
+        {
+          "name": "ReAct",
+          "year": 2022,
+          "family": "14-rag-agent",
+          "order": 2,
+          "paper": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "authors": [
+            "Shunyu Yao",
+            "Jeffrey Zhao",
+            "Dian Yu",
+            "Nan Du",
+            "Izhak Shafran",
+            "Karthik Narasimhan",
+            "Yuan Cao"
+          ],
+          "key_idea": "把 LLM 的推理(Thought)和行动(Action)交错进行,thought 推理下一步要查什么,action 调外部工具,observation 反馈给 LLM 继续推理;Agent 范式的起源",
+          "path": "14-rag-agent/02-react.md",
+          "assets": []
+        },
+        {
+          "name": "Toolformer",
+          "year": 2023,
+          "family": "14-rag-agent",
+          "order": 3,
+          "paper": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "authors": [
+            "Timo Schick",
+            "Jane Dwivedi-Yu",
+            "Roberto Dessì",
+            "Roberta Raileanu",
+            "Maria Lomeli",
+            "Luke Zettlemoyer",
+            "Nicola Cantarini",
+            "Edouard Grave",
+            "Thomas Scialom"
+          ],
+          "key_idea": "让 LLM 在预训练语料上自监督学习何时何处插入工具调用——给候选位置加 tool call,如果调用后 perplexity 降低就保留;tool use 从 prompt 技巧内化为模型本身能力",
+          "path": "14-rag-agent/03-toolformer.md",
+          "assets": []
+        },
+        {
+          "name": "AutoGPT",
+          "year": 2023,
+          "family": "14-rag-agent",
+          "order": 4,
+          "paper": "AutoGPT(开源项目,无正式论文);相关综述:A Survey on LLM-based Autonomous Agents (Wang et al. 2023)",
+          "authors": [
+            "Significant Gravitas",
+            "AutoGPT contributors"
+          ],
+          "key_idea": "把 ReAct 推到极限——LLM 拿到高级目标后自己分解为子任务、规划执行步骤、循环调工具直到完成,无人干预;启动自主 agent 范式",
+          "path": "14-rag-agent/04-autogpt.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "15-reasoning-o1-r1",
