@@ -48,6 +48,10 @@ import {
   MiniSelfConsistency,
   MiniO1,
   MiniDeepSeekR1,
+  MiniRAG,
+  MiniReAct,
+  MiniToolformer,
+  MiniAutoGPT,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -98,6 +102,10 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "02-self-consistency": MiniSelfConsistency,
   "03-o1": MiniO1,
   "04-deepseek-r1": MiniDeepSeekR1,
+  "01-rag": MiniRAG,
+  "02-react": MiniReAct,
+  "03-toolformer": MiniToolformer,
+  "04-autogpt": MiniAutoGPT,
 };
 
 export function getMiniArch(
