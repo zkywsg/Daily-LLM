@@ -56,6 +56,10 @@ import {
   MiniSwitch,
   MiniMixtral,
   MiniDeepSeekV3,
+  MiniAdapter,
+  MiniPrefixTuning,
+  MiniLoRA,
+  MiniQLoRA,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -114,6 +118,10 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "02-switch-transformer": MiniSwitch,
   "03-mixtral": MiniMixtral,
   "04-deepseek-v3": MiniDeepSeekV3,
+  "01-adapter": MiniAdapter,
+  "02-prefix-tuning": MiniPrefixTuning,
+  "03-lora": MiniLoRA,
+  "04-qlora": MiniQLoRA,
 };
 
 export function getMiniArch(
