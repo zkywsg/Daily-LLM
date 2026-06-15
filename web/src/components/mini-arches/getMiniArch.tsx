@@ -52,6 +52,10 @@ import {
   MiniReAct,
   MiniToolformer,
   MiniAutoGPT,
+  MiniSparselyGatedMoE,
+  MiniSwitch,
+  MiniMixtral,
+  MiniDeepSeekV3,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -106,6 +110,10 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "02-react": MiniReAct,
   "03-toolformer": MiniToolformer,
   "04-autogpt": MiniAutoGPT,
+  "01-sparsely-gated-moe": MiniSparselyGatedMoE,
+  "02-switch-transformer": MiniSwitch,
+  "03-mixtral": MiniMixtral,
+  "04-deepseek-v3": MiniDeepSeekV3,
 };
 
 export function getMiniArch(
