@@ -60,6 +60,10 @@ import {
   MiniPrefixTuning,
   MiniLoRA,
   MiniQLoRA,
+  MiniGAN,
+  MiniDCGAN,
+  MiniCycleGAN,
+  MiniStyleGAN,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -122,6 +126,10 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "02-prefix-tuning": MiniPrefixTuning,
   "03-lora": MiniLoRA,
   "04-qlora": MiniQLoRA,
+  "01-gan": MiniGAN,
+  "02-dcgan": MiniDCGAN,
+  "03-cyclegan": MiniCycleGAN,
+  "04-stylegan": MiniStyleGAN,
 };
 
 export function getMiniArch(
