@@ -1,330 +1,360 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 760"
      preserveAspectRatio="xMidYMid meet"
      font-family="system-ui, -apple-system, sans-serif">
 
   <defs>
-    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
-            markerWidth="6" markerHeight="6" orient="auto">
-      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
-    </marker>
-    <marker id="arr-flow" viewBox="0 0 10 10" refX="9" refY="5"
+    <marker id="arr-att" viewBox="0 0 10 10" refX="9" refY="5"
             markerWidth="6" markerHeight="6" orient="auto">
       <path d="M 0 0 L 10 5 L 0 10 Z" fill="#1f2937"/>
+    </marker>
+    <marker id="arr-att-pink" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
     </marker>
   </defs>
 
   <!-- ============== TITLE ============== -->
-  <text x="400" y="28" text-anchor="middle" font-size="16"
+  <text x="450" y="32" text-anchor="middle" font-size="17"
         fill="#1f2937" font-weight="600">
-    Scaled Dot-Product Attention · 一个 5-token 的具体例子
+    Scaled Dot-Product Attention · "The cat sat on mat"
   </text>
-  <text x="400" y="48" text-anchor="middle" font-size="12"
-        fill="#6b7280">
-    "The cat sat on mat" · 看 "sat" 这个 query 如何聚合其他 token 的 value
-  </text>
-
-  <!-- ============== STEP 1: input tokens → Q, K, V ============== -->
-  <text x="60" y="85" text-anchor="start" font-size="13" fill="#1f2937" font-weight="600">
-    1. Token → Q / K / V 投影
+  <text x="450" y="54" text-anchor="middle" font-size="12" fill="#6b7280">
+    跟踪 "sat" 这个 query 如何聚合序列里其他 token 的 value
   </text>
 
-  <!-- Token labels (vertical column on left) -->
-  <g font-size="12" fill="#1f2937">
-    <text x="38" y="118" text-anchor="end">The</text>
-    <text x="38" y="142" text-anchor="end">cat</text>
-    <text x="38" y="166" text-anchor="end" font-weight="700">sat</text>
-    <text x="38" y="190" text-anchor="end">on</text>
-    <text x="38" y="214" text-anchor="end">mat</text>
+  <!-- ============================================================== -->
+  <!-- ROW 1: Step 1 + Step 2 (tokens / Q-projection / scores)         -->
+  <!-- ============================================================== -->
+
+  <!-- ─── Step 1 label (LEFT block, x=40-320) ─── -->
+  <text x="50" y="100" text-anchor="start" font-size="14"
+        fill="#1f2937" font-weight="700">
+    ① Token 序列 → 投影出 Q
+  </text>
+  <text x="50" y="118" text-anchor="start" font-size="11" fill="#6b7280">
+    K, V 同理(此处省略整张矩阵,仅画 Q)
+  </text>
+
+  <!-- 5 tokens column -->
+  <g font-size="13" fill="#1f2937">
+    <text x="68" y="158" text-anchor="end">The</text>
+    <text x="68" y="186" text-anchor="end">cat</text>
+    <text x="68" y="214" text-anchor="end" font-weight="700">sat</text>
+    <text x="68" y="242" text-anchor="end">on</text>
+    <text x="68" y="270" text-anchor="end">mat</text>
   </g>
 
-  <!-- Input embeddings X (5 rows) -->
-  <g stroke="#d97706" stroke-width="1" fill="#fef3c7">
-    <rect x="44" y="105" width="80" height="18" rx="2"/>
-    <rect x="44" y="129" width="80" height="18" rx="2"/>
-    <rect x="44" y="153" width="80" height="18" rx="2" stroke-width="2.5"/>
-    <rect x="44" y="177" width="80" height="18" rx="2"/>
-    <rect x="44" y="201" width="80" height="18" rx="2"/>
+  <!-- X embeddings (5 rows) -->
+  <g stroke="#d97706" stroke-width="1.2" fill="#fef3c7">
+    <rect x="78" y="146" width="90" height="20" rx="3"/>
+    <rect x="78" y="174" width="90" height="20" rx="3"/>
+    <rect x="78" y="202" width="90" height="20" rx="3" stroke-width="2.5"/>
+    <rect x="78" y="230" width="90" height="20" rx="3"/>
+    <rect x="78" y="258" width="90" height="20" rx="3"/>
   </g>
-  <text x="84" y="234" text-anchor="middle" font-size="11" fill="#92400e">
+  <text x="123" y="295" text-anchor="middle" font-size="11" fill="#92400e">
     X [5, d_model]
   </text>
 
-  <!-- Arrow to W_Q / W_K / W_V -->
-  <line x1="128" y1="160" x2="155" y2="135"
-        stroke="#1f2937" stroke-width="1" marker-end="url(#arr-flow)"/>
-  <line x1="128" y1="162" x2="155" y2="162"
-        stroke="#1f2937" stroke-width="1" marker-end="url(#arr-flow)"/>
-  <line x1="128" y1="164" x2="155" y2="190"
-        stroke="#1f2937" stroke-width="1" marker-end="url(#arr-flow)"/>
+  <!-- arrow to W_Q -->
+  <line x1="172" y1="212" x2="198" y2="212"
+        stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr-att)"/>
+  <text x="185" y="204" text-anchor="middle" font-size="11" fill="#6b7280">W_Q</text>
 
-  <!-- W_Q W_K W_V projection labels -->
-  <g font-size="11" fill="#6b7280">
-    <text x="142" y="123" text-anchor="end">W_Q</text>
-    <text x="142" y="160" text-anchor="end">W_K</text>
-    <text x="142" y="195" text-anchor="end">W_V</text>
+  <!-- Q matrix -->
+  <g stroke="#db2777" stroke-width="1.2" fill="#fce7f3">
+    <rect x="202" y="146" width="80" height="20" rx="3"/>
+    <rect x="202" y="174" width="80" height="20" rx="3"/>
+    <rect x="202" y="202" width="80" height="20" rx="3" stroke-width="2.5" fill="#fbcfe8"/>
+    <rect x="202" y="230" width="80" height="20" rx="3"/>
+    <rect x="202" y="258" width="80" height="20" rx="3"/>
   </g>
-
-  <!-- Q matrix (highlighted row = "sat") -->
-  <text x="195" y="100" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">Q</text>
-  <g stroke="#db2777" stroke-width="1" fill="#fce7f3">
-    <rect x="160" y="105" width="70" height="14" rx="2"/>
-    <rect x="160" y="121" width="70" height="14" rx="2"/>
-    <rect x="160" y="137" width="70" height="14" rx="2" stroke-width="2.5" fill="#fbcfe8"/>
-    <rect x="160" y="153" width="70" height="14" rx="2"/>
-    <rect x="160" y="169" width="70" height="14" rx="2"/>
-  </g>
-  <text x="245" y="146" text-anchor="start" font-size="10" fill="#9d174d" font-style="italic">
-    q_sat
+  <text x="290" y="216" text-anchor="start" font-size="11" fill="#9d174d" font-style="italic">
+    ← q_sat
+  </text>
+  <text x="242" y="295" text-anchor="middle" font-size="11" fill="#9d174d">
+    Q [5, d_k]
   </text>
 
-  <!-- K matrix (transposed - shown as 5 columns) -->
-  <text x="195" y="206" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">K</text>
-  <g stroke="#db2777" stroke-width="1" fill="#fce7f3">
-    <rect x="160" y="213" width="70" height="14" rx="2"/>
-    <rect x="160" y="229" width="70" height="14" rx="2"/>
-    <rect x="160" y="245" width="70" height="14" rx="2"/>
-    <rect x="160" y="261" width="70" height="14" rx="2"/>
-    <rect x="160" y="277" width="70" height="14" rx="2"/>
-  </g>
+  <!-- vertical divider between Step 1 and Step 2 -->
+  <line x1="345" y1="90" x2="345" y2="320"
+        stroke="#e5e7eb" stroke-width="1" stroke-dasharray="3,3"/>
 
-  <!-- V matrix -->
-  <text x="195" y="312" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">V</text>
-  <g stroke="#db2777" stroke-width="1" fill="#fce7f3">
-    <rect x="160" y="318" width="70" height="14" rx="2"/>
-    <rect x="160" y="334" width="70" height="14" rx="2"/>
-    <rect x="160" y="350" width="70" height="14" rx="2"/>
-    <rect x="160" y="366" width="70" height="14" rx="2"/>
-    <rect x="160" y="382" width="70" height="14" rx="2"/>
-  </g>
-
-  <!-- ============== STEP 2: Q · K^T → scores matrix ============== -->
-  <text x="280" y="85" text-anchor="start" font-size="13" fill="#1f2937" font-weight="600">
-    2. Q · K^T / √d_k
+  <!-- ─── Step 2 label (RIGHT block, x=370-870) ─── -->
+  <text x="380" y="100" text-anchor="start" font-size="14"
+        fill="#1f2937" font-weight="700">
+    ② Q · K^T / √d_k  →  scores [5×5]
   </text>
-  <text x="280" y="100" text-anchor="start" font-size="10" fill="#6b7280">
-    每个 (i,j) = q_i · k_j 相似度
+  <text x="380" y="118" text-anchor="start" font-size="11" fill="#6b7280">
+    每个 (i,j) = q_i · k_j 的相似度 · 颜色越深越像
   </text>
 
-  <!-- Score heatmap 5x5 (highlight "sat" row) -->
+  <!-- Score heatmap 5x5 -->
   <g>
-    <!-- Row labels (queries) -->
-    <text x="285" y="125" text-anchor="end" font-size="10" fill="#6b7280">The</text>
-    <text x="285" y="143" text-anchor="end" font-size="10" fill="#6b7280">cat</text>
-    <text x="285" y="161" text-anchor="end" font-size="10" fill="#1f2937" font-weight="700">sat</text>
-    <text x="285" y="179" text-anchor="end" font-size="10" fill="#6b7280">on</text>
-    <text x="285" y="197" text-anchor="end" font-size="10" fill="#6b7280">mat</text>
-    <!-- Column labels (keys) -->
-    <g font-size="10" fill="#6b7280">
-      <text x="305" y="111" text-anchor="middle">T</text>
-      <text x="323" y="111" text-anchor="middle">c</text>
-      <text x="341" y="111" text-anchor="middle">s</text>
-      <text x="359" y="111" text-anchor="middle">o</text>
-      <text x="377" y="111" text-anchor="middle">m</text>
+    <!-- Column header labels (keys) above -->
+    <g font-size="12" fill="#4b5563" text-anchor="middle">
+      <text x="500" y="144">The</text>
+      <text x="544" y="144">cat</text>
+      <text x="588" y="144" font-weight="700" fill="#1f2937">sat</text>
+      <text x="632" y="144">on</text>
+      <text x="676" y="144">mat</text>
     </g>
+    <text x="588" y="129" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+      key (列)
+    </text>
 
-    <!-- Score cells (values shown, low scores light) -->
+    <!-- Row labels (queries) on the right side (will use left for clarity) -->
+    <text x="468" y="167" text-anchor="end" font-size="12" fill="#4b5563">The</text>
+    <text x="468" y="195" text-anchor="end" font-size="12" fill="#4b5563">cat</text>
+    <text x="468" y="223" text-anchor="end" font-size="12" fill="#1f2937" font-weight="700">sat</text>
+    <text x="468" y="251" text-anchor="end" font-size="12" fill="#4b5563">on</text>
+    <text x="468" y="279" text-anchor="end" font-size="12" fill="#4b5563">mat</text>
+    <text x="442" y="223" text-anchor="end" font-size="11" fill="#6b7280" font-style="italic">
+      query →
+    </text>
+
+    <!-- 5x5 cells: each 28x22, starting at x=478, y=150 -->
     <!-- Row 1 (The) -->
-    <rect x="295" y="115" width="18" height="18" fill="#e0e7ff" stroke="#c7d2fe"/>
-    <text x="304" y="128" text-anchor="middle" font-size="9" fill="#3730a3">1.2</text>
-    <rect x="313" y="115" width="18" height="18" fill="#c7d2fe" stroke="#a5b4fc"/>
-    <text x="322" y="128" text-anchor="middle" font-size="9" fill="#3730a3">2.1</text>
-    <rect x="331" y="115" width="18" height="18" fill="#e0e7ff" stroke="#c7d2fe"/>
-    <text x="340" y="128" text-anchor="middle" font-size="9" fill="#3730a3">0.8</text>
-    <rect x="349" y="115" width="18" height="18" fill="#eef2ff" stroke="#e0e7ff"/>
-    <text x="358" y="128" text-anchor="middle" font-size="9" fill="#3730a3">0.3</text>
-    <rect x="367" y="115" width="18" height="18" fill="#eef2ff" stroke="#e0e7ff"/>
-    <text x="376" y="128" text-anchor="middle" font-size="9" fill="#3730a3">0.4</text>
+    <rect x="478" y="152" width="44" height="22" fill="#eef2ff" stroke="#c7d2fe"/>
+    <text x="500" y="167" text-anchor="middle" font-size="10" fill="#3730a3">1.2</text>
+    <rect x="522" y="152" width="44" height="22" fill="#c7d2fe" stroke="#a5b4fc"/>
+    <text x="544" y="167" text-anchor="middle" font-size="10" fill="#3730a3">2.1</text>
+    <rect x="566" y="152" width="44" height="22" fill="#e0e7ff" stroke="#c7d2fe"/>
+    <text x="588" y="167" text-anchor="middle" font-size="10" fill="#3730a3">0.8</text>
+    <rect x="610" y="152" width="44" height="22" fill="#eef2ff" stroke="#e0e7ff"/>
+    <text x="632" y="167" text-anchor="middle" font-size="10" fill="#3730a3">0.3</text>
+    <rect x="654" y="152" width="44" height="22" fill="#eef2ff" stroke="#e0e7ff"/>
+    <text x="676" y="167" text-anchor="middle" font-size="10" fill="#3730a3">0.4</text>
 
     <!-- Row 2 (cat) -->
-    <rect x="295" y="133" width="18" height="18" fill="#c7d2fe" stroke="#a5b4fc"/>
-    <text x="304" y="146" text-anchor="middle" font-size="9" fill="#3730a3">2.0</text>
-    <rect x="313" y="133" width="18" height="18" fill="#818cf8" stroke="#6366f1"/>
-    <text x="322" y="146" text-anchor="middle" font-size="9" fill="#fff">3.5</text>
-    <rect x="331" y="133" width="18" height="18" fill="#c7d2fe" stroke="#a5b4fc"/>
-    <text x="340" y="146" text-anchor="middle" font-size="9" fill="#3730a3">1.9</text>
-    <rect x="349" y="133" width="18" height="18" fill="#e0e7ff" stroke="#c7d2fe"/>
-    <text x="358" y="146" text-anchor="middle" font-size="9" fill="#3730a3">0.7</text>
-    <rect x="367" y="133" width="18" height="18" fill="#e0e7ff" stroke="#c7d2fe"/>
-    <text x="376" y="146" text-anchor="middle" font-size="9" fill="#3730a3">0.6</text>
+    <rect x="478" y="180" width="44" height="22" fill="#c7d2fe" stroke="#a5b4fc"/>
+    <text x="500" y="195" text-anchor="middle" font-size="10" fill="#3730a3">2.0</text>
+    <rect x="522" y="180" width="44" height="22" fill="#818cf8" stroke="#6366f1"/>
+    <text x="544" y="195" text-anchor="middle" font-size="10" fill="#fff">3.5</text>
+    <rect x="566" y="180" width="44" height="22" fill="#c7d2fe" stroke="#a5b4fc"/>
+    <text x="588" y="195" text-anchor="middle" font-size="10" fill="#3730a3">1.9</text>
+    <rect x="610" y="180" width="44" height="22" fill="#e0e7ff" stroke="#c7d2fe"/>
+    <text x="632" y="195" text-anchor="middle" font-size="10" fill="#3730a3">0.7</text>
+    <rect x="654" y="180" width="44" height="22" fill="#e0e7ff" stroke="#c7d2fe"/>
+    <text x="676" y="195" text-anchor="middle" font-size="10" fill="#3730a3">0.6</text>
 
     <!-- Row 3 (sat) - HIGHLIGHTED -->
-    <rect x="295" y="151" width="18" height="18" fill="#e0e7ff" stroke="#a5b4fc" stroke-width="1.5"/>
-    <text x="304" y="164" text-anchor="middle" font-size="9" fill="#3730a3" font-weight="700">1.0</text>
-    <rect x="313" y="151" width="18" height="18" fill="#818cf8" stroke="#6366f1" stroke-width="1.5"/>
-    <text x="322" y="164" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">3.2</text>
-    <rect x="331" y="151" width="18" height="18" fill="#4f46e5" stroke="#4338ca" stroke-width="1.5"/>
-    <text x="340" y="164" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">5.0</text>
-    <rect x="349" y="151" width="18" height="18" fill="#a5b4fc" stroke="#818cf8" stroke-width="1.5"/>
-    <text x="358" y="164" text-anchor="middle" font-size="9" fill="#3730a3" font-weight="700">2.4</text>
-    <rect x="367" y="151" width="18" height="18" fill="#6366f1" stroke="#4f46e5" stroke-width="1.5"/>
-    <text x="376" y="164" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">4.1</text>
+    <rect x="478" y="208" width="44" height="22" fill="#e0e7ff" stroke="#4338ca" stroke-width="2"/>
+    <text x="500" y="223" text-anchor="middle" font-size="10" fill="#3730a3" font-weight="700">1.0</text>
+    <rect x="522" y="208" width="44" height="22" fill="#818cf8" stroke="#4338ca" stroke-width="2"/>
+    <text x="544" y="223" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">3.2</text>
+    <rect x="566" y="208" width="44" height="22" fill="#4f46e5" stroke="#4338ca" stroke-width="2"/>
+    <text x="588" y="223" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">5.0</text>
+    <rect x="610" y="208" width="44" height="22" fill="#a5b4fc" stroke="#4338ca" stroke-width="2"/>
+    <text x="632" y="223" text-anchor="middle" font-size="10" fill="#3730a3" font-weight="700">2.4</text>
+    <rect x="654" y="208" width="44" height="22" fill="#6366f1" stroke="#4338ca" stroke-width="2"/>
+    <text x="676" y="223" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">4.1</text>
 
     <!-- Row 4 (on) -->
-    <rect x="295" y="169" width="18" height="18" fill="#eef2ff" stroke="#e0e7ff"/>
-    <text x="304" y="182" text-anchor="middle" font-size="9" fill="#3730a3">0.4</text>
-    <rect x="313" y="169" width="18" height="18" fill="#e0e7ff" stroke="#c7d2fe"/>
-    <text x="322" y="182" text-anchor="middle" font-size="9" fill="#3730a3">0.9</text>
-    <rect x="331" y="169" width="18" height="18" fill="#c7d2fe" stroke="#a5b4fc"/>
-    <text x="340" y="182" text-anchor="middle" font-size="9" fill="#3730a3">2.2</text>
-    <rect x="349" y="169" width="18" height="18" fill="#a5b4fc" stroke="#818cf8"/>
-    <text x="358" y="182" text-anchor="middle" font-size="9" fill="#3730a3">2.8</text>
-    <rect x="367" y="169" width="18" height="18" fill="#c7d2fe" stroke="#a5b4fc"/>
-    <text x="376" y="182" text-anchor="middle" font-size="9" fill="#3730a3">1.7</text>
+    <rect x="478" y="236" width="44" height="22" fill="#eef2ff" stroke="#e0e7ff"/>
+    <text x="500" y="251" text-anchor="middle" font-size="10" fill="#3730a3">0.4</text>
+    <rect x="522" y="236" width="44" height="22" fill="#e0e7ff" stroke="#c7d2fe"/>
+    <text x="544" y="251" text-anchor="middle" font-size="10" fill="#3730a3">0.9</text>
+    <rect x="566" y="236" width="44" height="22" fill="#c7d2fe" stroke="#a5b4fc"/>
+    <text x="588" y="251" text-anchor="middle" font-size="10" fill="#3730a3">2.2</text>
+    <rect x="610" y="236" width="44" height="22" fill="#a5b4fc" stroke="#818cf8"/>
+    <text x="632" y="251" text-anchor="middle" font-size="10" fill="#3730a3">2.8</text>
+    <rect x="654" y="236" width="44" height="22" fill="#c7d2fe" stroke="#a5b4fc"/>
+    <text x="676" y="251" text-anchor="middle" font-size="10" fill="#3730a3">1.7</text>
 
     <!-- Row 5 (mat) -->
-    <rect x="295" y="187" width="18" height="18" fill="#eef2ff" stroke="#e0e7ff"/>
-    <text x="304" y="200" text-anchor="middle" font-size="9" fill="#3730a3">0.5</text>
-    <rect x="313" y="187" width="18" height="18" fill="#e0e7ff" stroke="#c7d2fe"/>
-    <text x="322" y="200" text-anchor="middle" font-size="9" fill="#3730a3">0.8</text>
-    <rect x="331" y="187" width="18" height="18" fill="#c7d2fe" stroke="#a5b4fc"/>
-    <text x="340" y="200" text-anchor="middle" font-size="9" fill="#3730a3">2.0</text>
-    <rect x="349" y="187" width="18" height="18" fill="#a5b4fc" stroke="#818cf8"/>
-    <text x="358" y="200" text-anchor="middle" font-size="9" fill="#3730a3">2.5</text>
-    <rect x="367" y="187" width="18" height="18" fill="#6366f1" stroke="#4f46e5"/>
-    <text x="376" y="200" text-anchor="middle" font-size="9" fill="#fff">3.8</text>
-  </g>
-  <text x="340" y="223" text-anchor="middle" font-size="10" fill="#6b7280">scores [5×5]</text>
-
-  <!-- ============== STEP 3: softmax → attention weights ============== -->
-  <line x1="395" y1="160" x2="425" y2="160" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr-flow)"/>
-  <text x="410" y="153" text-anchor="middle" font-size="11" fill="#6b7280">softmax</text>
-  <text x="410" y="178" text-anchor="middle" font-size="10" fill="#6b7280">行归一化</text>
-
-  <text x="475" y="85" text-anchor="start" font-size="13" fill="#1f2937" font-weight="600">
-    3. softmax 后的注意力权重 α
-  </text>
-  <text x="475" y="100" text-anchor="start" font-size="10" fill="#6b7280">
-    "sat" 行高亮:看到 q_sat 重点对齐 "sat"、"mat"
-  </text>
-
-  <g>
-    <text x="510" y="111" text-anchor="middle" font-size="10" fill="#6b7280">T</text>
-    <text x="528" y="111" text-anchor="middle" font-size="10" fill="#6b7280">c</text>
-    <text x="546" y="111" text-anchor="middle" font-size="10" fill="#6b7280">s</text>
-    <text x="564" y="111" text-anchor="middle" font-size="10" fill="#6b7280">o</text>
-    <text x="582" y="111" text-anchor="middle" font-size="10" fill="#6b7280">m</text>
-
-    <!-- Only show row 3 (sat) - normalized -->
-    <text x="490" y="161" text-anchor="end" font-size="10" fill="#1f2937" font-weight="700">sat</text>
-    <rect x="501" y="151" width="18" height="18" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5"/>
-    <text x="510" y="164" text-anchor="middle" font-size="9" fill="#3730a3" font-weight="700">.02</text>
-    <rect x="519" y="151" width="18" height="18" fill="#c7d2fe" stroke="#818cf8" stroke-width="1.5"/>
-    <text x="528" y="164" text-anchor="middle" font-size="9" fill="#3730a3" font-weight="700">.18</text>
-    <rect x="537" y="151" width="18" height="18" fill="#4f46e5" stroke="#4338ca" stroke-width="1.5"/>
-    <text x="546" y="164" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">.45</text>
-    <rect x="555" y="151" width="18" height="18" fill="#a5b4fc" stroke="#6366f1" stroke-width="1.5"/>
-    <text x="564" y="164" text-anchor="middle" font-size="9" fill="#3730a3" font-weight="700">.10</text>
-    <rect x="573" y="151" width="18" height="18" fill="#6366f1" stroke="#4338ca" stroke-width="1.5"/>
-    <text x="582" y="164" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">.25</text>
-
-    <!-- other rows hint -->
-    <text x="546" y="135" text-anchor="middle" font-size="10" fill="#9ca3af" font-style="italic">... 其他 query ...</text>
-    <text x="546" y="190" text-anchor="middle" font-size="10" fill="#9ca3af" font-style="italic">... 略 ...</text>
+    <rect x="478" y="264" width="44" height="22" fill="#eef2ff" stroke="#e0e7ff"/>
+    <text x="500" y="279" text-anchor="middle" font-size="10" fill="#3730a3">0.5</text>
+    <rect x="522" y="264" width="44" height="22" fill="#e0e7ff" stroke="#c7d2fe"/>
+    <text x="544" y="279" text-anchor="middle" font-size="10" fill="#3730a3">0.8</text>
+    <rect x="566" y="264" width="44" height="22" fill="#c7d2fe" stroke="#a5b4fc"/>
+    <text x="588" y="279" text-anchor="middle" font-size="10" fill="#3730a3">2.0</text>
+    <rect x="610" y="264" width="44" height="22" fill="#a5b4fc" stroke="#818cf8"/>
+    <text x="632" y="279" text-anchor="middle" font-size="10" fill="#3730a3">2.5</text>
+    <rect x="654" y="264" width="44" height="22" fill="#6366f1" stroke="#4f46e5"/>
+    <text x="676" y="279" text-anchor="middle" font-size="10" fill="#fff">3.8</text>
   </g>
 
-  <!-- ============== STEP 4: weighted sum of V ============== -->
-  <text x="630" y="85" text-anchor="start" font-size="13" fill="#1f2937" font-weight="600">
-    4. α · V → output
+  <!-- 注释:第 3 行高亮 -->
+  <text x="720" y="223" text-anchor="start" font-size="11" fill="#4338ca" font-style="italic">
+    ← q_sat 这一行
   </text>
 
-  <!-- Show V columns + weighting -->
-  <g font-size="10" fill="#6b7280">
-    <text x="640" y="125" text-anchor="start">.02 × v_The</text>
-    <text x="640" y="142" text-anchor="start">.18 × v_cat</text>
-    <text x="640" y="159" text-anchor="start" fill="#1f2937" font-weight="700">.45 × v_sat</text>
-    <text x="640" y="176" text-anchor="start">.10 × v_on</text>
-    <text x="640" y="193" text-anchor="start">.25 × v_mat</text>
-  </g>
-
-  <line x1="700" y1="210" x2="700" y2="232" stroke="#1f2937" stroke-width="1" marker-end="url(#arr-flow)"/>
-
-  <rect x="640" y="234" width="120" height="32" rx="6"
-        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
-  <text x="700" y="248" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">
-    z_sat (output)
-  </text>
-  <text x="700" y="261" text-anchor="middle" font-size="10" fill="#065f46">
-    = Σ α_j v_j  [d_v]
-  </text>
-
-  <text x="700" y="285" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
-    q_sat 聚合了序列里所有 token,重点是 "sat" / "mat"
-  </text>
-
-  <!-- ============== DIVIDER ============== -->
-  <line x1="40" y1="335" x2="760" y2="335"
+  <!-- horizontal divider between row 1 and row 2 -->
+  <line x1="40" y1="335" x2="860" y2="335"
         stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
 
-  <!-- ============== BOTTOM: complexity & no recurrence ============== -->
-  <text x="400" y="365" text-anchor="middle" font-size="14"
-        fill="#1f2937" font-weight="600">
+  <!-- ============================================================== -->
+  <!-- ROW 2: Step 3 + Step 4 (softmax / weighted sum)                 -->
+  <!-- ============================================================== -->
+
+  <!-- ─── Step 3 label (LEFT block, x=40-440) ─── -->
+  <text x="50" y="370" text-anchor="start" font-size="14"
+        fill="#1f2937" font-weight="700">
+    ③ softmax 行归一化 → α
+  </text>
+  <text x="50" y="388" text-anchor="start" font-size="11" fill="#6b7280">
+    只看 "sat" 行:权重和 = 1
+  </text>
+
+  <!-- Single "sat" row with weights, drawn larger -->
+  <g>
+    <!-- Column headers -->
+    <g font-size="11" fill="#4b5563" text-anchor="middle">
+      <text x="105" y="415">The</text>
+      <text x="155" y="415">cat</text>
+      <text x="205" y="415" font-weight="700" fill="#1f2937">sat</text>
+      <text x="255" y="415">on</text>
+      <text x="305" y="415">mat</text>
+    </g>
+    <text x="60" y="442" text-anchor="end" font-size="12" fill="#1f2937" font-weight="700">sat</text>
+    <!-- 5 weight cells -->
+    <rect x="80" y="425" width="50" height="28" fill="#eef2ff" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="105" y="444" text-anchor="middle" font-size="13" fill="#3730a3" font-weight="700">.02</text>
+    <rect x="130" y="425" width="50" height="28" fill="#c7d2fe" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="155" y="444" text-anchor="middle" font-size="13" fill="#3730a3" font-weight="700">.18</text>
+    <rect x="180" y="425" width="50" height="28" fill="#4f46e5" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="205" y="444" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">.45</text>
+    <rect x="230" y="425" width="50" height="28" fill="#a5b4fc" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="255" y="444" text-anchor="middle" font-size="13" fill="#3730a3" font-weight="700">.10</text>
+    <rect x="280" y="425" width="50" height="28" fill="#6366f1" stroke="#4338ca" stroke-width="1.5"/>
+    <text x="305" y="444" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">.25</text>
+
+    <!-- Sum -->
+    <text x="345" y="444" text-anchor="start" font-size="12" fill="#6b7280">= 1.00</text>
+
+    <!-- Interpretation -->
+    <text x="205" y="478" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+      q_sat 重点关注 "sat" (.45) 和 "mat" (.25) —— 这就是 attention 的"对齐"
+    </text>
+  </g>
+
+  <!-- vertical divider between Step 3 and Step 4 -->
+  <line x1="450" y1="350" x2="450" y2="510"
+        stroke="#e5e7eb" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ─── Step 4 label (RIGHT block, x=470-870) ─── -->
+  <text x="480" y="370" text-anchor="start" font-size="14"
+        fill="#1f2937" font-weight="700">
+    ④ α · V → z_sat
+  </text>
+  <text x="480" y="388" text-anchor="start" font-size="11" fill="#6b7280">
+    α 给 V 的每一行加权求和
+  </text>
+
+  <!-- Show the weighted aggregation visually with 5 bars -->
+  <g>
+    <!-- 5 V row representations: width proportional to weight -->
+    <!-- weight .02 → very narrow -->
+    <rect x="500" y="412" width="6" height="14" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="490" y="423" text-anchor="end" font-size="10" fill="#9d174d">.02·v_The</text>
+
+    <rect x="500" y="430" width="32" height="14" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="490" y="441" text-anchor="end" font-size="10" fill="#9d174d">.18·v_cat</text>
+
+    <rect x="500" y="448" width="80" height="14" fill="#fbcfe8" stroke="#9d174d" stroke-width="2"/>
+    <text x="490" y="459" text-anchor="end" font-size="10" fill="#9d174d" font-weight="700">.45·v_sat</text>
+
+    <rect x="500" y="466" width="18" height="14" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="490" y="477" text-anchor="end" font-size="10" fill="#9d174d">.10·v_on</text>
+
+    <rect x="500" y="484" width="45" height="14" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/>
+    <text x="490" y="495" text-anchor="end" font-size="10" fill="#9d174d">.25·v_mat</text>
+
+    <!-- + sign and result -->
+    <text x="595" y="455" text-anchor="middle" font-size="20" fill="#9ca3af" font-weight="700">Σ</text>
+
+    <line x1="615" y1="455" x2="640" y2="455"
+          stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr-att)"/>
+
+    <rect x="648" y="438" width="120" height="36" rx="6"
+          fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="708" y="455" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">
+      z_sat
+    </text>
+    <text x="708" y="468" text-anchor="middle" font-size="10" fill="#065f46">
+      [d_v]
+    </text>
+  </g>
+
+  <!-- horizontal divider between row 2 and bottom panel -->
+  <line x1="40" y1="525" x2="860" y2="525"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============================================================== -->
+  <!-- BOTTOM PANEL: RNN vs Self-Attention                              -->
+  <!-- ============================================================== -->
+  <text x="450" y="558" text-anchor="middle" font-size="15"
+        fill="#1f2937" font-weight="700">
     为什么这样赢了 RNN:一次矩阵乘搞定所有 (query, key) 配对
   </text>
 
-  <!-- LEFT panel: RNN -->
+  <!-- LEFT: RNN -->
   <g>
-    <text x="150" y="395" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="600">
+    <text x="200" y="595" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">
       RNN(2014 Seq2Seq)
     </text>
+
+    <!-- 4 RNN cells with arrows between -->
     <g stroke="#fca5a5" stroke-width="1.5" fill="#fee2e2">
-      <rect x="50" y="410" width="40" height="28" rx="4"/>
-      <rect x="105" y="410" width="40" height="28" rx="4"/>
-      <rect x="160" y="410" width="40" height="28" rx="4"/>
-      <rect x="215" y="410" width="40" height="28" rx="4"/>
+      <rect x="60" y="620" width="55" height="34" rx="5"/>
+      <rect x="142" y="620" width="55" height="34" rx="5"/>
+      <rect x="224" y="620" width="55" height="34" rx="5"/>
+      <rect x="306" y="620" width="55" height="34" rx="5"/>
     </g>
-    <g font-size="10" fill="#7f1d1d">
-      <text x="70" y="427" text-anchor="middle">h_1</text>
-      <text x="125" y="427" text-anchor="middle">h_2</text>
-      <text x="180" y="427" text-anchor="middle">h_3</text>
-      <text x="235" y="427" text-anchor="middle">h_4</text>
+    <g font-size="12" fill="#7f1d1d" text-anchor="middle">
+      <text x="87" y="641">h_1</text>
+      <text x="169" y="641">h_2</text>
+      <text x="251" y="641">h_3</text>
+      <text x="333" y="641">h_4</text>
     </g>
     <g stroke="#dc2626" stroke-width="1.5" fill="none">
-      <line x1="92" y1="424" x2="103" y2="424" marker-end="url(#arr-main)"/>
-      <line x1="147" y1="424" x2="158" y2="424" marker-end="url(#arr-main)"/>
-      <line x1="202" y1="424" x2="213" y2="424" marker-end="url(#arr-main)"/>
+      <line x1="117" y1="637" x2="140" y2="637" marker-end="url(#arr-att-pink)"/>
+      <line x1="199" y1="637" x2="222" y2="637" marker-end="url(#arr-att-pink)"/>
+      <line x1="281" y1="637" x2="304" y2="637" marker-end="url(#arr-att-pink)"/>
     </g>
-    <text x="150" y="465" text-anchor="middle" font-size="11" fill="#7f1d1d">
+
+    <text x="200" y="678" text-anchor="middle" font-size="11" fill="#7f1d1d">
       串行展开 · T 步 sequential GPU launch
     </text>
-    <text x="150" y="482" text-anchor="middle" font-size="11" fill="#7f1d1d" font-weight="600">
+    <text x="200" y="700" text-anchor="middle" font-size="12" fill="#7f1d1d" font-weight="700">
       O(T·d²) 时间 · O(T) 串行
     </text>
-    <text x="150" y="510" text-anchor="middle" font-size="10" fill="#9ca3af" font-style="italic">
+    <text x="200" y="722" text-anchor="middle" font-size="11" fill="#9ca3af" font-style="italic">
       序列长度直接锁死训练时间
     </text>
   </g>
 
-  <!-- RIGHT panel: Self-Attention -->
+  <!-- middle big arrow -->
+  <text x="450" y="650" text-anchor="middle" font-size="32" fill="#9ca3af" font-weight="300">→</text>
+
+  <!-- RIGHT: Self-Attention -->
   <g>
-    <text x="600" y="395" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="600">
+    <text x="700" y="595" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">
       Self-Attention(2017 Transformer)
     </text>
+
     <!-- Single big matmul box -->
-    <rect x="480" y="410" width="240" height="28" rx="4"
+    <rect x="520" y="620" width="360" height="34" rx="5"
           fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
-    <text x="600" y="429" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="600">
+    <text x="700" y="642" text-anchor="middle" font-size="14" fill="#1e3a8a" font-weight="600">
       softmax(Q · K^T / √d_k) · V
     </text>
-    <text x="600" y="465" text-anchor="middle" font-size="11" fill="#1e40af">
+
+    <text x="700" y="678" text-anchor="middle" font-size="11" fill="#1e40af">
       一次矩阵乘 · 所有 (i, j) 配对并行
     </text>
-    <text x="600" y="482" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">
+    <text x="700" y="700" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">
       O(T²·d) 时间 · O(1) 串行
     </text>
-    <text x="600" y="510" text-anchor="middle" font-size="10" fill="#9ca3af" font-style="italic">
+    <text x="700" y="722" text-anchor="middle" font-size="11" fill="#9ca3af" font-style="italic">
       GPU 一次跑完,序列长度只影响显存
     </text>
   </g>
 
-  <!-- 中间 vs 箭头 -->
-  <text x="400" y="425" text-anchor="middle" font-size="20" fill="#9ca3af" font-weight="700">→</text>
-
-  <!-- Footer note -->
-  <text x="400" y="555" text-anchor="middle" font-size="11" fill="#6b7280">
-    任何 token 到任何 token 的"信息传递路径长度" 从 O(T) 缩到 O(1) —— 长距离依赖不再衰减
-  </text>
-  <text x="400" y="575" text-anchor="middle" font-size="11" fill="#6b7280">
-    代价:复杂度从 O(T) 升到 O(T²),长上下文需要 sparse / flash attention 后续优化
+  <!-- Footnote -->
+  <text x="450" y="752" text-anchor="middle" font-size="11" fill="#6b7280">
+    任意 token 之间路径长度从 O(T) 缩到 O(1) · 代价是 O(T²) 复杂度,长上下文需 sparse / flash attention
   </text>
 
 </svg>
