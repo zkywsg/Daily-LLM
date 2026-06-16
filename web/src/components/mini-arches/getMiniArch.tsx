@@ -64,6 +64,10 @@ import {
   MiniDCGAN,
   MiniCycleGAN,
   MiniStyleGAN,
+  MiniWord2Vec,
+  MiniGloVe,
+  MiniFastText,
+  MiniELMo,
 } from ".";
 
 const MAP: Record<string, ComponentType<MiniArchProps>> = {
@@ -130,6 +134,10 @@ const MAP: Record<string, ComponentType<MiniArchProps>> = {
   "02-dcgan": MiniDCGAN,
   "03-cyclegan": MiniCycleGAN,
   "04-stylegan": MiniStyleGAN,
+  "01-word2vec": MiniWord2Vec,
+  "02-glove": MiniGloVe,
+  "03-fasttext": MiniFastText,
+  "04-elmo": MiniELMo,
 };
 
 export function getMiniArch(
