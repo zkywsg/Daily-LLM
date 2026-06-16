@@ -32,7 +32,24 @@ Vaswani 等人的论文把这些零散观察推到了逻辑终点:**既然 atten
 
 这就是 2017 年 6 月 NIPS 投稿的 *Attention Is All You Need*。标题本身就是一句宣言。
 
-## 核心思想:Scaled Dot-Product Attention
+## 核心思想
+
+### 直觉:相似度查询替代循环展开
+
+要理解 Transformer 真正需要先抓一件事:**RNN 把"序列建模"看成"按时间一步步积累状态",Transformer 把它看成"每个位置同时向所有位置发问"**。
+
+在 RNN 视角下,`h_t` 是 `h_{t-1}` 加上 `x_t` 的某种更新——信息必须沿时间链一步步传。第 100 个 token 想看到第 1 个 token,信号要走 99 步;每一步都是非线性变换,梯度也要原路返回 99 步。**串行 + 长链** 是 RNN 的双重宿命。
+
+Transformer 把这个心智模型彻底替换掉。每个 token 都同时做一件事——**"我手里有一个 query,问序列里所有其他 token:你们的 key 跟我多像?像的我多取一点你的 value,不像的少取一点"**。这是一次纯函数式的"加权聚合查询",所有 (query, key) 配对**一次矩阵乘算完**——不需要按时间展开,GPU 上一个 kernel launch 搞定。
+
+这个心智模型反过来吃掉了 RNN 的两个根本问题:
+
+- **训练并行**——所有位置同时算,不需要 sequential GPU launch。一个长度 100 的序列在 RNN 里是 100 步,在 Transformer 里是 1 步
+- **任意距离路径长度 = 1**——第 100 个 token 看第 1 个 token,直接通过一次内积,没有"经过 99 层"的衰减问题
+
+代价是复杂度从 `O(T)` 升到 `O(T²)`——所有配对都要算。这个代价在 2017 年序列长度 100 的翻译任务上微不足道,但到 2020+ 长上下文时代会成为新的瓶颈,催生 [sparse attention](03-sparse-attention.md) 和 [flash attention](05-flash-attention.md) 的优化路线。
+
+### 机制一:Scaled Dot-Product Attention
 
 Transformer 的所有 attention 模块都由同一个基本操作构成——**scaled dot-product attention**:
 
@@ -67,6 +84,9 @@ graph LR
 
 *图 1:Scaled Dot-Product Attention 数据流——两次矩阵乘 + 一次 softmax,全程无循环,GPU 上一次跑完。*
 
+![Scaled Dot-Product Attention 的 5-token 具体例子 + 与 RNN 复杂度对比](assets/01-transformer-attention.svg)
+*图 2:以 "The cat sat on mat" 为例,看 `q_sat` 如何拿到 attention 权重 `[.02, .18, .45, .10, .25]`,再加权聚合 V 得到 `z_sat`。下半 panel 对照 RNN 串行展开 vs self-attention 一次矩阵乘——时间复杂度从 `O(T·d²)` 串行升到 `O(T²·d)` 并行,但**任意 token 之间的信息路径长度从 `O(T)` 缩到 `O(1)`**。*
+
 **为什么除以 `sqrt(d_k)`?** 论文里给的解释:当 `d_k` 较大时,`q_i · k_j = Σ q_{i,m} k_{j,m}` 是 `d_k` 项独立随机变量的和,方差是 `d_k`(假设每项方差为 1)。如果不缩放,内积的量级会随 `d_k` 增长,推到 softmax 后会进入饱和区——梯度变得极小、训练不稳定。除以 `sqrt(d_k)` 把方差归一到 1,softmax 落在合理范围。这一缩放后来在 LayerNorm + 较小初始化下 partially 冗余,但仍然是默认做法。
 
 **Self-attention vs Cross-attention**——只是 Q/K/V 来源不同的术语区分:
@@ -76,7 +96,7 @@ graph LR
 
 数学结构完全一样,差异只在 Q/K/V 的来源。
 
-## Multi-Head Attention
+### 机制二:Multi-Head 多角度切片
 
 Vaswani 等人注意到单个 attention 头只能学一种"关系模式"——比如词法依赖,或者指代关系。把不同关系强行混在一个头里学,容易互相干扰。解法是**并行跑 `h` 个 attention 头,各自学不同的关系**:
 
@@ -98,7 +118,10 @@ $$
 
 实际中,不同头确实学到不同模式:某些头专注语法依赖、某些头专注共指、某些头专注词法。这一观察后来催生了 BertViz 等可视化工具,也催生了"attention 头可剪枝"的发现(Michel 2019 *Are Sixteen Heads Really Better than One?*——多达 80% 的头可以剪掉而性能基本不掉)。
 
-## Position Encoding
+![Multi-Head Attention 的切片 / 并行 / concat 三阶段](assets/01-transformer-multihead.svg)
+*图 3:Multi-Head 的物理过程——`d_model=512` 在投影后被切成 8 个 `d_k=64` 子空间,每个头独立跑 attention 学不同模式(对角线 / 块状 / 横向 / ...),最后 `[N,64]×8` 沿特征维度 concat 回 `[N,512]`,再过 `W^O` 投影回 `d_model`。底部 callout 把"参数预算不变"这件事算到具体数字:**单头 vs 8 头都是 1.05M 参数**,不是"多头多花钱",而是"同样的钱分给 8 个角色"。*
+
+### 机制三:Position Encoding 补回顺序
 
 Attention 有一个数学性质:**置换等变**。把输入序列的 token 顺序打乱,attention 的输出也只是相应打乱,数值不变。RNN 天然有时序(`h_t` 依赖 `h_{t-1}`),CNN 通过 kernel 的局部连接隐含位置信息;但 attention 看不到位置。这对语言建模是致命的——"狗咬人"和"人咬狗"在 attention 看来完全等价。
 
@@ -120,7 +143,17 @@ $$
 
 实践中也存在 **learned positional embedding**(BERT 用):像 token embedding 一样直接学 `max_len` 个位置向量。和正余弦差异不大,但完全不能外推。
 
-## Encoder / Decoder 完整结构
+### 三件套协同:为什么这三个机制缺一不可
+
+Scaled dot-product attention、multi-head、position encoding 三者不是独立改进,而是**协同的工程契约**——少任何一个,这条架构都不成立:
+
+- **只有 scaled dot-product attention,没有 multi-head**——单头容量不足以同时表达词法 / 句法 / 共指等多种关系,模型质量在翻译任务上掉 2+ BLEU
+- **只有 attention,没有 position encoding**——置换等变性让模型完全分不清 "狗咬人" 和 "人咬狗",生成出来是 bag-of-words 不是序列
+- **只有 multi-head,没有 scaling 1/√d_k**——大 `d_k` 下点积进入 softmax 饱和区,梯度几乎为零,训练直接不收敛
+
+这三件套的协同关系类似 [ResNet](../01-cnn/05-resnet.md) 里 `shortcut + BN + He 初始化` 的关系——任何一个单拿出来都不够强,**三者一起才让"扔掉 RNN,只用 attention"从一个反直觉的想法变成可训练的工程方案**。这也是为什么 2017 年之前虽然 Decomposable Attention、ByteNet 等工作都摸到了"attention 单独够用"的边,但只有 Vaswani 团队真的把它做成完整架构——他们同时把这三件套调到了协同点。
+
+### 完整 encoder / decoder
 
 Transformer 沿用了 Seq2Seq 的 encoder-decoder 骨架,但每个 block 内部全是 attention + FFN:
 
@@ -137,7 +170,7 @@ graph LR
     classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
 ```
 
-*图 2:Encoder 单层结构——self-attention + residual + LayerNorm + FFN + residual + LayerNorm,六层堆叠组成 encoder。*
+*图 4:Encoder 单层结构——self-attention + residual + LayerNorm + FFN + residual + LayerNorm,六层堆叠组成 encoder。*
 
 **Encoder** 6 层,每层两个 sublayer:
 
@@ -164,7 +197,7 @@ $$
 
 完整 encoder + decoder + embedding + 输出投影,参数量约 65M(`d_model=512, h=8, N=6`),在 WMT'14 英德上拿到 BLEU 28.4(超过 GNMT 的 24.6);更大的版本(`d_model=1024, h=16, d_ff=4096`)拿到 BLEU 28.4 → 41.0 英法、28.4 英德,**新 SOTA + 训练时间是 ConvS2S 的 1/4、GNMT 的 1/100**。
 
-## Post-LN 是原版细节
+### Post-LN 是原版细节(后被 Pre-LN 取代)
 
 原版 Transformer 用的是 **Post-LN**:`y = LayerNorm(x + Sublayer(x))`——残差后接 LayerNorm。这一选择当时没什么争议,但后来发现在深层(> 12 层)训练时会有梯度爆炸/消失问题,导致**需要非常精心调 learning rate warmup**才能训得稳定。
 
