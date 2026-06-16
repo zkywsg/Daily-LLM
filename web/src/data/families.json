@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T05:14:35.473564+00:00",
+  "generatedAt": "2026-06-16T05:24:25.142848+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -238,10 +238,80 @@
     {
       "id": "03-word-embedding",
       "label": "Word Embedding 词嵌入",
-      "blurb": "（待补充）",
-      "yearRange": null,
+      "blurb": "把离散的词变成稠密向量,让\"king - man + woman ≈ queen\"成为深度学习里的可计算事实——为后来所有 NLP 模型铺好底层语言地基。",
+      "yearRange": [
+        2013,
+        2018
+      ],
       "colorToken": "--family-03",
-      "nodes": []
+      "nodes": [
+        {
+          "name": "Word2Vec",
+          "year": 2013,
+          "family": "03-word-embedding",
+          "order": 1,
+          "paper": "Efficient Estimation of Word Representations in Vector Space / Distributed Representations of Words and Phrases and their Compositionality",
+          "authors": [
+            "Tomas Mikolov",
+            "Kai Chen",
+            "Greg Corrado",
+            "Jeffrey Dean"
+          ],
+          "key_idea": "用极简的 shallow network(skip-gram / CBOW)从大语料自监督学 300 维词向量,negative sampling 替代 softmax 让训练扩展到 100 亿词;king-man+woman=queen 线性算术成立,NLP 进入向量时代",
+          "path": "03-word-embedding/01-word2vec.md",
+          "assets": []
+        },
+        {
+          "name": "GloVe",
+          "year": 2014,
+          "family": "03-word-embedding",
+          "order": 2,
+          "paper": "GloVe: Global Vectors for Word Representation",
+          "authors": [
+            "Jeffrey Pennington",
+            "Richard Socher",
+            "Christopher D. Manning"
+          ],
+          "key_idea": "直接对全局 word-word 共现矩阵做加权 log-bilinear 分解,而不是用局部窗口预测;count-based 路线,理论比 Word2Vec 更清晰,Stanford 团队预训练好的 GloVe 向量成开源标配",
+          "path": "03-word-embedding/02-glove.md",
+          "assets": []
+        },
+        {
+          "name": "FastText",
+          "year": 2016,
+          "family": "03-word-embedding",
+          "order": 3,
+          "paper": "Enriching Word Vectors with Subword Information / Bag of Tricks for Efficient Text Classification",
+          "authors": [
+            "Piotr Bojanowski",
+            "Edouard Grave",
+            "Armand Joulin",
+            "Tomas Mikolov"
+          ],
+          "key_idea": "把词拆成 character n-gram(apple = <ap, app, ppl, ple, le>),词向量 = subword 向量之和;处理 OOV / 形态丰富语言 / 罕见词;同时附带极快的文本分类工具",
+          "path": "03-word-embedding/03-fasttext.md",
+          "assets": []
+        },
+        {
+          "name": "ELMo",
+          "year": 2018,
+          "family": "03-word-embedding",
+          "order": 4,
+          "paper": "Deep Contextualized Word Representations",
+          "authors": [
+            "Matthew E. Peters",
+            "Mark Neumann",
+            "Mohit Iyyer",
+            "Matt Gardner",
+            "Christopher Clark",
+            "Kenton Lee",
+            "Luke Zettlemoyer"
+          ],
+          "key_idea": "用双向 LSTM 预训练语言模型,每个词的向量是 LSTM 各层 hidden state 的加权和;同一个 \\\"bank\\\" 在 \\\"river bank\\\" 和 \\\"money bank\\\" 里向量不同;contextualized embedding 起源,直接催生 BERT",
+          "path": "03-word-embedding/04-elmo.md",
+          "assets": []
+        }
+      ]
     },
     {
       "id": "04-gan",

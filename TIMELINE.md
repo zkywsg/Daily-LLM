@@ -9,18 +9,22 @@
 | 1997 | **LSTM** | `02-rnn-lstm` | 用三道门 + 一条细胞状态高速公路绕开梯度连乘,让循环网络第一次能稳定学到 100+ 步的长依赖 | [02-rnn-lstm/02-lstm.md](02-rnn-lstm/02-lstm.md) |
 | 1998 | **LeNet-5** | `01-cnn` | 把卷积+池化+全连接这套范式第一次系统化定义出来，在手写数字识别上跑通 | [01-cnn/01-lenet.md](01-cnn/01-lenet.md) |
 | 2012 | **AlexNet** | `01-cnn` | 首次在 ImageNet 大规模数据集上端到端训练深层 CNN（5 conv + 3 fc），Top-5 错误率达到 15.3% | [01-cnn/02-alexnet.md](01-cnn/02-alexnet.md) |
+| 2013 | **Word2Vec** | `03-word-embedding` | 用极简的 shallow network(skip-gram / CBOW)从大语料自监督学 300 维词向量,negative sampling 替代 softmax 让训练扩展到 100 亿词;king-man+woman=queen 线性算术成立,NLP 进入向量时代 | [03-word-embedding/01-word2vec.md](03-word-embedding/01-word2vec.md) |
 | 2014 | **VGG** | `01-cnn` | 把网络深度做到 16/19 层、并把所有卷积统一成 3×3，证明深度本身就是性能来源 | [01-cnn/03-vgg.md](01-cnn/03-vgg.md) |
 | 2014 | **GoogLeNet (Inception v1)** | `01-cnn` | 用 1×1 卷积降维 + 多尺度并行的 Inception 模块，把参数量压到 VGG 的 1/12 同时拿下 ImageNet 冠军 | [01-cnn/04-inception.md](01-cnn/04-inception.md) |
 | 2014 | **GRU** | `02-rnn-lstm` | 把 LSTM 三道门简成两门、去掉细胞状态,参数减少 25% 而性能基本持平,成为 LSTM 的常用轻量替代 | [02-rnn-lstm/03-gru.md](02-rnn-lstm/03-gru.md) |
 | 2014 | **Seq2Seq** | `02-rnn-lstm` | 用一个 encoder RNN 把任意长输入压成上下文向量,再用一个 decoder RNN 从这个向量生成任意长输出,统一所有序列到序列任务 | [02-rnn-lstm/04-seq2seq.md](02-rnn-lstm/04-seq2seq.md) |
+| 2014 | **GloVe** | `03-word-embedding` | 直接对全局 word-word 共现矩阵做加权 log-bilinear 分解,而不是用局部窗口预测;count-based 路线,理论比 Word2Vec 更清晰,Stanford 团队预训练好的 GloVe 向量成开源标配 | [03-word-embedding/02-glove.md](03-word-embedding/02-glove.md) |
 | 2014 | **GAN** | `04-gan` | 把生成问题转化为对抗博弈——G 造假,D 鉴别,minimax 训练让 G 学到真实数据分布;不显式建模 likelihood 也能生成高质量样本,开创深度生成模型新范式 | [04-gan/01-gan.md](04-gan/01-gan.md) |
 | 2015 | **ResNet** | `01-cnn` | 用 shortcut 让网络只学残差修正而不是从零重建映射，把 152 层稳定训练变成可能 | [01-cnn/05-resnet.md](01-cnn/05-resnet.md) |
 | 2015 | **Bahdanau Attention** | `02-rnn-lstm` | 在 Seq2Seq 上加 attention 让 decoder 每一步对 encoder 全部时刻学一个加权分布,绕开固定长度上下文向量的信息瓶颈 | [02-rnn-lstm/05-attention.md](02-rnn-lstm/05-attention.md) |
 | 2015 | **DCGAN** | `04-gan` | 把 CNN 完整移植到 GAN——用 strided conv 替代 pooling、加 BatchNorm、Generator 用 transpose conv 上采样、去全连接层;首次给出可复现的 GAN 训练工程方案,生成 64×64 卧室 / 人脸图像 | [04-gan/02-dcgan.md](04-gan/02-dcgan.md) |
+| 2016 | **FastText** | `03-word-embedding` | 把词拆成 character n-gram(apple = <ap, app, ppl, ple, le>),词向量 = subword 向量之和;处理 OOV / 形态丰富语言 / 罕见词;同时附带极快的文本分类工具 | [03-word-embedding/03-fasttext.md](03-word-embedding/03-fasttext.md) |
 | 2017 | **DenseNet** | `01-cnn` | 每层都直接接收前面所有层的输出（concat 而非加法），把特征复用推到极致 | [01-cnn/06-densenet.md](01-cnn/06-densenet.md) |
 | 2017 | **CycleGAN** | `04-gan` | 用 cycle consistency loss 实现无配对图像翻译——两个 G 互相 mapping(X→Y 和 Y→X),要求 F(G(x)) ≈ x;不需要成对训练数据就能做马↔斑马、夏↔冬、照片↔画风的转换 | [04-gan/03-cyclegan.md](04-gan/03-cyclegan.md) |
 | 2017 | **Transformer** | `05-transformer` | 用 self-attention 替代循环,让序列建模获得完全并行 + 全局上下文,encoder-decoder 骨架保留但内部全是 attention 和 FFN | [05-transformer/01-transformer.md](05-transformer/01-transformer.md) |
 | 2017 | **Outrageously Large Neural Networks (Sparsely-Gated MoE)** | `13-moe-efficient` | 在 LSTM 之间插入 sparsely-gated MoE 层:每 token 用 gate 选 top-K 个 expert(1370 亿参数中只激活几亿),配 auxiliary loss 防止 expert 塌缩;首次证明稀疏激活能突破 dense 模型的参数 / 算力锁死 | [13-moe-efficient/01-sparsely-gated-moe.md](13-moe-efficient/01-sparsely-gated-moe.md) |
+| 2018 | **ELMo** | `03-word-embedding` | 用双向 LSTM 预训练语言模型,每个词的向量是 LSTM 各层 hidden state 的加权和;同一个 \"bank\" 在 \"river bank\" 和 \"money bank\" 里向量不同;contextualized embedding 起源,直接催生 BERT | [03-word-embedding/04-elmo.md](03-word-embedding/04-elmo.md) |
 | 2018 | **StyleGAN** | `04-gan` | 用 mapping network 把 z 投射到 W 空间,再通过 AdaIN 在每层注入 style 控制不同语义粒度(粗:姿态/形状,中:发型/眼神,细:肤色/纹理);1024×1024 超高分辨率人脸,生成质量逼近真实照片 | [04-gan/04-stylegan.md](04-gan/04-stylegan.md) |
 | 2018 | **BERT** | `06-bert-family` | 用 encoder-only Transformer + masked LM 学双向上下文表征,GLUE 11 任务全面 SOTA,把 NLP 拖进预训练时代 | [06-bert-family/01-bert.md](06-bert-family/01-bert.md) |
 | 2018 | **GPT-1** | `07-gpt-scaling` | 用 decoder-only Transformer + 无监督自回归预训练 + 任务微调,第一次系统跑通预训练范式;同年 BERT 用 encoder-only 验证了双向版本 | [07-gpt-scaling/01-gpt1.md](07-gpt-scaling/01-gpt1.md) |
