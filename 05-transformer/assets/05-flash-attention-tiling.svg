@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="ti-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Tiling + Online Softmax — 把 N×N 缩成 O(N) 的数学关键
+  </text>
+
+  <!-- =========== LEFT: Q/K matrices tiled =========== -->
+  <text x="220" y="68" text-anchor="middle" font-size="13"
+        fill="#1f2937" font-weight="600">Q [N×d] 横切 B_r 行块,K/V [N×d] 竖切 B_c 列块</text>
+
+  <!-- Q matrix -->
+  <g transform="translate(70, 95)">
+    <rect width="80" height="200" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <line x1="0" y1="50" x2="80" y2="50" stroke="#d97706" stroke-width="1"/>
+    <line x1="0" y1="100" x2="80" y2="100" stroke="#d97706" stroke-width="1"/>
+    <line x1="0" y1="150" x2="80" y2="150" stroke="#d97706" stroke-width="1"/>
+    <text x="40" y="30" text-anchor="middle" font-size="11" fill="#92400e">Q_1 (B_r×d)</text>
+    <text x="40" y="78" text-anchor="middle" font-size="11" fill="#92400e">Q_2</text>
+    <text x="40" y="128" text-anchor="middle" font-size="11" fill="#92400e">Q_3</text>
+    <text x="40" y="178" text-anchor="middle" font-size="11" fill="#92400e">Q_4</text>
+    <text x="40" y="215" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">Q</text>
+  </g>
+
+  <!-- K matrix (transposed display) -->
+  <g transform="translate(180, 95)">
+    <rect width="200" height="50" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <line x1="50" y1="0" x2="50" y2="50" stroke="#db2777" stroke-width="1"/>
+    <line x1="100" y1="0" x2="100" y2="50" stroke="#db2777" stroke-width="1"/>
+    <line x1="150" y1="0" x2="150" y2="50" stroke="#db2777" stroke-width="1"/>
+    <text x="25" y="30" text-anchor="middle" font-size="11" fill="#9d174d">K_1</text>
+    <text x="75" y="30" text-anchor="middle" font-size="11" fill="#9d174d">K_2</text>
+    <text x="125" y="30" text-anchor="middle" font-size="11" fill="#9d174d">K_3</text>
+    <text x="175" y="30" text-anchor="middle" font-size="11" fill="#9d174d">K_4</text>
+    <text x="100" y="-8" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">Kᵀ (d × N)</text>
+  </g>
+
+  <!-- N×N attention grid (dashed - never materialized) -->
+  <g transform="translate(180, 155)">
+    <text x="100" y="-5" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+      N×N attention 矩阵(概念上,实际不落盘)
+    </text>
+    <rect x="0" y="0" width="200" height="140" fill="none"
+          stroke="#9ca3af" stroke-width="1" stroke-dasharray="4,3"/>
+    <!-- grid -->
+    <g stroke="#d1d5db" stroke-width="0.5">
+      <line x1="50" y1="0" x2="50" y2="140"/>
+      <line x1="100" y1="0" x2="100" y2="140"/>
+      <line x1="150" y1="0" x2="150" y2="140"/>
+      <line x1="0" y1="35" x2="200" y2="35"/>
+      <line x1="0" y1="70" x2="200" y2="70"/>
+      <line x1="0" y1="105" x2="200" y2="105"/>
+    </g>
+    <!-- highlighted current block S_{2,3} -->
+    <rect x="100" y="35" width="50" height="35" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="125" y="58" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">S_ij</text>
+    <text x="125" y="160" text-anchor="middle" font-size="11" fill="#db2777" font-style="italic">当前 SRAM 内子块</text>
+  </g>
+
+  <!-- arrow Q to grid -->
+  <line x1="155" y1="195" x2="178" y2="195" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ti-arr)"/>
+  <line x1="280" y1="148" x2="280" y2="156" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ti-arr)"/>
+
+  <!-- =========== RIGHT: Online softmax formulas =========== -->
+  <text x="650" y="68" text-anchor="middle" font-size="13"
+        fill="#1f2937" font-weight="600">Online Softmax 增量更新</text>
+
+  <rect x="450" y="85" width="420" height="280" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+
+  <text x="465" y="110" font-size="12" fill="#065f46" font-weight="600">维护 running 统计量:</text>
+  <text x="475" y="132" font-size="12" fill="#065f46">• m_i  — 当前行的 running max</text>
+  <text x="475" y="152" font-size="12" fill="#065f46">• ℓ_i  — 当前行的 running sum-of-exp</text>
+  <text x="475" y="172" font-size="12" fill="#065f46">• O_i  — 当前行的 running output(已 rescale)</text>
+
+  <line x1="465" y1="190" x2="855" y2="190" stroke="#059669" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <text x="465" y="212" font-size="12" fill="#065f46" font-weight="600">每来一个新块 S_ij:</text>
+
+  <g font-family="ui-monospace, monospace" font-size="12" fill="#065f46">
+    <text x="475" y="236">m_new = max(m_i, max(S_ij))</text>
+    <text x="475" y="262">ℓ_new = e^(m_i − m_new)·ℓ_i</text>
+    <text x="540" y="280">+ Σ e^(S_ij − m_new)</text>
+    <text x="475" y="310">O_new = (O_i·ℓ_i·e^(m_i − m_new)</text>
+    <text x="540" y="328">+ e^(S_ij − m_new)·V_j) / ℓ_new</text>
+  </g>
+
+  <text x="465" y="358" font-size="11" fill="#6b7280" font-style="italic">
+    数值等价于一次性 softmax,exact attention
+  </text>
+
+  <!-- =========== BOTTOM: comparison flow =========== -->
+  <line x1="40" y1="400" x2="860" y2="400"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <text x="450" y="428" text-anchor="middle" font-size="13"
+        fill="#1f2937" font-weight="600">为什么 online softmax 是 tiling 的数学关键</text>
+
+  <!-- left: standard softmax problem -->
+  <rect x="60" y="450" width="370" height="120" rx="6"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="475" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">
+    标准 softmax 的痛点
+  </text>
+  <text x="75" y="498" font-size="11" fill="#991b1b">• softmax(s_i) 要先看整行才能算 max + sum</text>
+  <text x="75" y="518" font-size="11" fill="#991b1b">• 整行不能 fit 进 SRAM → 必须先在 HBM 物化 N×N</text>
+  <text x="75" y="538" font-size="11" fill="#991b1b">• 这是为什么朴素 tiling 不成立</text>
+  <text x="75" y="558" font-size="11" fill="#dc2626" font-weight="600">⇒ 必须先把 N×N 矩阵写到 HBM,白白吃带宽</text>
+
+  <!-- right: online softmax wins -->
+  <rect x="470" y="450" width="370" height="120" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="655" y="475" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">
+    Online softmax 怎么解决
+  </text>
+  <text x="485" y="498" font-size="11" fill="#065f46">• 维护 running max m 和 sum ℓ,每来一个块增量更新</text>
+  <text x="485" y="518" font-size="11" fill="#065f46">• rescale 旧 partial output 与新 max 对齐</text>
+  <text x="485" y="538" font-size="11" fill="#065f46">• 任何 block 顺序结果都数值等价</text>
+  <text x="485" y="558" font-size="11" fill="#059669" font-weight="600">⇒ N×N 永远不出现在 HBM,O(N) 显存够用</text>
+
+  <!-- bottom callout -->
+  <rect x="60" y="595" width="780" height="50" rx="6"
+        fill="#1f2937" stroke="none"/>
+  <text x="450" y="620" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    Online softmax 是把 N×N 缩成 O(N) 的数学关键 — 没它 tiling 不成立
+  </text>
+  <text x="450" y="638" text-anchor="middle" font-size="11" fill="#fef3c7">
+    反向传播时同样套路:不存 N×N,按 forward tiling 重算一遍(recomputation),换算下来仍快
+  </text>
+</svg>

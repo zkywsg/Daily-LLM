@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 720"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="fa-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="fa-arr-red" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="fa-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GPU 内存层级 与 FlashAttention 的减少 HBM 往返
+  </text>
+
+  <!-- ============= TOP: Memory Hierarchy ============= -->
+  <text x="180" y="68" text-anchor="middle" font-size="13"
+        fill="#1f2937" font-weight="600">A100 内存层级</text>
+
+  <!-- HBM big block -->
+  <rect x="60" y="85" width="240" height="80" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="180" y="115" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="600">HBM(片外主显存)</text>
+  <text x="180" y="135" text-anchor="middle" font-size="12" fill="#1e40af">40 GB · 1.5 TB/s</text>
+  <text x="180" y="153" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">大,但慢</text>
+
+  <!-- SRAM small block -->
+  <rect x="110" y="180" width="140" height="55" rx="6"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="180" y="205" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">SRAM(片上 cache)</text>
+  <text x="180" y="223" text-anchor="middle" font-size="11" fill="#991b1b">20 MB · 19 TB/s</text>
+
+  <!-- speed ratio annotation -->
+  <line x1="310" y1="125" x2="370" y2="125" stroke="#1f2937" stroke-width="1"/>
+  <text x="340" y="118" text-anchor="middle" font-size="11" fill="#1f2937">速度差</text>
+  <text x="340" y="135" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">~13×</text>
+
+  <line x1="310" y1="207" x2="370" y2="207" stroke="#1f2937" stroke-width="1"/>
+  <text x="340" y="200" text-anchor="middle" font-size="11" fill="#1f2937">容量差</text>
+  <text x="340" y="217" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">~2000×</text>
+
+  <!-- Right side: key insight -->
+  <rect x="440" y="100" width="420" height="120" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="650" y="125" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">
+    Attention 慢的真正原因
+  </text>
+  <text x="455" y="150" font-size="12" fill="#92400e">• Attention 的 FLOPs 算力 GPU 远远够用</text>
+  <text x="455" y="172" font-size="12" fill="#92400e">• 真正的瓶颈是 HBM ↔ SRAM 数据搬运</text>
+  <text x="455" y="194" font-size="12" fill="#92400e">• GPU 利用率常年只有 20-30%</text>
+  <text x="455" y="213" font-size="12" fill="#dc2626" font-weight="600">• 计算单元大部分时间在等内存</text>
+
+  <!-- ============= MIDDLE: Standard Attention dataflow ============= -->
+  <line x1="40" y1="260" x2="860" y2="260"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <text x="450" y="288" text-anchor="middle" font-size="14"
+        fill="#dc2626" font-weight="600">标准 Attention — 多次 HBM 来回</text>
+
+  <!-- Step boxes -->
+  <rect x="60" y="305" width="130" height="55" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="125" y="330" text-anchor="middle" font-size="12" fill="#9d174d">S = QKᵀ</text>
+  <text x="125" y="348" text-anchor="middle" font-size="11" fill="#dc2626">写 N² 到 HBM ✗</text>
+
+  <rect x="225" y="305" width="130" height="55" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="290" y="330" text-anchor="middle" font-size="12" fill="#9d174d">P = softmax(S)</text>
+  <text x="290" y="348" text-anchor="middle" font-size="11" fill="#dc2626">读 S 写 P ✗</text>
+
+  <rect x="390" y="305" width="130" height="55" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="455" y="330" text-anchor="middle" font-size="12" fill="#9d174d">O = P @ V</text>
+  <text x="455" y="348" text-anchor="middle" font-size="11" fill="#dc2626">读 P,V 写 O ✗</text>
+
+  <line x1="192" y1="333" x2="223" y2="333" stroke="#dc2626" stroke-width="1.5" marker-end="url(#fa-arr-red)"/>
+  <line x1="357" y1="333" x2="388" y2="333" stroke="#dc2626" stroke-width="1.5" marker-end="url(#fa-arr-red)"/>
+
+  <!-- Cost annotation -->
+  <rect x="560" y="295" width="300" height="80" rx="6"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="710" y="318" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">
+    N=4096 一个 head:
+  </text>
+  <text x="710" y="338" text-anchor="middle" font-size="11" fill="#991b1b">
+    N×N matrix 物化 3 次,~100 MB HBM 流量
+  </text>
+  <text x="710" y="358" text-anchor="middle" font-size="11" fill="#991b1b">
+    显存 O(N²) → N=8K 时 OOM
+  </text>
+
+  <!-- ============= BOTTOM: FlashAttention dataflow ============= -->
+  <text x="450" y="425" text-anchor="middle" font-size="14"
+        fill="#059669" font-weight="600">FlashAttention — 全部在 SRAM 里一次算完</text>
+
+  <!-- One big SRAM-bound block -->
+  <rect x="100" y="450" width="420" height="100" rx="8"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="2.5"/>
+  <text x="310" y="475" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="600">
+    [Q-block, K-block, V-block] → 整个 attention 在 SRAM 里
+  </text>
+  <text x="310" y="500" text-anchor="middle" font-size="12" fill="#9d174d">
+    分块 → 局部 S → online softmax → 局部 O
+  </text>
+  <text x="310" y="522" text-anchor="middle" font-size="11" fill="#1f2937" font-style="italic">
+    中间 S / P 全程不写回 HBM
+  </text>
+  <text x="310" y="540" text-anchor="middle" font-size="11" fill="#059669" font-weight="600">
+    SRAM 内循环遍历所有 K/V block,等价 exact attention
+  </text>
+
+  <!-- output to HBM -->
+  <rect x="570" y="475" width="200" height="50" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="670" y="498" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="600">只写 O 到 HBM</text>
+  <text x="670" y="516" text-anchor="middle" font-size="11" fill="#1e40af">N×d,O(N) 显存</text>
+
+  <line x1="522" y1="500" x2="568" y2="500" stroke="#059669" stroke-width="2" marker-end="url(#fa-arr-green)"/>
+
+  <!-- ============= BOTTOM CALLOUT ============= -->
+  <rect x="60" y="600" width="780" height="100" rx="6"
+        fill="#1f2937" stroke="none"/>
+  <text x="450" y="624" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    FlashAttention 的胜利:同样数学 + 截然不同的内存访问 pattern
+  </text>
+  <g font-size="12" fill="#fef3c7">
+    <text x="80" y="652">• 速度提升 2-4×(A100, N=2K-8K),且越长越快</text>
+    <text x="80" y="673">• 显存从 O(N²) → O(N),N=8K 朴素实现 OOM,FlashAttention 仅占几十 KB / head</text>
+    <text x="80" y="694">• Exact attention,不是稀疏 / 近似 — 输出和原版 attention 数值等价</text>
+  </g>
+</svg>

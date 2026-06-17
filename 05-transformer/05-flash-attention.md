@@ -40,48 +40,79 @@ O = P @ V            # 读 P 和 V,写 O — 再一次 HBM 来回
 
 FlashAttention 的核心观察:**`N × N` 矩阵根本不应该物化,attention 应该完全在 SRAM 里算**。
 
-## 核心思想:分块 + online softmax + 重计算
+## 核心思想
 
-直接把 attention 搬到 SRAM 有两个明显障碍:
+### 直觉:Attention 慢不是算得多,是 HBM 读写多
 
-**1. SRAM 装不下整个 `N × N` 矩阵**——A100 的 SRAM 是 20 MB,但 N=4096 时 `N × N × 2 bytes = 32 MB`,放不下
-**2. Softmax 需要看整行**——`softmax(s_i)` 要先算 `max(s_i)` 和 `sum(exp(s_i - max))`,这些是行级 reduce,看似必须先把整行算完才能 softmax
+理解 FlashAttention 真正需要先抓一件事:**标准 attention 在 GPU 上的瓶颈不是 FLOPs,而是 HBM ↔ SRAM 的数据搬运**。GPU 的算力(A100 312 TFLOPs)早就远远大于带宽能喂的数据量,attention 慢的根因是 N×N 矩阵被反复写回 / 读出 HBM —— softmax 看一次、`P @ V` 再看一次,每一步都在 HBM 上多走一个来回。GPU 计算单元大部分时间在等内存,利用率常年 20-30%。
 
-FlashAttention 用三个 trick 一起解决:
+Tri Dao 等人 2022 的洞察:**整个 N×N matrix 根本不应该在 HBM 上物化,attention 应该完全在 SRAM 里算完只把最终 O 写出去**。这件事在 2022 年才被做出来,因为它需要三件事同时成立:
 
-**Trick 1:分块**——把 Q、K、V 都按行切成 block(典型 block size 128–256),每次只把一对 Q-block 和 K/V-block 加载到 SRAM 里:
+- **tiling 能把 Q/K/V 切成 SRAM 装得下的块** —— SRAM 20MB,N=4096 时 N×N 矩阵 32MB 装不下,必须分块
+- **online softmax 允许 softmax 流式更新** —— 普通 softmax 要看整行,流式版本数学等价但能按 block 增量算
+- **recomputation 接受反向多算一遍换显存** —— 反向需要的 S/P 不存,按 forward tiling 重算一遍
+
+三件事合起来才让"在 SRAM 里一次算完 attention"在 2022 年第一次工程实现。重要的是 FlashAttention 是 **exact attention**(数值等价于原版 dense attention),不是 sparse / linear / kernel approximation —— 它**完全没改 attention 的数学定义**,只重写了内存访问 pattern。这是它能被无痛接入所有现代 LLM 的根因。
+
+![GPU 内存层级 与 FlashAttention 减少 HBM 往返](assets/05-flash-attention-memory-hierarchy.svg)
+*图 1:**顶部** A100 内存层级——HBM 40GB @ 1.5TB/s vs SRAM 20MB @ 19TB/s,速度差 13× 容量差 2000×。**中间 标准 Attention**——S = QKᵀ 写 HBM、softmax 读写 HBM、P @ V 读写 HBM,N×N 矩阵被物化 3 次,N=8K OOM。**底部 FlashAttention**——整个 attention 在 SRAM 一次算完,只把 O 写回 HBM,中间 S/P 全程不落盘。同样数学 + 截然不同的内存访问 pattern,速度提升 2-4× 且 N 越长越快。*
+
+### 机制一:Tiling — 把 Q/K/V 切块在 SRAM 里 blockwise 算
+
+第一个 trick 是把 Q [N×d] 横切成 B_r 行的块,K/V [N×d] 竖切成 B_c 列的块(典型 B_r = B_c = 128),每次只把一对 Q-block 和 K/V-block 加载到 SRAM:
 
 ```
-对每个 Q_i (Q 的第 i 个 block):
-    对每个 K_j, V_j (K/V 的第 j 个 block):
+对每个 Q_i (Q 的第 i 行块):
+    对每个 K_j, V_j (K/V 的第 j 列块):
         把 Q_i, K_j, V_j 加载到 SRAM
-        在 SRAM 里算 S_ij = Q_i @ K_j.T
+        在 SRAM 里算 S_ij = Q_i @ K_j.T  (B_r × B_c, 小到能装下)
         更新输出 O_i 和 softmax 统计量
 ```
 
-**Trick 2:Online softmax**——这是技术核心。普通 softmax 要看整行,但有一个数学性质允许"流式更新":
+整个 N×N attention 矩阵从来不在 HBM 里实体化 —— 每个 S_ij 算完用一下就被覆盖。这一改动直接把显存从 O(N²) 降到 O(N) ,N=8K 朴素实现 OOM 而 FlashAttention 只占几十 KB / head。
 
-如果我已经算了前 `j` 个 block 的部分输出 `O_i^{(j)}` 和归一化因子 `(m_i^{(j)}, \ell_i^{(j)})`(分别是 running max 和 running sum-of-exp),来了一个新 block,可以**精确更新**而不需要重算前面:
+但 tiling 单独不成立 —— softmax 需要看整行才能算 max + sum,看似必须先把整行算完。这正是机制二要解决的。
 
-$$
-m_i^{(\text{new})} = \max(m_i^{(j)}, \max(S_{i, j+1}))
-$$
+### 机制二:Online Softmax — 不落盘 N×N 的数学关键
 
-$$
-\ell_i^{(\text{new})} = e^{m_i^{(j)} - m_i^{(\text{new})}} \ell_i^{(j)} + \sum_k e^{S_{i, j+1, k} - m_i^{(\text{new})}}
-$$
+普通 softmax 数学上必须看整行:`softmax(s)_i = exp(s_i - max(s)) / sum_k exp(s_k - max(s))` —— max 和 sum 都是 row-level reduce。如果 attention 按列 block 切,每次只看一段 K,根本不知道全行的 max 和 sum。
+
+FlashAttention 用 **online softmax**(Milakov 2018 提出,Tri Dao 把它接进 attention 是核心创新):**只维护当前 running max m_i 和 running sum-of-exp ℓ_i,每来一个新 block 用一次 rescale 把旧 partial output 更新到与新 max 一致**:
 
 $$
-O_i^{(\text{new})} = \frac{\ell_i^{(j)} e^{m_i^{(j)} - m_i^{(\text{new})}}}{\ell_i^{(\text{new})}} O_i^{(j)} + \frac{1}{\ell_i^{(\text{new})}} \sum_k e^{S_{i, j+1, k} - m_i^{(\text{new})}} V_{j+1, k}
+m_i^{\text{new}} = \max(m_i, \max(S_{ij}))
 $$
 
-(`m` 用减最大值的数值稳定 softmax;`\ell` 是分母 sum-of-exp;每收到新 block 用一次 rescale 把旧 partial 更新成与新 max 一致。)
+$$
+\ell_i^{\text{new}} = e^{m_i - m_i^{\text{new}}} \ell_i + \sum_k e^{S_{ij,k} - m_i^{\text{new}}}
+$$
 
-最终结果**完全等价于一次性 softmax**——这不是近似,FlashAttention 是 **exact attention**。
+$$
+O_i^{\text{new}} = \frac{\ell_i \cdot e^{m_i - m_i^{\text{new}}}}{\ell_i^{\text{new}}} O_i + \frac{1}{\ell_i^{\text{new}}} \sum_k e^{S_{ij,k} - m_i^{\text{new}}} V_{j,k}
+$$
 
-**Trick 3:反传时重计算 S 和 P**——反传需要 `S` 和 `P`,正常做法是 forward 时存 HBM。FlashAttention 选择**反传时重算**——只在 HBM 存最终输出 `O`、softmax 统计量 `(m, \ell)`、Q/K/V(原本就有)。反传时用这些重新走一遍 forward 的分块计算,把 `S` 和 `P` 算回来。
+任意 block 顺序的最终结果**与一次性 softmax 数值完全等价**。这是 FlashAttention 是 exact attention 的数学保证 —— 没有任何近似,只是用增量计算替代一次性。
 
-代价:反传 FLOPs 多 2.5× ——但因为大部分时间被内存带宽卡住,**实际 wall-clock 时间反而短了**。这是经典的"以计算换内存"trade-off。
+![Tiling + Online Softmax 工作机制](assets/05-flash-attention-tiling.svg)
+*图 2:**左** Q 横切 B_r 行块、K 竖切 B_c 列块,中间虚线 N×N 矩阵表示"概念上存在但实际不落盘",高亮当前正在 SRAM 内处理的 S_ij 小块。**右** online softmax 增量更新:维护 m_i / ℓ_i / O_i 三个 running 统计量,每来一个新块用一次 rescale 把旧 partial 与新 max 对齐,任意 block 顺序数值等价。**下** 对比 callout:标准 softmax 要看整行,必须在 HBM 物化 N×N;online softmax 只看局部块,N×N 永远不出现在 HBM。底部强调:online softmax 是把 N×N 缩成 O(N) 的数学关键 — 没它 tiling 不成立。*
+
+### 机制三:Recomputation in Backward — 反向不存中间,直接重算
+
+反向传播 attention 需要 forward 算过的 S 和 P 来算梯度。标准做法是 forward 时把它们存在 HBM,反向时读出来用。但这又把 O(N²) 显存吃回去 —— 整个机制一二的努力被反向吃光。
+
+FlashAttention 的反向选择 **不存 S/P,按 forward 同样的 tiling 重算一遍**。只在 HBM 存最终输出 O、softmax 统计量 (m, ℓ)、原始 Q/K/V。反向时用这些一边重新 tile 一边算梯度。
+
+代价:反向 FLOPs 多 2.5× —— 但因为大部分时间被内存带宽卡住,**实际 wall-clock 时间反而短**。这是经典的"以计算换内存" trade-off。换算下来:省了 N²·batch 大的显存,多 ~20% 总训练算力,但**端到端训练时间还更短**,因为内存搬运也省掉。
+
+### 三件套协同:tiling + online softmax + recomputation 缺一不可
+
+FlashAttention 在 2022 年能成立并改写 LLM 工业基础设施,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 FlashAttention 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 tiling,没有 online softmax** —— softmax 还是要看整行,必须先把 N×N 物化到 HBM 再 softmax,tiling 没意义,还是 O(N²) HBM 流量
+- **只有 online softmax,没有 tiling** —— 仍然按整行算,SRAM 装不下,online 算法在算法层面成立但 GPU 上跑不动
+- **只有 tiling + online softmax,没有 recomputation** —— 反向时 N²·b 的 S/P 还是要写 HBM,机制一二把 forward 优化了但 backward 把显存吃回去,整体显存 / 速度都退化
+
+三件套合起来才让 attention 在 **2-4× 速度 + 5-20× 长度** 两个维度上同时双赢。这是为什么 FlashAttention 在 2022 年发表后两年内成为 PyTorch / HuggingFace / vLLM 的默认 attention backend —— 它不是"另一个 attention 变体",它是 attention 该有的样子。
 
 ## 性能数据
 
