@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-cross" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <!-- =================== UPPER PANEL: Inductive Bias Compare =================== -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Inductive Bias · CNN 自带的视觉先验 vs ViT 必须从数据中学
+  </text>
+
+  <!-- Table headers -->
+  <rect x="60" y="50" width="380" height="36" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="250" y="74" text-anchor="middle" font-size="14"
+        fill="#9d174d" font-weight="700">
+    CNN · "免费"先验
+  </text>
+
+  <rect x="460" y="50" width="380" height="36" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="650" y="74" text-anchor="middle" font-size="14"
+        fill="#92400e" font-weight="700">
+    ViT · 几乎无先验,全靠数据
+  </text>
+
+  <!-- Row 1: Locality -->
+  <rect x="60" y="96" width="380" height="44" rx="4"
+        fill="#fef9fb" stroke="#fbcfe8" stroke-width="1"/>
+  <text x="78" y="116" font-size="12" fill="#9d174d" font-weight="600">Locality</text>
+  <text x="78" y="132" font-size="11" fill="#6b7280">3×3 kernel · 像素只看邻居,空间局部连接</text>
+
+  <rect x="460" y="96" width="380" height="44" rx="4"
+        fill="#fffbeb" stroke="#fde68a" stroke-width="1"/>
+  <text x="478" y="116" font-size="12" fill="#92400e" font-weight="600">Global attention from layer 1</text>
+  <text x="478" y="132" font-size="11" fill="#6b7280">每个 patch 第 1 层就能看所有 patch,无 locality 假设</text>
+
+  <!-- Row 2: Translation Equivariance -->
+  <rect x="60" y="146" width="380" height="44" rx="4"
+        fill="#fef9fb" stroke="#fbcfe8" stroke-width="1"/>
+  <text x="78" y="166" font-size="12" fill="#9d174d" font-weight="600">Translation Equivariance</text>
+  <text x="78" y="182" font-size="11" fill="#6b7280">同一卷积核扫过整图 → 平移等变</text>
+
+  <rect x="460" y="146" width="380" height="44" rx="4"
+        fill="#fffbeb" stroke="#fde68a" stroke-width="1"/>
+  <text x="478" y="166" font-size="12" fill="#92400e" font-weight="600">无平移等变</text>
+  <text x="478" y="182" font-size="11" fill="#6b7280">每个位置有自己的 pos_emb · 中央可学得 ≠ 边角</text>
+
+  <!-- Row 3: Hierarchical features -->
+  <rect x="60" y="196" width="380" height="44" rx="4"
+        fill="#fef9fb" stroke="#fbcfe8" stroke-width="1"/>
+  <text x="78" y="216" font-size="12" fill="#9d174d" font-weight="600">Hierarchical features</text>
+  <text x="78" y="232" font-size="11" fill="#6b7280">浅层边缘 → 深层物体 · 多 stage 自然下采样</text>
+
+  <rect x="460" y="196" width="380" height="44" rx="4"
+        fill="#fffbeb" stroke="#fde68a" stroke-width="1"/>
+  <text x="478" y="216" font-size="12" fill="#92400e" font-weight="600">Flat · 同分辨率到底</text>
+  <text x="478" y="232" font-size="11" fill="#6b7280">14×14 patch 网格自始至终不变,无金字塔</text>
+
+  <!-- Verdict band -->
+  <rect x="60" y="252" width="780" height="40" rx="6"
+        fill="#eff6ff" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="450" y="275" text-anchor="middle" font-size="12"
+        fill="#1e3a8a" font-weight="700">
+    小数据时 CNN 的先验是"免费的训练数据" · 大数据时 ViT 学到的更灵活
+  </text>
+
+  <!-- Divider -->
+  <line x1="40" y1="312" x2="860" y2="312"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- =================== LOWER PANEL: Performance Curve =================== -->
+  <text x="450" y="338" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Performance vs Pre-training Data Size · ViT 在 300M 处反超 ResNet
+  </text>
+
+  <!-- Plot area: x ∈ [120, 780], y ∈ [380, 540] -->
+  <!-- Y axis -->
+  <line x1="120" y1="380" x2="120" y2="540"
+        stroke="#6b7280" stroke-width="1.2"/>
+  <!-- X axis -->
+  <line x1="120" y1="540" x2="780" y2="540"
+        stroke="#6b7280" stroke-width="1.2"/>
+
+  <!-- Y axis labels -->
+  <text x="112" y="385" text-anchor="end" font-size="10" fill="#6b7280">88</text>
+  <text x="112" y="425" text-anchor="end" font-size="10" fill="#6b7280">85</text>
+  <text x="112" y="465" text-anchor="end" font-size="10" fill="#6b7280">82</text>
+  <text x="112" y="505" text-anchor="end" font-size="10" fill="#6b7280">79</text>
+  <text x="112" y="540" text-anchor="end" font-size="10" fill="#6b7280">76</text>
+
+  <text x="80" y="460" font-size="11" fill="#374151" transform="rotate(-90, 80, 460)">
+    ImageNet top-1 acc (%)
+  </text>
+
+  <!-- X axis ticks (log spaced positions) -->
+  <!-- ImageNet-1K at x≈180 -->
+  <line x1="180" y1="540" x2="180" y2="545" stroke="#6b7280" stroke-width="1"/>
+  <text x="180" y="558" text-anchor="middle" font-size="10" fill="#6b7280">
+    ImageNet-1K
+  </text>
+  <text x="180" y="572" text-anchor="middle" font-size="9" fill="#9ca3af">
+    1.3M
+  </text>
+
+  <!-- ImageNet-21K at x≈430 -->
+  <line x1="430" y1="540" x2="430" y2="545" stroke="#6b7280" stroke-width="1"/>
+  <text x="430" y="558" text-anchor="middle" font-size="10" fill="#6b7280">
+    ImageNet-21K
+  </text>
+  <text x="430" y="572" text-anchor="middle" font-size="9" fill="#9ca3af">
+    14M
+  </text>
+
+  <!-- JFT-300M at x≈720 -->
+  <line x1="720" y1="540" x2="720" y2="545" stroke="#6b7280" stroke-width="1"/>
+  <text x="720" y="558" text-anchor="middle" font-size="10" fill="#6b7280">
+    JFT-300M
+  </text>
+  <text x="720" y="572" text-anchor="middle" font-size="9" fill="#9ca3af">
+    300M (log scale)
+  </text>
+
+  <!-- ResNet curve: nearly flat. 76→82→84 across the three points -->
+  <!-- mapping: y = 540 - (acc - 76) * (160/12) = 540 - (acc-76)*13.33 -->
+  <!-- 77.8 → 540 - 1.8*13.33 = 516 -->
+  <!-- 82.7 → 540 - 6.7*13.33 = 451 -->
+  <!-- 86.2 → 540 - 10.2*13.33 = 404 -->
+  <path d="M 180 516 Q 305 480, 430 451 Q 575 425, 720 404"
+        stroke="#db2777" stroke-width="2.5" fill="none"/>
+  <!-- ResNet dots -->
+  <circle cx="180" cy="516" r="4" fill="#db2777"/>
+  <circle cx="430" cy="451" r="4" fill="#db2777"/>
+  <circle cx="720" cy="404" r="4" fill="#db2777"/>
+  <text x="190" y="510" font-size="10" fill="#9d174d">77.8</text>
+  <text x="440" y="447" font-size="10" fill="#9d174d">82.7</text>
+  <text x="730" y="408" font-size="10" fill="#9d174d">86.2</text>
+
+  <!-- ViT curve: steep -->
+  <!-- 76.5 → 540 - 0.5*13.33 = 533 -->
+  <!-- 84.0 → 540 - 8*13.33 = 433 -->
+  <!-- 87.8 → 540 - 11.8*13.33 = 383 -->
+  <path d="M 180 533 Q 305 495, 430 433 Q 575 408, 720 383"
+        stroke="#2563eb" stroke-width="2.5" fill="none"/>
+  <!-- ViT dots -->
+  <circle cx="180" cy="533" r="4" fill="#2563eb"/>
+  <circle cx="430" cy="433" r="4" fill="#2563eb"/>
+  <circle cx="720" cy="383" r="4" fill="#2563eb"/>
+  <text x="190" y="528" font-size="10" fill="#1e40af">76.5</text>
+  <text x="440" y="428" font-size="10" fill="#1e40af">84.0</text>
+  <text x="730" y="378" font-size="10" fill="#1e40af">87.8</text>
+
+  <!-- Crossover marker: 两条线在 ~14M 与 ~300M 之间某处交叉 (ResNet=ViT 约在 21K 略偏后) -->
+  <!-- Around x=470, both curves ≈ y=430 -->
+  <circle cx="475" cy="427" r="7" fill="none" stroke="#dc2626" stroke-width="2"/>
+  <line x1="475" y1="420" x2="525" y2="385"
+        stroke="#dc2626" stroke-width="1.2" stroke-dasharray="3,2" marker-end="url(#arr-cross)"/>
+  <text x="540" y="385" font-size="11" fill="#dc2626" font-weight="700">
+    the crossover
+  </text>
+  <text x="540" y="398" font-size="10" fill="#dc2626">
+    ViT 反超 ResNet
+  </text>
+
+  <!-- Legend -->
+  <rect x="600" y="495" width="178" height="42" rx="4"
+        fill="#ffffff" stroke="#e5e7eb" stroke-width="1"/>
+  <line x1="612" y1="510" x2="640" y2="510" stroke="#db2777" stroke-width="2.5"/>
+  <circle cx="626" cy="510" r="3.5" fill="#db2777"/>
+  <text x="648" y="514" font-size="10" fill="#374151">ResNet-152(归纳偏置帮忙)</text>
+
+  <line x1="612" y1="528" x2="640" y2="528" stroke="#2563eb" stroke-width="2.5"/>
+  <circle cx="626" cy="528" r="3.5" fill="#2563eb"/>
+  <text x="648" y="532" font-size="10" fill="#374151">ViT-L/16(数据驱动)</text>
+
+  <!-- Callout box bottom-left -->
+  <rect x="135" y="380" width="240" height="50" rx="6"
+        fill="#eff6ff" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="255" y="400" text-anchor="middle" font-size="11"
+        fill="#1e3a8a" font-weight="700">
+    大数据让 ViT 的灵活性变成优势
+  </text>
+  <text x="255" y="416" text-anchor="middle" font-size="10"
+        fill="#1e3a8a">
+    "归纳偏置 = 约束" 在 300M 处反转
+  </text>
+</svg>

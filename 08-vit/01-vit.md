@@ -24,40 +24,46 @@ Google Brain 团队 2020 年 10 月发表 *An Image is Worth 16x16 Words: Transf
 
 这一结果直接打破了"CNN 不可替代"的共识。它的关键启示:**视觉归纳偏置不是必需的,只要数据足够多,Transformer 能从零学到**。这一观点在 2021 年的 CLIP / DALL-E、2022 年的 Stable Diffusion、2023 年的 DiT 上反复被验证,**Transformer 在 2022 之后几乎全面替代 CNN 成为视觉默认骨干**——只有需要极低算力的边缘场景(移动端)还在用 CNN。
 
-## 核心思想:Image as Patch Sequence
+## 核心思想
 
-ViT 的核心是**把图像处理转化为序列处理**。具体三步:
+### 直觉:把图像当成"由 patch 组成的句子"
 
-```mermaid
-graph LR
-    img["Image [224,224,3]"]:::input --> patch["Patchify 16×16<br/>→ 196 patches"]:::compute
-    patch --> proj["Linear proj<br/>→ [196, 768]"]:::compute
-    proj --> cls["+ [CLS] token<br/>+ Position emb<br/>→ [197, 768]"]:::compute
-    cls --> enc["Transformer encoder<br/>× 12 层"]:::compute
-    enc --> head["[CLS] → MLP head<br/>→ 1000 classes"]:::output
+理解 ViT 真正需要先抓一件事:**2012 年以来视觉社区有一个几乎共识性的信念——"CNN 是 CV 的唯一正确答案"**。卷积的局部连接、参数共享、平移等变,这三件事被认为是处理图像必不可少的归纳偏置;十年来视觉 SOTA 全部基于这套先验,工业部署也几乎全部是 CNN 骨干。
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
+但 2017 年之后,Transformer 在 NLP 一统天下——同样的架构,从机器翻译扫到语言模型,把 RNN 全部赶下台。一个反直觉的问题浮现出来:**既然 Transformer 在序列建模上这么强,那"图像"能不能也被看作一个序列?**
 
-*图 1:ViT 完整 pipeline——图像 → patchify → linear embed → 加 [CLS] + 位置编码 → Transformer encoder → 分类。整个流程没有任何卷积。*
+如果按像素粒度,`224 × 224 = 50176` 个 token,attention 的 `O(N²)` 直接爆炸——这是 2018-2019 年那批 "stand-alone self-attention" 工作都绕不开的硬伤。Dosovitskiy 团队的关键 trick 是**升一级粒度**:不按像素切,按 **16×16 的 patch** 切。这样 `224 × 224` 图像就变成 `14 × 14 = 196` 个 patch——和一句长度 200 的中等英文句子序列长度完全一致。
 
-**Step 1: Patchify** —— 把 `H × W × 3` 图像切成 `P × P` 的不重叠 patch。ViT-B/16 用 `P=16`,所以 `224 × 224` 图像切成 `(224/16)² = 14 × 14 = 196` 个 patch。每个 patch 是 `16 × 16 × 3 = 768` 维向量(拉平)。
+一旦把图像看成"由 196 个 patch 组成的句子",剩下的事就完全套用 Transformer:每个 patch 是一个 token,prepend 一个 `[CLS]` 当"分类汇总位"(直接抄 BERT),加 position embedding 告诉模型谁在第几格,然后 12 层标准 Transformer encoder 跑完——和 BERT 推一段话的流程一模一样。**ViT 没有发明任何新的视觉模块,它只是宣布"图像也是序列"**。
 
-**Step 2: Linear projection** —— 每个 patch 过一个 `768 → 768` 的 linear 层(其实就是一个 `16×16` stride 16 的卷积,但 ViT 论文坚持称之为 "patch embedding"以强调"无卷积"的概念)。输出 `[196, 768]` 序列。
+### 机制一:Patch Embedding — 把图像切成 token 序列
 
-**Step 3: 加 [CLS] + position embedding** —— 序列前缀加一个可学习的 `[CLS]` token(同 BERT),然后加 197 维的 learned position embedding。最终得到 `[197, 768]` token 序列。
+第一步是把图像转成 Transformer 能吃的 `[N, d_model]` token 序列。具体操作:
 
-**Step 4: Transformer encoder** —— 12 层标准 Transformer encoder(同 [BERT-base](../06-bert-family/01-bert.md) 配置,只是输入分布不同)。Self-attention 不带 causal mask,完全双向。
+**1. Patchify**——把 `H × W × 3` 图像切成 `P × P` 的不重叠 patch。ViT-B/16 用 `P = 16`,所以 `224 × 224` 图像切成 `(224/16)² = 14 × 14 = 196` 个 patch,每个 patch 含 `16 × 16 × 3 = 768` 个数值,拉平成 768 维向量。
 
-**Step 5: 分类头** —— 取 `[CLS]` 位置的最终 hidden state,过一个 MLP head 输出 1000 类 logits。
+**2. Linear projection**——每个 patch 过一个 `768 → 768` 的线性层,得到该 patch 的 embedding。论文坚持把这一步称为 "linear projection of flattened patches" 而不是卷积,因为想强调"无视觉模块"的概念。但实现上**它等价于一个 `kernel=16, stride=16` 的 `Conv2d`**——这个细节后来被反复吐槽:ViT 不是真的"完全无卷积",它只是把卷积压缩到了 1 层、并且不重叠。
 
-整个 pipeline 没有任何专门的视觉模块——**ViT 就是 BERT 的视觉版**,差异只在输入预处理(patchify 替代 tokenization)。
+**3. 加 Position Embedding**——attention 是置换等变的,把 196 个 patch 打乱顺序输出也跟着打乱、数值不变。这对图像是致命的:左上角的 patch 和右下角的 patch 在 attention 看来无差别。ViT 给每个位置加一个 **learned 1D position embedding**(论文比较过 2D / 相对位置 PE,效果几乎一样),把"第几格"这件事显式告诉模型。
 
-## 模型规格
+输出 `[196, 768]` 的 token 序列——形式上和 BERT 推一句 196 个 subword 的输入完全一样。
 
-ViT 的命名遵循 `ViT-<size>/<patch_size>` 模式:
+### 机制二:CLS Token + 标准 Transformer Encoder
+
+把图像变成序列之后,后面所有事都是从 BERT 抄来的。
+
+**Prepend `[CLS]` token**——在 196 个 patch token 前面加一个可学习的 `[CLS]` 向量(768 维,从零随机初始化、随梯度更新)。序列长度变成 `1 + 196 = 197`。这个 `[CLS]` 没有任何"输入信息",它的全部作用是**作为分类汇总位**——经过 12 层 attention 之后,它会"看到"所有 patch,被训练成"全图语义的浓缩向量"。
+
+**12 层标准 Transformer encoder**——和 BERT-base 的结构完全一致:每层一个 Multi-Head Self-Attention + 一个 FFN(`d_ff = 3072`),外面包 Pre-LN 残差。Self-attention 不带 causal mask,完全双向——每个 token 在每一层都能看到所有其他 token,包括 `[CLS]` 看 patch、patch 看 `[CLS]`、patch 互相看。
+
+**取 `[CLS]` 的输出过 MLP Head 分类**——12 层跑完得到 `[197, 768]` 的输出,**只取 `[0]` 位置的 `[CLS]` 输出**(其余 196 个 patch 的输出在分类任务上全部丢弃),过一个 LayerNorm + Linear(`768 → 1000`)+ Softmax,得到 ImageNet 1000 类的概率。
+
+整个 pipeline 没有任何专门为视觉设计的模块——**ViT 就是 BERT 的视觉版**,唯一的差异是输入预处理(patchify 替代 tokenization)。
+
+![图 1:ViT 完整 pipeline](assets/01-vit-pipeline.svg)
+*图 1:ViT 完整前向流程——左侧图像切成 196 个 patch,中间 linear projection + pos_emb 把每个 patch 变成 768d token,prepend `[CLS]` 后序列长 197,送入 12 层 Transformer encoder。最终只取 `[CLS]` 位置的输出过 MLP head 分类。底部 callout 强调"patch_embed 实质是 stride=16 的 Conv2d",ViT 的"无卷积"口号是概念上的而非实现上的。*
+
+**模型规格**——ViT 的命名遵循 `ViT-<size>/<patch_size>` 模式:
 
 | 模型 | 层数 | d_model | h | d_ff | 参数 |
 |------|------|------|------|------|------|
@@ -65,11 +71,11 @@ ViT 的命名遵循 `ViT-<size>/<patch_size>` 模式:
 | ViT-L/16 | 24 | 1024 | 16 | 4096 | 307M |
 | ViT-H/14 | 32 | 1280 | 16 | 5120 | 632M |
 
-Patch size 越小(`14 < 16 < 32`),序列越长、attention 计算量越大,但表征更细粒度。ViT-H/14 是论文里最强配置——14×14 patch(`224/14=16` patches each direction,共 256 个),配合 32 层 transformer 达到 ImageNet SOTA。
+Patch size 越小(`14 < 16 < 32`),序列越长、attention 计算量越大,但表征更细粒度。ViT-H/14 是论文里最强配置——`224/14 = 16` patches each direction,共 256 个 token,配合 32 层 transformer 达到 ImageNet SOTA。
 
-## 数据规模的关键
+### 机制三:大数据 + 大模型 → 反超 CNN 的关键
 
-ViT 论文最重要的发现是**性能-数据规模的关系**(论文 Figure 3):
+光把图像切成 patch 不够——ViT 在小数据集上**反而比 CNN 差**。这一点是论文里最反直觉的发现:
 
 | 预训练数据集 | 规模 | ViT-L/16 ImageNet acc | ResNet-152 ImageNet acc |
 |------|------|------|------|
@@ -77,14 +83,27 @@ ViT 论文最重要的发现是**性能-数据规模的关系**(论文 Figure 3)
 | ImageNet-21K | 14M | 84.0 | 82.7(平手) |
 | **JFT-300M** | **300M** | **87.8**(ViT 胜) | 86.2 |
 
-观察:**ViT 在小数据(1.3M)上不如 ResNet,在中等数据(14M)上持平,在大数据(300M)上明显胜出**。这一现象的物理解释是:
+**ViT 在小数据(1.3M)上不如 ResNet,在中等数据(14M)上持平,在 JFT-300M 上才明显胜出**。物理解释是:
 
-- **CNN 的归纳偏置是"免费的训练数据"**——locality 和 translation equivariance 这两条先验等于告诉模型"邻居相关 + 平移不变",省去了从数据中学这些事的成本。小数据时 CNN 利用归纳偏置高效收敛
-- **Transformer 必须从数据中学到这些先验**——大数据足够时,Transformer 从数据中学到的视觉表征**比 CNN 硬编码的归纳偏置更灵活**(可以学到非平移不变性的模式,如"图像中央更重要")
+- **CNN 的归纳偏置等于"免费的训练数据"**——locality + translation equivariance 这两条先验直接告诉模型"邻居相关 + 平移不变",省去了从数据中学这些事的成本。小数据时 CNN 用先验填补样本不足,样本效率高
+- **ViT 几乎没有归纳偏置**——只有 position embedding 一项弱先验。它必须从数据中**自己学到**"locality 是有用的"、"平移近似不变"这些规律。小数据不够它学,所以拼不过 CNN;但大数据时,它学到的视觉表征**比 CNN 硬编码的先验更灵活**——可以学到非平移不变性的模式(如"图像中央比边角重要"),可以让浅层就建立长距离关联(CNN 要 7-10 层才能让感受野覆盖全图,ViT 第 1 层 self-attention 就做到了)
 
-这一发现的方法论意义:**归纳偏置不是免费午餐,在足够数据时它可能是约束而不是优势**。LeCun 2022 称此为 "the bitter lesson of vision" ——重复了 2012 年 [AlexNet](../01-cnn/02-alexnet.md) 打败 SIFT+SVM 时的故事:**学到的特征 > 设计的特征**。
+![图 2:ViT vs CNN 的 inductive bias 对比 + 性能-数据规模曲线](assets/01-vit-vs-cnn.svg)
+*图 2:上半 panel——CNN 自带 locality / translation equivariance / hierarchical features 三条先验,ViT 几乎一条都没有,全靠数据。下半 panel——`ResNet-152` 几乎是平的曲线(归纳偏置帮忙,小数据已经接近天花板),`ViT-L/16` 是陡峭上升的曲线(数据驱动,起点低但天花板高)。两条线在 ImageNet-21K 之后的某处交叉,300M 处 ViT 反超 ResNet 1.6 个点。callout:"大数据让 ViT 的灵活性变成优势 · 归纳偏置 = 约束 在 300M 处反转"。*
 
-但 JFT-300M 是 Google 私有数据集,学界没访问权限。**这一限制让 ViT 在发表后近半年内学界无法复现**,直到 [DeiT](02-deit.md)(2021)用 ImageNet-1K + 强增强 + 蒸馏在小数据上让 ViT 也 work,才让 ViT 真正普及到学界。
+这一发现的方法论意义被 LeCun 在 2022 年称为 "the bitter lesson of vision"——它重复了 2012 [AlexNet](../01-cnn/02-alexnet.md) 击败 SIFT+SVM 时的故事:**学到的特征 > 设计的特征**,只要数据规模够大。
+
+但 JFT-300M 是 Google 私有数据集,学界没访问权限——**这一限制让 ViT 发表后近半年内学界无法复现**,直到 [DeiT](02-deit.md)(2021)用 ImageNet-1K + 强增强 + 蒸馏在小数据上让 ViT 也 work,ViT 才真正普及到学界。
+
+### 三件套协同:Patch 化 + 标准 Transformer + 大数据预训练 缺一不可
+
+ViT 在 2020 年能打破 CNN 八年的统治,**不是单一改进**,而是三件套同时调到协同点——这和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化`、[Transformer](../05-transformer/01-transformer.md) 的 `scaled attention + multi-head + position encoding` 是一模一样的"工程契约"关系。任何一个单拿出来都不够:
+
+- **只有 patch 化,没有大数据**——这就是 ImageNet-1K 上的 ViT,76.5%,被 ResNet-152 的 77.8% 压住。社区会得出"Transformer 对视觉不 work"的错误结论,这正是 2018-2019 那批"局部 attention 替换 conv"工作没做大的原因
+- **只有大数据 + Transformer,没有 patch 化**——直接做像素级 attention,`(224×224)² ≈ 2.5×10⁹` 次内积,JFT-300M 单 forward 都跑不起来。**patch 把序列长度从 5 万压到 200,是 attention 在视觉上变得可行的工程前提**
+- **只有 patch + 大数据,但用 RNN 或 CNN 处理 patch 序列**——RNN 串行无法 scale 到 JFT 规模训练,CNN 又重新引入了归纳偏置(局部 kernel)。**Transformer 的并行 + 无局部假设是吃满 JFT-300M 数据红利的唯一选择**
+
+三者合起来,才让"图像也是序列"这个 2017 年 Transformer 论文一出来就有人想过的念头,在 2020 年第一次跑到能击败 CNN 的水平。Dosovitskiy 团队的贡献不是"想到 patch as token"(这想法本身并不稀奇),而是**同时拿到了 JFT-300M 这一规模的数据 + 把工程跑通的耐心**——这两条加在一起,才把 patch + Transformer 这个组合从"看起来合理"推进到"真的 work"。
 
 ## 性能数据
 
