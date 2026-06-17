@@ -36,34 +36,52 @@ OpenAI 团队 2021 年 1 月发表 *Learning Transferable Visual Models From Nat
 
 更深远的影响是,CLIP 把"视觉表征"和"语言"绑在一起,这一对齐成为后续所有多模态系统(Stable Diffusion 的 text encoder、DALL-E 2 的 prior、LLaVA 的视觉特征提取器)的基础。今天 GPT-4V / Claude 3 视觉能力的源头,几乎都可以追溯到 CLIP 这一对齐思想。
 
-## 核心思想:对比学习对齐双塔
+## 核心思想
+
+### 直觉:用"图文对"代替"图像-类别标签"
+
+要理解 CLIP 真正需要先抓一件事:**为什么 2020 年之前的 CV 是封闭世界的 1000 类?因为监督信号是离散标签**。ImageNet 的每张图必须挂在 1000 个 ID 之一上,JFT-300M 也只是把这个数字推到 18K——本质都是"从一个有限集合里选一个"。这就强制了三件事:类别要预先定义、必须有人工标注、模型最后一层永远是 `vocab_size` 维 FC + softmax。要加一个新类(比如 "axolotl"),意味着 head 改维度 + 收集标注 + 重新微调,流程整套重来。
+
+CLIP 反过来问:**互联网上已经躺着 4 亿对 `<图,文本描述>`,文本天然是开放词汇 + 自带细粒度信息("一只橙色的猫蹲在沙发上" vs 简单标签 "cat"),为什么不直接用它做监督?** 一旦把监督信号从"标签 ID"换成"自由形式的文本",视觉模型学到的就不再是"哪个 ID 该激活",而是"这张图的语义在文本空间里大概落在哪"——训完就能 zero-shot 到任何能用语言描述的类别。
+
+这个心智模型一换,后面所有 CLIP 的工程细节都顺理成章——双塔结构是把图像和文本都映射到同一空间的最简实现、对比学习是"图文对要近、不配对要远"的最自然损失、文本 prompt 推理是把"分类"重新定义成"哪个文本描述跟这张图最像"。三件事都是从这个直觉演绎出来的。
+
+### 机制一:Dual Encoder — 图像 / 文本各一个 encoder,投影到同一空间
 
 CLIP 的架构是**双塔结构**——图像和文本各有独立编码器,在最后一层投影到同一维度的向量空间:
 
 ```mermaid
 graph LR
     img["Image batch [N]"]:::input --> img_enc["Image Encoder<br/>(ViT 或 ResNet)"]:::compute
-    img_enc --> img_emb["Image emb [N, d]"]:::compute
+    img_enc --> img_proj["Linear → d"]:::compute --> img_emb["L2-norm [N, d]"]:::compute
     txt["Text batch [N]"]:::input --> txt_enc["Text Encoder<br/>(Transformer)"]:::compute
-    txt_enc --> txt_emb["Text emb [N, d]"]:::compute
-    img_emb --> sim["相似度矩阵<br/>[N, N]"]:::compute
-    txt_emb --> sim
-    sim --> loss["InfoNCE 对比损失<br/>对角线 ↑ · 其他 ↓"]:::output
+    txt_enc --> txt_proj["Linear → d"]:::compute --> txt_emb["L2-norm [N, d]"]:::compute
+    img_emb --> shared["共享 d=512 / 768 空间"]:::output
+    txt_emb --> shared
 
     classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
     classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
     classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
 ```
 
-*图 1:CLIP 双塔架构 — 图像和文本各自独立编码后,在 batch 内做 N×N 相似度矩阵,InfoNCE 让对角线(真实图文对)相似度高,其他位置低。*
+*图 1:CLIP 双塔——图像走 ViT/ResNet,文本走 Transformer,各自最后一层接 linear 投影到 d 维并做 L2 归一化,落到同一个单位球面上。*
 
-**Image Encoder** —— 标准视觉骨干:CLIP 论文里测了 ResNet-50/101 + 几种 [ViT](../08-vit/01-vit.md)(ViT-B/32, B/16, L/14)。最终 production 模型(OpenAI 开源的 CLIP-ViT-L/14)用 ViT。
+**Image Encoder** —— 标准视觉骨干:CLIP 论文里测了 ResNet-50/101 + 几种 [ViT](../08-vit/01-vit.md)(ViT-B/32, B/16, L/14)。最终 production 模型(OpenAI 开源的 CLIP-ViT-L/14)用 ViT。取最后一层的 `[CLS]` token(或 ResNet 的 GAP 输出)作图像表征。
 
-**Text Encoder** —— 12 层 Transformer encoder(63M 参数),token 序列经过 attention + 取 `[EOS]` 位置的最终 hidden state 作为文本表征。
+**Text Encoder** —— 12 层 [Transformer](../05-transformer/01-transformer.md) encoder(63M 参数),token 序列经过 attention + 取 `[EOS]` 位置的最终 hidden state 作为文本表征。注意——文本端不用预训练 BERT,而是 CLIP 训练时从零学。
 
-**对齐头** —— 两个编码器各接一个 linear,投影到 `d=512` 维(ResNet)或 `d=768` 维(ViT-L)的共享空间。然后**L2 归一化**(让向量在单位球面上)。
+**对齐头 + L2 归一化** —— 两个编码器各接一个 linear,投影到 `d=512` 维(ResNet)或 `d=768` 维(ViT-L)的共享空间。然后**两端都做 L2 归一化**——把所有向量放到单位球面上,后续相似度计算等价于余弦相似度(因为归一化后内积 = `cos(θ)`)。这一步看似不起眼,但缺了它训练就崩——L2 归一化是 InfoNCE 训稳的前提。
 
-**InfoNCE 损失** —— 在 batch 大小 N 内做对比学习。给定 N 对真实图文 `(x_i, y_i)`,损失对称:
+### 机制二:Contrastive Loss — N×N 矩阵里"对角线对,其它对错"
+
+有了同一空间里的两组向量,怎么让"配对的图文"靠近、"不配对的图文"分开?CLIP 用 **InfoNCE 对比损失**——在一个 batch 内同时利用所有正负样本。
+
+给定 batch 内 N 对真实图文 `(I_i, T_i)`,做一次 N×N 相似度矩阵 `S_{ij} = I_i · T_j`:
+
+- **对角线 N 个格子** —— 是真实配对的图文,应该相似度高(正样本)
+- **其它 N²−N 个格子** —— 都是"图 i 配文本 j(j≠i)",来自 batch 内随机配对,应该相似度低(负样本)
+
+损失对称地从两个方向各做一次 cross-entropy:
 
 $$
 \mathcal{L}_{\text{i2t}} = -\frac{1}{N}\sum_i \log \frac{\exp(\text{sim}(I_i, T_i) / \tau)}{\sum_j \exp(\text{sim}(I_i, T_j) / \tau)}
@@ -77,42 +95,59 @@ $$
 \mathcal{L}_{\text{CLIP}} = \frac{1}{2}(\mathcal{L}_{\text{i2t}} + \mathcal{L}_{\text{t2i}})
 $$
 
-`sim(I, T)` 是归一化后的内积(等价余弦相似度),`τ` 是 temperature(可学的,初始 0.07)。两个方向对称——图像找正确文本 + 文本找正确图像。
+`sim(I, T)` 是归一化后的内积(等价余弦相似度),`τ` 是 temperature(可学的,初始 0.07)。两个方向对称的物理含义——**图像找正确文本 + 文本找正确图像两个任务一起优化**,任何一个方向单独训都不够稳。
 
-**Batch 越大效果越好** —— 因为更多负样本带来更强的对比信号。CLIP 用 batch 32768——超大 batch 是 CLIP 训练的关键工程,需要多机分布式 + careful all-gather。
+**Batch 越大效果越好** —— 负样本数 = N - 1,batch 32 时每个正样本只对抗 31 个噪声,batch 32768 时对抗 32767 个。CLIP 用 batch 32768 不是炫技,而是对比信号强度的本质需求。但单 GPU 装不下 32K 样本前向 + 反向,必须做多机分布式 + careful all-gather 把每张 GPU 的 embedding 汇总成完整矩阵——这是 CLIP 训练的核心工程难点。
 
-## Zero-Shot 分类的接口
+![CLIP 训练时的 N×N 相似度矩阵 + InfoNCE 对称损失](assets/01-clip-contrastive-matrix.svg)
+*图 2:batch N=8 的 contrastive 矩阵示意(真实 N=32768)。8 张图过 image encoder 得到 `I₁..I₈`,8 条文本过 text encoder 得到 `T₁..T₈`,做 8×8 cosine 相似度矩阵。**对角线 8 个绿格是正样本要拉近**,其余 56 个浅红格是负样本要推远。底部 `L = (L_i2t + L_t2i) / 2` 等价于"把矩阵当 logits、标签 = arange(N)、行/列各做一次 cross-entropy 再平均"。*
 
-CLIP 训练完后,做新数据集的分类不需要任何微调——只需要把类别变成 prompt:
+### 机制三:Zero-Shot Classifier — 把"类别"变成"a photo of a {class}"
+
+训练完得到一对编码器后,怎么做分类?CLIP 给的方案在 2021 年看几乎是反常识的——**完全不微调,把类别名变成 prompt,推理时把分类问题重定义成"哪个文本描述跟这张图最像"**。
+
+具体流程(以 ImageNet 1000 类为例):
+
+1. **把每个类别造一个 prompt** —— 1000 个类别 → `["a photo of a dog", "a photo of a cat", ..., "a photo of a toaster"]`
+2. **离线算一次 text embedding** —— text encoder 把 1000 个 prompt 编成 `[1000, d]` 的矩阵,做一次就缓存,后面所有图共用
+3. **来一张图算 image embedding** —— image encoder → `[1, d]`,L2 归一化
+4. **相似度 → argmax** —— `logits = image_emb @ text_emb.T` 得到 `[1, 1000]`,argmax 即预测类别
 
 ```python
-# 给定一个数据集的类别列表
 classes = ["dog", "cat", "bird", "car"]
-
-# 1. 把类别名变成 prompt
 prompts = [f"a photo of a {c}" for c in classes]
 
-# 2. 用 text encoder 算每个类别的 embedding(这一步只算一次)
-text_embs = clip.encode_text(prompts)        # [4, d]
+text_embs = clip.encode_text(prompts)                            # [4, d]
 text_embs = text_embs / text_embs.norm(dim=-1, keepdim=True)
 
-# 3. 来一张图,用 image encoder 算 embedding
-image_emb = clip.encode_image(image)          # [1, d]
+image_emb = clip.encode_image(image)                             # [1, d]
 image_emb = image_emb / image_emb.norm(dim=-1, keepdim=True)
 
-# 4. 算相似度,选最高
-logits = (image_emb @ text_embs.T) * 100      # 100 是 temperature 倒数
-probs = logits.softmax(dim=-1)                # [1, 4]
-predicted = classes[probs.argmax()]
+logits = (image_emb @ text_embs.T) * 100                         # 100 是 temperature 倒数
+predicted = classes[logits.softmax(dim=-1).argmax()]
 ```
 
-这一接口的关键性质:
+这一接口的革命性在于:
 
-- **不需要训练数据** —— 给类别名就行,从来没在这个数据集上训过
-- **类别可以任意定义** —— `"a photo of a dog"` / `"a sketch of a dog"` / `"a cartoon dog"` 都能区分
+- **不需要任何训练数据** —— 给类别名就行,模型从来没在这个数据集上训过
+- **类别空间 = 整个自然语言** —— `"a photo of a dog"` / `"a sketch of a dog"` / `"a cartoon dog"` / `"an axolotl"` 都能区分,不再受 1000 类天花板限制
 - **Prompt 工程影响大** —— `"a photo of a {label}"` 比单独 `"{label}"` 通常好 1-3 分;CLIP 论文还提供了 80 个 prompt template ensemble 的最佳实践
+- **传统分类的 head 不存在了** —— 没有 1000 维 FC、没有 softmax 投影矩阵,只有"两个 encoder + 一个文本提示库"
+
+![CLIP zero-shot 推理流程](assets/01-clip-zero-shot.svg)
+*图 3:左路图像走 image encoder 得 `[1,768]` embedding;右路 1000 个类别名各自包成 `"a photo of a {class}"` prompt,过 text encoder 得 `[1000,768]` embedding 矩阵;中间一次矩阵乘 + argmax 得到预测类别。**底部 callout 对比**——传统 ImageNet 分类的 head 是固定 1000 维 FC、加类必须改结构;CLIP 把类别空间换成"任何能写成文本的描述",加类只需 `encode_text("a photo of an axolotl")`。*
 
 这一 zero-shot 范式被 CLIP 之后所有视觉理解系统沿用——OWL-ViT(zero-shot detection)、SAM(zero-shot segmentation)、LSeg(zero-shot semantic segmentation)都是 CLIP 思想的扩展。
+
+### 三件套协同:大规模图文对 + 对比学习 + 文本 prompt 推理 缺一不可
+
+CLIP 在 2021 年能 work,不是单一改进,而是**三件套同时调到协同点**——这一点和 [ResNet](../01-cnn/05-resnet.md) 里 `shortcut + BN + He 初始化` 的关系几乎一模一样,任何一件单拿出来都不够:
+
+- **只有 dual encoder + 对比学习,没有大规模图文对** —— 早在 2017-2019 已有不少"图文对齐"工作(VisualBERT、CLIP 之前的 ConVIRT 等),都因为只有几十万对人工 caption 数据效果有限。CLIP 把数据量推到 **400M 对**才让"对齐"真正学到通用视觉概念,而不只是 caption 数据集的偏置。这一规模差是 CLIP zero-shot 鲁棒性远胜小规模对齐工作的根因
+- **只有大规模图文对 + 对比学习,没有文本 prompt 推理接口** —— 训完得到一对 encoder 但只能用来算图文相似度做检索,无法替代分类器;视觉社区很难感知到"这是新范式"。`"a photo of a {class}"` 这一 prompt 化把 CLIP 从"图文检索模型"重定义成"通用 zero-shot 分类器",才让它在 27 个 benchmark 上和监督 ResNet 直接对比
+- **只有大规模数据 + prompt 接口,没有对比学习 (改用 caption 生成)** —— OpenAI 论文 Figure 2 实测过:同样规模 + 同样模型,用 caption 生成式预训练(预测下一个 token)的 zero-shot 效率比对比学习**慢 4 倍**(达到同样精度需要 4× 算力)。对比学习把"区分图文对"这件事压成 N²-N 个二元判别,信号密度远高于"逐 token 重建文本"
+
+三者合起来才让"用自然语言监督视觉"这一 2013 年就被 DeViSE 等工作提过的想法,在 2021 年第一次跑到"zero-shot 匹配监督 ResNet-50"的水平。这也是为什么 2013-2020 年之间多次有人摸到边但没做大——他们各自只调好了三件套里的一两件。
 
 ## 性能数据
 

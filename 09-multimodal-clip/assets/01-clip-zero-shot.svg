@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-pink2" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-green2" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    CLIP Zero-Shot Classification · 推理流程（无需任何微调）
+  </text>
+
+  <!-- ============= Left: 1 image → image encoder → 1 image emb ============= -->
+  <rect x="40" y="100" width="80" height="80" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="80" y="148" text-anchor="middle" font-size="32">🐱</text>
+  <text x="80" y="195" text-anchor="middle" font-size="11" fill="#92400e">输入图像</text>
+
+  <line x1="122" y1="140" x2="148" y2="140" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-pink2)"/>
+
+  <rect x="150" y="115" width="100" height="50" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="200" y="135" text-anchor="middle" font-size="12" fill="#9d174d">Image Encoder</text>
+  <text x="200" y="152" text-anchor="middle" font-size="10" fill="#9d174d">(ViT-L/14, frozen)</text>
+
+  <line x1="252" y1="140" x2="278" y2="140" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-pink2)"/>
+
+  <!-- image embedding bar -->
+  <rect x="280" y="125" width="100" height="30" rx="4"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.3"/>
+  <g font-size="9" fill="#065f46">
+    <line x1="290" y1="140" x2="298" y2="140" stroke="#059669" stroke-width="2"/>
+    <line x1="300" y1="132" x2="308" y2="132" stroke="#059669" stroke-width="2"/>
+    <line x1="310" y1="146" x2="318" y2="146" stroke="#059669" stroke-width="2"/>
+    <line x1="320" y1="138" x2="328" y2="138" stroke="#059669" stroke-width="2"/>
+    <line x1="330" y1="135" x2="338" y2="135" stroke="#059669" stroke-width="2"/>
+    <line x1="340" y1="144" x2="348" y2="144" stroke="#059669" stroke-width="2"/>
+    <line x1="350" y1="137" x2="358" y2="137" stroke="#059669" stroke-width="2"/>
+    <line x1="360" y1="142" x2="368" y2="142" stroke="#059669" stroke-width="2"/>
+  </g>
+  <text x="330" y="172" text-anchor="middle" font-size="10" fill="#065f46">image emb [1, 768]</text>
+
+  <!-- ============= Right: 1000 classes → prompts → text encoder → 1000 text emb ============= -->
+  <!-- class list -->
+  <rect x="580" y="80" width="120" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="640" y="95" text-anchor="middle" font-size="11" fill="#92400e">"dog"</text>
+  <rect x="580" y="106" width="120" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="640" y="121" text-anchor="middle" font-size="11" fill="#92400e">"cat"</text>
+  <rect x="580" y="132" width="120" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="640" y="147" text-anchor="middle" font-size="11" fill="#92400e">"car"</text>
+  <rect x="580" y="158" width="120" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="640" y="173" text-anchor="middle" font-size="11" fill="#92400e">…（共 1000 类）</text>
+  <rect x="580" y="184" width="120" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="640" y="199" text-anchor="middle" font-size="11" fill="#92400e">"toaster"</text>
+
+  <text x="640" y="68" text-anchor="middle" font-size="11" fill="#6b7280">ImageNet 1000 类别名</text>
+
+  <!-- prompt templating arrow -->
+  <line x1="700" y1="143" x2="730" y2="143" stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+
+  <!-- prompt list -->
+  <rect x="732" y="80" width="140" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="802" y="95" text-anchor="middle" font-size="10" fill="#92400e">"a photo of a dog"</text>
+  <rect x="732" y="106" width="140" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="802" y="121" text-anchor="middle" font-size="10" fill="#92400e">"a photo of a cat"</text>
+  <rect x="732" y="132" width="140" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="802" y="147" text-anchor="middle" font-size="10" fill="#92400e">"a photo of a car"</text>
+  <rect x="732" y="158" width="140" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="802" y="173" text-anchor="middle" font-size="10" fill="#92400e">…</text>
+  <rect x="732" y="184" width="140" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="802" y="199" text-anchor="middle" font-size="10" fill="#92400e">"a photo of a toaster"</text>
+
+  <text x="802" y="68" text-anchor="middle" font-size="11" fill="#6b7280">prompt 模板填充</text>
+
+  <!-- arrow down to text encoder -->
+  <line x1="802" y1="208" x2="802" y2="232" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-pink2)"/>
+
+  <rect x="720" y="234" width="170" height="44" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="805" y="252" text-anchor="middle" font-size="12" fill="#9d174d">Text Encoder</text>
+  <text x="805" y="269" text-anchor="middle" font-size="10" fill="#9d174d">(Transformer, frozen)</text>
+
+  <line x1="805" y1="280" x2="805" y2="304" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-pink2)"/>
+
+  <!-- stack of 1000 text embeddings -->
+  <g>
+    <rect x="745" y="328" width="120" height="14" rx="2" fill="#ecfdf5" stroke="#059669" stroke-width="0.8"/>
+    <rect x="745" y="318" width="120" height="14" rx="2" fill="#ecfdf5" stroke="#059669" stroke-width="0.8"/>
+    <rect x="745" y="308" width="120" height="14" rx="2" fill="#ecfdf5" stroke="#059669" stroke-width="0.8"/>
+    <rect x="752" y="320" width="120" height="14" rx="2" fill="#d1fae5" stroke="#059669" stroke-width="0.8"/>
+    <rect x="752" y="310" width="120" height="14" rx="2" fill="#d1fae5" stroke="#059669" stroke-width="0.8"/>
+    <rect x="752" y="300" width="120" height="14" rx="2" fill="#d1fae5" stroke="#059669" stroke-width="0.8"/>
+  </g>
+  <text x="812" y="319" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">text emb</text>
+  <text x="812" y="357" text-anchor="middle" font-size="10" fill="#065f46">[1000, 768]</text>
+
+  <!-- ============= Center: cosine similarity → argmax → predicted label ============= -->
+  <!-- arrows from image emb and text embs converging into center -->
+  <line x1="382" y1="140" x2="412" y2="280" stroke="#059669" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arr-green2)"/>
+  <line x1="745" y1="320" x2="498" y2="290" stroke="#059669" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arr-green2)"/>
+
+  <rect x="380" y="290" width="170" height="60" rx="10"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+  <text x="465" y="311" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">
+    sim = img_emb @ text_emb.T
+  </text>
+  <text x="465" y="330" text-anchor="middle" font-size="12" fill="#92400e">
+    [1, 1000]
+  </text>
+  <text x="465" y="345" text-anchor="middle" font-size="11" fill="#92400e" font-style="italic">
+    余弦相似度
+  </text>
+
+  <line x1="465" y1="352" x2="465" y2="380" stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+
+  <rect x="395" y="382" width="140" height="36" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="465" y="405" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">
+    argmax → softmax
+  </text>
+
+  <line x1="465" y1="420" x2="465" y2="448" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-pink2)"/>
+
+  <rect x="350" y="450" width="230" height="40" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="465" y="475" text-anchor="middle" font-size="14" fill="#065f46" font-weight="700">
+    预测：&quot;a photo of a cat&quot; ✓
+  </text>
+
+  <!-- ============= Bottom callout: 对比传统分类 vs CLIP zero-shot ============= -->
+  <line x1="40" y1="510" x2="860" y2="510"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- left callout: traditional ImageNet -->
+  <rect x="40" y="525" width="390" height="80" rx="8"
+        fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="60" y="546" font-size="12" fill="#9d174d" font-weight="600">
+    传统 ImageNet 分类（封闭世界）
+  </text>
+  <text x="60" y="565" font-size="11" fill="#7f1d1d">
+    • 模型最后一层是固定的 1000 维 FC + softmax
+  </text>
+  <text x="60" y="580" font-size="11" fill="#7f1d1d">
+    • 想加一个新类（如 &quot;axolotl&quot;）→ 必须改 head + 收集标注 + 微调
+  </text>
+  <text x="60" y="595" font-size="11" fill="#7f1d1d">
+    • 类别空间一旦定下来就锁死
+  </text>
+
+  <!-- right callout: CLIP zero-shot -->
+  <rect x="470" y="525" width="390" height="80" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+  <text x="490" y="546" font-size="12" fill="#065f46" font-weight="600">
+    CLIP zero-shot（开放词汇）
+  </text>
+  <text x="490" y="565" font-size="11" fill="#064e3b">
+    • 类别 = 任何能写成文本的描述，编码即查表
+  </text>
+  <text x="490" y="580" font-size="11" fill="#064e3b">
+    • 想加 &quot;axolotl&quot; → 直接 encode_text(&quot;a photo of an axolotl&quot;) 即可
+  </text>
+  <text x="490" y="595" font-size="11" fill="#064e3b">
+    • 类别空间 = 整个自然语言（4 亿图文对学到的）
+  </text>
+</svg>
