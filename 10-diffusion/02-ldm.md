@@ -26,65 +26,75 @@ key_idea: "把 diffusion 从 pixel 空间移到 VAE latent 空间,推理显存�
 
 **Stable Diffusion 是 LLM 时代之前 AI 进入消费市场的标志事件**——比 ChatGPT 早 3 个月,引爆了 AI 绘画文化、Midjourney 等商业产品、ControlNet / LoRA 等微调技术,直接催生了今天的 AI 视觉生成生态。
 
-## 核心思想:Latent Diffusion
+## 核心思想
 
-LDM 的核心是把 diffusion **从 pixel 转到 VAE latent**——两阶段训练:
+### 直觉:diffusion 不必在像素上做,搬到 latent 上能省 64×
 
-```mermaid
-graph LR
-    img["Image<br/>512×512×3<br/>(786K values)"]:::input --> enc["VAE Encoder"]:::compute
-    enc --> z["Latent z<br/>64×64×4<br/>(16K values, 64×小)"]:::compute
-    z --> dif["Diffusion U-Net<br/>在 latent 上做 1000 步"]:::compute
-    dif --> z_gen["Generated z"]:::compute
-    z_gen --> dec["VAE Decoder"]:::compute
-    dec --> out["Generated Image<br/>512×512×3"]:::output
+理解 LDM 真正需要先抓一件事:**[DDPM](01-ddpm.md) 在像素空间做 diffusion 已经吃满 V100 显存,512² 不可行**。U-Net 在 512×512×3 上做 1000 步 noise prediction 是 786K 个值 × 1000 次卷积,**算力瓶颈不在模型容量,而在"在哪个空间算"**。Rombach 等人 2022 的洞察:先用 VAE 把图像压到 `64×64×4` 的 latent,在这个 64× 更小的空间做 diffusion,再 decode 回像素。
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
+为什么 64× 压缩几乎不损质量?因为图像的"perceptual content"主要在低频结构 + 中频纹理,高频像素噪声本来就不重要。VAE 用 perceptual loss + adversarial loss 训出来后,latent 是图像的**语义压缩**,decoder 能从 latent 重建出感知上等价的像素。Diffusion 在 latent 上做,等于"在语义层面去噪",反而比像素层面更稳定 —— 这是 LDM 真正的反直觉点。
 
-*图 1:LDM 三阶段 pipeline — VAE 编码到 latent(64× 压缩)→ 在 latent 上 diffusion(64× 算力减少)→ VAE 解码回 pixel。*
+三件事必须同时成立才让 LDM 在 2022 年成立:
 
-**Stage 1: VAE(perceptual compression)** —— 训练一个 KL-regularized VAE,把 `H × W × 3` 图像压到 `H/f × W/f × c` 的 latent(典型 `f=8, c=4`)。VAE 的设计要点:
+- **存在感知质量好的 autoencoder** —— 普通 L2 VAE 压完模糊不可用,必须 perceptual + adversarial 训
+- **diffusion 训练对 latent 分布鲁棒** —— DDPM 本来设计在 pixel(类 Gaussian 分布)上,VAE latent 分布形态不同但 ε-prediction + scale 调整后仍然能 work
+- **通用 condition 接口让单 backbone 支持多任务** —— 不然每个任务(text2img / inpainting / upscale)都要重训,生态做不起来
 
-- **不是标准 VAE 的 ELBO 训练**,而是用 GAN-style adversarial loss + LPIPS perceptual loss 把 latent 做得"感知保真"
-- **z 的维度小但不太小**——压太多丢细节,压太少不省算力。`f=8` 是经验最优
-- **VAE 独立预训练**,然后冻结——Stage 2 不动 VAE
+三件事合起来才让 Stable Diffusion 在 2022 年 8 月以 4GB 模型 + 8GB 显存可跑的形态开源出来,直接引爆 AI 绘画文化。
 
-**Stage 2: Latent Diffusion** —— 在 VAE latent 上做标准 DDPM:
+### 机制一:Perceptual Compression — 用 VAE 把 512² 像素压到 64² latent
+
+LDM 的 Stage 1 是独立训练一个 **感知压缩 autoencoder**,把 $H \times W \times 3$ 图像压到 $H/f \times W/f \times c$ 的 latent。Stable Diffusion 用 `f=8, c=4`,即 512×512×3 → 64×64×4,**16K vs 786K 值,49× 压缩**(参数 8× × 高 8× × 宽 8× / 通道 4)。
+
+关键设计:
+
+- **不是标准 VAE 的 ELBO 训练**,而是 L1 + LPIPS perceptual loss + PatchGAN-style adversarial loss。这让 decoder 重建出"看起来真实"而非"L2 平均后模糊"的图像
+- **KL 正则但 weight 很小** —— 不严格强制 latent 服从 $\mathcal{N}(0, I)$,只保证 latent 不退化,给后续 diffusion 足够自由度
+- **压缩比 f 的甜蜜点是 8** —— f=4 不够省,f=16 丢细节,经验最优
+- **VAE 独立训完后冻结** —— Stage 2 完全不动 VAE,只训 diffusion U-Net
+
+### 机制二:Latent Diffusion — 在 latent 上跑标准 DDPM
+
+Stage 2 在 VAE latent 上跑和 DDPM **完全一样**的 noise prediction U-Net:
 
 $$
 \mathcal{L}_\text{LDM} = \mathbb{E}_{z_0, t, \epsilon}\big[\| \epsilon - \epsilon_\theta(z_t, t, c) \|^2\big]
 $$
 
-其中 `z_0 = VAE.encode(x_0)` 是 latent。U-Net `ε_θ` 处理 latent 的卷积操作量是 pixel-level 的 1/64,**显存和时间双双降 64×**。`c` 是条件(文本 / 类标签等)。
+其中 $z_0 = \text{VAE.encode}(x_0) \cdot 0.18215$(SD 用的 latent 标准化常数,把 latent 尺度对齐到 noise schedule 假设)。所有 DDPM 的训练 / 采样代码不变,只是 U-Net 输入从 $3 \times 512 \times 512$ 变成 $4 \times 64 \times 64$,**单 batch 显存从 ~14G 降到 ~2G**。
 
-**Stage 3: 解码** —— 采样得到 `z_T → z_0` 后,用 VAE decoder 把 latent 还原回 pixel。
+这一改造的妙处在于"复用 DDPM 的全部数学和工程经验" —— ε-prediction 参数化、linear / cosine schedule、DDIM 快速采样、CFG guidance 全都直接迁移。LDM 没发明任何新的 diffusion 理论,它发明的是"在哪个空间做 diffusion"这个**搬动**。
 
-## 条件注入:Cross-Attention
+![LDM 三阶段架构 — 像素 → latent → diffusion → latent → 像素](assets/02-ldm-architecture.svg)
+*图 1:**顶部** 256×256×3 像素图像 → **左下** VAE Encoder E 压成 64×64×4 latent(64× 压缩)→ **中央** latent 空间内跑 forward + reverse diffusion(几个 z_0 / z_t / z_T 方块,风格对仗 [DDPM SVG](01-ddpm.md))→ **右下** Decoder D 还原回像素。整条 diffusion 全程在虚线圈出的 latent 空间,VAE encoder/decoder 是 Stage 1 冻结。底部 callout:DDPM 训练循环不变,但单 batch 显存从 14G 降到 2G。*
 
-LDM 的另一个关键贡献是**用 cross-attention 统一各种条件输入**。原版 DDPM 是无条件 / 类条件(用 timestep embedding 加条件 embedding 就行);LDM 想支持文本 / 图像 / 语义图 / 深度图等复杂条件,设计了通用接口:
+### 机制三:Cross-Attention Conditioning — 一套接口接所有 condition
+
+LDM 的第三个关键贡献是**用 cross-attention 统一各种条件输入**。原版 DDPM 只支持无条件 / 类条件(timestep embedding + class embedding 相加);LDM 想支持文本 / 图像 / 语义图 / 深度图等复杂条件,设计了通用 cross-attention 接口:
 
 ```
-U-Net block 内部:
-  self-attention(latent token 之间)
-  cross-attention(latent token query × 条件 token key/value)
+U-Net 每个 block 内部:
+  Self-Attention    (latent token ↔ latent token)
+  Cross-Attention   (Q ← latent, K/V ← condition)
   FFN
 ```
 
-其中:
+文本条件的具体做法:CLIP text encoder(SD v1 用 ViT-L/14)把 prompt 编码成 `[77, 768]` token 序列 → U-Net 每个 cross-attention 层让每个 latent patch attend 到这 77 个文本 token。Classifier-Free Guidance(详见 [Imagen](03-imagen.md))在采样时增强文本控制力。
 
-- **Self-attention**——latent 内部信息聚合,同 DDPM
-- **Cross-attention**——把条件(文本 embedding / 图像 embedding)作为 K/V,latent patch 作为 Q,让每个 latent 位置可以 attend 到任意条件位置
+这一通用接口让 LDM 不只是"文生图"—— 它同时支持 inpainting(condition = 遮罩 + 半图)、super-resolution(condition = 低分辨率图)、layout-to-image(condition = 语义图)、img2img(condition = 输入图 + 部分加噪)。**一个 SD checkpoint 可以做多种任务**,这是后续 ControlNet / LoRA / IP-Adapter 等生态能围绕 SD 爆发的架构基础。
 
-文本条件的具体做法:
+![Cross-Attention 把任意 condition 统一成 K/V 注入](assets/02-ldm-cross-attention.svg)
+*图 2:**左** U-Net block 内部 self-attn → cross-attn → FFN 三件;**中** cross-attention 细节:Q 来自 latent feature,K/V 来自 condition,attention 让 latent 被 condition "调制"。**下** 三种 condition(文本 / 类别 / 语义图)各走自己的 encoder(CLIP / embedding lookup / conv),输出都变成 K/V 喂进同一个 cross-attention。底部 callout:统一接口让 LDM 成为通用条件生成 backbone,SD / ControlNet / Inpainting / img2img 都基于这套。*
 
-1. 用 **CLIP text encoder**(Stable Diffusion v1 用 CLIP ViT-L/14)把 prompt 编码成 `[77, 768]` token 序列
-2. 在 U-Net 的每个 cross-attention 层,latent patch 用 cross-attention 聚合这 77 个文本 token 的信息
-3. Classifier-Free Guidance(详见 [Imagen 节点](03-imagen.md))在采样时增强文本控制力
+### 三件套协同:perceptual 压缩 + 标准 diffusion + cross-attention 缺一不可
 
-这一通用接口让 LDM 不只是"文生图"——它可以做 inpainting(条件 = 半遮罩图)、super-resolution(条件 = 低分辨率图)、layout-to-image(条件 = 语义图)、img2img(条件 = 输入图 + 噪声混合)。一个 LDM checkpoint 可以做多种任务。
+LDM 在 2022 年能成立并引爆 SD 生态,**不是单一改进**,而是三件套同时成熟 —— 任何一个抽掉 LDM 都不会出现,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有压缩,没有 perceptual loss / adversarial loss** —— 普通 L2 VAE 压完模糊,decoder 还原出来的图细节糊掉,在它上面 diffusion 训出来质量直接劣于 DDPM,没有任何意义
+- **只有压缩 + perceptual VAE,没有 cross-attention 统一接口** —— 只能做无条件 / 类条件生成,Stable Diffusion 不会出现,文生图也接不上 CLIP / T5 之类的语义编码器
+- **只有标准 diffusion + cross-attention,没有压缩到 latent** —— 算力像 DDPM 一样爆炸,4GB 模型 / 8GB 显存的"消费级文生图"无法实现,只能停留在 OpenAI / Google 内部 demo
+
+三件套合起来才让"diffusion + 文本 + 消费级显卡"在 2022 年 8 月以 Stable Diffusion 形态出现,直接引爆全球 AI 绘画文化和 Midjourney / ControlNet / LoRA 整个生态。
 
 ## Stable Diffusion 的具体配置
 

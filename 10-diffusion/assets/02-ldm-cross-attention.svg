@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="ldm-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="ldm-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Cross-Attention 条件注入 — 一套接口接所有 condition
+  </text>
+
+  <!-- ============ LEFT: U-Net Block 内部 ============ -->
+  <text x="180" y="68" text-anchor="middle" font-size="14"
+        fill="#1f2937" font-weight="600">U-Net Block 内部</text>
+
+  <rect x="60" y="90" width="240" height="50" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="180" y="120" text-anchor="middle" font-size="13" fill="#065f46">Self-Attention(latent ↔ latent)</text>
+
+  <rect x="60" y="160" width="240" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="180" y="183" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Cross-Attention</text>
+  <text x="180" y="200" text-anchor="middle" font-size="11" fill="#9d174d">Q ← latent, K/V ← condition</text>
+
+  <rect x="60" y="230" width="240" height="50" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="180" y="260" text-anchor="middle" font-size="13" fill="#065f46">Feed-Forward Network</text>
+
+  <line x1="180" y1="140" x2="180" y2="158" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ldm-arr)"/>
+  <line x1="180" y1="210" x2="180" y2="228" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ldm-arr)"/>
+
+  <text x="180" y="305" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    × N(每个 U-Net 分辨率层都有)
+  </text>
+
+  <!-- ============ MIDDLE: Cross-Attention 细节 ============ -->
+  <text x="540" y="68" text-anchor="middle" font-size="14"
+        fill="#1f2937" font-weight="600">Cross-Attention 内部</text>
+
+  <!-- Q from latent -->
+  <rect x="360" y="100" width="100" height="35" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="410" y="123" text-anchor="middle" font-size="12" fill="#92400e">Q (latent feat)</text>
+
+  <!-- K, V from condition -->
+  <rect x="620" y="100" width="100" height="35" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="670" y="123" text-anchor="middle" font-size="12" fill="#1e40af">K (condition)</text>
+
+  <rect x="620" y="145" width="100" height="35" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="670" y="168" text-anchor="middle" font-size="12" fill="#1e40af">V (condition)</text>
+
+  <!-- attention scores -->
+  <rect x="430" y="200" width="220" height="35" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="540" y="223" text-anchor="middle" font-size="12" fill="#9d174d">softmax(Q·Kᵀ / √d)</text>
+
+  <line x1="410" y1="135" x2="430" y2="200" stroke="#d97706" stroke-width="1.5" marker-end="url(#ldm-arr)"/>
+  <line x1="620" y1="118" x2="540" y2="198" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ldm-arr-blue)"/>
+
+  <rect x="430" y="260" width="220" height="40" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="540" y="285" text-anchor="middle" font-size="13" fill="#065f46" font-weight="600">条件调制后的 latent feat</text>
+
+  <line x1="540" y1="235" x2="540" y2="258" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ldm-arr)"/>
+  <line x1="620" y1="163" x2="620" y2="258" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ldm-arr-blue)"/>
+
+  <text x="540" y="325" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    每个 latent 位置 attend 到全部 condition token
+  </text>
+
+  <!-- ============ DIVIDER ============ -->
+  <line x1="40" y1="365" x2="860" y2="365"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============ BOTTOM: 三种 condition 同一接口 ============ -->
+  <text x="450" y="395" text-anchor="middle" font-size="14"
+        fill="#1f2937" font-weight="600">三种 condition 都变成 K/V 喂进同一个 cross-attention</text>
+
+  <!-- Text -->
+  <rect x="60" y="420" width="200" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="160" y="438" text-anchor="middle" font-size="12" fill="#92400e">"a cat sitting on a mat"</text>
+  <text x="160" y="454" text-anchor="middle" font-size="11" fill="#92400e">(text prompt)</text>
+
+  <rect x="60" y="480" width="200" height="35" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="160" y="502" text-anchor="middle" font-size="12" fill="#9d174d">CLIP text encoder</text>
+
+  <!-- Class -->
+  <rect x="350" y="420" width="200" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="450" y="438" text-anchor="middle" font-size="12" fill="#92400e">class label "cat"</text>
+  <text x="450" y="454" text-anchor="middle" font-size="11" fill="#92400e">(category)</text>
+
+  <rect x="350" y="480" width="200" height="35" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="450" y="502" text-anchor="middle" font-size="12" fill="#9d174d">Embedding lookup</text>
+
+  <!-- Semantic map -->
+  <rect x="640" y="420" width="200" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="740" y="438" text-anchor="middle" font-size="12" fill="#92400e">segmentation map</text>
+  <text x="740" y="454" text-anchor="middle" font-size="11" fill="#92400e">(semantic / depth / pose)</text>
+
+  <rect x="640" y="480" width="200" height="35" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="740" y="502" text-anchor="middle" font-size="12" fill="#9d174d">Conv encoder</text>
+
+  <line x1="160" y1="460" x2="160" y2="478" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ldm-arr)"/>
+  <line x1="450" y1="460" x2="450" y2="478" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ldm-arr)"/>
+  <line x1="740" y1="460" x2="740" y2="478" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ldm-arr)"/>
+
+  <!-- merged K/V -->
+  <rect x="320" y="545" width="260" height="40" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="450" y="569" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="600">→ K / V → 同一 cross-attention</text>
+
+  <line x1="160" y1="515" x2="320" y2="560" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ldm-arr-blue)"/>
+  <line x1="450" y1="515" x2="450" y2="543" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ldm-arr-blue)"/>
+  <line x1="740" y1="515" x2="580" y2="560" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ldm-arr-blue)"/>
+
+  <!-- bottom callout -->
+  <rect x="60" y="600" width="780" height="32" rx="4"
+        fill="#1f2937" stroke="none"/>
+  <text x="450" y="621" text-anchor="middle" font-size="12" fill="#fef3c7">
+    统一接口让 LDM 成为通用条件生成 backbone — Stable Diffusion / ControlNet / Inpainting / img2img 全部基于这套
+  </text>
+</svg>

@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 720"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-pix" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-lat" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#6366f1"/>
+    </marker>
+    <marker id="arr-dec" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- ============== TITLE ============== -->
+  <text x="450" y="28" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="600">
+    LDM 架构 · diffusion 从 pixel 空间搬到 latent 空间
+  </text>
+  <text x="450" y="50" text-anchor="middle" font-size="12" fill="#6b7280">
+    VAE encoder 压缩 64× → 在 latent 上跑标准 DDPM → VAE decoder 还原
+  </text>
+
+  <!-- ============================================================== -->
+  <!-- TOP: PIXEL SPACE BAND (y = 70 - 200)                             -->
+  <!-- ============================================================== -->
+  <rect x="30" y="70" width="840" height="135" rx="8"
+        fill="#fef9c3" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,4" opacity="0.55"/>
+  <text x="50" y="92" text-anchor="start" font-size="13"
+        fill="#92400e" font-weight="700">像素空间 · pixel space</text>
+  <text x="50" y="108" text-anchor="start" font-size="11" fill="#92400e">
+    512×512×3 = 786K 个值 · diffusion 直接做需要 ~14GB 显存
+  </text>
+
+  <!-- 原图 -->
+  <rect x="60" y="120" width="80" height="70" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="100" y="150" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">原图 x</text>
+  <text x="100" y="167" text-anchor="middle" font-size="10" fill="#065f46">512×512×3</text>
+  <text x="100" y="181" text-anchor="middle" font-size="10" fill="#065f46">(原始 pixel)</text>
+
+  <!-- 生成图 -->
+  <rect x="760" y="120" width="80" height="70" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="800" y="150" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">生成图 x̂</text>
+  <text x="800" y="167" text-anchor="middle" font-size="10" fill="#065f46">512×512×3</text>
+  <text x="800" y="181" text-anchor="middle" font-size="10" fill="#065f46">(decoded)</text>
+
+  <!-- VAE Encoder (left arrow down) -->
+  <rect x="170" y="130" width="100" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.8"/>
+  <text x="220" y="150" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">VAE Encoder</text>
+  <text x="220" y="166" text-anchor="middle" font-size="10" fill="#9d174d">E · 冻结预训练</text>
+  <text x="220" y="178" text-anchor="middle" font-size="10" fill="#9d174d">f = 8</text>
+
+  <!-- VAE Decoder (right arrow up) -->
+  <rect x="630" y="130" width="100" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.8"/>
+  <text x="680" y="150" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">VAE Decoder</text>
+  <text x="680" y="166" text-anchor="middle" font-size="10" fill="#9d174d">D · 冻结预训练</text>
+  <text x="680" y="178" text-anchor="middle" font-size="10" fill="#9d174d">f = 8</text>
+
+  <!-- arrows pixel band -->
+  <line x1="142" y1="155" x2="168" y2="155"
+        stroke="#9d174d" stroke-width="1.8" marker-end="url(#arr-pix)"/>
+  <line x1="732" y1="155" x2="758" y2="155"
+        stroke="#059669" stroke-width="1.8" marker-end="url(#arr-dec)"/>
+
+  <!-- ============== DOWN / UP ARROWS PIXEL <-> LATENT ============== -->
+  <!-- Encoder down arrow -->
+  <line x1="220" y1="182" x2="220" y2="240"
+        stroke="#9d174d" stroke-width="2.2" marker-end="url(#arr-pix)"/>
+  <text x="232" y="218" text-anchor="start" font-size="11"
+        fill="#9d174d" font-style="italic">编码到 latent</text>
+
+  <!-- Decoder up arrow -->
+  <line x1="680" y1="240" x2="680" y2="182"
+        stroke="#059669" stroke-width="2.2" marker-end="url(#arr-dec)"/>
+  <text x="572" y="218" text-anchor="start" font-size="11"
+        fill="#065f46" font-style="italic">解码回 pixel</text>
+
+  <!-- ============================================================== -->
+  <!-- MIDDLE: LATENT SPACE BAND (y = 245 - 555)                        -->
+  <!-- ============================================================== -->
+  <rect x="30" y="245" width="840" height="310" rx="10"
+        fill="#eef2ff" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="50" y="270" text-anchor="start" font-size="13"
+        fill="#3730a3" font-weight="700">潜在空间 · latent space</text>
+  <text x="50" y="286" text-anchor="start" font-size="11" fill="#3730a3">
+    64×64×4 = 16K 个值 · 64× 压缩 · diffusion 全程在这里发生
+  </text>
+
+  <!-- z_0 (latent input, 左侧) -->
+  <rect x="170" y="305" width="70" height="60" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <text x="205" y="332" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">z₀</text>
+  <text x="205" y="349" text-anchor="middle" font-size="10" fill="#065f46">64×64×4</text>
+  <text x="205" y="362" text-anchor="middle" font-size="9" fill="#065f46">(clean latent)</text>
+
+  <!-- z_T (生成起点 / 加噪终点) -->
+  <rect x="415" y="305" width="70" height="60" rx="6"
+        fill="#1f2937" stroke="#0f172a" stroke-width="1.8"/>
+  <text x="450" y="332" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="700">z_T</text>
+  <text x="450" y="349" text-anchor="middle" font-size="10" fill="#e5e7eb">64×64×4</text>
+  <text x="450" y="362" text-anchor="middle" font-size="9" fill="#e5e7eb">(纯噪声)</text>
+
+  <!-- ẑ_0 (生成的 latent, 右侧) -->
+  <rect x="660" y="305" width="70" height="60" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <text x="695" y="332" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">ẑ₀</text>
+  <text x="695" y="349" text-anchor="middle" font-size="10" fill="#065f46">64×64×4</text>
+  <text x="695" y="362" text-anchor="middle" font-size="9" fill="#065f46">(denoised)</text>
+
+  <!-- forward (z_0 -> z_T): top arc, magenta -->
+  <path d="M 240 320 C 290 270, 380 270, 414 320"
+        stroke="#9d174d" stroke-width="2" fill="none"
+        marker-end="url(#arr-pix)" stroke-dasharray="5,3"/>
+  <text x="327" y="278" text-anchor="middle" font-size="11"
+        fill="#9d174d" font-style="italic">forward · q(z_t | z_{t-1}) 加噪</text>
+
+  <!-- reverse (z_T -> ẑ_0): bottom arc -->
+  <path d="M 484 350 C 530 405, 620 405, 660 350"
+        stroke="#6366f1" stroke-width="2.4" fill="none"
+        marker-end="url(#arr-lat)"/>
+  <text x="572" y="416" text-anchor="middle" font-size="11"
+        fill="#3730a3" font-style="italic">reverse · ε_θ(z_t, t, c) 去噪 1000 步</text>
+
+  <!-- intermediate latent dots between z_T and ẑ_0 to show steps -->
+  <g>
+    <rect x="510" y="318" width="32" height="32" rx="4" fill="#4338ca" stroke="#312e81" stroke-width="1.2"/>
+    <text x="526" y="338" text-anchor="middle" font-size="10" fill="#ffffff">z_t</text>
+    <rect x="555" y="318" width="32" height="32" rx="4" fill="#6366f1" stroke="#4338ca" stroke-width="1.2"/>
+    <text x="571" y="338" text-anchor="middle" font-size="10" fill="#ffffff">z_{t-1}</text>
+    <rect x="600" y="318" width="32" height="32" rx="4" fill="#a5b4fc" stroke="#6366f1" stroke-width="1.2"/>
+    <text x="616" y="338" text-anchor="middle" font-size="10" fill="#1e1b4b">...</text>
+  </g>
+
+  <!-- U-Net ε_θ box -->
+  <rect x="360" y="450" width="200" height="56" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="460" y="473" text-anchor="middle" font-size="13"
+        fill="#9d174d" font-weight="700">U-Net ε_θ(z_t, t, c)</text>
+  <text x="460" y="492" text-anchor="middle" font-size="10" fill="#9d174d">
+    和 DDPM 同款 · 只是输入小了 64×
+  </text>
+
+  <!-- arrow from U-Net up to reverse arc -->
+  <line x1="460" y1="450" x2="460" y2="412"
+        stroke="#db2777" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="475" y="436" text-anchor="start" font-size="10"
+        fill="#9d174d" font-style="italic">驱动 reverse</text>
+
+  <!-- 标注 condition c on U-Net (右侧 callout) -->
+  <rect x="610" y="455" width="125" height="46" rx="6"
+        fill="#fffbeb" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <text x="672" y="473" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">
+    c = condition
+  </text>
+  <text x="672" y="490" text-anchor="middle" font-size="9" fill="#92400e">
+    text / class / segmap
+  </text>
+  <line x1="608" y1="478" x2="562" y2="478"
+        stroke="#f59e0b" stroke-width="1" stroke-dasharray="2,2"/>
+
+  <!-- ẑ_0 → 经 D 解码 (链回上方) -->
+  <line x1="695" y1="305" x2="680" y2="245"
+        stroke="#059669" stroke-width="2" marker-end="url(#arr-dec)"/>
+
+  <!-- z_0 ← 经 E 编码 (链入下方) -->
+  <line x1="220" y1="245" x2="205" y2="305"
+        stroke="#9d174d" stroke-width="2" marker-end="url(#arr-pix)"/>
+
+  <!-- ============== BOTTOM CALLOUT ============== -->
+  <line x1="40" y1="575" x2="860" y2="575"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <g>
+    <rect x="40" y="592" width="820" height="110" rx="8"
+          fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="450" y="616" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">
+      关键观察 · 把 diffusion 搬到 latent 后,DDPM 的训练循环代码一字未改
+    </text>
+    <text x="60" y="640" text-anchor="start" font-size="11" fill="#065f46">
+      · ε_θ 网络结构和 DDPM U-Net 完全一样,只是输入分辨率从 256² 变成 32²–64²
+    </text>
+    <text x="60" y="658" text-anchor="start" font-size="11" fill="#065f46">
+      · L_simple 公式不变(MSE 预测 noise),timestep 调度不变,采样循环不变
+    </text>
+    <text x="60" y="676" text-anchor="start" font-size="11" fill="#065f46">
+      · 单 batch 显存从 ~14 GB(512² pixel)降到 ~2 GB(64² latent)→ 让 1.5B SD 跑进 8 GB 消费 GPU
+    </text>
+    <text x="60" y="694" text-anchor="start" font-size="11" fill="#065f46">
+      · VAE 编/解码只在训练 / 推理两端各做一次,不进入 1000 步循环 → 不放大算力
+    </text>
+  </g>
+
+</svg>
