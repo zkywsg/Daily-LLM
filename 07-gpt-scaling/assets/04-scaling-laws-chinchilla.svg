@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-ch" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#1f2937"/>
+    </marker>
+  </defs>
+
+  <!-- ============== TITLE ============== -->
+  <text x="450" y="30" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="600">
+    Chinchilla 修正:Kaplan 选错了 N / D 比例
+  </text>
+  <text x="450" y="52" text-anchor="middle" font-size="12" fill="#6b7280">
+    同样的 compute 预算,Chinchilla 把 N 减小、D 增大,反而拿到更低的 loss
+  </text>
+
+  <!-- ============================================================== -->
+  <!-- LEFT panel: Kaplan 2020                                          -->
+  <!-- ============================================================== -->
+  <g>
+    <rect x="40" y="80" width="400" height="360" rx="10"
+          fill="#fff7ed" stroke="#f59e0b" stroke-width="1.5"/>
+
+    <text x="240" y="108" text-anchor="middle" font-size="14"
+          fill="#1f2937" font-weight="700">Kaplan 2020:N 大、D 小</text>
+    <text x="240" y="126" text-anchor="middle" font-size="11" fill="#6b7280">
+      N_opt ∝ C^0.73 · D_opt ∝ C^0.27
+    </text>
+
+    <!-- model big box -->
+    <rect x="120" y="150" width="240" height="60" rx="6"
+          fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="240" y="174" text-anchor="middle" font-size="14" fill="#92400e" font-weight="700">
+      GPT-3 模型
+    </text>
+    <text x="240" y="192" text-anchor="middle" font-size="11" fill="#92400e">
+      N = 175B params · D = 300B tokens
+    </text>
+
+    <!-- proportion bars label -->
+    <text x="240" y="240" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">
+      compute 预算分配
+    </text>
+
+    <!-- N bar: 70% -->
+    <text x="60" y="270" text-anchor="start" font-size="11" fill="#1e3a8a" font-weight="600">N (参数)</text>
+    <text x="420" y="270" text-anchor="end" font-size="11" fill="#1e40af" font-weight="700">70%</text>
+    <rect x="60" y="278" width="266" height="18" rx="3"
+          fill="#3b82f6" stroke="#1e40af" stroke-width="1"/>
+    <rect x="326" y="278" width="114" height="18" rx="3"
+          fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+
+    <!-- D bar: 30% -->
+    <text x="60" y="318" text-anchor="start" font-size="11" fill="#1e3a8a" font-weight="600">D (数据)</text>
+    <text x="420" y="318" text-anchor="end" font-size="11" fill="#1e40af" font-weight="700">30%</text>
+    <rect x="60" y="326" width="114" height="18" rx="3"
+          fill="#3b82f6" stroke="#1e40af" stroke-width="1"/>
+    <rect x="174" y="326" width="266" height="18" rx="3"
+          fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+
+    <!-- loss label -->
+    <rect x="120" y="375" width="240" height="44" rx="6"
+          fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="240" y="395" text-anchor="middle" font-size="13" fill="#7f1d1d" font-weight="700">
+      loss = L₁
+    </text>
+    <text x="240" y="410" text-anchor="middle" font-size="10" fill="#7f1d1d">
+      (GPT-3 被 undertrain ~5×)
+    </text>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- RIGHT panel: Chinchilla 2022                                     -->
+  <!-- ============================================================== -->
+  <g>
+    <rect x="460" y="80" width="400" height="360" rx="10"
+          fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+
+    <text x="660" y="108" text-anchor="middle" font-size="14"
+          fill="#1f2937" font-weight="700">Chinchilla 2022:N 和 D 同步,each ∝ C^0.5</text>
+    <text x="660" y="126" text-anchor="middle" font-size="11" fill="#6b7280">
+      N : D ≈ 1 : 20 · 等比例扩张
+    </text>
+
+    <!-- model box -->
+    <rect x="540" y="150" width="240" height="60" rx="6"
+          fill="#dcfce7" stroke="#059669" stroke-width="1.5"/>
+    <text x="660" y="174" text-anchor="middle" font-size="14" fill="#065f46" font-weight="700">
+      Chinchilla 模型
+    </text>
+    <text x="660" y="192" text-anchor="middle" font-size="11" fill="#065f46">
+      N = 70B params · D = 1.4T tokens
+    </text>
+
+    <text x="660" y="240" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">
+      compute 预算分配
+    </text>
+
+    <!-- N bar: 30% (smaller than Kaplan) -->
+    <text x="480" y="270" text-anchor="start" font-size="11" fill="#065f46" font-weight="600">N (参数)</text>
+    <text x="840" y="270" text-anchor="end" font-size="11" fill="#065f46" font-weight="700">30%</text>
+    <rect x="480" y="278" width="114" height="18" rx="3"
+          fill="#10b981" stroke="#065f46" stroke-width="1"/>
+    <rect x="594" y="278" width="266" height="18" rx="3"
+          fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+
+    <!-- D bar: 70% (larger than Kaplan) -->
+    <text x="480" y="318" text-anchor="start" font-size="11" fill="#065f46" font-weight="600">D (数据)</text>
+    <text x="840" y="318" text-anchor="end" font-size="11" fill="#065f46" font-weight="700">70%</text>
+    <rect x="480" y="326" width="266" height="18" rx="3"
+          fill="#10b981" stroke="#065f46" stroke-width="1"/>
+    <rect x="746" y="326" width="114" height="18" rx="3"
+          fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+
+    <!-- loss label -->
+    <rect x="540" y="375" width="240" height="44" rx="6"
+          fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="660" y="395" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">
+      loss = L₂  &lt;  L₁
+    </text>
+    <text x="660" y="410" text-anchor="middle" font-size="10" fill="#065f46">
+      (同 compute,小模型 + 多数据反而赢)
+    </text>
+  </g>
+
+  <!-- section divider -->
+  <line x1="40" y1="455" x2="860" y2="455"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============================================================== -->
+  <!-- BOTTOM PANEL: two callouts                                       -->
+  <!-- ============================================================== -->
+
+  <!-- LEFT callout: key finding -->
+  <g>
+    <rect x="40" y="475" width="400" height="105" rx="8"
+          fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="60" y="498" text-anchor="start" font-size="12" fill="#92400e" font-weight="700">
+      关键发现
+    </text>
+    <text x="60" y="520" text-anchor="start" font-size="11" fill="#1f2937">
+      N ∝ C^0.5 · D ∝ C^0.5(权重相等)
+    </text>
+    <text x="60" y="540" text-anchor="start" font-size="11" fill="#1f2937">
+      GPT-3 (175B / 300B) 被严重 undertrain — 应配
+    </text>
+    <text x="60" y="558" text-anchor="start" font-size="11" fill="#1f2937">
+      3.5T tokens,或缩到 ~63B 参数 + 同 300B tokens
+    </text>
+  </g>
+
+  <!-- RIGHT callout: industry impact -->
+  <g>
+    <rect x="460" y="475" width="400" height="105" rx="8"
+          fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="480" y="498" text-anchor="start" font-size="12" fill="#065f46" font-weight="700">
+      直接催生的后续工作
+    </text>
+    <text x="480" y="520" text-anchor="start" font-size="11" fill="#1f2937">
+      LLaMA-1 7B / 13B / 65B — 都对应大 D
+    </text>
+    <text x="480" y="540" text-anchor="start" font-size="11" fill="#1f2937">
+      LLaMA-2 训练在 2T tokens
+    </text>
+    <text x="480" y="558" text-anchor="start" font-size="11" fill="#1f2937">
+      DeepSeek-V3 训练在 14.8T tokens(过训练换推理便宜)
+    </text>
+  </g>
+</svg>
