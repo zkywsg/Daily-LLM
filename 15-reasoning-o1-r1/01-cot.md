@@ -37,21 +37,34 @@ A: Roger 开始有 5 个。2 罐 × 3 个/罐 = 6 个新的。
 
 2022 年 1 月发表的 *Chain-of-Thought Prompting Elicits Reasoning in Large Language Models*(CoT)成为 LLM 推理研究的开端。它不只是一个 prompt 技巧——它揭示了 LLM 内部有一种**"未被开发的推理能力"**,只在适当 prompt 下才能展现。这一发现直接催生了后续两年的整个 reasoning 研究方向,最终在 2024 年 [OpenAI o1](03-o1.md) 把推理从 prompt 技巧推到训练目标。
 
-## 核心思想:Few-Shot Chain-of-Thought
+## 核心思想
 
-CoT 的方法极其简单——**在 few-shot prompt 里展示带推理步骤的例子**:
+### 直觉:让模型把"想"显式写下来,推理质量飞跃
+
+理解 CoT 真正需要先抓一件事:**LLM 本来就具备推理能力,只是默认不"想出来"**。GPT-3 175B 在 GSM8K 上准确率只有 17.7% —— 但这不是"模型不会算数学",而是"模型被 prompt 要求一次性吐出答案,在一次 forward 里完成所有计算,超出了 Transformer 的并行算力上限"。Wei 等人 2022 的洞察:**给 few-shot 示例展示"先写推理过程,再写答案"的格式,模型就 mimic 这个格式,把内部推理 unlock 到 token 流里**。同一个模型、同一个 inference API,改 prompt 格式让 GSM8K 从 17.7% 飙到 56.9%。
+
+为什么显式写出来会涨这么多?三个 mechanism 同时起作用:
+
+- **显式推理空间** —— 中间步骤本身成为 context,后续 token 可以 attend 到它,把一次性大计算拆成多次小计算
+- **任务难度被均摊** —— 一个 N 步推理题被分解成 N 个单步子任务,每步模型都能高准确率答对,链式准确率 ≈ 每步 accuracy 的乘积,但每步够准就远胜直接一次回答
+- **模型规模的涌现门槛** —— 这件事只在 ~60B+ 大模型上 work,小模型生成的推理过程本身就经常错,错误传染到答案后反而比直接回答更差
+
+把这三件事合起来:CoT 不是"教模型新能力",是"让模型把已有能力外显出来"。这一发现在 2022 年初被认为是 LLM 时代最重要的 prompt 突破,直接催生了后续两年的整个 reasoning 路线,最终在 2024 年 [o1](03-o1.md) / 2025 年 [R1](04-deepseek-r1.md) 把"先思考再回答"从 prompt 技巧推到训练目标。
+
+### 机制一:Few-shot CoT — 示例驱动的思维链
+
+最初版 CoT 的方法极其简单 —— **在 few-shot prompt 里展示带推理步骤的例子**:
 
 ```
-Q: 一个面包店上午做了 28 个面包,下午又做了 36 个。如果他们卖掉了 47 个,
-   面包店还剩多少个?
-A: 上午做了 28 个,下午做了 36 个,所以总共做了 28 + 36 = 64 个。
-   卖掉 47 个后,还剩 64 - 47 = 17 个。答案是 17。
+Q: 一个面包店上午做了 28 个面包,下午又做了 36 个。如果他们卖掉了 47 个,还剩多少?
+A: 上午做了 28 个,下午做了 36 个,总共 28 + 36 = 64 个。卖掉 47 个后,
+   还剩 64 - 47 = 17 个。答案是 17。
 
 Q: 一辆车从 9 点开到 11:30,平均速度 60 公里/小时。开了多远?
 A: 从 9 点到 11:30 是 2.5 小时。距离 = 速度 × 时间 = 60 × 2.5 = 150 公里。
    答案是 150。
 
-Q: 商店买入 12 个箱子的苹果,每箱 24 个。1/3 的苹果坏了,剩多少能卖?
+Q: 商店买入 12 箱苹果,每箱 24 个。1/3 苹果坏了,能卖多少?
 A: ?
 ```
 
@@ -62,39 +75,14 @@ A: 总共 12 × 24 = 288 个苹果。1/3 坏了就是 288 / 3 = 96 个坏的。
    能卖的是 288 - 96 = 192 个。答案是 192。
 ```
 
-**为什么有效?** Wei 等人给的解释:
+关键工程细节:**示例的推理过程必须用自然语言写出来,不能只写公式**。模型 mimic 的是格式 + 节奏,公式型例子触发不出多步推理。论文用 8 个示例,少于 4 个效果明显下降。
 
-**1. 显式推理空间** —— LLM 输出 token 是顺序的,每个 token 只能 attend 到之前的 context。直接输出 "1081"(`23 × 47` 的答案)要求模型在一次 forward 内完成多步乘法,**这超出了 Transformer 的并行计算能力**。把推理写出来后,中间步骤本身成为 context,后续 token 可以基于它继续算
+![Standard prompting vs CoT prompting 对比](assets/01-cot-prompt-comparison.svg)
+*图 1:同一道 GSM8K 题(网球数量问题),**左侧 standard prompting** 直接出答案,模型经常错;**右侧 CoT prompting** 在 A 后留出推理空间,模型自然输出 "5 + 6 = 11" 这种分步计算然后给答案。底部小柱状图:PaLM 540B 在 GSM8K 上 standard 17.9% → CoT 56.9%,差距 39 个点。同样模型同样推理 API,只改 prompt 格式。*
 
-**2. 分解复杂问题** —— 把一个难问题分解成几个简单子问题,每个子问题模型都能答对。整体准确率 ≈ 每步准确率的乘积,但每步简单的问题准确率高,乘积仍然大
+### 机制二:Zero-shot CoT — 一句魔法咒语 "Let's think step by step"
 
-**3. 模仿学习的能力** —— LLM 在 prompt 里看到推理格式后会模仿。但**只有足够大的模型才能模仿**——CoT 在 GPT-3 175B 上 work,在 GPT-3 6.7B 上效果反而比直接回答还差
-
-## 涌现:CoT 是大模型特有现象
-
-CoT 论文最重要的发现是 **CoT 是涌现现象**——只在模型规模超过某个阈值后才出现。论文 Figure 4 显示:
-
-| 模型规模 | 标准 prompt | CoT prompt | 提升 |
-|------|------|------|------|
-| LaMDA 8B | 5% | 4% | **-1%**(更差) |
-| LaMDA 62B | 9% | 18% | +9% |
-| LaMDA 137B | 17% | 57% | **+40%** |
-| GPT-3 6.7B | 6% | 5% | -1% |
-| GPT-3 175B | 17% | 47% | **+30%** |
-| PaLM 540B | 18% | 57% | **+39%** |
-
-**< 10B 参数的模型 CoT 反而损害准确率**——小模型生成的推理过程经常出错,错误传染到最终答案。只有 > 60B 参数的模型 CoT 才显著 work,> 100B 时效果爆炸。
-
-这一阈值现象的解释:
-
-- **小模型生成推理时容易出错** —— 计算错 / 逻辑错 / 单位错,错的推理 → 错的答案
-- **大模型推理可靠到能受益于多步分解** —— 每步准确率高,链式分解后整体准确率超过直接回答
-
-涌现现象后来被 Wei 2022 *Emergent Abilities of Large Language Models* 系统化为 LLM 时代的核心研究主题。CoT 是涌现的标志性例子之一——**模型大小是质变,不只是量变**。
-
-## Zero-Shot CoT
-
-CoT 论文需要写 few-shot 例子,有一定 prompt engineering 成本。Kojima 等人 2022 年 5 月发表 *Large Language Models are Zero-Shot Reasoners* 给出了更简的版本——**仅加一句 "Let's think step by step." 就能触发 CoT**:
+few-shot CoT 需要人工设计示例,有一定 prompt engineering 成本。Kojima 等人 2022 年 5 月发表 *Large Language Models are Zero-Shot Reasoners* 给出了更简的版本 —— **仅加一句 "Let's think step by step." 就能触发 CoT**:
 
 ```
 Q: 23 × 47 = ?
@@ -106,15 +94,45 @@ A: Let's think step by step.
    So the answer is 1081.
 ```
 
-Zero-shot CoT 在多个 benchmark 上比 standard prompting 提升 30%+,接近 few-shot CoT 水平。这一发现更深刻:**LLM 知道怎么推理,只是默认行为是不推理**。"Let's think step by step" 这一短语在训练语料里被频繁关联到"接下来是推理过程",触发了模型的推理模式。
+Zero-shot CoT 在 GSM8K 上让准确率从 17.7% 飙到 78.7%,**几乎追平 few-shot CoT**。这一发现比 few-shot CoT 更深刻 —— 它证明了 **CoT 能力是预训练阶段就内化的**,不是 few-shot 示例"教会"的。模型在 web 数据里见过太多次 "Let's think step by step" 后面跟着分步推理,这一短语成为了"切换到推理模式"的隐式 trigger。
 
-这一观察后来被推广到很多其他触发短语:
+后续被推广到多种触发短语:
 
 - **"Let's break this down."**
 - **"Step 1:"** (直接给开头让模型续)
-- **"Take a deep breath and work on this problem step by step."** —— Google 2023 发现这个 prompt 比"think step by step"还好
+- **"Take a deep breath and work on this problem step by step."** —— Google 2023 发现比"think step by step"还好
 
-这些短语都没有训练时的明确"标签",但 LLM 在 web 数据里见过足够多次,学到了它们的语义关联。
+这些短语都没有训练时的明确"label",但 LLM 学到了它们的语义关联。
+
+### 机制三:Scale 涌现 — CoT 在 ~100B 参数后才显著有效
+
+CoT 论文最重要的发现是 **CoT 是涌现现象**,只在模型规模超过某个阈值后才有正收益。论文 Figure 4 的关键数据:
+
+| 模型规模 | 标准 prompt | CoT prompt | 提升 |
+|------|------|------|------|
+| LaMDA 8B | 5% | 4% | **−1%**(更差) |
+| LaMDA 62B | 9% | 18% | +9% |
+| LaMDA 137B | 17% | 57% | **+40%** |
+| GPT-3 6.7B | 6% | 5% | −1% |
+| GPT-3 175B | 17% | 47% | **+30%** |
+| PaLM 540B | 18% | 57% | **+39%** |
+
+**< 10B 参数的模型 CoT 反而损害准确率** —— 小模型生成的推理过程经常出错,错误传染到最终答案;只有 > 60B 才显著 work,> 100B 时效果爆炸。
+
+这是"涌现能力"(emergent abilities)最具体的例子,也是 GPT-3 175B 才"适合 CoT"的根因。后来 Wei 2022 *Emergent Abilities of Large Language Models* 把这一现象系统化为 LLM 时代的核心研究主题 —— **模型大小是质变,不只是量变**。
+
+![CoT 准确率 vs 模型规模 — scale 涌现](assets/01-cot-emergence.svg)
+*图 2:GSM8K 准确率 vs 模型参数的 log-log 曲线。**灰线 Standard prompting**——准确率随模型增大缓慢线性上升;**粉线 Chain-of-Thought**——在 ~10B 之前甚至比 standard 还差(小模型推理错传染答案),~60B 后陡升,540B 反超 standard 39 个点。交叉点圈出 "CoT 在此涌现"。右侧 panel 列出最受益于 CoT 的任务类型(arithmetic / symbolic / logical / multi-hop QA / commonsense),共同点是都需要多步分解。*
+
+### 三件套协同:能推理的大模型 + 显式思维链格式 + 充分采样 缺一不可
+
+CoT 能在 2022 年成立并改变整个 LLM 应用范式,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 CoT 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有显式思维链格式,没有能推理的大模型** —— < 10B 模型 CoT 反而拖后腿(机制三),错误的推理过程把准确率往下拉,小模型上是 anti-pattern
+- **只有大模型,没有显式格式** —— 推理被压缩在"沉默隐藏层"里,Transformer 单次 forward 算力上限直接卡住多步任务,GSM8K 永远停在 17.7%
+- **只有大模型 + 显式格式,没有充分采样** —— 单条 chain 只要某一步出错全错,greedy decoding 上限有限。[Self-Consistency](02-self-consistency.md) 用多次采样 + 投票把 CoT 准确率再涨 10-20 个点,后来的 Tree-of-Thought / o1 全部建立在"多次采样 / 搜索"基础上
+
+三件套合起来才让"先思考再回答"从一个 prompt 技巧变成 LLM 时代的标准能力。这也是为什么 GPT-3 之前同样的 prompt 在 1.5B GPT-2 上完全无效 —— 大模型 + 显式格式两件必须同时具备,缺一不可。
 
 ## 性能数据
 
