@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-cross" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    AlexNet · 5 conv + 3 fc · 双 GPU 切分 pipeline
+  </text>
+
+  <!-- Input -->
+  <rect x="20" y="270" width="78" height="60" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="59" y="296" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">Input</text>
+  <text x="59" y="314" text-anchor="middle" font-size="11" fill="#92400e">224×224×3</text>
+
+  <!-- GPU 1 label -->
+  <text x="120" y="100" font-size="13" fill="#1e40af" font-weight="600">GPU 1 (48 通道)</text>
+  <!-- GPU 2 label -->
+  <text x="120" y="555" font-size="13" fill="#1e40af" font-weight="600">GPU 2 (48 通道)</text>
+
+  <!-- ========== GPU 1 path (upper) y center = 160 ========== -->
+  <!-- conv1 -->
+  <rect x="120" y="135" width="76" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="158" y="155" text-anchor="middle" font-size="12" fill="#9d174d">conv1 11×11/4</text>
+  <text x="158" y="172" text-anchor="middle" font-size="11" fill="#9d174d">55×55×48</text>
+
+  <!-- pool1 + LRN -->
+  <rect x="206" y="135" width="70" height="50" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="241" y="155" text-anchor="middle" font-size="12" fill="#065f46">pool1+LRN</text>
+  <text x="241" y="172" text-anchor="middle" font-size="11" fill="#065f46">27×27×48</text>
+
+  <!-- conv2 -->
+  <rect x="286" y="135" width="76" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="324" y="155" text-anchor="middle" font-size="12" fill="#9d174d">conv2 5×5</text>
+  <text x="324" y="172" text-anchor="middle" font-size="11" fill="#9d174d">27×27×128</text>
+
+  <!-- pool2 -->
+  <rect x="372" y="135" width="68" height="50" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="406" y="155" text-anchor="middle" font-size="12" fill="#065f46">pool2+LRN</text>
+  <text x="406" y="172" text-anchor="middle" font-size="11" fill="#065f46">13×13×128</text>
+
+  <!-- conv3 (cross-GPU) -->
+  <rect x="450" y="135" width="76" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+  <text x="488" y="155" text-anchor="middle" font-size="12" fill="#9d174d">conv3 3×3 *</text>
+  <text x="488" y="172" text-anchor="middle" font-size="11" fill="#9d174d">13×13×192</text>
+
+  <!-- conv4 -->
+  <rect x="536" y="135" width="68" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="570" y="155" text-anchor="middle" font-size="12" fill="#9d174d">conv4 3×3</text>
+  <text x="570" y="172" text-anchor="middle" font-size="11" fill="#9d174d">13×13×192</text>
+
+  <!-- conv5 + pool5 -->
+  <rect x="614" y="135" width="76" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="652" y="155" text-anchor="middle" font-size="12" fill="#9d174d">conv5+pool</text>
+  <text x="652" y="172" text-anchor="middle" font-size="11" fill="#9d174d">6×6×128</text>
+
+  <!-- ========== GPU 2 path (lower) y center = 440 ========== -->
+  <rect x="120" y="415" width="76" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="158" y="435" text-anchor="middle" font-size="12" fill="#9d174d">conv1 11×11/4</text>
+  <text x="158" y="452" text-anchor="middle" font-size="11" fill="#9d174d">55×55×48</text>
+
+  <rect x="206" y="415" width="70" height="50" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="241" y="435" text-anchor="middle" font-size="12" fill="#065f46">pool1+LRN</text>
+  <text x="241" y="452" text-anchor="middle" font-size="11" fill="#065f46">27×27×48</text>
+
+  <rect x="286" y="415" width="76" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="324" y="435" text-anchor="middle" font-size="12" fill="#9d174d">conv2 5×5</text>
+  <text x="324" y="452" text-anchor="middle" font-size="11" fill="#9d174d">27×27×128</text>
+
+  <rect x="372" y="415" width="68" height="50" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="406" y="435" text-anchor="middle" font-size="12" fill="#065f46">pool2+LRN</text>
+  <text x="406" y="452" text-anchor="middle" font-size="11" fill="#065f46">13×13×128</text>
+
+  <rect x="450" y="415" width="76" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+  <text x="488" y="435" text-anchor="middle" font-size="12" fill="#9d174d">conv3 3×3 *</text>
+  <text x="488" y="452" text-anchor="middle" font-size="11" fill="#9d174d">13×13×192</text>
+
+  <rect x="536" y="415" width="68" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="570" y="435" text-anchor="middle" font-size="12" fill="#9d174d">conv4 3×3</text>
+  <text x="570" y="452" text-anchor="middle" font-size="11" fill="#9d174d">13×13×192</text>
+
+  <rect x="614" y="415" width="76" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="652" y="435" text-anchor="middle" font-size="12" fill="#9d174d">conv5+pool</text>
+  <text x="652" y="452" text-anchor="middle" font-size="11" fill="#9d174d">6×6×128</text>
+
+  <!-- ========== FC layers (merged, center column right) ========== -->
+  <rect x="710" y="220" width="70" height="50" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="745" y="240" text-anchor="middle" font-size="12" fill="#5b21b6">fc6 *</text>
+  <text x="745" y="257" text-anchor="middle" font-size="11" fill="#5b21b6">4096 + Dropout</text>
+
+  <rect x="710" y="285" width="70" height="50" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="745" y="305" text-anchor="middle" font-size="12" fill="#5b21b6">fc7 *</text>
+  <text x="745" y="322" text-anchor="middle" font-size="11" fill="#5b21b6">4096 + Dropout</text>
+
+  <rect x="710" y="350" width="70" height="50" rx="6" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="745" y="370" text-anchor="middle" font-size="12" fill="#1e3a8a">fc8 *</text>
+  <text x="745" y="387" text-anchor="middle" font-size="11" fill="#1e3a8a">1000 logits</text>
+
+  <!-- Output softmax -->
+  <rect x="800" y="285" width="78" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="839" y="305" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">Softmax</text>
+  <text x="839" y="322" text-anchor="middle" font-size="11" fill="#92400e">1000 类</text>
+
+  <!-- ========== Input -> two GPU paths (split) ========== -->
+  <path d="M 98 290 L 110 290 L 110 160 L 118 160" stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+  <path d="M 98 310 L 110 310 L 110 440 L 118 440" stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+
+  <!-- ========== Upper path forward arrows ========== -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="196" y1="160" x2="204" y2="160" marker-end="url(#arr-main)"/>
+    <line x1="276" y1="160" x2="284" y2="160" marker-end="url(#arr-main)"/>
+    <line x1="362" y1="160" x2="370" y2="160" marker-end="url(#arr-main)"/>
+    <line x1="440" y1="160" x2="448" y2="160" marker-end="url(#arr-main)"/>
+    <line x1="526" y1="160" x2="534" y2="160" marker-end="url(#arr-main)"/>
+    <line x1="604" y1="160" x2="612" y2="160" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ========== Lower path forward arrows ========== -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="196" y1="440" x2="204" y2="440" marker-end="url(#arr-main)"/>
+    <line x1="276" y1="440" x2="284" y2="440" marker-end="url(#arr-main)"/>
+    <line x1="362" y1="440" x2="370" y2="440" marker-end="url(#arr-main)"/>
+    <line x1="440" y1="440" x2="448" y2="440" marker-end="url(#arr-main)"/>
+    <line x1="526" y1="440" x2="534" y2="440" marker-end="url(#arr-main)"/>
+    <line x1="604" y1="440" x2="612" y2="440" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ========== Cross-GPU dashed at conv3 ========== -->
+  <line x1="488" y1="185" x2="488" y2="415" stroke="#2563eb" stroke-width="1.5"
+        stroke-dasharray="5,4" fill="none"/>
+  <text x="498" y="303" font-size="11" fill="#1e40af" font-style="italic">conv3 跨 GPU</text>
+  <text x="498" y="318" font-size="11" fill="#1e40af" font-style="italic">通道全连接</text>
+
+  <!-- ========== conv5 -> fc6 merge arrows ========== -->
+  <path d="M 690 160 L 700 160 L 700 240 L 708 240" stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+  <path d="M 690 440 L 700 440 L 700 250 L 708 250" stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+
+  <!-- fc6 -> fc7 -> fc8 -->
+  <line x1="745" y1="270" x2="745" y2="283" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-main)"/>
+  <line x1="745" y1="335" x2="745" y2="348" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-main)"/>
+
+  <!-- fc8 -> softmax -->
+  <path d="M 780 375 L 795 375 L 795 310 L 798 310" stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+
+  <!-- ========== Cross-GPU note for FC ========== -->
+  <text x="745" y="210" text-anchor="middle" font-size="10" fill="#1e40af" font-style="italic">* = 跨 GPU 通信</text>
+
+  <!-- ========== Legend / footer ========== -->
+  <rect x="20" y="575" width="14" height="14" fill="#fce7f3" stroke="#db2777"/>
+  <text x="40" y="587" font-size="11" fill="#374151">Conv</text>
+  <rect x="90" y="575" width="14" height="14" fill="#ecfdf5" stroke="#059669"/>
+  <text x="110" y="587" font-size="11" fill="#374151">Pool / LRN</text>
+  <rect x="180" y="575" width="14" height="14" fill="#ddd6fe" stroke="#7c3aed"/>
+  <text x="200" y="587" font-size="11" fill="#374151">FC + Dropout</text>
+  <rect x="290" y="575" width="14" height="14" fill="#bfdbfe" stroke="#2563eb"/>
+  <text x="310" y="587" font-size="11" fill="#374151">FC logits</text>
+  <rect x="370" y="575" width="14" height="14" fill="#fef3c7" stroke="#d97706"/>
+  <text x="390" y="587" font-size="11" fill="#374151">Input / Output</text>
+  <line x1="480" y1="582" x2="510" y2="582" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <text x="516" y="587" font-size="11" fill="#374151">跨 GPU 通信(conv3 / fc)</text>
+
+  <text x="450" y="608" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    单卡 3 GB 显存装不下 60M 参数 + 中间激活 → 通道维劈成两半,各放一块 GTX 580
+  </text>
+</svg>

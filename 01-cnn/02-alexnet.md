@@ -24,76 +24,84 @@ key_idea: "首次在 ImageNet 大规模数据集上端到端训练深层 CNN（5
 
 ## 核心思想
 
-AlexNet 的贡献在于将一组工程要素首次系统化组合：8 层卷积/全连接（5 conv + 3 fc）+ [ReLU 激活](../foundations/02-activations/) + [Dropout](../foundations/07-regularization/) + 数据增强 + 双 GPU 并行训练 + 比赛级 CUDA 实现。这些要素相互依赖，缺一项都难以达到论文报告的精度。
+### 直觉:为什么深度 CNN 在 2012 年突然 work
 
-```mermaid
-graph LR
-    x["Input [B,3,224,224]"]:::input
-    c1["Conv 11×11 / s=4 / 96"]:::compute
-    p1["MaxPool 3×3 / s=2 + LRN"]:::compute
-    c2["Conv 5×5 / 256"]:::compute
-    p2["MaxPool 3×3 / s=2 + LRN"]:::compute
-    c3["Conv 3×3 / 384"]:::compute
-    c4["Conv 3×3 / 384"]:::compute
-    c5["Conv 3×3 / 256"]:::compute
-    p5["MaxPool 3×3 / s=2"]:::compute
-    fc6["FC 4096 + ReLU + Dropout"]:::compute
-    fc7["FC 4096 + ReLU + Dropout"]:::compute
-    fc8["FC 1000"]:::compute
-    y["Softmax [B,1000]"]:::output
+CNN 不是 2012 年才发明的。LeCun 早在 1989 年就用 CNN 做手写数字识别(后来工程化为 LeNet-5),1990 年代末已部署到全美 20% 的支票自动识别。2003 年 LeCun 进一步把 CNN 推到了"通用图像识别"的尝试上。也就是说——**CNN 的核心结构(卷积 + 池化 + 反传)在 AlexNet 之前已经存在 20 多年**。那为什么 ImageNet 这种"自然图像 1000 类"的任务一直要等到 2012 年才被 CNN 攻克?
 
-    x --> c1 --> p1 --> c2 --> p2 --> c3 --> c4 --> c5 --> p5 --> fc6 --> fc7 --> fc8 --> y
+答案是**三件事在 2010-2012 同时成熟**,缺一项 AlexNet 都不存在:
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
-*图 1：AlexNet 主干（5 conv + 3 fc），shape 与 LRN 位置标注。*
+- **数据**:ImageNet(Fei-Fei Li,2009)首次提供了 120 万张带标注的自然图像。在此之前 CNN 训练集普遍是 MNIST(6 万张灰度数字)、Caltech-101(9000 张)这种数据,千万级参数的网络根本"喂不饱"——给一个 60M 参数的网络看 9000 张图,等于让它把每张图背下来,过拟合是必然的
+- **算力**:NVIDIA 在 2007 年发布 CUDA,2010 年起科学计算社区开始用 GPU 做矩阵乘。GTX 580(2010 年底发布)单卡 1.5 TFLOPS,比同时代顶级 CPU 快约 30 倍。Krizhevsky 自己写了一份 CUDA 卷积 kernel(后来开源为 `cuda-convnet`),把训练时间从"CPU 上几个月"压到"两块 GPU 上 5 天"
+- **优化技术**:ReLU(Nair & Hinton 2010)、Dropout(Hinton 2012)、SGD + Momentum 的调参经验——这三样组合起来,首次让 8 层网络能从随机初始化稳定训出来
 
-**卷积层** 在二维平面共享一组小滤波器，对像素的二维邻域关系敏感：
+**前两件是外部条件,第三件是 AlexNet 自己的工程贡献**。Krizhevsky / Sutskever / Hinton 三人的功劳不是发明新结构(架构上 AlexNet 与 LeNet-5 高度同构),而是**把这三件外部条件拼成一台真正能在 ImageNet 上工作的机器**——一组工程要素的首次系统化组合:8 层 conv/fc + ReLU + Dropout + 数据增强 + 双 GPU 并行 + 比赛级 CUDA 实现。
 
-$$
-y_{i,j,k} = \sum_{c,u,v} w_{c,u,v,k} \cdot x_{i+u,\, j+v,\, c} + b_k
-$$
+![图 1 AlexNet 架构与双 GPU 切分](assets/02-alexnet-architecture.svg)
+*图 1:AlexNet 整体结构——5 conv + 3 fc,从 224×224×3 → 1000 类。**标志特性是双 GPU 切分**:通道维被劈成两半,分别放在两块 GTX 580 上,只有 conv3 与 fc 层做跨 GPU 通信(蓝色虚线)。这是 2012 年单卡 3 GB 显存约束下的工程妥协,也是"分组卷积(group convolution)"概念的早期雏形——后来被 ResNeXt、MobileNet 重新发现并发扬。*
 
-参数数量与图像尺寸解耦（只取决于卷积核与通道），相比将图像压平喂全连接的方式参数量降低数个数量级，同时将"邻居像素更可能相关"这一先验直接编码进网络结构。
+### 机制一:ReLU 取代 sigmoid/tanh — 让深层网络可训
 
-**最后一层 Softmax + 交叉熵** 把 1000 维 logits 转成概率分布并最大化对正确类的对数似然：
+LeNet 时代用 sigmoid 或 tanh 作激活,在 5 层以内问题不大。但堆到 8 层时,sigmoid/tanh 会暴露三个致命问题——AlexNet 把它们一次性换成了 ReLU $\max(0, x)$。
 
-$$
-p_k = \frac{e^{z_k}}{\sum_{j} e^{z_j}}, \quad \mathcal{L} = -\log p_{y}
-$$
+**问题一:梯度饱和**。sigmoid 在 $|x| > 5$ 区间几乎完全平坦,导数 $\sigma'(x) = \sigma(x)(1-\sigma(x))$ 最大值仅 0.25,在 $x = \pm 5$ 时已经掉到约 $0.007$。反向传播时梯度要乘 8 层的 $\sigma'$——即便每层只取最大值 0.25,8 层下来梯度也衰减到 $0.25^8 \approx 1.5 \times 10^{-5}$,网络前几层根本"学不动"。ReLU 在正区间梯度恒为 1,8 层串起来梯度乘积仍是 1,没有任何衰减;负区间梯度为 0(死亡),但只要 ReLU 单元中至少有一半被激活,网络整体仍能稳定训练。
 
-AlexNet 的核心论据是：在 ImageNet 规模的数据集上，端到端学到的特征首次系统性优于手工设计的视觉特征。这一结果标志着视觉社区从"特征工程 + 浅分类器"向"端到端表征学习"的转移。
+**问题二:计算便宜**。sigmoid 要算 $\exp$,在 2012 年 GPU 上一次 exp 的代价约等于 6 次浮点乘。ReLU 只是一个比较 + 选择,**便宜 6 倍以上**——在 60M 参数 × 上千个 step 的训练里,这个差距直接决定能不能 5 天内训完。
 
-ReLU 取代 Sigmoid 是另一个看似小但影响较大的改动。Sigmoid/Tanh 在深层网络中梯度衰减严重，训练难以收敛；ReLU `max(0, x)` 在正区间梯度恒为 1，使深层网络可以稳定训练。这一选择后续成为视觉模型的默认配置（[激活函数演化](../foundations/02-activations/)）。
+**问题三:稀疏激活**。ReLU 把所有负值 clamp 到 0,实际网络中约 50% 的激活值是 0。这一稀疏性既减少了后续矩阵乘的计算量,也提供了一种隐式正则——网络被迫学到"分工明确"的表征(每个 unit 只对特定模式响应),而非 sigmoid 那种"所有 unit 都被部分激活"的稠密表征。
 
-**LRN（Local Response Normalization）** —— 原始论文用 LRN 在 ReLU 之后做一种"侧向抑制"：相邻通道相互压制，让响应大的位置更突出。形式上：
+AlexNet 论文里有一张著名的对比图:同一架构用 ReLU 比用 tanh **训练速度快约 6 倍**(达到同样的训练 error)。这一改动本身只需要改 1 行代码,但对深度学习后续 10 年的影响极大——ReLU 及其变体(LeakyReLU / PReLU / GELU)从此成为深度网络的默认激活函数。
 
-$$
-b_{x,y,k} = a_{x,y,k} \left/ \left( c_0 + \alpha \sum_{j=\max(0,k-n/2)}^{\min(K-1,k+n/2)} a_{x,y,j}^2 \right)^{\beta} \right.
-$$
+### 机制二:Dropout — 防止 60M 参数过拟合
 
-参数取 $c_0=2, n=5, \alpha=10^{-4}, \beta=0.75$。**这一层在后续工作中被逐步弃用**——VGG 与 Inception 的消融结果显示 LRN 对最终精度贡献有限，BatchNorm 出现后则在主流工作中替代了它。今天读 AlexNet 代码看到 LRN，知作为历史实现保留即可，无需复现。
+AlexNet 全网 60M 参数,其中 **58M 集中在两层 4096 维 FC** 上(`9216×4096 + 4096×4096 ≈ 54M`)。这是过拟合的高危区——千万级参数对应 120 万张训练图,纸面上参数量比样本量还多 50 倍,如果不做正则,网络会迅速把训练集"背下来"。
 
-**双 GPU 切分（分组卷积的早期形态）** —— AlexNet 论文里通道维被切成两半，分别放在两块 GTX 580（每块 3 GB 显存）上跑。只有部分层（如 conv3、fc 层）跨 GPU 通信，其它层各自独立。这种切分是当时显存约束下的工程方案，其思路在后续以"分组卷积（group convolution）"的形式出现在 ResNeXt、MobileNet 等高效模型中。今天用单卡跑 AlexNet，把通道合并即可，不必复现切分。
+Hinton 2012 年提出 **Dropout** 正是为这个场景设计的:
 
-**感受野的累积** —— 5 个卷积层叠下来，最后一个 conv 输出位置看到的输入感受野显著扩大。粗略估算（忽略 padding 边界）：
+- **训练时**:每个 forward,FC 层的每个神经元以概率 $p = 0.5$ 独立"被关掉"(输出乘 0),这是一个伯努利 mask。哪些被关每个 batch 都重新随机
+- **推理时**:所有神经元全部打开,但每个权重乘 $p$ 作为补偿(让输出期望不变)
 
-| 层 | kernel / stride | 累积感受野（相对 input） |
-|---|---|---|
-| conv1 | 11/4 | 11 |
-| pool1 | 3/2 | 19 |
-| conv2 | 5/1 | 51 |
-| pool2 | 3/2 | 67 |
-| conv3 | 3/1 | 99 |
-| conv4 | 3/1 | 131 |
-| conv5 | 3/1 | 163 |
-| pool5 | 3/2 | 195 |
+为什么这样能防过拟合?有两个互补解释:
 
-最后一层每个空间位置看到的"上下文"约 195×195，已经覆盖 224 输入的大部分。
+**解释一:打破共适应**。如果不做 Dropout,FC 层的多个神经元很容易学到"互相依赖"的脆弱组合——比如 "unit A 永远配合 unit B 才有意义"。Dropout 每次随机干掉一半,逼迫每个神经元**独立学到有用的特征**,不能依赖固定搭档存在。
 
-数据增强（随机裁剪、左右翻转、PCA 颜色扰动）与 Dropout（用于两层 4096 维 FC 之间）联合控制了过拟合——千万级参数 + 百万级图像的设置下，这两类正则手段将训练与验证误差的差距控制在可接受范围内。
+**解释二:bagging 的隐式集成**。4096 维 FC 层有 $2^{4096}$ 种可能的 mask 子集——每个 forward 实际上是在训练一个**不同的子网络**。所有这些子网共享底层参数。推理时"权重 × p"近似等于对所有子网做几何平均,等价于一次廉价的 model ensemble。
+
+AlexNet 论文报告:**没有 Dropout 时,FC 层会严重过拟合,验证 error 比训练 error 高 5% 以上**。加了 Dropout 后,训练时间约翻倍(因为每个 step 实际只更新一半神经元),但泛化误差显著下降。这是 Dropout 第一次在大型任务上证明其价值,此后成为 2012-2017 年视觉与语音模型的标配,直到 BatchNorm 与 LayerNorm 在大模型上部分替代它的角色。
+
+### 机制三:GPU + Data Augmentation — 让训练在 6 天内跑完
+
+ReLU 解决了"能不能训",Dropout 解决了"训完会不会过拟合",但还有一个工程问题:**60M 参数 × 120 万张图 × 90 epoch,在 CPU 上要训几个月**——这种时间尺度上 ImageNet 比赛根本玩不起来。AlexNet 在两个维度同时硬刚这个问题。
+
+**GPU 维度:跨卡切分 + 手写 CUDA**。一块 GTX 580 只有 3 GB 显存,装不下 AlexNet 的完整 forward(激活 + 参数 + 梯度大约要 5-6 GB)。Krizhevsky 把通道维直接劈成两半,分别放在两块 GPU 上跑。架构层面:大部分层各 GPU 独立计算,只有 conv3 和所有 fc 层做跨 GPU 通信(因为这些层需要"看全所有通道")——这个设计既绕开了显存约束,又把通信成本压到最低。同时他自己写了一份 CUDA 卷积 kernel(`cuda-convnet`),性能比当时主流的 Caffe 实现快约 2 倍。最终训练时间:**2 块 GTX 580,约 5-6 天**。
+
+**数据维度:暴力数据增强**。120 万张图对于 60M 参数仍然不够。AlexNet 在训练时实时做三类增强,把单张图扩展成 ~2048 张:
+
+- **随机裁剪**:原图缩到短边 256,从中随机抠 224×224 → 一张图变 $32^2 = 1024$ 种 crop
+- **水平翻转**:再 ×2 = 2048 种
+- **PCA 颜色扰动**:对 ImageNet 训练集所有像素做 RGB PCA,按主成分加随机扰动模拟光照变化(室内/室外/晴天/阴天)。这个 trick 把 Top-1 错误率又降了约 1%
+
+测试时也做 10-crop(中心 + 四角 + 各自水平翻转),平均 softmax 概率。
+
+**LRN 与今天的关系**——原论文还用了 Local Response Normalization 在 ReLU 之后做侧向抑制,贡献约 1-2% 错误率下降。但 VGG / Inception 后续消融显示 LRN 收益有限,**BatchNorm(2015)出现后 LRN 在主流工作中被替代**。今天读 AlexNet 代码看到 LRN,知作为历史实现保留即可,无需复现。
+
+![图 2 AlexNet 三件套](assets/02-alexnet-tricks.svg)
+*图 2:AlexNet 的三个核心 trick。**左**:ReLU 与 sigmoid/tanh 对比——后两者在 $|x|>5$ 几乎完全饱和(梯度 ≈ 0),深层叠加会导致梯度指数衰减;ReLU 在正区间梯度恒为 1。**中**:Dropout 在训练时随机关闭一半 FC 神经元,推理时全开 + 权重 × p 作为补偿,等价于 $2^{4096}$ 个子网的 bagging。**右**:三类数据增强(随机 crop / 水平翻转 / PCA 颜色扰动)把每张图扩展成 ~2048 个变体。*
+
+### 三件套协同:ReLU + Dropout + GPU/data 缺一不可
+
+回到本节开头那句话:**AlexNet 真正的贡献不是任何单项技术,而是把这三件事拼到一起,让它们互相 enable 对方**。逐条拆解"少了任何一个不行":
+
+- **少了 ReLU(用 sigmoid)** → 8 层梯度衰减到 $10^{-5}$ 量级,前几层学不动;同时训练速度慢 6 倍,即便能收敛也来不及在 ILSVRC 截止日前训完。结果:模型根本训不出有用的特征
+- **少了 Dropout** → 58M 参数的两层 FC 在 120 万张图上严重过拟合,验证 error 比训练 error 高 5%+。AlexNet 论文报告这一对照实验里,Top-1 错误率会从 37.5% 上升到 ~43%——刚好就是被 SIFT+SVM baseline 超过的程度
+- **少了 GPU + Data Augmentation** → CPU 上 60M 参数训 90 epoch 要数月,根本来不及参赛;同时不做增强的话,120 万张图相对 60M 参数仍偏少,泛化 error 会再差 1-2%
+
+更深层的协同还有两点:
+
+**ReLU 让 Dropout 更稳定**——sigmoid 网络上做 Dropout 会让"被关闭的神经元"输出 0,这个 0 经过下一层的 sigmoid 后被映射到 0.5(因为 $\sigma(0)=0.5$),并不是真正的"关闭"。ReLU 网络上 0 经过下一层后仍是 0(ReLU 对负值 clamp),Dropout 的"真正屏蔽"效果才能传递下去。
+
+**GPU 让 Dropout 可承受**——Dropout 让训练时间约翻倍(每 step 只更新一半神经元,需要更多 step 才能收敛)。如果是 CPU 训练,Dropout 这个代价会让训练时间从几个月变成接近一年——根本不可行。只有 GPU 把每 step 的成本压到秒级,Dropout 的"训练时间 × 2"代价才能被吸收。
+
+这就是"系统级胜利"的含义:任何一项单拎出来都已是 2010-2012 年发表过的想法,但只有 AlexNet 把它们**正确地拼在一起**,才让"深度 CNN 在 ImageNet 规模上 work"这个判断真正成立。这种"工程组合优于单点突破"的范式,在后续 ResNet(残差 + BN + He 初始化三件套)、Transformer(self-attention + 残差 + LayerNorm 三件套)中反复重演。
 
 ## 训练细节
 

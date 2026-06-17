@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-blk" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#374151"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    AlexNet 三件套 · ReLU · Dropout · Data Augmentation
+  </text>
+
+  <!-- ========== Panel dividers ========== -->
+  <line x1="300" y1="60" x2="300" y2="640" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="600" y1="60" x2="600" y2="640" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ========== Panel 1: ReLU vs sigmoid/tanh ========== -->
+  <text x="150" y="80" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    机制一 · ReLU vs sigmoid/tanh
+  </text>
+  <text x="150" y="98" text-anchor="middle" font-size="12" fill="#6b7280">梯度饱和 vs 不饱和</text>
+
+  <!-- Axes for activation plot -->
+  <!-- plot region: x in [40, 260], y in [120, 280], center at (150, 200) -->
+  <line x1="40" y1="200" x2="265" y2="200" stroke="#9ca3af" stroke-width="1"/>
+  <line x1="150" y1="120" x2="150" y2="285" stroke="#9ca3af" stroke-width="1"/>
+  <polygon points="265,200 258,196 258,204" fill="#9ca3af"/>
+  <polygon points="150,120 146,127 154,127" fill="#9ca3af"/>
+  <text x="270" y="204" font-size="10" fill="#9ca3af">x</text>
+  <text x="155" y="117" font-size="10" fill="#9ca3af">y</text>
+  <text x="150" y="213" font-size="9" fill="#9ca3af">0</text>
+
+  <!-- sigmoid: y = 1/(1+e^-x), map y in [0,1] to [200, 130] (range 70 px) -->
+  <!-- center (0, 0.5) -> (150, 165). x range [-5,5] => [40, 260], step 10 px per unit but we use 22 px per unit roughly -->
+  <!-- using 22 px/unit: x = 150 + 22*u; for u from -5 to 5 -->
+  <path d="M 40 198 Q 95 198 130 195 Q 150 165 170 135 Q 205 132 260 132"
+        stroke="#dc2626" stroke-width="2" fill="none"/>
+  <text x="225" y="128" font-size="11" fill="#dc2626" font-weight="600">sigmoid</text>
+
+  <!-- tanh: similar shape but range [-1, 1] mapped to [235, 130] -->
+  <path d="M 40 232 Q 95 232 125 228 Q 150 200 175 172 Q 205 168 260 168"
+        stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <text x="225" y="164" font-size="11" fill="#f59e0b" font-weight="600">tanh</text>
+
+  <!-- ReLU: max(0,x) -> at x<0 flat at y=200; at x>=0 rising slope -->
+  <path d="M 40 200 L 150 200 L 260 130"
+        stroke="#059669" stroke-width="2.5" fill="none"/>
+  <text x="200" y="148" font-size="11" fill="#059669" font-weight="600">ReLU</text>
+
+  <!-- Saturation callouts -->
+  <text x="55" y="255" font-size="10" fill="#dc2626">|x|&gt;5: 梯度≈0</text>
+  <text x="55" y="270" font-size="10" fill="#dc2626">深层指数衰减</text>
+
+  <text x="60" y="320" font-size="11" fill="#374151" font-weight="600">ReLU 关键三点:</text>
+  <text x="60" y="338" font-size="11" fill="#374151">· 正区间 ∂/∂x ≡ 1,无饱和</text>
+  <text x="60" y="356" font-size="11" fill="#374151">· max(0,x) 比 exp 便宜 6×</text>
+  <text x="60" y="374" font-size="11" fill="#374151">· ~50% 激活为 0,稀疏</text>
+  <text x="60" y="395" font-size="11" fill="#6b7280" font-style="italic">→ AlexNet 收敛速度 6×</text>
+  <text x="60" y="411" font-size="11" fill="#6b7280" font-style="italic">  vs tanh baseline</text>
+
+  <!-- ========== Panel 2: Dropout ========== -->
+  <text x="450" y="80" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    机制二 · Dropout
+  </text>
+  <text x="450" y="98" text-anchor="middle" font-size="12" fill="#6b7280">p=0.5 random mask</text>
+
+  <!-- Training: 8 nodes, 4 are crossed out (red X) -->
+  <text x="380" y="130" font-size="12" fill="#1f2937" font-weight="600">Training</text>
+
+  <!-- 8 nodes column 1: training -->
+  <g>
+    <!-- active nodes (green) -->
+    <circle cx="380" cy="160" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="380" cy="195" r="13" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
+    <circle cx="380" cy="230" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="380" cy="265" r="13" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
+    <circle cx="380" cy="300" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="380" cy="335" r="13" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
+    <circle cx="380" cy="370" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="380" cy="405" r="13" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
+
+    <!-- red X on dropped nodes -->
+    <g stroke="#dc2626" stroke-width="2">
+      <line x1="372" y1="187" x2="388" y2="203"/>
+      <line x1="388" y1="187" x2="372" y2="203"/>
+      <line x1="372" y1="257" x2="388" y2="273"/>
+      <line x1="388" y1="257" x2="372" y2="273"/>
+      <line x1="372" y1="327" x2="388" y2="343"/>
+      <line x1="388" y1="327" x2="372" y2="343"/>
+      <line x1="372" y1="397" x2="388" y2="413"/>
+      <line x1="388" y1="397" x2="372" y2="413"/>
+    </g>
+  </g>
+
+  <!-- Inference: 8 nodes all active, scaled by p -->
+  <text x="520" y="130" font-size="12" fill="#1f2937" font-weight="600">Inference</text>
+
+  <g>
+    <circle cx="520" cy="160" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="520" cy="195" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="520" cy="230" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="520" cy="265" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="520" cy="300" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="520" cy="335" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="520" cy="370" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+    <circle cx="520" cy="405" r="13" fill="#bbf7d0" stroke="#059669" stroke-width="1.5"/>
+  </g>
+
+  <!-- arrow between -->
+  <line x1="400" y1="285" x2="503" y2="285" stroke="#374151" stroke-width="1.5" marker-end="url(#arr-blk)"/>
+  <text x="450" y="278" text-anchor="middle" font-size="10" fill="#6b7280">权重 × p</text>
+
+  <!-- Labels -->
+  <text x="380" y="437" text-anchor="middle" font-size="10" fill="#6b7280">每 batch 随机一半</text>
+  <text x="520" y="437" text-anchor="middle" font-size="10" fill="#6b7280">全员激活</text>
+
+  <text x="320" y="475" font-size="11" fill="#374151" font-weight="600">Dropout 解释:</text>
+  <text x="320" y="493" font-size="11" fill="#374151">· 训练:每 step 随机一半 fc</text>
+  <text x="320" y="510" font-size="11" fill="#374151">  神经元置 0(伯努利 mask)</text>
+  <text x="320" y="528" font-size="11" fill="#374151">· 推理:全开 + 权重 × p 补偿</text>
+  <text x="320" y="546" font-size="11" fill="#374151">· 等价 2⁴⁰⁹⁶ 子网 bagging</text>
+  <text x="320" y="567" font-size="11" fill="#6b7280" font-style="italic">→ 60M 参数不再过拟合</text>
+  <text x="320" y="583" font-size="11" fill="#6b7280" font-style="italic">  120 万训练图</text>
+
+  <!-- ========== Panel 3: Data Augmentation ========== -->
+  <text x="750" y="80" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    机制三 · Data Augmentation
+  </text>
+  <text x="750" y="98" text-anchor="middle" font-size="12" fill="#6b7280">从 1 张图变 2048 张</text>
+
+  <!-- Original 256x256 image (gray box) -->
+  <rect x="700" y="125" width="100" height="100" fill="#e5e7eb" stroke="#374151" stroke-width="1.5"/>
+  <text x="750" y="178" text-anchor="middle" font-size="12" fill="#374151">原图</text>
+  <text x="750" y="194" text-anchor="middle" font-size="11" fill="#6b7280">256×256</text>
+
+  <!-- Arrow down to variants -->
+  <line x1="750" y1="230" x2="750" y2="248" stroke="#374151" stroke-width="1.5" marker-end="url(#arr-blk)"/>
+
+  <!-- 4 crop variants in 2x2 grid -->
+  <g>
+    <!-- crop top-left -->
+    <rect x="660" y="260" width="60" height="60" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <rect x="660" y="260" width="40" height="40" fill="#fde68a" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="690" y="335" text-anchor="middle" font-size="10" fill="#92400e">crop TL</text>
+
+    <!-- crop top-right + flip -->
+    <rect x="730" y="260" width="60" height="60" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <rect x="750" y="260" width="40" height="40" fill="#fde68a" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="760" y="335" text-anchor="middle" font-size="10" fill="#92400e">crop TR ⇄</text>
+
+    <!-- crop center -->
+    <rect x="660" y="345" width="60" height="60" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <rect x="670" y="355" width="40" height="40" fill="#fde68a" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="690" y="420" text-anchor="middle" font-size="10" fill="#92400e">crop CTR</text>
+
+    <!-- PCA color shift -->
+    <rect x="730" y="345" width="60" height="60" fill="#fecaca" stroke="#d97706" stroke-width="1.5"/>
+    <text x="760" y="380" text-anchor="middle" font-size="11" fill="#92400e">PCA</text>
+    <text x="760" y="420" text-anchor="middle" font-size="10" fill="#92400e">color jitter</text>
+  </g>
+
+  <text x="640" y="475" font-size="11" fill="#374151" font-weight="600">三类增强:</text>
+  <text x="640" y="493" font-size="11" fill="#374151">· 224² 随机 crop(×1024)</text>
+  <text x="640" y="510" font-size="11" fill="#374151">· 水平翻转(×2)</text>
+  <text x="640" y="528" font-size="11" fill="#374151">· PCA 颜色扰动 = 模拟光照</text>
+  <text x="640" y="549" font-size="11" fill="#6b7280" font-style="italic">→ 数据量 ×2048,</text>
+  <text x="640" y="565" font-size="11" fill="#6b7280" font-style="italic">  Top-1 错误率降 1%+</text>
+
+  <!-- ========== Footer ========== -->
+  <text x="450" y="650" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">
+    三件套缺一不可:ReLU 让深网可训 + Dropout 防过拟合 + Augmentation 把数据撑大
+  </text>
+  <text x="450" y="668" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    任何一件去掉 → Top-5 错误率回到 20%+,2012 年 ImageNet 冠军不成立
+  </text>
+</svg>
