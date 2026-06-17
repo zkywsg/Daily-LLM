@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-pos" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="arr-neg" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Negative Sampling · 把 |V| 维 softmax 换成 K+1 次 sigmoid
+  </text>
+
+  <!-- ================== UPPER PANEL: full softmax pain ================== -->
+  <text x="450" y="60" text-anchor="middle" font-size="14"
+        fill="#1f2937" font-weight="600">
+    痛点 · 原始 softmax 在 |V| ≈ 1M 时计算爆炸
+  </text>
+
+  <!-- center fox -->
+  <rect x="60" y="100" width="70" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="95" y="118" text-anchor="middle" font-size="12" fill="#92400e">center</text>
+  <text x="95" y="133" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">fox</text>
+
+  <!-- embed -->
+  <rect x="160" y="100" width="80" height="40" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="200" y="118" text-anchor="middle" font-size="12" fill="#9d174d">v_fox</text>
+  <text x="200" y="133" text-anchor="middle" font-size="10" fill="#9d174d">300d</text>
+
+  <line x1="132" y1="120" x2="158" y2="120"
+        stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+  <line x1="242" y1="120" x2="268" y2="120"
+        stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+
+  <!-- huge softmax bar -->
+  <rect x="270" y="80" width="380" height="80" rx="6"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="460" y="106" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="700">
+    softmax over |V| = 1,000,000
+  </text>
+  <text x="460" y="125" text-anchor="middle" font-size="11" fill="#991b1b">
+    每步要算 1M 次 dot-product + 1M 次 exp + 归一化
+  </text>
+  <text x="460" y="145" text-anchor="middle" font-size="11" fill="#991b1b">
+    复杂度 O(|V|·d) = O(3×10⁸ ops / step)
+  </text>
+
+  <!-- explosion icon-ish text -->
+  <text x="685" y="115" font-size="28" fill="#dc2626" font-weight="700">×</text>
+  <text x="715" y="115" font-size="13" fill="#dc2626" font-weight="600">计算爆炸</text>
+  <text x="710" y="135" font-size="10" fill="#991b1b" font-style="italic">60B token 训不完</text>
+
+  <!-- formula -->
+  <text x="450" y="190" text-anchor="middle" font-size="12" fill="#6b7280" font-style="italic">
+    P(w_O | w_I) = exp(v'_{w_O}·v_{w_I}) / Σ_{w=1}^{|V|} exp(v'_w·v_{w_I})  ← 分母是瓶颈
+  </text>
+
+  <!-- ================== DIVIDER ================== -->
+  <line x1="40" y1="220" x2="860" y2="220"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ================== LOWER PANEL: negative sampling ================== -->
+  <text x="450" y="248" text-anchor="middle" font-size="14"
+        fill="#1f2937" font-weight="600">
+    方案 · 把一次 |V| 分类换成 K+1 次"真 vs 噪声"二分类
+  </text>
+
+  <!-- center fox (again) -->
+  <rect x="60" y="295" width="70" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="95" y="313" text-anchor="middle" font-size="12" fill="#92400e">center</text>
+  <text x="95" y="328" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">fox</text>
+
+  <!-- embed -->
+  <rect x="160" y="295" width="80" height="40" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="200" y="313" text-anchor="middle" font-size="12" fill="#9d174d">v_fox</text>
+  <text x="200" y="328" text-anchor="middle" font-size="10" fill="#9d174d">300d</text>
+
+  <line x1="132" y1="315" x2="158" y2="315"
+        stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+
+  <!-- 1 positive sample -->
+  <rect x="300" y="265" width="160" height="40" rx="6"
+        fill="#dcfce7" stroke="#059669" stroke-width="1.5"/>
+  <text x="380" y="282" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">+ 正样本(真上下文)</text>
+  <text x="380" y="298" text-anchor="middle" font-size="11" fill="#065f46">(fox, quick) → label = 1</text>
+
+  <line x1="242" y1="315" x2="298" y2="290"
+        stroke="#059669" stroke-width="1.5" fill="none" marker-end="url(#arr-pos)"/>
+
+  <!-- K = 5 negative samples -->
+  <rect x="300" y="320" width="240" height="100" rx="6"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="420" y="338" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="600">
+    − 负样本 × K=5(从噪声分布采)
+  </text>
+  <text x="420" y="356" text-anchor="middle" font-size="11" fill="#991b1b">(fox, zebra)   → label = 0</text>
+  <text x="420" y="372" text-anchor="middle" font-size="11" fill="#991b1b">(fox, democracy) → label = 0</text>
+  <text x="420" y="388" text-anchor="middle" font-size="11" fill="#991b1b">(fox, lunch)   → label = 0</text>
+  <text x="420" y="404" text-anchor="middle" font-size="11" fill="#991b1b">(fox, neon) (fox, pixel) → 0</text>
+
+  <line x1="242" y1="320" x2="298" y2="360"
+        stroke="#dc2626" stroke-width="1.5" fill="none" marker-end="url(#arr-neg)"/>
+
+  <!-- 6 sigmoids -->
+  <rect x="580" y="320" width="120" height="60" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="640" y="345" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="600">
+    6 × sigmoid
+  </text>
+  <text x="640" y="365" text-anchor="middle" font-size="10" fill="#1e40af">
+    1 正 + 5 负 二分类
+  </text>
+
+  <line x1="460" y1="285" x2="578" y2="335"
+        stroke="#059669" stroke-width="1.3" fill="none" marker-end="url(#arr-pos)"/>
+  <line x1="540" y1="370" x2="578" y2="360"
+        stroke="#dc2626" stroke-width="1.3" fill="none" marker-end="url(#arr-neg)"/>
+
+  <!-- result box -->
+  <rect x="730" y="320" width="130" height="60" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <text x="795" y="343" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">
+    O(K+1) = 6 ops
+  </text>
+  <text x="795" y="362" text-anchor="middle" font-size="10" fill="#065f46">
+    比 softmax 快 ~10⁵×
+  </text>
+
+  <line x1="702" y1="350" x2="728" y2="350"
+        stroke="#059669" stroke-width="1.5" fill="none" marker-end="url(#arr-pos)"/>
+
+  <!-- Loss formula -->
+  <text x="450" y="445" text-anchor="middle" font-size="11" fill="#374151" font-style="italic">
+    L = -log σ(v'_pos · v_fox)  −  Σ_{k=1}^{K} log σ(-v'_neg_k · v_fox)
+  </text>
+  <text x="450" y="463" text-anchor="middle" font-size="10" fill="#6b7280">
+    让真上下文得高分(σ → 1),让 K 个采样的噪声词得低分(σ → 0)
+  </text>
+
+  <!-- ============ Bottom callout: 0.75 power ============ -->
+  <rect x="60" y="490" width="780" height="110" rx="8"
+        fill="#fdf2f8" stroke="#ec4899" stroke-width="1.2"/>
+  <text x="450" y="514" text-anchor="middle" font-size="13"
+        fill="#831843" font-weight="600">
+    负样本采样分布 · P_neg(w) ∝ count(w)^0.75
+  </text>
+  <text x="450" y="537" text-anchor="middle" font-size="11" fill="#831843">
+    直接按 unigram 频率采 → 超高频词(the, of, a)被反复当负样本,信息少
+  </text>
+  <text x="450" y="555" text-anchor="middle" font-size="11" fill="#831843">
+    指数 0.75 把高频词频率适度压低,低频词被采概率适度提高 → <tspan font-weight="600">采样多样性 ↑、效果更好</tspan>
+  </text>
+  <text x="450" y="578" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    "0.75 是经验拍的"—— 论文里说试了 unigram / uniform / unigram^0.75,最后这个赢
+  </text>
+  <text x="450" y="594" text-anchor="middle" font-size="10" fill="#6b7280">
+    K 通常取 5(大语料)~ 20(小语料);K 越大梯度信号越强但计算线性上升
+  </text>
+</svg>

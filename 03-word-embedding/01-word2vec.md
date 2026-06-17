@@ -39,67 +39,95 @@ Mikolov 等人(Google,2013 年 1 月发第一篇 "Efficient Estimation...",10 �
 
 这两个 trick 让 Word2Vec 能在**单机 1 天训完 1 亿词**,而前作要 1 周。论文发布后 6 个月,Word2Vec 成为所有 NLP 任务的事实标准 input。**没有 Word2Vec 就没有 2013-2018 年的深度 NLP 兴起**。
 
-## 核心思想:Skip-gram + Negative Sampling
+## 核心思想
 
-Word2Vec 有两个变体:
+### 直觉:词义就是它的上下文
 
-### CBOW(Continuous Bag-of-Words)
+理解 Word2Vec 真正需要先抓 Firth 1957 的那句话:**"You shall know a word by the company it keeps"** —— 一个词的意义,完全可以由它周围反复出现的词来定义。"cat" 总是和 "fur / meow / purr / kitten" 一起出现,"king" 总是和 "queen / throne / kingdom / royal" 一起出现 —— 这个共现统计就是"语义"的实体表达。
 
-给定上下文窗口的词,预测中心词。比如句子 "the quick brown fox jumps":
+这件事在 Word2Vec 之前已经被讨论了 50 多年(LSA / NPLM / Collobert-Weston 都在这条路上),但**没有一个方法能把它 scale 到 100 亿词级别的语料**。Word2Vec 真正的贡献不是发现这个直觉,而是**用三件事的极简组合把它工程化**:
 
-```
-context: [the, quick, fox, jumps] → predict: brown
-```
+- **极浅的网络** —— 只有一个 projection layer,没有 hidden layer。NPLM 那套深度结构丢掉
+- **二分类替代 softmax** —— negative sampling 把每步 O(|V|) 降到 O(K)
+- **高频词 subsampling** —— 把 "the / of / a" 这种信息量小但出现极频繁的词按概率丢掉
 
-### Skip-gram
+把这三件事合在一起,**单机 1 天能训完 60 亿词**,前作要 1 周以上才能跑完 1 亿词。这种 60× 数据 + 100× 速度的双重突破,让"分布式表示"第一次从学术概念变成工业默认。
 
-反过来,给定中心词,预测窗口内的上下文词:
+更震撼的副产品是 Word2Vec 论文里那张著名的线性结构 —— `vec("king") - vec("man") + vec("woman") ≈ vec("queen")`。这是 distributional hypothesis 第一次在向量空间里有了可视化、可计算的证据。
 
-```
-center: brown → predict: [the, quick, fox, jumps]
-```
+![CBOW vs Skip-gram 两种任务对偶](assets/01-word2vec-cbow-skipgram.svg)
+*图 1:Word2Vec 两个变体的对偶视角。**左 CBOW**——用周围 4 个 context 词的 one-hot 平均成 hidden,softmax 预测中心 "fox";一次梯度更新看 2k 个 context 词,大数据上更快。**右 Skip-gram**——用中心词 "fox" 分别预测 4 个 context 词;每个低频词被预测 2k 次,小数据 + 罕见词上更准。两种任务训完都拿 input embedding 当词向量。*
 
-实际中 skip-gram 在罕见词上效果更好,是更常用的版本。
+### 机制一:CBOW 与 Skip-gram — 两种"上下文-中心词"任务
 
-### Skip-gram 数学公式
+Word2Vec 给了两个对偶的训练任务:
 
-目标:最大化窗口内上下文词的对数概率:
+- **CBOW(Continuous Bag-of-Words)** —— 用窗口内的 context 预测中心词。比如 "the quick brown ___ jumps over" → 模型该输出 "fox"。一次梯度更新一次看 2k 个 context,**大数据上训练更快**
+- **Skip-gram** —— 反过来,用中心词 "fox" 预测窗口内的 context 词 [the, quick, brown, jumps, over]。每个低频词在它出现的每个位置都被"预测 2k 次",**对罕见词的 embedding 学得更充分**
 
-$$
-\frac{1}{T} \sum_{t=1}^T \sum_{-c \le j \le c, j \ne 0} \log p(w_{t+j} | w_t)
-$$
-
-其中:
+Skip-gram 的形式化目标是最大化窗口内 context 的对数概率:
 
 $$
-p(w_O | w_I) = \frac{\exp(v'_{w_O}{}^T v_{w_I})}{\sum_{w=1}^V \exp(v'_w{}^T v_{w_I})}
+\frac{1}{T} \sum_{t=1}^T \sum_{-c \le j \le c, j \ne 0} \log p(w_{t+j} | w_t),\quad p(w_O | w_I) = \frac{\exp(v'_{w_O}{}^T v_{w_I})}{\sum_{w=1}^V \exp(v'_w{}^T v_{w_I})}
 $$
 
-- $v_w$ —— 词 w 作为 input 时的"中心词向量"(embedding matrix W)
-- $v'_w$ —— 词 w 作为 output 时的"上下文向量"(output matrix W')
-- 训完后通常用 $v_w$ 作为词向量
+- $v_w$:词 w 的"中心词向量"(input embedding W)
+- $v'_w$:词 w 的"上下文向量"(output embedding W′)
+- 训完用 $v_w$ 当词向量
 
-### 关键瓶颈:Softmax 太慢
+实践上,**Skip-gram 在罕见词 / semantic analogy 上更强,CBOW 在常见词 / syntactic 上更快**,后续主流默认 Skip-gram。
 
-分母要遍历整个词表 V(5 万词),每步训练 O(V),100 亿词训练根本跑不完。
+### 机制二:Negative Sampling — 把 O(|V|) 软最大化压成 O(K) 二分类
 
-### Negative Sampling(NEG)
+Skip-gram 的数学很优雅,但 softmax 分母要遍历整个词表 V ≈ 50K,每步 O(V),100 亿词训练根本跑不完。Mikolov 的核心 trick:**不算真分母,改做"判别真上下文 vs 噪声词"的二分类**。
 
-Mikolov 的核心 trick:**不计算真分母,转而做"判别 vs 噪声"的二分类**。
-
-每个正样本 $(w_I, w_O)$,采样 K 个"假"的 negative word $w_{n_1}, ..., w_{n_K}$(从噪声分布 $P_n$ 采样,通常用 unigram^(3/4)),把任务变成:
+每个正样本 $(w_I, w_O)$ 配 K 个噪声词 $w_{n_1}, ..., w_{n_K}$(从噪声分布 $P_n$ 采),目标改成:
 
 $$
 \log \sigma(v'_{w_O}{}^T v_{w_I}) + \sum_{k=1}^K \mathbb{E}_{w_{n_k} \sim P_n} [\log \sigma(-v'_{w_{n_k}}{}^T v_{w_I})]
 $$
 
-直觉:让正样本对 (center, real context) 得高分,K 个负样本对 (center, random word) 得低分。**每步复杂度从 O(V) 降到 O(K)**,K=5-20 通常足够。
+直觉:让 (center, 真 context) 得高分,K 个 (center, 随机词) 得低分。**每步复杂度从 O(V) 降到 O(K)**,K=5-20 就够。
 
-NEG 在数学上不再优化原 likelihood,但实测效果同样好,训练快 100×+。
+噪声分布的选择是另一个重要细节 —— **`P_n(w) ∝ count(w)^0.75`**,而不是直接 unigram。这个 0.75 指数把超高频词(the / of)的采样概率适度压低,把中低频词稍微抬高,实测效果显著好于 0.5 / 1.0 / uniform。
+
+NEG 在数学上不再优化原 likelihood(它是一种 NCE 的近似),但**实测效果同样好,训练快 100×+**。这是 Word2Vec 工程上的最大胜利。
+
+![Negative Sampling 把 softmax 替换成 K+1 个二分类](assets/01-word2vec-negative-sampling.svg)
+*图 2:**上半**——原始 softmax,输出层 |V| ≈ 1M 维,每步算 1M 个 dot + exp + 归一化,O(V) 是 100 亿词训练跑不完的根因。**下半**——NEG 把任务改成 6 次 sigmoid 二分类:1 个正样本 (fox, quick) 标 1,5 个负样本 (fox, ?) 从 `P_neg(w) ∝ count(w)^0.75` 采样标 0。复杂度从 O(V) 砸到 O(K),训练效率提升 100× 起。*
+
+### 机制三:Subsampling 高频词 — 让训练把算力花在该花的地方
+
+第三个不为人注意但同样关键的 trick:**对高频词按概率随机丢弃**。"the / of / a / is" 这种词在英文里出现频率极高,但携带的语义信息几乎为零,而且因为它们和**任何词都共现**,会把所有词的 embedding 拖向一个"无意义的中心"。
+
+Word2Vec 的做法:对每个词 $w_i$,按概率
+
+$$
+P_{\text{discard}}(w_i) = 1 - \sqrt{t / f(w_i)}, \quad t = 10^{-5}
+$$
+
+随机从训练数据里把它丢掉。$f(w_i) > t$ 时才有非零丢弃概率,所以低频词全保留、高频词被大量丢掉。
+
+这一步同时带来两件事:
+
+- **训练加速 2-10×**(因为大量高频词位置被跳过)
+- **罕见词 embedding 质量显著提升**(因为它们不再被"the / of"稀释)
+
+后来 GloVe / FastText / BERT 的负样本 sampling、word frequency reweighting 全部继承了这个思想。
+
+### 三件套协同:浅结构 + negative sampling + subsampling 缺一不可
+
+Word2Vec 在 2013 年能 work,**不是单一改进**,而是这三件事同时调到协同点 —— 任何一个单拿出来都不够,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有浅结构,没有 negative sampling** —— softmax 分母 O(V),60 亿词训练要几个月,工程上不可行(NPLM 卡在这)
+- **只有 negative sampling,没有浅结构** —— 多层网络在大词表 + 大数据下训练不稳,且学到的 hidden representation 不再是干净的"词向量"
+- **只有浅结构 + NEG,没有高频词 subsampling** —— 算力大量浪费在 "the / of",罕见词 embedding 被高频共现拖偏,semantic analogy 准确率会从 55% 跌到 30%-
+
+三件套合起来才让"用上下文学词向量"这个 1957 年就提出的想法,在 2013 年第一次跑到能工业部署的速度 + 质量。
 
 ### 线性结构的发现
 
-Word2Vec 论文最震撼的发现:词向量空间里有 **线性语义结构**:
+Word2Vec 论文最震撼的副产品 —— 词向量空间里有 **线性语义结构**:
 
 ```
 vec("king") - vec("man") + vec("woman") ≈ vec("queen")
@@ -107,7 +135,7 @@ vec("Paris") - vec("France") + vec("Italy") ≈ vec("Rome")
 vec("walked") - vec("walking") + vec("swimming") ≈ vec("swam")
 ```
 
-这意味着不同语义关系(性别、国家-首都、动词时态)分别对应词向量空间里的某个固定方向。**这是 distributional hypothesis 在向量空间里第一次有可视化、可计算的证据**。
+不同语义关系(性别、国家-首都、动词时态)分别对应词向量空间里的某个固定方向。**这是 distributional hypothesis 在向量空间里第一次有可视化、可计算的证据**。
 
 为什么会有线性结构?后续研究(Arora 2016 等)给出理论解释:在 log-bilinear 假设下,词共现统计与词向量的 cosine 相似度成对应关系,语义关系自然对应线性方向。
 
