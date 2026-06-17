@@ -30,72 +30,85 @@ Goodfellow 等人(Bengio 组,2014 年 6 月)的 GAN 论文给出完全不同的�
 
 Goodfellow 在论文里讲了一个传说级故事:他在蒙特利尔的一家酒吧 brainstorm 时想出 GAN 的对抗博弈思路,当晚回家就实现并跑通了。从想法到 paper 投稿仅几周。**GAN 是深度学习历史上最有"a-ha moment"特征的工作之一**。
 
-## 核心思想:Minimax 对抗博弈
+## 核心思想
 
-### 数学公式
+### 直觉:让两个网络互相对抗,把"生成是否真实"这件事显化成可微目标
 
-GAN 的目标函数是一个 minimax 博弈:
+理解 GAN 真正需要先抓一件事:**VAE / RBM / autoregressive 这些前作都在间接代理"图像是否真实"这个真目标** —— 它们最大化 likelihood / ELBO / pixel L2,但这些数学目标和"人看着像不像真"之间隔了一层,导致生成结果模糊或慢。Goodfellow 2014 的洞察:**直接造一个二分类器 D 来打分"像不像真",再让生成器 G 朝着"骗过 D"的方向更新**。这一招把"真实性"这个原本无法直接优化的隐目标,变成了一个可微的对抗损失。
+
+为什么这件事在 2014 年才出现?三件事必须同时成立:
+
+- **G 可以是任意 differentiable 网络** —— 不需要 likelihood 可算,任何 NN 都行
+- **D 反传的梯度足够 informative** —— D 必须接近最优才能给 G 有用的梯度;太弱 G 学错,太强 G 没梯度
+- **交替优化能近似 minimax** —— 严格 minimax 不可解,但 1:1 或 k:1 交替 SGD 在实际工程里能 work
+
+把这三件事合在一起:GAN 给出了一个**无需 partition function、无需 likelihood、可生成清晰图像**的全新生成范式。生成模型从此分裂成"显式建模 likelihood(VAE / Diffusion)"和"隐式对抗(GAN)"两条主线,一直延续到今天。
+
+![GAN 的对抗博弈数据流](assets/01-gan-adversarial.svg)
+*图 1:**左侧 G** 把噪声 z (100d) 经几层 deconv 映射成假图 G(z) (28×28);**中间 D** 接收真图 x 或假图 G(z),经几层 conv → sigmoid → "real / fake" 概率;**右侧** 两条梯度流:D 朝"真图 → 1, 假图 → 0"更新,G 经 D 反传朝"骗 D 把假图判 1"更新。底部 callout 强调:G 没见过任何像素级 label,所有信号来自 D 的反传梯度 —— 这是 GAN 最反直觉处。*
+
+### 机制一:Generator G — 从噪声 z 映射到图像
+
+G 是一个普通 deterministic 神经网络,输入是从 $\mathcal{N}(0, I)$ 采的低维噪声 $z \in \mathbb{R}^{100}$,输出是一张图 $G(z)$(MNIST 28×28、CIFAR 32×32 等)。
+
+实现上 G 是几层 MLP 或 deconv,输出通常用 tanh 激活把像素压到 $[-1, 1]$。**关键反直觉点**:G 在整个训练里**从来没看过一张真图**。它不像 VAE 有 encoder 提供 reconstruction target,也不像 autoregressive 模型有 next-pixel ground truth。G 的所有学习信号都来自 D 的反传梯度 —— D 说"这像真图",G 朝那个方向更新。
+
+这意味着 z 空间和真实数据 manifold 之间的映射,完全靠对抗压力学出来。z → image 没有"标准答案",只有"D 是否觉得真"。
+
+### 机制二:Discriminator D — 区分真图 vs G 生成图
+
+D 是一个二分类器,真图标 1、G 图标 0,训练它就是普通监督学习:
 
 $$
-\min_G \max_D V(D, G) = \mathbb{E}_{x \sim p_{\text{data}}}[\log D(x)] + \mathbb{E}_{z \sim p_z}[\log(1 - D(G(z)))]
+\max_D \mathbb{E}_{x \sim p_{\text{data}}}[\log D(x)] + \mathbb{E}_{z \sim p_z}[\log(1 - D(G(z)))]
 $$
 
-- $x \sim p_{\text{data}}$ —— 真实数据样本
-- $z \sim p_z$ —— 随机噪声(通常是 $\mathcal{N}(0, I)$)
-- $D(x) \in [0, 1]$ —— D 判断 x 为真的概率
-- $G(z)$ —— G 用噪声 z 生成的假样本
-
-D 想最大化 V:对真样本输出 1,对假样本输出 0。G 想最小化 V:让 D 把 G(z) 也判为真(即 D(G(z)) ≈ 1)。
-
-### 理论保证
-
-论文证明了一个漂亮的理论结果:
-
-**1. 给定 G,最优 D 是:**
+但 D 的真正作用不是"分类",而是**给 G 提供梯度方向**。论文里有一个漂亮的理论结果:给定 G,最优 D 是
 
 $$
 D^*(x) = \frac{p_{\text{data}}(x)}{p_{\text{data}}(x) + p_G(x)}
 $$
 
-**2. 代入回 V,得到 G 的等价优化目标:**
+代入回 V 后 G 的等价优化目标变成:
 
 $$
 C(G) = -\log 4 + 2 \cdot \text{JSD}(p_{\text{data}} \| p_G)
 $$
 
-其中 JSD 是 Jensen-Shannon Divergence(对称的 KL)。
+JSD 是 Jensen-Shannon Divergence。**全局最优在 $p_G = p_{\text{data}}$ 取得,此时 JSD = 0,D(x) ≡ 1/2(分不清真假)**。这是 GAN 的理论基石 —— 只要训练能收敛,G 就学到真实数据分布。问题恰恰在"训练能收敛"这一前提 —— 后续大量工作(WGAN / SN-GAN / Progressive GAN)都是在处理 JSD 在分布不重叠时梯度消失的病态。
 
-**3. 全局最优在 $p_G = p_{\text{data}}$ 处取得**,此时 JSD = 0,C(G) = -log 4 ≈ -1.386,D(x) = 1/2(完全分不清真假)。
-
-这是 GAN 的理论基石——只要训练能收敛,G 就学到真实数据分布。**问题在于"训练能收敛"这一前提**——后续大量工作就是处理 GAN 训练不稳定。
-
-### 实际训练:Alternating Update
+### 机制三:Minimax 交替优化 + Non-Saturating Loss
 
 理论是 minimax,实际训练是交替更新:
 
 ```
 for each iteration:
-    # Step 1: 训练 D
+    # Step 1: 训练 D 一步
     采样真数据 x, 假数据 G(z)
     更新 D 最大化:log D(x) + log(1 - D(G(z)))
 
-    # Step 2: 训练 G
+    # Step 2: 训练 G 一步
     采样新的噪声 z
     更新 G 最小化:log(1 - D(G(z)))
-    # 实际用 -log D(G(z))(non-saturating loss,梯度更稳)
+    # 实际改用 -log D(G(z))(non-saturating loss)
 ```
 
-**Non-saturating loss trick**:用 `-log D(G(z))` 替代 `log(1 - D(G(z)))`,在训练早期 D 强 G 弱时梯度更稳。
+**Non-saturating loss 是 GAN 论文里一个不起眼但至关重要的工程 trick** —— 原始 `log(1-D(G(z)))` 在训练早期 D 很强、D(G(z)) ≈ 0 时梯度几乎消失(sigmoid 饱和段);改用 `-log D(G(z))` 后梯度在同样情形下反而最大,G 在早期能快速逃出"全被识破"的劣势。这条 trick 是几乎所有 GAN 实现的默认配置。
 
-### G 与 D 的平衡
+另一个关键工程经验:**D 和 G 的能力必须平衡**。D 太强 → G 没梯度(被一边倒压制);G 太强 → D 退化成随机猜(没法提供 informative 梯度)。论文里给的经验是 D 训 k 步、G 训 1 步,k 通常 1 或 5,实际中需要按数据 / 网络规模反复调。
 
-GAN 训练有个微妙问题:**D 不能太强,否则 G 没梯度**。论文里一些经验:
+### 三件套协同:对抗目标 + 交替优化 + 能力平衡 缺一不可
 
-- D 训练 k 步,G 训练 1 步(k 通常 1 或 5)
-- 用 mini-batch SGD
-- 用 momentum
+GAN 在 2014 年能成立,**不是单一改进**,而是这三件事同时调到协同点 —— 任何一个抽掉 GAN 就崩,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
 
-但这些超参数调起来很难,GAN 训练失败率在 2014 年极高。后续 [DCGAN](02-dcgan.md) 才给出可靠的工程方案。
+- **只有对抗目标,没有交替优化** —— minimax 严格闭式不可解,纯理论一步也走不出来
+- **只有交替优化,没有 non-saturating loss / 能力平衡** —— D 早期一压倒 G 就梯度消失,训练直接卡死(2014 年大量复现失败正是这个原因)
+- **只有交替 + 平衡,没有对抗目标本身** —— 退化成 VAE 那种 reconstruction 路线,生成又回到模糊
+
+三件套合起来才让"对抗生成"这个看似简单的想法第一次跑通。也正因为三件事的协同窗口非常窄,GAN 训练以"调参艺术"闻名,直接催生了 DCGAN / WGAN / Progressive GAN / StyleGAN 一整条稳定化路线。
+
+![GAN 三大经典失败模式](assets/01-gan-failure-modes.svg)
+*图 2:GAN 训练失败的三种典型形态。**左 Mode Collapse**——G 学到一种能骗 D 的图就反复输出,9 张几乎一样的小图代表 G 只覆盖了数据分布的一个 mode。**中 D 突然赢**——D loss 直降到 0、G loss 直升到 ∞,sigmoid 饱和,梯度归零,训练直接死掉。**右 Oscillation**——G/D 来回拉扯,FID 上下震荡,博弈永远不收敛。这三件事直接催生了 DCGAN、WGAN、Progressive GAN、StyleGAN 等一系列稳定化工作。*
 
 ## 关键代码
 

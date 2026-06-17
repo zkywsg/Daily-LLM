@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-real" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="arr-grad-d" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="arr-grad-g" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GAN · Generator vs Discriminator 对抗博弈
+  </text>
+
+  <!-- minimax formula callout (top) -->
+  <rect x="240" y="48" width="420" height="36" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="450" y="71" text-anchor="middle" font-size="14"
+        fill="#92400e" font-style="italic">
+    min_G max_D  V(D,G) = E_x[log D(x)] + E_z[log(1 − D(G(z)))]
+  </text>
+
+  <!-- ============== LEFT: Generator G ============== -->
+  <text x="140" y="118" text-anchor="middle" font-size="14"
+        fill="#1f2937" font-weight="600">Generator G</text>
+
+  <!-- noise z -->
+  <rect x="40" y="160" width="70" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="75" y="178" text-anchor="middle" font-size="13" fill="#92400e">z</text>
+  <text x="75" y="194" text-anchor="middle" font-size="10" fill="#92400e">~N(0, I), 100d</text>
+
+  <!-- G layers -->
+  <rect x="140" y="155" width="60" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="170" y="178" text-anchor="middle" font-size="11" fill="#9d174d">Deconv</text>
+  <text x="170" y="194" text-anchor="middle" font-size="10" fill="#9d174d">100→256</text>
+
+  <rect x="210" y="155" width="60" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="240" y="178" text-anchor="middle" font-size="11" fill="#9d174d">Deconv</text>
+  <text x="240" y="194" text-anchor="middle" font-size="10" fill="#9d174d">256→784</text>
+
+  <!-- G(z) fake image -->
+  <rect x="290" y="155" width="70" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="325" y="176" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">G(z)</text>
+  <text x="325" y="194" text-anchor="middle" font-size="10" fill="#9d174d">28×28 假图</text>
+
+  <!-- arrows in G -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="112" y1="180" x2="138" y2="180" marker-end="url(#arr-main)"/>
+    <line x1="202" y1="180" x2="208" y2="180" marker-end="url(#arr-main)"/>
+    <line x1="272" y1="180" x2="288" y2="180" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ============== Real data x ============== -->
+  <rect x="40" y="250" width="70" height="50" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="75" y="272" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">x</text>
+  <text x="75" y="290" text-anchor="middle" font-size="10" fill="#065f46">真图 (MNIST)</text>
+
+  <!-- ============== MIDDLE: Discriminator D ============== -->
+  <text x="500" y="118" text-anchor="middle" font-size="14"
+        fill="#1f2937" font-weight="600">Discriminator D</text>
+
+  <!-- D body box -->
+  <rect x="410" y="155" width="180" height="155" rx="10"
+        fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <rect x="425" y="175" width="70" height="36" rx="5"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+  <text x="460" y="198" text-anchor="middle" font-size="11" fill="#9d174d">Conv 64</text>
+
+  <rect x="505" y="175" width="70" height="36" rx="5"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+  <text x="540" y="198" text-anchor="middle" font-size="11" fill="#9d174d">Conv 128</text>
+
+  <rect x="425" y="225" width="70" height="36" rx="5"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+  <text x="460" y="248" text-anchor="middle" font-size="11" fill="#9d174d">FC 256</text>
+
+  <rect x="505" y="225" width="70" height="36" rx="5"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+  <text x="540" y="248" text-anchor="middle" font-size="11" fill="#065f46">Sigmoid</text>
+
+  <text x="500" y="290" text-anchor="middle" font-size="11"
+        fill="#1e40af" font-style="italic">输入: x 或 G(z) → 输出 D(·) ∈ [0,1]</text>
+
+  <!-- Arrows feeding D -->
+  <path d="M 360 180 L 408 180" stroke="#9d174d" stroke-width="1.5" fill="none"
+        marker-end="url(#arr-main)"/>
+  <path d="M 110 275 C 280 275, 280 230, 408 230"
+        stroke="#059669" stroke-width="1.5" fill="none"
+        marker-end="url(#arr-real)"/>
+
+  <!-- ============== RIGHT: Output / labels ============== -->
+  <rect x="640" y="170" width="100" height="50" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="690" y="192" text-anchor="middle" font-size="13" fill="#065f46" font-weight="600">D(x) → 1</text>
+  <text x="690" y="210" text-anchor="middle" font-size="10" fill="#065f46">"real"</text>
+
+  <rect x="640" y="240" width="100" height="50" rx="6"
+        fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="690" y="262" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="600">D(G(z)) → 0</text>
+  <text x="690" y="280" text-anchor="middle" font-size="10" fill="#991b1b">"fake"</text>
+
+  <line x1="592" y1="195" x2="638" y2="195" stroke="#9d174d" stroke-width="1.5"
+        fill="none" marker-end="url(#arr-main)"/>
+  <line x1="592" y1="265" x2="638" y2="265" stroke="#9d174d" stroke-width="1.5"
+        fill="none" marker-end="url(#arr-main)"/>
+
+  <!-- Side labels for D's two cases -->
+  <text x="765" y="198" font-size="11" fill="#065f46">D 想最大化</text>
+  <text x="765" y="268" font-size="11" fill="#991b1b">D 想最大化</text>
+
+  <!-- ============== Gradient flows ============== -->
+  <!-- D's gradient: red dashed loop -->
+  <text x="450" y="370" text-anchor="middle" font-size="13"
+        fill="#dc2626" font-weight="600">D 的梯度 — 拉真图 → 1,推假图 → 0</text>
+
+  <path d="M 690 295 C 690 360, 500 360, 500 320"
+        stroke="#dc2626" stroke-width="2" fill="none" stroke-dasharray="6,4"
+        marker-end="url(#arr-grad-d)"/>
+
+  <!-- G's gradient highway: blue, from D output back through D, then to G -->
+  <text x="450" y="450" text-anchor="middle" font-size="13"
+        fill="#2563eb" font-weight="600">
+    G 的梯度 — 经 D 反传,推 G 把 D(G(z)) 拉向 1(骗过 D)
+  </text>
+
+  <path d="M 690 290 C 690 420, 540 430, 500 420"
+        stroke="#2563eb" stroke-width="2.2" fill="none" stroke-dasharray="6,4"/>
+  <path d="M 500 420 C 460 420, 420 420, 410 420"
+        stroke="#2563eb" stroke-width="2.2" fill="none" stroke-dasharray="6,4"/>
+  <path d="M 410 420 C 380 420, 360 380, 325 210"
+        stroke="#2563eb" stroke-width="2.2" fill="none" stroke-dasharray="6,4"
+        marker-end="url(#arr-grad-g)"/>
+
+  <!-- Bottom callout box -->
+  <rect x="60" y="500" width="780" height="90" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="450" y="525" text-anchor="middle" font-size="13"
+        fill="#92400e" font-weight="600">GAN 最反直觉之处</text>
+  <text x="450" y="548" text-anchor="middle" font-size="12" fill="#92400e">
+    G 从来没见过任何"像素级 label" —— 它不知道哪条边该画在哪里
+  </text>
+  <text x="450" y="568" text-anchor="middle" font-size="12" fill="#92400e">
+    所有训练信号都来自 D 反传的梯度。D 是唯一告诉 G "更真一点"是什么意思的来源。
+  </text>
+  <text x="450" y="584" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    Non-saturating loss: G 实际用 −log D(G(z)) 替代 log(1−D(G(z))),早期 D 强时梯度不消失
+  </text>
+</svg>
