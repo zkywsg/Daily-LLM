@@ -1,0 +1,214 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-grpo" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#1f2937"/>
+    </marker>
+    <marker id="arr-grpo-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#3b82f6"/>
+    </marker>
+  </defs>
+
+  <!-- ============== TITLE ============== -->
+  <text x="450" y="30" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="600">
+    GRPO · 用 group 内对比替代 value model
+  </text>
+  <text x="450" y="52" text-anchor="middle" font-size="12" fill="#6b7280">
+    把 PPO 的 4 模型砍到 2 模型 · advantage 直接组内归一化
+  </text>
+
+  <!-- vertical divider -->
+  <line x1="450" y1="80" x2="450" y2="445"
+        stroke="#e5e7eb" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ============================================================== -->
+  <!-- LEFT PANEL: PPO — x = 40 .. 420                                 -->
+  <!-- ============================================================== -->
+  <text x="230" y="100" text-anchor="middle" font-size="15"
+        fill="#7f1d1d" font-weight="700">
+    PPO · LLM 上需 4 个模型
+  </text>
+  <text x="230" y="118" text-anchor="middle" font-size="11" fill="#6b7280">
+    标准做法 · value model 估 baseline
+  </text>
+
+  <!-- 4 model blocks -->
+  <!-- Actor -->
+  <rect x="80" y="135" width="300" height="42" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="120" y="160" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">Actor</text>
+  <text x="250" y="160" text-anchor="middle" font-size="11" fill="#9d174d">policy 网络(待训练)</text>
+  <text x="355" y="160" text-anchor="end" font-size="11" fill="#9d174d" font-style="italic">~7B</text>
+
+  <!-- Critic / Value model -->
+  <rect x="80" y="185" width="300" height="42" rx="6"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="125" y="210" text-anchor="middle" font-size="12" fill="#7f1d1d" font-weight="700">Value</text>
+  <text x="250" y="210" text-anchor="middle" font-size="11" fill="#7f1d1d">估 baseline V(x) · LLM 上不准</text>
+  <text x="355" y="210" text-anchor="end" font-size="11" fill="#7f1d1d" font-style="italic">~7B</text>
+
+  <!-- Reward model -->
+  <rect x="80" y="235" width="300" height="42" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="125" y="260" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">Reward</text>
+  <text x="250" y="260" text-anchor="middle" font-size="11" fill="#9d174d">给 (x, y) 打分</text>
+  <text x="355" y="260" text-anchor="end" font-size="11" fill="#9d174d" font-style="italic">~7B</text>
+
+  <!-- Reference model -->
+  <rect x="80" y="285" width="300" height="42" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="125" y="310" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">Reference</text>
+  <text x="250" y="310" text-anchor="middle" font-size="11" fill="#9d174d">KL 锚点 · 防 policy 漂移</text>
+  <text x="355" y="310" text-anchor="end" font-size="11" fill="#9d174d" font-style="italic">~7B</text>
+
+  <!-- Total -->
+  <rect x="80" y="345" width="300" height="44" rx="6"
+        fill="#fef2f2" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="230" y="368" text-anchor="middle" font-size="12" fill="#7f1d1d" font-weight="700">
+    总计 ~28B 参数 · 4× 显存
+  </text>
+  <text x="230" y="383" text-anchor="middle" font-size="10" fill="#7f1d1d" font-style="italic">
+    Value model 在 LLM 上估 baseline 不准 + 显存翻 4 倍
+  </text>
+
+  <!-- ============================================================== -->
+  <!-- RIGHT PANEL: GRPO — x = 480 .. 860                              -->
+  <!-- ============================================================== -->
+  <text x="670" y="100" text-anchor="middle" font-size="15"
+        fill="#065f46" font-weight="700">
+    GRPO · 只剩 2 个模型
+  </text>
+  <text x="670" y="118" text-anchor="middle" font-size="11" fill="#6b7280">
+    用组内相对评估替代 value model
+  </text>
+
+  <!-- prompt + sample G responses -->
+  <rect x="500" y="135" width="80" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="540" y="153" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">prompt x</text>
+  <text x="540" y="168" text-anchor="middle" font-size="10" fill="#92400e">同一道题</text>
+
+  <line x1="584" y1="155" x2="608" y2="155"
+        stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr-grpo)"/>
+  <text x="596" y="148" text-anchor="middle" font-size="9" fill="#6b7280">G=4</text>
+
+  <!-- 4 responses with rewards -->
+  <g>
+    <rect x="615" y="135" width="80" height="22" rx="3"
+          fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+    <text x="655" y="151" text-anchor="middle" font-size="11" fill="#1e3a8a">y₁ · r=1</text>
+
+    <rect x="615" y="160" width="80" height="22" rx="3"
+          fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+    <text x="655" y="176" text-anchor="middle" font-size="11" fill="#1e3a8a">y₂ · r=1</text>
+
+    <rect x="615" y="185" width="80" height="22" rx="3"
+          fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="655" y="201" text-anchor="middle" font-size="11" fill="#7f1d1d">y₃ · r=0</text>
+
+    <rect x="615" y="210" width="80" height="22" rx="3"
+          fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+    <text x="655" y="226" text-anchor="middle" font-size="11" fill="#1e3a8a">y₄ · r=1</text>
+  </g>
+
+  <!-- group stats arrow -->
+  <line x1="700" y1="183" x2="730" y2="183"
+        stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arr-grpo-blue)"/>
+
+  <!-- group stats -->
+  <rect x="735" y="158" width="115" height="50" rx="6"
+        fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="792" y="176" text-anchor="middle" font-size="11" fill="#1e3a8a" font-weight="700">group stats</text>
+  <text x="792" y="192" text-anchor="middle" font-size="11" fill="#1e40af">μ = 0.75</text>
+  <text x="792" y="204" text-anchor="middle" font-size="11" fill="#1e40af">σ ≈ 0.43</text>
+
+  <!-- arrow down to advantage formula -->
+  <line x1="670" y1="248" x2="670" y2="270"
+        stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr-grpo)"/>
+
+  <!-- Advantage formula box -->
+  <rect x="500" y="275" width="340" height="50" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="670" y="296" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">
+    Aᵢ = (rᵢ − μ) / σ
+  </text>
+  <text x="670" y="313" text-anchor="middle" font-size="11" fill="#9d174d">
+    组内归一化 advantage · 不需要 value model
+  </text>
+
+  <!-- arrow down to 2 models -->
+  <line x1="670" y1="328" x2="670" y2="348"
+        stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr-grpo)"/>
+
+  <!-- 2 models block -->
+  <rect x="500" y="350" width="340" height="42" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="540" y="375" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">Actor</text>
+  <text x="655" y="375" text-anchor="middle" font-size="11" fill="#9d174d">+</text>
+  <text x="755" y="375" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">Reference</text>
+  <text x="820" y="375" text-anchor="end" font-size="11" fill="#9d174d" font-style="italic">~14B</text>
+
+  <!-- Reward 由 rule 算出,不再是单独模型 -->
+  <text x="670" y="405" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    Reward 由 rule 直接算(math_verify / unit test),不再是单独模型
+  </text>
+
+  <!-- Total -->
+  <rect x="500" y="415" width="340" height="38" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="670" y="439" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">
+    总计 ~14B 参数 · 2× 显存(省一半)
+  </text>
+
+  <!-- horizontal divider -->
+  <line x1="40" y1="465" x2="860" y2="465"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============================================================== -->
+  <!-- BOTTOM PANEL: 2 callouts                                         -->
+  <!-- ============================================================== -->
+  <g>
+    <rect x="40" y="485" width="395" height="105" rx="8"
+          fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="237" y="508" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">
+      GRPO 的核心 insight
+    </text>
+    <text x="237" y="528" text-anchor="middle" font-size="11" fill="#065f46">
+      reasoning 任务 reward 稀疏(只在最后给)
+    </text>
+    <text x="237" y="544" text-anchor="middle" font-size="11" fill="#065f46">
+      组内相对评估天然处理这种稀疏性
+    </text>
+    <text x="237" y="565" text-anchor="middle" font-size="11" fill="#065f46" font-style="italic">
+      "好/坏" 在同一道题的 G 个回答之间就能比出来
+    </text>
+    <text x="237" y="581" text-anchor="middle" font-size="11" fill="#065f46" font-style="italic">
+      不需要 value model 跨题估"绝对分"
+    </text>
+  </g>
+
+  <g>
+    <rect x="465" y="485" width="395" height="105" rx="8"
+          fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="662" y="508" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">
+      R1 之后的事实标准
+    </text>
+    <text x="662" y="528" text-anchor="middle" font-size="11" fill="#78350f">
+      Qwen-QwQ · Kimi-K1.5 · GLM-Zero
+    </text>
+    <text x="662" y="544" text-anchor="middle" font-size="11" fill="#78350f">
+      国内大多数 reasoning 模型都用 GRPO 或变体
+    </text>
+    <text x="662" y="565" text-anchor="middle" font-size="11" fill="#78350f" font-style="italic">
+      PPO 在 LLM RL 上几乎被全面替代
+    </text>
+    <text x="662" y="581" text-anchor="middle" font-size="11" fill="#78350f" font-style="italic">
+      "省一半显存 + 更稳定"是它快速扩散的根因
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,236 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-pipe" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#1f2937"/>
+    </marker>
+    <marker id="arr-yellow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706"/>
+    </marker>
+    <marker id="arr-pink-pipe" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#db2777"/>
+    </marker>
+  </defs>
+
+  <!-- ============== TITLE ============== -->
+  <text x="450" y="28" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="600">
+    两条训练路径:R1-Zero 的极简 vs R1 的工程化
+  </text>
+  <text x="450" y="50" text-anchor="middle" font-size="12" fill="#6b7280">
+    R1-Zero 验证"RL 让推理涌现",R1 在其上补可读性与通用能力 → o1 同级
+  </text>
+
+  <!-- vertical divider between panels -->
+  <line x1="450" y1="80" x2="450" y2="620"
+        stroke="#e5e7eb" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ============================================================== -->
+  <!-- LEFT PANEL: R1-Zero (yellow accent) — x = 40 .. 420             -->
+  <!-- ============================================================== -->
+  <text x="230" y="100" text-anchor="middle" font-size="15"
+        fill="#92400e" font-weight="700">
+    R1-Zero · 验证概念
+  </text>
+  <text x="230" y="118" text-anchor="middle" font-size="11" fill="#6b7280">
+    纯 RL,不走 SFT cold start
+  </text>
+
+  <!-- Block 1: V3 base -->
+  <rect x="80" y="135" width="300" height="55" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="230" y="158" text-anchor="middle" font-size="13" fill="#92400e" font-weight="700">
+    DeepSeek-V3 base
+  </text>
+  <text x="230" y="176" text-anchor="middle" font-size="11" fill="#92400e">
+    671B MoE · 未经任何 RL / SFT
+  </text>
+
+  <!-- arrow down -->
+  <line x1="230" y1="194" x2="230" y2="220"
+        stroke="#d97706" stroke-width="2" marker-end="url(#arr-yellow)"/>
+
+  <!-- Block 2: GRPO RL -->
+  <rect x="80" y="225" width="300" height="70" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="230" y="248" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">
+    GRPO RL on STEM
+  </text>
+  <text x="230" y="265" text-anchor="middle" font-size="11" fill="#9d174d">
+    rule-based reward(accuracy + format)
+  </text>
+  <text x="230" y="282" text-anchor="middle" font-size="11" fill="#9d174d">
+    无 PRM · 无 MCTS · 无 value model
+  </text>
+
+  <!-- arrow down -->
+  <line x1="230" y1="299" x2="230" y2="325"
+        stroke="#d97706" stroke-width="2" marker-end="url(#arr-yellow)"/>
+
+  <!-- Block 3: R1-Zero output -->
+  <rect x="80" y="330" width="300" height="60" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="230" y="354" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">
+    R1-Zero
+  </text>
+  <text x="230" y="372" text-anchor="middle" font-size="11" fill="#065f46">
+    AIME 2024:15.6% → 71.0%(单次)
+  </text>
+
+  <!-- Aha moment callout -->
+  <rect x="60" y="410" width="340" height="62" rx="6"
+        fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="230" y="430" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">
+    Aha moment(训练涌现)
+  </text>
+  <text x="230" y="448" text-anchor="middle" font-size="11" fill="#78350f">
+    某 step 之后,模型自发输出
+  </text>
+  <text x="230" y="464" text-anchor="middle" font-size="11" fill="#78350f" font-style="italic">
+    "Wait, let me reconsider..."
+  </text>
+
+  <!-- bottom note -->
+  <rect x="60" y="495" width="340" height="100" rx="6"
+        fill="#fef2f2" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <text x="230" y="516" text-anchor="middle" font-size="12" fill="#7f1d1d" font-weight="700">
+    遗留问题
+  </text>
+  <text x="230" y="535" text-anchor="middle" font-size="11" fill="#7f1d1d">
+    · 输出语言混杂(中英 / 符号交错)
+  </text>
+  <text x="230" y="552" text-anchor="middle" font-size="11" fill="#7f1d1d">
+    · 可读性 / 格式差
+  </text>
+  <text x="230" y="569" text-anchor="middle" font-size="11" fill="#7f1d1d">
+    · 通用任务(写作 / QA)能力不足
+  </text>
+  <text x="230" y="586" text-anchor="middle" font-size="11" fill="#7f1d1d" font-style="italic">
+    → 需要 R1 的多阶段补
+  </text>
+
+  <!-- ============================================================== -->
+  <!-- RIGHT PANEL: R1 (pink accent) — x = 480 .. 860                  -->
+  <!-- ============================================================== -->
+  <text x="670" y="100" text-anchor="middle" font-size="15"
+        fill="#9d174d" font-weight="700">
+    R1 · 生产级
+  </text>
+  <text x="670" y="118" text-anchor="middle" font-size="11" fill="#6b7280">
+    四阶段流水线,补齐可读性 + 通用能力
+  </text>
+
+  <!-- Stage 1: Cold-start SFT -->
+  <rect x="500" y="135" width="280" height="60" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="640" y="156" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">
+    Stage 1 · Cold-start SFT
+  </text>
+  <text x="640" y="173" text-anchor="middle" font-size="11" fill="#92400e">
+    几千条高质量 reasoning trace
+  </text>
+  <text x="640" y="188" text-anchor="middle" font-size="10" fill="#92400e" font-style="italic">
+    + 加可读性
+  </text>
+
+  <line x1="640" y1="199" x2="640" y2="222"
+        stroke="#db2777" stroke-width="2" marker-end="url(#arr-pink-pipe)"/>
+
+  <!-- Stage 2: Reasoning RL -->
+  <rect x="500" y="225" width="280" height="60" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="640" y="246" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">
+    Stage 2 · Reasoning RL(GRPO)
+  </text>
+  <text x="640" y="263" text-anchor="middle" font-size="11" fill="#9d174d">
+    数学 + 代码 + 逻辑 · 语言一致性奖励
+  </text>
+  <text x="640" y="278" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">
+    + 加 reasoning 内核
+  </text>
+
+  <line x1="640" y1="289" x2="640" y2="312"
+        stroke="#db2777" stroke-width="2" marker-end="url(#arr-pink-pipe)"/>
+
+  <!-- Stage 3: SFT with rejection sampling -->
+  <rect x="500" y="315" width="280" height="60" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="640" y="336" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">
+    Stage 3 · Rejection-sampling SFT
+  </text>
+  <text x="640" y="353" text-anchor="middle" font-size="11" fill="#92400e">
+    Stage 2 采样 → 过滤 + 混入通用任务
+  </text>
+  <text x="640" y="368" text-anchor="middle" font-size="10" fill="#92400e" font-style="italic">
+    + 加通用能力
+  </text>
+
+  <line x1="640" y1="379" x2="640" y2="402"
+        stroke="#db2777" stroke-width="2" marker-end="url(#arr-pink-pipe)"/>
+
+  <!-- Stage 4: RLHF -->
+  <rect x="500" y="405" width="280" height="60" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="640" y="426" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">
+    Stage 4 · RLHF
+  </text>
+  <text x="640" y="443" text-anchor="middle" font-size="11" fill="#9d174d">
+    helpfulness + harmlessness 对齐
+  </text>
+  <text x="640" y="458" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">
+    + 加人类偏好
+  </text>
+
+  <line x1="640" y1="469" x2="640" y2="492"
+        stroke="#059669" stroke-width="2" marker-end="url(#arr-pipe)"/>
+
+  <!-- Output: R1 -->
+  <rect x="500" y="495" width="280" height="65" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="640" y="519" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">
+    DeepSeek-R1
+  </text>
+  <text x="640" y="538" text-anchor="middle" font-size="11" fill="#065f46">
+    AIME 79.8% · 与 o1 持平
+  </text>
+  <text x="640" y="553" text-anchor="middle" font-size="10" fill="#065f46" font-style="italic">
+    开源 · MIT · reasoning trace 全公开
+  </text>
+
+  <!-- Capability evolution bar (right side of stages) -->
+  <g>
+    <text x="838" y="148" text-anchor="middle" font-size="10" fill="#6b7280" font-weight="600">能力</text>
+    <text x="838" y="160" text-anchor="middle" font-size="9" fill="#6b7280">演化</text>
+
+    <!-- Reasoning bar (blue) -->
+    <text x="813" y="180" text-anchor="middle" font-size="9" fill="#1e40af">reason</text>
+    <rect x="803" y="185" width="6" height="20" fill="#dbeafe" stroke="#3b82f6" stroke-width="0.5"/>
+    <rect x="803" y="270" width="6" height="60" fill="#3b82f6"/>
+    <rect x="803" y="360" width="6" height="60" fill="#3b82f6"/>
+    <rect x="803" y="450" width="6" height="55" fill="#3b82f6"/>
+
+    <!-- General bar (green) -->
+    <text x="833" y="180" text-anchor="middle" font-size="9" fill="#065f46">general</text>
+    <rect x="823" y="185" width="6" height="20" fill="#ecfdf5" stroke="#059669" stroke-width="0.5"/>
+    <rect x="823" y="270" width="6" height="20" fill="#ecfdf5" stroke="#059669" stroke-width="0.5"/>
+    <rect x="823" y="360" width="6" height="60" fill="#059669"/>
+    <rect x="823" y="450" width="6" height="55" fill="#059669"/>
+  </g>
+
+  <!-- horizontal divider -->
+  <line x1="40" y1="625" x2="860" y2="625"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- Footnote -->
+  <text x="450" y="652" text-anchor="middle" font-size="11" fill="#6b7280">
+    R1-Zero 证明"RL 单独能让推理涌现",R1 把它工程化成可读、通用、对齐的产品级模型
+  </text>
+  <text x="450" y="672" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    AIME 2024:V3 base 39.2% → R1-Zero 71.0% → R1 79.8%(≈ o1 79.2%)
+  </text>
+</svg>

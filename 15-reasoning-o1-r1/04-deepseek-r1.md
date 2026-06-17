@@ -26,64 +26,54 @@ key_idea: "开源 o1 风格推理模型;先用纯 RL(GRPO)无 SFT cold start 训
 
 R1 发布后 24 小时内引爆 AI 圈:Hugging Face 下载量爆表、英伟达股价单日跌 17%(市场担心推理算力需求被高效模型替代)、整个开源社区开始基于 R1 做后续工作。
 
-## 核心思想:RL 涌现推理 + 多阶段训练
+## 核心思想
 
-R1 论文的核心 insight 比 o1 更明确:**reasoning 行为可以从 RL 中"涌现",不需要昂贵的 PRM 数据标注**。
+### 直觉:推理能力可以"无中生有"地从 RL 中涌现
 
-R1 分两个模型说明这一点:
+理解 R1 真正需要先抓一件事:**reasoning 不是教出来的,是逼出来的**。o1 之前业界对"让模型学推理"的默认假设是——需要海量长链 CoT 标注数据做 SFT,或者需要 PRM(process reward model)对每一步打分。R1 直接证明这两件事**都不需要**:只要 base model 本身够强、reward 足够干净(只给"对错"),纯 RL 训出来的模型自己会学会反思 / 回溯 / 自验证。
 
-### R1-Zero:纯 RL 极简实验
+为什么这件事在 2025 年才被验证?三件事必须同时成立:
 
-R1-Zero 的训练 pipeline 几乎过分简单:
+- **Base model 必须够强** —— DeepSeek-V3 base 已经具备基础数学 / 代码能力,RL 只需放大已有能力,不需要从零教。换 LLaMA-1 7B 做同样实验大概率失败
+- **Reward 必须干净** —— rule-based outcome reward(数学题用 verifier、代码题跑 unit test)避免了 PRM 的 reward hacking。PRM 自身是个学出来的模型,会被 policy 钻空子
+- **RL 算法必须省内存** —— PPO 需要 value model,7B+ 模型上 value model 自身就吃几十 G 显存,大规模 reasoning RL 跑不起。GRPO 把 value model 干掉
+
+把这三件事合在一起:R1 用"够强 base + 干净 reward + 轻量 RL"的组合,把"reasoning 能否从 RL 涌现"这个 2024 年的开放问题第一次给出明确肯定回答,而且**完全开源**。
+
+![R1-Zero vs R1 训练流程对比](assets/04-deepseek-r1-pipeline.svg)
+*图 1:两个模型、两条路径。**上排 R1-Zero**——DeepSeek-V3 base 直接进 GRPO,reward 只看答案对错 + 格式,产物已经在 AIME 上从 15.6% → 71.0%,完全跳过 SFT。**下排 R1**——在 R1-Zero 经验上加 4 个阶段(cold-start SFT → reasoning RL → rejection sampling SFT → RLHF),把推理能力 + 通用能力 + 对齐都装进同一个模型。两条路径共享同一个 RL 内核(GRPO)。*
+
+### 机制一:R1-Zero — 纯 RL 让推理涌现
+
+R1-Zero 的训练 pipeline 极简到几乎反直觉——**没有 SFT cold start、没有 PRM、没有 MCTS、没有 search**:
 
 ```
-DeepSeek-V3 base model
-    ↓
-直接做 RL(GRPO 算法)
-    ↓
-Reward = 答案对错 + 格式奖励(rule-based,不用 PRM)
-    ↓
-R1-Zero
+DeepSeek-V3 base model  →  GRPO(rule-based reward) →  R1-Zero
 ```
 
-**没有 SFT cold start、没有 PRM、没有 MCTS**——只用最简单的 outcome reward。但训练过程中,模型自己学到了:
+reward 设计也极简:
 
-- **思考长度自然增长** —— 训练 step 0 时模型输出 ~100 token,到 step 8000 时增长到 ~10000 token
+```python
+def reward(question, response):
+    # 1. Accuracy:数学用 math_verify,代码跑 unit test
+    answer = extract_answer(response)
+    acc = 1.0 if check_correct(question, answer) else 0.0
+    # 2. Format:推理是否包了 <think>...</think>
+    fmt = 1.0 if has_think_tags(response) else 0.0
+    return acc + 0.5 * fmt
+```
+
+**没有"步骤 3 算错了 reward -0.1"这种 PRM**。论文里 DeepSeek 团队明确说尝试过 PRM 但发现易被 reward hacking、数据难标注,而 rule-based outcome reward 已足够。
+
+训练过程中,模型自己学到了三件事——这是 R1 论文最震撼的发现:
+
+- **思考长度自然增长** —— 训练 step 0 时模型输出 ~100 token,到 step 8000 时增长到 ~10000 token,**没有人为加 length reward**
 - **"Aha moment" 涌现** —— 训练到某一步,模型开始自发输出 "Wait, let me reconsider..." 这种反思 / 回溯语言
-- **AIME 准确率** —— 从 15.6% 涨到 71.0%(单次)/ 86.7%(majority vote)
+- **AIME 准确率** —— 从 15.6% 涨到 71.0%(单次)/ 86.7%(majority vote),超过 o1-mini
 
-这是 R1 论文最震撼的发现——**RL 给定足够算力就能让推理行为涌现,不需要复杂 reward 设计**。
+R1-Zero 的缺陷:输出可读性差(混杂多种语言、格式混乱)、不擅长非 STEM 任务。这两个缺陷正是 R1 多阶段训练要解决的。
 
-但 R1-Zero 有两个缺陷:输出可读性差(混杂多种语言、格式混乱)、不擅长非数学 / 代码任务(因为 RL 只在 STEM 上训)。
-
-### R1:多阶段训练补齐
-
-R1 在 R1-Zero 基础上加了几个工程化阶段:
-
-```
-Stage 1: Cold-start SFT
-  - 收集几千条高质量长链推理数据(可能来自 R1-Zero 的输出 + 人工清洗)
-  - SFT 让模型先学会"可读的推理格式"
-
-Stage 2: Reasoning-oriented RL
-  - 大规模 RL on 数学 / 代码 / 逻辑题
-  - Reward = 答案正确性 + 语言一致性(避免混杂语言)
-
-Stage 3: SFT with rejection sampling
-  - 从 Stage 2 模型采样大量回答,过滤出高质量样本
-  - 加入通用任务数据(写作、QA、role-play)
-  - SFT 整合 reasoning + general capability
-
-Stage 4: RLHF for helpfulness/harmlessness
-  - 类似 InstructGPT 的 RLHF
-  - 让模型既能推理也能对齐人类偏好
-
-→ DeepSeek-R1
-```
-
-四阶段的关键是 **Stage 2 的 reasoning RL 训出 reasoning 内核,后续阶段保证 reasoning 在通用任务里也可用**。
-
-## GRPO:RL 算法的简化
+### 机制二:GRPO — 把 value model 干掉
 
 R1 用的 RL 算法叫 **GRPO(Group Relative Policy Optimization)**,是 DeepSeek-Math 2024 论文提出的 PPO 变体。核心简化:**去掉 value model,用 group baseline 代替**。
 
@@ -127,31 +117,46 @@ GRPO 的优势:
 
 GRPO 在 R1 之后被广泛采用,成为 reasoning 模型训练的事实标准。
 
-## Reward 设计:Rule-based 而非 PRM
+![GRPO 的 group baseline 机制](assets/04-deepseek-r1-grpo.svg)
+*图 2:GRPO 单步训练。同一个 prompt 采 G 个 response → 各自打 reward(rule-based,稀疏) → **用组内均值 / 方差归一化得到 advantage**(无需 value model) → PPO-style clipped policy update + KL penalty to ref policy。右侧 callout 对比:PPO 需要一个和 policy 同大小的 value model(7B 模型多吃 14G+ 显存),GRPO 完全省掉。*
 
-R1 另一个反直觉发现:**reward 不需要 PRM,rule-based 就够**。
+### 机制三:R1 多阶段训练 — 把 reasoning 内核裹进通用模型
 
-R1-Zero 用的 reward 设计极简:
+R1-Zero 证明了 reasoning 能从 RL 涌现,但有可读性差 / 通用任务弱两个缺陷。R1 用 4 阶段训练补齐:
 
-```python
-def reward(question, response):
-    # 1. Accuracy reward:答案对错(数学题用 math_verify,代码题跑 unit test)
-    answer = extract_answer(response)
-    acc = 1.0 if check_correct(question, answer) else 0.0
+```
+Stage 1: Cold-start SFT
+  - 收集几千条高质量长链推理数据(部分来自 R1-Zero 输出 + 人工清洗)
+  - 让模型先学会"可读的推理格式",解决 R1-Zero 的可读性问题
 
-    # 2. Format reward:推理是否包了 <think>...</think>
-    fmt = 1.0 if has_think_tags(response) else 0.0
+Stage 2: Reasoning-oriented RL
+  - 大规模 GRPO on 数学 / 代码 / 逻辑题
+  - Reward = 答案正确性 + 语言一致性(避免混杂语言)
+  - 这一步是 reasoning 内核的真正来源
 
-    return acc + 0.5 * fmt
+Stage 3: SFT with rejection sampling
+  - 从 Stage 2 模型采样大量回答,过滤出高质量样本
+  - 加入通用任务数据(写作、QA、role-play)
+  - SFT 整合 reasoning + general capability
+
+Stage 4: RLHF for helpfulness/harmlessness
+  - 类似 InstructGPT 的 RLHF
+  - 让模型既能推理也能对齐人类偏好
+
+→ DeepSeek-R1
 ```
 
-**没有"步骤 3 算错了 reward -0.1"这种 PRM**。论文里 DeepSeek 团队明确说尝试过 PRM 但发现:
+四阶段的关键设计:**Stage 2 训出 reasoning 内核,Stage 3/4 在保留 reasoning 的同时把通用能力 / 对齐叠加上去**。换句话说,R1-Zero 是"纯推理选手",R1 是"推理 + 通用 + 对齐三合一"。
 
-- PRM 容易被 reward hacking(模型学会输出看起来对但实际无意义的"步骤")
-- 大规模 PRM 数据难以构造
-- Rule-based outcome reward 已足够让推理涌现
+### 三件套协同:强 base + 干净 reward + 轻量 RL 缺一不可
 
-这一发现简化了整个 reasoning 训练 pipeline,降低了复现门槛。
+R1 能在 2025 年成立,**不是单一突破**,而是三件套同时调到协同点——任何一个单拿出来都不够,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系完全一致:
+
+- **只有 GRPO 算法,没有 DeepSeek-V3 这样的强 base** —— RL 无中生有不出来,policy 在 reasoning 空间里几乎全是无效探索。同样的算法套在弱 base 上结果会差几十个点
+- **只有强 base + GRPO,没有 rule-based 干净 reward** —— PRM 会被 reward hacking,policy 学会输出"看起来对的废话"骗分。R1 论文里明确记录了这次失败尝试
+- **只有强 base + 干净 reward,没有省内存的 GRPO** —— 用 PPO + value model,reasoning RL 在 7B+ 模型上跑不起来(显存爆掉),整套实验不可行
+
+三件套合起来才让"reasoning 从 RL 中涌现"这件本来只是 o1 内部黑盒里的现象,第一次在开源世界被复现 + 验证 + 公开。这也是为什么 2024 年下半年多个团队都摸到一两件的边但没成——Qwen-QwQ 有 base 没公开训练方法、各种"o1 复现"项目要么 reward 不干净要么算法吃不消。
 
 ## 性能数据
 
