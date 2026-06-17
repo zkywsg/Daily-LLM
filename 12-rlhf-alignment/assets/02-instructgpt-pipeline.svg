@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-data" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-flow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#1e40af"/>
+    </marker>
+    <marker id="arr-kl" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    InstructGPT 三阶段对齐流水线 (SFT → RM → PPO)
+  </text>
+
+  <!-- ============ STEP 1: SFT ============ -->
+  <rect x="30" y="60" width="840" height="170" rx="10"
+        fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="50" y="85" font-size="14" fill="#92400e" font-weight="700">Step 1 · SFT  (Supervised Fine-Tuning)</text>
+  <text x="50" y="103" font-size="11" fill="#92400e" font-style="italic">从"补全"教成"回答" — 用 13K 人工示范启动</text>
+
+  <!-- prompts box -->
+  <rect x="60" y="125" width="130" height="55" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="125" y="146" text-anchor="middle" font-size="12" fill="#92400e">13K demo prompts</text>
+  <text x="125" y="164" text-anchor="middle" font-size="11" fill="#92400e">(API + labeler)</text>
+
+  <!-- labeler box -->
+  <rect x="240" y="125" width="140" height="55" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+  <text x="310" y="146" text-anchor="middle" font-size="12" fill="#9d174d">40 名标注员</text>
+  <text x="310" y="164" text-anchor="middle" font-size="11" fill="#9d174d">手写高质量回答</text>
+
+  <!-- gpt3 box -->
+  <rect x="430" y="125" width="130" height="55" rx="6"
+        fill="#e0e7ff" stroke="#4338ca" stroke-width="1.2"/>
+  <text x="495" y="146" text-anchor="middle" font-size="12" fill="#3730a3">GPT-3 175B</text>
+  <text x="495" y="164" text-anchor="middle" font-size="11" fill="#3730a3">监督微调 (16 ep)</text>
+
+  <!-- SFT model output -->
+  <rect x="610" y="125" width="150" height="55" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="685" y="146" text-anchor="middle" font-size="13" fill="#065f46" font-weight="600">SFT model π_SFT</text>
+  <text x="685" y="164" text-anchor="middle" font-size="11" fill="#065f46">能"回答"的起点</text>
+
+  <!-- arrows Step1 -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="190" y1="152" x2="238" y2="152" marker-end="url(#arr-data)"/>
+    <line x1="380" y1="152" x2="428" y2="152" marker-end="url(#arr-data)"/>
+    <line x1="560" y1="152" x2="608" y2="152" marker-end="url(#arr-data)"/>
+  </g>
+
+  <!-- side note -->
+  <text x="790" y="200" font-size="10" fill="#6b7280">输出: prompt-response 对</text>
+  <text x="790" y="214" font-size="10" fill="#6b7280">的"模仿器"</text>
+
+  <!-- flow arrow down to Step 2 -->
+  <line x1="450" y1="232" x2="450" y2="258"
+        stroke="#1e40af" stroke-width="2.5" marker-end="url(#arr-flow)"/>
+
+  <!-- ============ STEP 2: RM ============ -->
+  <rect x="30" y="260" width="840" height="170" rx="10"
+        fill="#f0f9ff" stroke="#0369a1" stroke-width="1.5"/>
+  <text x="50" y="285" font-size="14" fill="#075985" font-weight="700">Step 2 · RM  (Reward Model)</text>
+  <text x="50" y="303" font-size="11" fill="#075985" font-style="italic">把人类偏好压成一个 6B 标量打分器 — 33K 排序对</text>
+
+  <!-- prompt + K samples -->
+  <rect x="60" y="325" width="120" height="55" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="120" y="346" text-anchor="middle" font-size="12" fill="#92400e">new prompt</text>
+  <text x="120" y="364" text-anchor="middle" font-size="11" fill="#92400e">→ π_SFT 采 K=4-9</text>
+
+  <!-- K samples A B C D -->
+  <g font-size="11" fill="#065f46">
+    <rect x="220" y="320" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#059669"/>
+    <text x="240" y="335" text-anchor="middle">A</text>
+    <rect x="220" y="345" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#059669"/>
+    <text x="240" y="360" text-anchor="middle">B</text>
+    <rect x="220" y="370" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#059669"/>
+    <text x="240" y="385" text-anchor="middle">C</text>
+    <rect x="220" y="395" width="40" height="22" rx="3" fill="#ecfdf5" stroke="#059669"/>
+    <text x="240" y="410" text-anchor="middle">D</text>
+  </g>
+
+  <!-- labeler rank -->
+  <rect x="310" y="335" width="140" height="55" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+  <text x="380" y="356" text-anchor="middle" font-size="12" fill="#9d174d">标注员排序</text>
+  <text x="380" y="374" text-anchor="middle" font-size="11" fill="#9d174d">A &gt; C &gt; B &gt; D</text>
+
+  <!-- pairwise -->
+  <rect x="495" y="335" width="140" height="55" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="565" y="356" text-anchor="middle" font-size="12" fill="#92400e">C(K,2) pairwise</text>
+  <text x="565" y="374" text-anchor="middle" font-size="11" fill="#92400e">σ(r_w − r_l) loss</text>
+
+  <!-- RM output -->
+  <rect x="680" y="335" width="160" height="55" rx="6"
+        fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="760" y="356" text-anchor="middle" font-size="13" fill="#1e3a8a" font-weight="600">RM (6B GPT-3)</text>
+  <text x="760" y="374" text-anchor="middle" font-size="11" fill="#1e3a8a">r(prompt, response) → ℝ</text>
+
+  <!-- arrows step2 -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="180" y1="352" x2="218" y2="352" marker-end="url(#arr-data)"/>
+    <line x1="260" y1="362" x2="308" y2="362" marker-end="url(#arr-data)"/>
+    <line x1="450" y1="362" x2="493" y2="362" marker-end="url(#arr-data)"/>
+    <line x1="635" y1="362" x2="678" y2="362" marker-end="url(#arr-data)"/>
+  </g>
+
+  <text x="790" y="408" font-size="10" fill="#6b7280">输出: 拟合"人类更喜欢哪个"</text>
+
+  <!-- flow arrow down to Step 3 -->
+  <line x1="450" y1="432" x2="450" y2="458"
+        stroke="#1e40af" stroke-width="2.5" marker-end="url(#arr-flow)"/>
+
+  <!-- ============ STEP 3: PPO ============ -->
+  <rect x="30" y="460" width="840" height="180" rx="10"
+        fill="#fdf2f8" stroke="#be185d" stroke-width="1.5"/>
+  <text x="50" y="485" font-size="14" fill="#9d174d" font-weight="700">Step 3 · PPO RL  (+ KL penalty)</text>
+  <text x="50" y="503" font-size="11" fill="#9d174d" font-style="italic">用 RM 当 reward 微调 π_SFT,KL 拉回 π_SFT 防 reward hacking</text>
+
+  <!-- π_RL -->
+  <rect x="60" y="525" width="130" height="55" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="125" y="546" text-anchor="middle" font-size="13" fill="#065f46" font-weight="600">π_RL  (actor)</text>
+  <text x="125" y="564" text-anchor="middle" font-size="11" fill="#065f46">init = π_SFT</text>
+
+  <!-- prompt -->
+  <rect x="220" y="525" width="110" height="55" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="275" y="546" text-anchor="middle" font-size="12" fill="#92400e">prompt</text>
+  <text x="275" y="564" text-anchor="middle" font-size="11" fill="#92400e">→ response y</text>
+
+  <!-- RM scores -->
+  <rect x="360" y="525" width="130" height="55" rx="6"
+        fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="425" y="546" text-anchor="middle" font-size="12" fill="#1e3a8a">RM (frozen)</text>
+  <text x="425" y="564" text-anchor="middle" font-size="11" fill="#1e3a8a">r = RM(prompt, y)</text>
+
+  <!-- reward composed -->
+  <rect x="520" y="525" width="180" height="55" rx="6"
+        fill="#fef9c3" stroke="#a16207" stroke-width="1.5"/>
+  <text x="610" y="546" text-anchor="middle" font-size="12" fill="#713f12" font-weight="600">reward = r − β·KL</text>
+  <text x="610" y="564" text-anchor="middle" font-size="11" fill="#713f12">β=0.02</text>
+
+  <!-- PPO update -->
+  <rect x="730" y="525" width="130" height="55" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="795" y="546" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">PPO update</text>
+  <text x="795" y="564" text-anchor="middle" font-size="11" fill="#9d174d">→ π_RL ← π_RL'</text>
+
+  <!-- arrows step3 main -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="190" y1="552" x2="218" y2="552" marker-end="url(#arr-data)"/>
+    <line x1="330" y1="552" x2="358" y2="552" marker-end="url(#arr-data)"/>
+    <line x1="490" y1="552" x2="518" y2="552" marker-end="url(#arr-data)"/>
+    <line x1="700" y1="552" x2="728" y2="552" marker-end="url(#arr-data)"/>
+  </g>
+
+  <!-- KL ref to π_SFT (red dashed) -->
+  <rect x="360" y="600" width="180" height="28" rx="4"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <text x="450" y="619" text-anchor="middle" font-size="11" fill="#7f1d1d">π_SFT (frozen) · KL ref</text>
+  <line x1="450" y1="600" x2="450" y2="582"
+        stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#arr-kl)"/>
+
+  <!-- loop back arrow π_RL ← update -->
+  <path d="M 795 580 C 795 620, 125 620, 125 582"
+        stroke="#be185d" stroke-width="1.2" stroke-dasharray="5,3" fill="none"
+        marker-end="url(#arr-data)"/>
+  <text x="460" y="640" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    循环: 采样 → 打分 → 减去 KL → PPO 梯度 → 更新 π_RL
+  </text>
+
+  <!-- ============ bottom callout ============ -->
+  <rect x="30" y="660" width="840" height="32" rx="6"
+        fill="#1f2937" stroke="#111827"/>
+  <text x="450" y="681" text-anchor="middle" font-size="12" fill="#fef3c7" font-weight="600">
+    三步加起来才让 GPT-3 → ChatGPT — 任何一步抽掉效果都崩:无 SFT → RM 方差炸;无 RM → 人类反馈无法 scale;无 PPO+KL → 模型钻 RM 空子输出乱码
+  </text>
+</svg>

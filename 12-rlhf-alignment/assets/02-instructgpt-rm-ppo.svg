@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-m" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-b" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="arr-r" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <!-- ============== UPPER: RM training detail ============== -->
+  <text x="450" y="26" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    上半 · Reward Model 训练 (pairwise ranking)
+  </text>
+
+  <!-- prompt -->
+  <rect x="30" y="60" width="120" height="48" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="90" y="80" text-anchor="middle" font-size="12" fill="#92400e">prompt x</text>
+  <text x="90" y="97" text-anchor="middle" font-size="11" fill="#92400e">"写一首关于秋天的诗"</text>
+
+  <!-- K=4 responses -->
+  <g font-family="system-ui">
+    <rect x="200" y="40" width="120" height="32" rx="5"
+          fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+    <text x="260" y="60" text-anchor="middle" font-size="12" fill="#065f46">response A</text>
+
+    <rect x="200" y="80" width="120" height="32" rx="5"
+          fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+    <text x="260" y="100" text-anchor="middle" font-size="12" fill="#065f46">response B</text>
+
+    <rect x="200" y="120" width="120" height="32" rx="5"
+          fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+    <text x="260" y="140" text-anchor="middle" font-size="12" fill="#065f46">response C</text>
+
+    <rect x="200" y="160" width="120" height="32" rx="5"
+          fill="#ecfdf5" stroke="#059669" stroke-width="1.2"/>
+    <text x="260" y="180" text-anchor="middle" font-size="12" fill="#065f46">response D</text>
+  </g>
+
+  <!-- arrows prompt -> responses -->
+  <g stroke="#9d174d" stroke-width="1.2" fill="none">
+    <line x1="150" y1="84" x2="198" y2="56" marker-end="url(#arr-m)"/>
+    <line x1="150" y1="84" x2="198" y2="96" marker-end="url(#arr-m)"/>
+    <line x1="150" y1="84" x2="198" y2="136" marker-end="url(#arr-m)"/>
+    <line x1="150" y1="84" x2="198" y2="176" marker-end="url(#arr-m)"/>
+  </g>
+  <text x="170" y="34" font-size="10" fill="#6b7280" font-style="italic">π_SFT 采样 K=4</text>
+
+  <!-- labeler rank -->
+  <rect x="370" y="80" width="140" height="80" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="440" y="102" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">labeler 排序</text>
+  <text x="440" y="124" text-anchor="middle" font-size="13" fill="#9d174d">A &gt; C &gt; B &gt; D</text>
+  <text x="440" y="146" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">(helpful + harmless)</text>
+
+  <line x1="320" y1="118" x2="368" y2="118" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-m)"/>
+
+  <!-- 6 pairs -->
+  <rect x="555" y="50" width="170" height="140" rx="6"
+        fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="640" y="70" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="600">C(4,2) = 6 对 pairs</text>
+  <g font-size="11" fill="#1e3a8a">
+    <text x="575" y="92">(A, B)  → A win</text>
+    <text x="575" y="108">(A, C)  → A win</text>
+    <text x="575" y="124">(A, D)  → A win</text>
+    <text x="575" y="140">(C, B)  → C win</text>
+    <text x="575" y="156">(C, D)  → C win</text>
+    <text x="575" y="172">(B, D)  → B win</text>
+  </g>
+
+  <line x1="510" y1="118" x2="553" y2="118" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-m)"/>
+
+  <!-- RM loss -->
+  <rect x="755" y="80" width="125" height="80" rx="6"
+        fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="817" y="102" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="600">RM loss</text>
+  <text x="817" y="124" text-anchor="middle" font-size="11" fill="#1e3a8a">−log σ(r_w − r_l)</text>
+  <text x="817" y="146" text-anchor="middle" font-size="10" fill="#1e3a8a" font-style="italic">在 6 对上求平均</text>
+
+  <line x1="725" y1="118" x2="753" y2="118" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#arr-b)"/>
+
+  <text x="450" y="216" text-anchor="middle" font-size="11" fill="#6b7280">
+    一条 4-way 排序 = 6 个监督样本 — 大幅放大每条标注的训练价值
+  </text>
+
+  <!-- divider -->
+  <line x1="40" y1="240" x2="860" y2="240"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== LOWER: PPO + KL ============== -->
+  <text x="450" y="266" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    下半 · PPO RL 目标 = RM 打分 − β·KL  (防 reward hacking 的关键)
+  </text>
+
+  <!-- π_RL actor -->
+  <rect x="40" y="320" width="140" height="60" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.8"/>
+  <text x="110" y="343" text-anchor="middle" font-size="13" fill="#065f46" font-weight="600">π_RL  (actor)</text>
+  <text x="110" y="362" text-anchor="middle" font-size="11" fill="#065f46">175B, 可训练</text>
+
+  <!-- prompt -->
+  <rect x="220" y="320" width="110" height="60" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="275" y="343" text-anchor="middle" font-size="12" fill="#92400e">prompt x</text>
+  <text x="275" y="362" text-anchor="middle" font-size="11" fill="#92400e">→ 采样 y</text>
+
+  <!-- RM frozen -->
+  <rect x="370" y="320" width="130" height="60" rx="6"
+        fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="435" y="343" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="600">RM (frozen)</text>
+  <text x="435" y="362" text-anchor="middle" font-size="11" fill="#1e3a8a">r = RM(x, y)</text>
+
+  <!-- compose reward -->
+  <rect x="540" y="320" width="220" height="60" rx="6"
+        fill="#fef9c3" stroke="#a16207" stroke-width="1.8"/>
+  <text x="650" y="343" text-anchor="middle" font-size="13" fill="#713f12" font-weight="700">reward = r − β · KL(π_RL ‖ π_SFT)</text>
+  <text x="650" y="362" text-anchor="middle" font-size="10" fill="#713f12" font-style="italic">β = 0.02   (+ γ · pretrain LM loss)</text>
+
+  <!-- PPO grad -->
+  <rect x="40" y="430" width="160" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="120" y="453" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">PPO step</text>
+  <text x="120" y="470" text-anchor="middle" font-size="11" fill="#9d174d">∇θ J → 更新 π_RL</text>
+
+  <!-- π_SFT ref frozen -->
+  <rect x="540" y="430" width="220" height="50" rx="6"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="650" y="453" text-anchor="middle" font-size="13" fill="#7f1d1d" font-weight="600">π_SFT (frozen) · KL reference</text>
+  <text x="650" y="470" text-anchor="middle" font-size="10" fill="#7f1d1d">提供 log_prob 算 KL</text>
+
+  <!-- arrows -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="180" y1="350" x2="218" y2="350" marker-end="url(#arr-m)"/>
+    <line x1="330" y1="350" x2="368" y2="350" marker-end="url(#arr-m)"/>
+    <line x1="500" y1="350" x2="538" y2="350" marker-end="url(#arr-m)"/>
+  </g>
+
+  <!-- KL link RL <-> SFT ref -->
+  <line x1="110" y1="380" x2="540" y2="455"
+        stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,3"/>
+  <text x="300" y="430" font-size="10" fill="#7f1d1d" font-style="italic">KL(π_RL ‖ π_SFT)</text>
+
+  <!-- reward feeds PPO -->
+  <line x1="650" y1="380" x2="200" y2="445"
+        stroke="#a16207" stroke-width="1.5" marker-end="url(#arr-m)"/>
+  <text x="380" y="408" font-size="10" fill="#713f12" font-style="italic">reward → advantage</text>
+
+  <!-- update loop π_RL -->
+  <line x1="120" y1="430" x2="110" y2="382"
+        stroke="#be185d" stroke-width="1.5" marker-end="url(#arr-m)"/>
+
+  <!-- ============== right side big callout ============== -->
+  <rect x="40" y="510" width="820" height="95" rx="8"
+        fill="#1f2937" stroke="#111827"/>
+  <text x="60" y="535" font-size="13" fill="#fef3c7" font-weight="700">
+    为什么 KL penalty 是关键?
+  </text>
+  <text x="60" y="556" font-size="11" fill="#fef9c3">
+    RM 只是人类偏好的近似 — 它在 π_SFT 附近的分布上拟合得准,但策略一旦漂得远,RM 就开始打错分。没有 KL,RL 会把模型推到 RM 打高分
+  </text>
+  <text x="60" y="572" font-size="11" fill="#fef9c3">
+    但人类觉得胡言乱语的区域 (reward hacking) — 输出退化成模板套话、奇怪字符堆叠、反复夸赞自己等等。
+  </text>
+  <text x="60" y="592" font-size="11" fill="#fde68a" font-style="italic" font-weight="600">
+    β·KL 把策略拴在 π_SFT 半径内,让 RM 始终工作在它"信任"的分布上 — InstructGPT 论文用 β=0.02,后续 RLHF 工作几乎全部沿用这个写法。
+  </text>
+</svg>
