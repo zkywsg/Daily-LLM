@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-fwd" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-rev" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- ============== TITLE ============== -->
+  <text x="450" y="28" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="600">
+    DDPM 的两条 Markov 链 · forward 加噪 + reverse 去噪
+  </text>
+  <text x="450" y="50" text-anchor="middle" font-size="12" fill="#6b7280">
+    forward 是数学定义(无参数)· reverse 才是要训练的 ε_θ
+  </text>
+
+  <!-- ============================================================== -->
+  <!-- ROW 1: Forward process (y = 70-280)                              -->
+  <!-- ============================================================== -->
+  <text x="40" y="90" text-anchor="start" font-size="14"
+        fill="#1f2937" font-weight="700">
+    Forward · q(x_t | x_{t-1}) = N(x_t; √(1-β_t)·x_{t-1}, β_t·I)
+  </text>
+  <text x="40" y="108" text-anchor="start" font-size="11" fill="#6b7280">
+    固定的高斯加噪 Markov 链 · 无可学参数
+  </text>
+
+  <!-- 5 image squares: x_0, x_{T/4}, x_{T/2}, x_{3T/4}, x_T -->
+  <!-- positions: cx = 90, 240, 390, 540, 690; y = 150; size = 80x80 -->
+  <g>
+    <!-- x_0 -->
+    <rect x="50" y="150" width="80" height="80" rx="6"
+          fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="90" y="195" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">x₀</text>
+    <text x="90" y="248" text-anchor="middle" font-size="11" fill="#6b7280">原图</text>
+
+    <!-- x_{T/4} -->
+    <rect x="200" y="150" width="80" height="80" rx="6"
+          fill="#a5b4fc" stroke="#6366f1" stroke-width="1.8"/>
+    <text x="240" y="195" text-anchor="middle" font-size="13" fill="#1e1b4b" font-weight="700">x_{T/4}</text>
+    <text x="240" y="248" text-anchor="middle" font-size="11" fill="#6b7280">轻噪</text>
+
+    <!-- x_{T/2} -->
+    <rect x="350" y="150" width="80" height="80" rx="6"
+          fill="#6366f1" stroke="#4338ca" stroke-width="1.8"/>
+    <text x="390" y="195" text-anchor="middle" font-size="13" fill="#ffffff" font-weight="700">x_{T/2}</text>
+    <text x="390" y="248" text-anchor="middle" font-size="11" fill="#6b7280">中噪</text>
+
+    <!-- x_{3T/4} -->
+    <rect x="500" y="150" width="80" height="80" rx="6"
+          fill="#4338ca" stroke="#312e81" stroke-width="1.8"/>
+    <text x="540" y="195" text-anchor="middle" font-size="13" fill="#ffffff" font-weight="700">x_{3T/4}</text>
+    <text x="540" y="248" text-anchor="middle" font-size="11" fill="#6b7280">重噪</text>
+
+    <!-- x_T -->
+    <rect x="650" y="150" width="80" height="80" rx="6"
+          fill="#1f2937" stroke="#0f172a" stroke-width="1.8"/>
+    <text x="690" y="195" text-anchor="middle" font-size="13" fill="#ffffff" font-weight="700">x_T</text>
+    <text x="690" y="248" text-anchor="middle" font-size="11" fill="#6b7280">纯噪声</text>
+  </g>
+
+  <!-- Forward arrows -->
+  <g stroke="#9d174d" stroke-width="1.8" fill="none">
+    <line x1="132" y1="190" x2="198" y2="190" marker-end="url(#arr-fwd)"/>
+    <line x1="282" y1="190" x2="348" y2="190" marker-end="url(#arr-fwd)"/>
+    <line x1="432" y1="190" x2="498" y2="190" marker-end="url(#arr-fwd)"/>
+    <line x1="582" y1="190" x2="648" y2="190" marker-end="url(#arr-fwd)"/>
+  </g>
+
+  <!-- arrow labels -->
+  <g font-size="10" fill="#9d174d" text-anchor="middle" font-style="italic">
+    <text x="165" y="180">+ β_t noise</text>
+    <text x="315" y="180">+ β_t noise</text>
+    <text x="465" y="180">+ β_t noise</text>
+    <text x="615" y="180">+ β_t noise</text>
+  </g>
+
+  <!-- Right side annotation -->
+  <g>
+    <rect x="755" y="155" width="130" height="72" rx="6"
+          fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="820" y="178" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">
+      训练时
+    </text>
+    <text x="820" y="196" text-anchor="middle" font-size="10" fill="#92400e">
+      整条链固定
+    </text>
+    <text x="820" y="211" text-anchor="middle" font-size="10" fill="#92400e">
+      无可学参数
+    </text>
+  </g>
+
+  <!-- ============== DIVIDER ============== -->
+  <line x1="40" y1="295" x2="860" y2="295"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============================================================== -->
+  <!-- ROW 2: Reverse process (y = 310-520)                             -->
+  <!-- ============================================================== -->
+  <text x="40" y="330" text-anchor="start" font-size="14"
+        fill="#1f2937" font-weight="700">
+    Reverse · p_θ(x_{t-1} | x_t) = N(x_{t-1}; μ_θ(x_t, t), Σ_t)
+  </text>
+  <text x="40" y="348" text-anchor="start" font-size="11" fill="#6b7280">
+    要学的去噪 Markov 链 · 只有一个网络 ε_θ
+  </text>
+
+  <!-- 5 image squares reversed: x_T → ... → x_0 -->
+  <g>
+    <!-- x_T (left) -->
+    <rect x="50" y="390" width="80" height="80" rx="6"
+          fill="#1f2937" stroke="#0f172a" stroke-width="1.8"/>
+    <text x="90" y="435" text-anchor="middle" font-size="13" fill="#ffffff" font-weight="700">x_T</text>
+    <text x="90" y="488" text-anchor="middle" font-size="11" fill="#6b7280">纯噪声</text>
+
+    <!-- x_{3T/4} -->
+    <rect x="200" y="390" width="80" height="80" rx="6"
+          fill="#4338ca" stroke="#312e81" stroke-width="1.8"/>
+    <text x="240" y="435" text-anchor="middle" font-size="13" fill="#ffffff" font-weight="700">x_{3T/4}</text>
+
+    <!-- x_{T/2} -->
+    <rect x="350" y="390" width="80" height="80" rx="6"
+          fill="#6366f1" stroke="#4338ca" stroke-width="1.8"/>
+    <text x="390" y="435" text-anchor="middle" font-size="13" fill="#ffffff" font-weight="700">x_{T/2}</text>
+
+    <!-- x_{T/4} -->
+    <rect x="500" y="390" width="80" height="80" rx="6"
+          fill="#a5b4fc" stroke="#6366f1" stroke-width="1.8"/>
+    <text x="540" y="435" text-anchor="middle" font-size="13" fill="#1e1b4b" font-weight="700">x_{T/4}</text>
+
+    <!-- x_0 (right) -->
+    <rect x="650" y="390" width="80" height="80" rx="6"
+          fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="690" y="435" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">x₀</text>
+    <text x="690" y="488" text-anchor="middle" font-size="11" fill="#6b7280">生成图</text>
+  </g>
+
+  <!-- Reverse arrows: left → right (sampling 时间从 T 走到 0) -->
+  <g stroke="#059669" stroke-width="1.8" fill="none">
+    <line x1="132" y1="430" x2="198" y2="430" marker-end="url(#arr-rev)"/>
+    <line x1="282" y1="430" x2="348" y2="430" marker-end="url(#arr-rev)"/>
+    <line x1="432" y1="430" x2="498" y2="430" marker-end="url(#arr-rev)"/>
+    <line x1="582" y1="430" x2="648" y2="430" marker-end="url(#arr-rev)"/>
+  </g>
+
+  <!-- arrow labels -->
+  <g font-size="10" fill="#065f46" text-anchor="middle" font-style="italic">
+    <text x="165" y="420">− ε_θ(x_t, t)</text>
+    <text x="315" y="420">− ε_θ(x_t, t)</text>
+    <text x="465" y="420">− ε_θ(x_t, t)</text>
+    <text x="615" y="420">− ε_θ(x_t, t)</text>
+  </g>
+
+  <!-- Right side annotation -->
+  <g>
+    <rect x="755" y="395" width="130" height="72" rx="6"
+          fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="820" y="418" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">
+      采样时
+    </text>
+    <text x="820" y="436" text-anchor="middle" font-size="10" fill="#065f46">
+      从纯噪声出发
+    </text>
+    <text x="820" y="451" text-anchor="middle" font-size="10" fill="#065f46">
+      逐步去噪到图像
+    </text>
+  </g>
+
+  <!-- ============== BOTTOM PANEL ============== -->
+  <line x1="40" y1="535" x2="860" y2="535"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <g>
+    <rect x="60" y="552" width="780" height="52" rx="6"
+          fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="450" y="574" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">
+      forward 是数学定义、reverse 才是要学的
+    </text>
+    <text x="450" y="592" text-anchor="middle" font-size="11" fill="#065f46">
+      整个 DDPM 只训练一个网络:ε_θ(x_t, t) —— 给定 noisy 图和 t,预测加进去的噪声
+    </text>
+  </g>
+
+</svg>

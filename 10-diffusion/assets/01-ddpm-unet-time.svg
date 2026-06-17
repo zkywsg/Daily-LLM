@@ -1,0 +1,228 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main2" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-skip" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#3b82f6"/>
+    </marker>
+    <marker id="arr-time" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- ============== TITLE ============== -->
+  <text x="450" y="28" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="600">
+    DDPM 的 ε_θ:U-Net + 时间步条件注入
+  </text>
+  <text x="450" y="50" text-anchor="middle" font-size="12" fill="#6b7280">
+    encoder 下采样 → bottleneck → decoder 上采样 + skip · 时间步 t 注入每个 block
+  </text>
+
+  <!-- ============================================================== -->
+  <!-- TIME EMBEDDING ROW (y = 75 - 115)                                -->
+  <!-- ============================================================== -->
+  <g>
+    <!-- t scalar -->
+    <rect x="60" y="80" width="50" height="32" rx="6"
+          fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="85" y="100" text-anchor="middle" font-size="13" fill="#92400e" font-weight="700">t</text>
+
+    <line x1="112" y1="96" x2="138" y2="96"
+          stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-time)"/>
+
+    <!-- sinusoidal PE -->
+    <rect x="140" y="80" width="130" height="32" rx="6"
+          fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="205" y="100" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">sinusoidal PE</text>
+
+    <line x1="272" y1="96" x2="298" y2="96"
+          stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-time)"/>
+
+    <!-- MLP -->
+    <rect x="300" y="80" width="80" height="32" rx="6"
+          fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="340" y="100" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">MLP</text>
+
+    <line x1="382" y1="96" x2="408" y2="96"
+          stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-time)"/>
+
+    <!-- time vector τ -->
+    <rect x="410" y="80" width="100" height="32" rx="6"
+          fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="460" y="100" text-anchor="middle" font-size="13" fill="#92400e" font-weight="700">τ ∈ R^d_t</text>
+
+    <text x="630" y="100" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+      ↓ 注入到 U-Net 每个 block(虚线)
+    </text>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- MAIN U-NET BODY (y = 130 - 440)                                  -->
+  <!-- ============================================================== -->
+
+  <!-- Input x_t (left) -->
+  <rect x="30" y="240" width="70" height="70" rx="6"
+        fill="#dbeafe" stroke="#3b82f6" stroke-width="1.8"/>
+  <text x="65" y="270" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="700">x_t</text>
+  <text x="65" y="287" text-anchor="middle" font-size="10" fill="#1e40af">noisy</text>
+  <text x="65" y="301" text-anchor="middle" font-size="10" fill="#1e40af">[3,64,64]</text>
+
+  <line x1="102" y1="275" x2="128" y2="275"
+        stroke="#9d174d" stroke-width="1.8" marker-end="url(#arr-main2)"/>
+
+  <!-- Encoder blocks (descending: 64→32→16→8) -->
+  <!-- E1: 64x64x64 -->
+  <rect x="130" y="200" width="80" height="48" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="170" y="220" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Enc 1</text>
+  <text x="170" y="234" text-anchor="middle" font-size="10" fill="#9d174d">64² · 64ch</text>
+  <text x="170" y="246" text-anchor="middle" font-size="9" fill="#9d174d">↓</text>
+
+  <!-- E2: 32x32x128 -->
+  <rect x="220" y="252" width="80" height="44" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="260" y="270" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Enc 2</text>
+  <text x="260" y="284" text-anchor="middle" font-size="10" fill="#9d174d">32² · 128ch ↓</text>
+
+  <!-- E3: 16x16x256 -->
+  <rect x="310" y="300" width="80" height="40" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="350" y="316" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Enc 3</text>
+  <text x="350" y="330" text-anchor="middle" font-size="10" fill="#9d174d">16² · 256ch ↓</text>
+
+  <!-- E4: 8x8x512 -->
+  <rect x="400" y="344" width="80" height="38" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="440" y="360" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Enc 4</text>
+  <text x="440" y="374" text-anchor="middle" font-size="10" fill="#9d174d">8² · 512ch</text>
+
+  <!-- Bottleneck (bottom) -->
+  <rect x="500" y="395" width="100" height="42" rx="6"
+        fill="#1f2937" stroke="#0f172a" stroke-width="1.8"/>
+  <text x="550" y="414" text-anchor="middle" font-size="12" fill="#ffffff" font-weight="700">Bottleneck</text>
+  <text x="550" y="428" text-anchor="middle" font-size="10" fill="#e5e7eb">8² · 512ch</text>
+
+  <!-- Decoder blocks (ascending) -->
+  <!-- D4: 8x8x512 -->
+  <rect x="620" y="344" width="80" height="38" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="660" y="360" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Dec 4</text>
+  <text x="660" y="374" text-anchor="middle" font-size="10" fill="#9d174d">8² · 512ch</text>
+
+  <!-- D3: 16x16x256 -->
+  <rect x="710" y="300" width="80" height="40" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="750" y="316" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Dec 3</text>
+  <text x="750" y="330" text-anchor="middle" font-size="10" fill="#9d174d">16² · 256ch ↑</text>
+
+  <!-- D2: 32x32x128 -->
+  <rect x="710" y="252" width="80" height="44" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="750" y="270" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Dec 2</text>
+  <text x="750" y="284" text-anchor="middle" font-size="10" fill="#9d174d">32² · 128ch ↑</text>
+
+  <!-- D1: 64x64x64 -->
+  <rect x="710" y="200" width="80" height="48" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="750" y="220" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Dec 1</text>
+  <text x="750" y="234" text-anchor="middle" font-size="10" fill="#9d174d">64² · 64ch</text>
+  <text x="750" y="246" text-anchor="middle" font-size="9" fill="#9d174d">↑</text>
+
+  <!-- Output: ε prediction -->
+  <line x1="794" y1="224" x2="820" y2="224"
+        stroke="#9d174d" stroke-width="1.8" marker-end="url(#arr-main2)"/>
+  <rect x="822" y="200" width="70" height="48" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="857" y="220" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">ε</text>
+  <text x="857" y="234" text-anchor="middle" font-size="10" fill="#065f46">predicted</text>
+  <text x="857" y="246" text-anchor="middle" font-size="10" fill="#065f46">[3,64,64]</text>
+
+  <!-- Main path forward arrows (encoder going down) -->
+  <g stroke="#9d174d" stroke-width="1.8" fill="none">
+    <line x1="212" y1="240" x2="226" y2="262" marker-end="url(#arr-main2)"/>
+    <line x1="302" y1="288" x2="316" y2="310" marker-end="url(#arr-main2)"/>
+    <line x1="392" y1="332" x2="406" y2="354" marker-end="url(#arr-main2)"/>
+    <line x1="482" y1="370" x2="498" y2="408" marker-end="url(#arr-main2)"/>
+    <!-- Bottleneck to decoder going up -->
+    <line x1="602" y1="408" x2="618" y2="370" marker-end="url(#arr-main2)"/>
+    <line x1="702" y1="354" x2="716" y2="332" marker-end="url(#arr-main2)"/>
+    <line x1="792" y1="310" x2="806" y2="288" marker-end="url(#arr-main2)"/>
+    <line x1="792" y1="262" x2="806" y2="240" marker-end="url(#arr-main2)"/>
+  </g>
+
+  <!-- Skip connections (encoder → decoder, same scale) -->
+  <g stroke="#3b82f6" stroke-width="1.5" fill="none" stroke-dasharray="5,3">
+    <path d="M 210 218 Q 460 175, 710 218" marker-end="url(#arr-skip)"/>
+    <path d="M 300 264 Q 505 200, 710 264" marker-end="url(#arr-skip)"/>
+    <path d="M 390 312 Q 550 235, 710 312" marker-end="url(#arr-skip)"/>
+    <path d="M 480 358 Q 590 275, 620 358" marker-end="url(#arr-skip)"/>
+  </g>
+  <text x="460" y="170" text-anchor="middle" font-size="10" fill="#1e40af" font-style="italic">
+    skip connection · 同尺度直连
+  </text>
+
+  <!-- Time embedding τ injected into each block (dashed orange) -->
+  <g stroke="#d97706" stroke-width="1" fill="none" stroke-dasharray="3,3">
+    <!-- from τ box (center ~460, 112) to each block -->
+    <path d="M 460 113 Q 200 130, 170 200"/>
+    <path d="M 460 113 Q 320 150, 260 252"/>
+    <path d="M 460 113 Q 410 170, 350 300"/>
+    <path d="M 460 113 Q 450 200, 440 344"/>
+    <path d="M 460 113 Q 510 220, 550 395"/>
+    <path d="M 470 113 Q 565 200, 660 344"/>
+    <path d="M 470 113 Q 615 170, 750 300"/>
+    <path d="M 470 113 Q 660 150, 750 200"/>
+  </g>
+
+  <!-- ============== BOTTOM PANEL ============== -->
+  <line x1="40" y1="455" x2="860" y2="455"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- LEFT callout: time condition matters -->
+  <g>
+    <rect x="40" y="470" width="400" height="110" rx="6"
+          fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="240" y="492" text-anchor="middle" font-size="13" fill="#92400e" font-weight="700">
+      为什么时间条件至关重要
+    </text>
+    <text x="60" y="514" text-anchor="start" font-size="11" fill="#92400e">
+      不同 t 的去噪策略完全不同:
+    </text>
+    <text x="60" y="532" text-anchor="start" font-size="11" fill="#92400e">
+      · t ≈ T → 输入几乎是纯噪声,需要从无到有产生结构
+    </text>
+    <text x="60" y="550" text-anchor="start" font-size="11" fill="#92400e">
+      · t ≈ 1 → 输入几乎是干净图,只需修正细节
+    </text>
+    <text x="60" y="568" text-anchor="start" font-size="11" fill="#92400e">
+      同一个 ε_θ 网络靠 τ 区分这 1000 种不同的"工况"
+    </text>
+  </g>
+
+  <!-- RIGHT callout: training objective -->
+  <g>
+    <rect x="460" y="470" width="400" height="110" rx="6"
+          fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="660" y="492" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">
+      训练目标(L_simple)
+    </text>
+    <text x="660" y="520" text-anchor="middle" font-size="12" fill="#065f46" font-style="italic">
+      L = E_{t, x₀, ε} || ε − ε_θ(x_t, t) ||²
+    </text>
+    <text x="660" y="544" text-anchor="middle" font-size="11" fill="#065f46">
+      其中 x_t = √ᾱ_t · x₀ + √(1−ᾱ_t) · ε
+    </text>
+    <text x="660" y="566" text-anchor="middle" font-size="11" fill="#065f46">
+      ε ~ N(0, I) · 标准 MSE,没有判别器、没有 KL
+    </text>
+  </g>
+
+</svg>
