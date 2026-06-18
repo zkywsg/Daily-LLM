@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="dn-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="dn-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Dense Block — 第 ℓ 层 concat 前面所有层的输出
+  </text>
+
+  <!-- 6 nodes horizontally: x0, H1, H2, H3, H4, H5 -->
+  <!-- positions: 80, 220, 360, 500, 640, 780 -->
+  <g>
+    <rect x="50" y="180" width="80" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="90" y="200" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">x₀</text>
+    <text x="90" y="217" text-anchor="middle" font-size="10" fill="#92400e">k₀=64</text>
+
+    <rect x="190" y="180" width="80" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="230" y="200" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">H₁</text>
+    <text x="230" y="217" text-anchor="middle" font-size="10" fill="#9d174d">+k=32</text>
+
+    <rect x="330" y="180" width="80" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="370" y="200" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">H₂</text>
+    <text x="370" y="217" text-anchor="middle" font-size="10" fill="#9d174d">+k</text>
+
+    <rect x="470" y="180" width="80" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="510" y="200" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">H₃</text>
+    <text x="510" y="217" text-anchor="middle" font-size="10" fill="#9d174d">+k</text>
+
+    <rect x="610" y="180" width="80" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="650" y="200" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">H₄</text>
+    <text x="650" y="217" text-anchor="middle" font-size="10" fill="#9d174d">+k</text>
+
+    <rect x="750" y="180" width="80" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="790" y="200" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">H₅</text>
+    <text x="790" y="217" text-anchor="middle" font-size="10" fill="#9d174d">+k</text>
+  </g>
+
+  <!-- Main forward arrows (red) -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="132" y1="205" x2="188" y2="205" marker-end="url(#dn-arr)"/>
+    <line x1="272" y1="205" x2="328" y2="205" marker-end="url(#dn-arr)"/>
+    <line x1="412" y1="205" x2="468" y2="205" marker-end="url(#dn-arr)"/>
+    <line x1="552" y1="205" x2="608" y2="205" marker-end="url(#dn-arr)"/>
+    <line x1="692" y1="205" x2="748" y2="205" marker-end="url(#dn-arr)"/>
+  </g>
+
+  <!-- Dense skip connections (blue arcs from x0 / H1 / H2 / H3 / H4 to all later) -->
+  <g stroke="#2563eb" stroke-width="1" fill="none" opacity="0.6">
+    <!-- x0 → H2/H3/H4/H5 (arcs over top) -->
+    <path d="M 90 180 C 90 130, 370 130, 370 178" marker-end="url(#dn-arr-blue)"/>
+    <path d="M 90 180 C 90 110, 510 110, 510 178" marker-end="url(#dn-arr-blue)"/>
+    <path d="M 90 180 C 90 90, 650 90, 650 178" marker-end="url(#dn-arr-blue)"/>
+    <path d="M 90 180 C 90 70, 790 70, 790 178" marker-end="url(#dn-arr-blue)"/>
+
+    <!-- H1 → H3/H4/H5 -->
+    <path d="M 230 230 C 230 290, 510 290, 510 232" marker-end="url(#dn-arr-blue)"/>
+    <path d="M 230 230 C 230 310, 650 310, 650 232" marker-end="url(#dn-arr-blue)"/>
+    <path d="M 230 230 C 230 330, 790 330, 790 232" marker-end="url(#dn-arr-blue)"/>
+
+    <!-- H2 → H4/H5 -->
+    <path d="M 370 230 C 370 350, 650 350, 650 232" marker-end="url(#dn-arr-blue)"/>
+    <path d="M 370 230 C 370 370, 790 370, 790 232" marker-end="url(#dn-arr-blue)"/>
+
+    <!-- H3 → H5 -->
+    <path d="M 510 230 C 510 390, 790 390, 790 232" marker-end="url(#dn-arr-blue)"/>
+  </g>
+
+  <text x="450" y="55" text-anchor="middle" font-size="11" fill="#2563eb" font-style="italic">蓝色 skip = 每条 dense connection,每层 concat 前面所有层</text>
+
+  <!-- output block info -->
+  <text x="830" y="170" text-anchor="end" font-size="11" fill="#6b7280" font-style="italic">
+    block 末端通道 = k₀ + 5k = 224
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="425" x2="860" y2="425" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: ResNet add vs DenseNet concat ============== -->
+  <text x="450" y="455" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    ResNet add vs DenseNet concat — 信息混叠 vs 信息保留
+  </text>
+
+  <!-- ResNet side -->
+  <rect x="60" y="475" width="370" height="120" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="497" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">ResNet: y = F(x) + x</text>
+  <text x="75" y="520" font-size="11" fill="#991b1b">• 加法把不同层特征叠加到同一张量</text>
+  <text x="75" y="540" font-size="11" fill="#991b1b">• 浅层边缘 + 深层语义被混叠</text>
+  <text x="75" y="560" font-size="11" fill="#991b1b">• 下游层无法区分"哪一层贡献了什么"</text>
+  <text x="75" y="582" font-size="11" fill="#dc2626" font-weight="600">⇒ 信息混叠,但显存友好(算完即释放)</text>
+
+  <!-- DenseNet side -->
+  <rect x="470" y="475" width="370" height="120" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="655" y="497" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">DenseNet: x_ℓ = H_ℓ([x₀, ..., x_{ℓ-1}])</text>
+  <text x="485" y="520" font-size="11" fill="#065f46">• concat 把每层输出原样拼到通道维</text>
+  <text x="485" y="540" font-size="11" fill="#065f46">• 每层输出永远不被覆盖 / 叠加 / 混叠</text>
+  <text x="485" y="560" font-size="11" fill="#065f46">• 浅层 → 深层直接通路,梯度也走同路径</text>
+  <text x="485" y="582" font-size="11" fill="#059669" font-weight="600">⇒ 信息保留 + 特征复用,但显存代价大</text>
+</svg>

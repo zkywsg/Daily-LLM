@@ -22,81 +22,67 @@ key_idea: "每层都直接接收前面所有层的输出（concat 而非加法�
 
 ## 核心思想
 
-DenseNet 的方案简单直接：**用 concat 替代 add**。在一个 Dense block 内，第 ℓ 层不再只接收前一层的输出，而是接收前面**所有 ℓ-1 层**的输出拼接（concat）成的特征图：
+### 直觉:用 concat 替代 add,信息无损保留 + 极致特征复用
+
+理解 DenseNet 真正需要先抓一件事:**[ResNet](05-resnet.md) 的 `y = F(x) + x` 加法操作在信息保留上有损失**。加法把不同层学到的特征**叠加到同一张量**——浅层边缘特征与深层语义特征被加成一个张量,下游层无法区分"这个数值由哪一层贡献"。Huang 等人 2017 反问:**为什么不把"加"换成"拼"?用 concat 让每层输出永远摆在那儿,谁想用谁拿,信息完全不被覆盖**。
+
+三件事必须同时成立才让 DenseNet 在 2017 年 work:
+
+- **concat 替代 add** — 每层输出直接拼到通道维,不被任何后续层覆盖或叠加,实现真正的特征无损保留
+- **Growth rate k 控制通道线性增长** — 每层只贡献 k=32 个新通道,即使 12 层 block 通道也只是线性增长 $k_0+(\ell-1)k$,不会指数膨胀
+- **Bottleneck + Compression(DenseNet-BC)** — 1×1 把 concat 输入压到 4k 再算 3×3,transition layer 用 θ=0.5 把通道减半,把朴素 DenseNet 的参数 / 算力代价砍下来
+
+三件事合起来:**DenseNet-201 用 20M 参数达到 ResNet-152(60M)同档精度**(Top-5 5.2% vs 5.6%),参数效率约为 ResNet 的数倍。CVPR 2017 Best Paper —— 继 ResNet 之后,视觉社区连续两届把最高奖授予以"连接方式"为核心创新的工作。
+
+![Dense Block 稠密连接 — 每层 concat 前面所有层](assets/06-densenet-dense-block.svg)
+*图 1:Dense block 内 5 层稠密连接 — 第 ℓ 层接收前面 0 到 ℓ-1 所有层的 concat 作为输入,每层贡献 k=32 个新通道。蓝色虚线展示了每条 skip connection,所有层的输出最终也都直接连到 block 输出。底部对比 ResNet:**加法 = 信息混叠;concat = 信息保留**,继承了 ResNet 那个 `+1` 的本质,只是把"加"换成"拼"。*
+
+### 机制一:Concat 替代 Add — 第 ℓ 层接收前面所有层的 concat
+
+DenseNet 的核心改动一行代码就能讲清:
 
 $$
 x_\ell = H_\ell([x_0, x_1, \ldots, x_{\ell-1}])
 $$
 
-这里 $[\cdot]$ 表示沿通道维度的拼接，$H_\ell$ 是"BN + ReLU + 3×3 Conv"组合（pre-activation 风格，受 He 2016 *Identity Mappings* 启发）。每层的输出**永远不会被覆盖、不会被叠加、不会被混叠**——它就摆在那儿，谁想用谁拿。
+$[\cdot]$ 表示沿通道维拼接,$H_\ell$ 是 "BN + ReLU + 3×3 Conv"(pre-activation 风格,受 He 2016 *Identity Mappings* 启发)。**每层输出永远不会被覆盖、不会被叠加、不会被混叠** —— 它就摆在那儿,谁想用谁拿。
 
-```mermaid
-graph LR
-    x0["x₀: Input [B,k₀,H,W]"]:::input
-    h1["H₁: BN-ReLU-Conv3×3"]:::compute
-    h2["H₂: BN-ReLU-Conv3×3"]:::compute
-    h3["H₃: BN-ReLU-Conv3×3"]:::compute
-    h4["H₄: BN-ReLU-Conv3×3"]:::compute
-    h5["H₅: BN-ReLU-Conv3×3"]:::compute
-    out["Output [B, k₀+5k, H, W]"]:::output
+这一改动带来两个一起到场的好处:
 
-    x0 --> h1
-    x0 --> h2
-    x0 --> h3
-    x0 --> h4
-    x0 --> h5
-    h1 --> h2
-    h1 --> h3
-    h1 --> h4
-    h1 --> h5
-    h2 --> h3
-    h2 --> h4
-    h2 --> h5
-    h3 --> h4
-    h3 --> h5
-    h4 --> h5
-    h1 --> out
-    h2 --> out
-    h3 --> out
-    h4 --> out
-    h5 --> out
+- **特征复用** — 浅层学到的低阶特征(边缘、纹理)可以被任何深层直接拿来用,不必经过中间层加法稀释;**深层不需要重新发明边缘检测器**
+- **隐式深度监督** — 梯度反传时走同一条 concat 路径,loss 对 $H_1$ 输出的导数 = 所有后续层对 $H_1$ 依赖的导数之和;浅层永远能拿到"来自所有深层的多份监督信号"
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
-*图 1：Dense block 内部稠密连接——第 ℓ 层 concat 前面所有层的输出作为输入，每层贡献 k 个新通道。*
+**ResNet 给梯度一条高速公路,DenseNet 给每层一束高速公路** — 继承 ResNet 那个 `+1` 的本质,只是把"加"换成"拼"。代码上唯一差别就是 `torch.cat([x, out], dim=1)` 替代了 `out + identity`。
 
-**Growth rate $k$ 是 DenseNet 的关键尺度变量**。每层 $H_\ell$ 只产生 $k$ 个新通道（典型 $k = 32$），因此即使一个 Dense block 含 12 层、每层都接收前面全部输出，整条链上的通道数也只是 $k_0 + (\ell-1) \cdot k$ 的线性增长，不会指数膨胀。Growth rate 控制每层新增的通道数量，已有特征则通过 concat 被后续层复用。
+### 机制二:Growth Rate k 控制通道线性增长
 
-整个 DenseNet 把网络切成**若干 Dense block**，block 内部稠密连接、block 之间用 **transition layer（1×1 Conv + 2×2 AvgPool）** 做下采样并压缩通道数（DenseNet-BC 版本里 transition 还会把通道数减半，进一步控制规模）。主流变体 DenseNet-121 / 169 / 201 / 264，数字指总有参层数；DenseNet-121 是最常用基线，4 个 Dense block 分别含 6 / 12 / 24 / 16 层，growth rate $k=32$。
+简单 concat 有一个明显的潜在问题:**通道数会随层数累积爆炸**。如果每层都输出 256 通道再 concat,12 层 block 后通道数会达到 3000+,3×3 卷积参数会爆炸。
 
-```mermaid
-graph LR
-    in["Input [B,3,224,224]"]:::input
-    stem["Conv 7×7 / s=2 / 64 + MaxPool"]:::compute
-    db1["Dense Block 1 × 6 (k=32)"]:::compute
-    t1["Transition: 1×1 Conv + AvgPool"]:::compute
-    db2["Dense Block 2 × 12 (k=32)"]:::compute
-    t2["Transition: 1×1 Conv + AvgPool"]:::compute
-    db3["Dense Block 3 × 24 (k=32)"]:::compute
-    t3["Transition: 1×1 Conv + AvgPool"]:::compute
-    db4["Dense Block 4 × 16 (k=32)"]:::compute
-    gap["Global Avg Pool → [B,1024]"]:::compute
-    fc["FC 1000"]:::compute
-    out["Softmax [B,1000]"]:::output
+DenseNet 的解决方案是**每层 $H_\ell$ 只产生 k 个新通道**(典型 k=32),通道数是线性增长 $k_0 + (\ell-1)k$ 而非指数。即使 12 层 Dense block 输入也只是 ~640 通道,可控。
 
-    in --> stem --> db1 --> t1 --> db2 --> t2 --> db3 --> t3 --> db4 --> gap --> fc --> out
+**growth rate k 是 DenseNet 的关键尺度变量** —— 它取代了 ResNet 那种"加宽通道数"的扩展方式,等价于"每层贡献多少信息"的细粒度控制旋钮。整网由 4 个 Dense block 组成(6/12/24/16 层 for DenseNet-121),block 之间用 **transition layer(1×1 Conv + 2×2 AvgPool)** 做下采样并压缩通道数。
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
-*图 2：DenseNet-121 整体结构——stem + 4 个 Dense block (6, 12, 24, 16) 通过 transition layer 串联，最后 GAP + FC。*
+### 机制三:Bottleneck + Compression — 让 DenseNet-BC 参数效率推到极致
 
-**特征复用与隐式深度监督**——把所有前层 concat 进来这件事带来两个一起到场的好处。第一，浅层学到的低阶特征（边缘、纹理）可以被任何一个深层直接拿来用，不必经过中间层的层层加法稀释；浅层与深层之间有**直接通路**，深层不需要重新发明边缘检测器。第二，梯度从 loss 流回去时也走同一条 concat 路径——loss 对 $H_1$ 输出的导数等于所有后续层（$H_2, H_3, \ldots, H_L$）对 $H_1$ 输出依赖项的导数之和。这条结构让浅层永远能拿到"来自所有深层的多份监督信号"，相当于在每一层都隐式架了一个深度监督头。**ResNet 给梯度一条高速公路，DenseNet 给每层一束高速公路**——继承了 ResNet 那个 `+1` 的本质，只是把"加"换成"拼"。
+朴素 DenseNet 在 block 末尾通道数仍可能上千(DenseNet-121 第 3 个 block 末尾约 $256 + 23 \times 32 = 992$ 通道),3×3 卷积在这种输入上算仍然贵。DenseNet-BC(Bottleneck + Compression)做了两件事:
 
-DenseNet 在 ImageNet 上的结果体现了该路线的核心优势：**DenseNet-121 用 7M 参数**可接近 ResNet-50（25.6M 参数）的精度（Top-5 ~6%），参数效率约为 ResNet 的数倍。该工作获 CVPR 2017 Best Paper——继 ResNet 之后，视觉社区连续两届将最高奖授予以连接方式为核心创新的工作。
+- **Bottleneck** — 每个 $H_\ell$ 在 3×3 Conv 之前先加一个 **1×1 Conv 把输入压到 4k 通道**,再做 3×3 出 k 通道。借鉴 ResNet bottleneck 和 [Inception](04-inception.md) 的 1×1 降维思想
+- **Compression** — transition layer 上的 1×1 Conv 把输出通道数减半(θ=0.5),进一步控制 block 之间的通道膨胀
+
+这套组合把 DenseNet-121 的参数量压到 **7.0M**(对比 ResNet-50 25.6M)。所有官方 DenseNet-121/169/201/264 都是 BC 版本。
+
+### 三件套协同:concat + growth rate + BC 缺一不可
+
+DenseNet 在 2017 年能用 20M 参数(ResNet-152 1/3)达到同档精度,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 DenseNet 都不成立,这一点和 [ResNet](05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 concat,没有 growth rate 控制** — 通道指数膨胀,12 层 block 后通道数 3000+,3×3 卷积参数爆炸,完全跑不动
+- **只有 growth rate,没有 concat** — 退化成普通窄 CNN,失去 DenseNet 核心的"特征复用 + 隐式深度监督"两个红利,精度回到 VGG/ResNet 量级
+- **只有 concat + growth rate,没有 BC** — block 末尾通道仍达近千,3×3 在高维输入上的开销仍大,DenseNet-121 参数会从 7M 涨到 20M+,参数效率优势消失
+
+三件套合起来才让 DenseNet 在 2017 年成为视觉社区的 "ResNet 之外另一条路"。但 DenseNet 也留下一个明确遗产 —— **训练时所有前层激活都要保留在显存中**(后续层反向需要),工业部署因 memory bandwidth 问题最终更倾向 ResNet。这也是为什么 Faster R-CNN / Mask R-CNN / CLIP 视觉塔默认仍是 ResNet-50 —— **架构选择不仅看精度,也要考虑显存开销**。
+
+![DenseNet-121 整网 + 三模型参数效率对比](assets/06-densenet-overall.svg)
+*图 2:**上** DenseNet-121 整网 — stem + 4 个 Dense block(6 / 12 / 24 / 16 层)+ transition layer 串联 + GAP + FC。**下** 三模型参数 vs Top-5 错误率散点 — ResNet-50(25.6M, 6.7%) / ResNet-152(60M, 5.6%) / DenseNet-121(7M, 6.1%) / DenseNet-201(20M, 5.2%) / DenseNet-264(33M, 5.0%);DenseNet 曲线整体位于 ResNet 左下方(更少参数更低错误率)。底部 callout:**DenseNet-201 用 20M 达到 ResNet-152(60M)精度** — 这是 CVPR 2017 Best Paper 的核心论据。*
 
 ## 训练细节
 
