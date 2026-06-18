@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <!-- face: smiling woman -->
+    <symbol id="face-sw" viewBox="0 0 100 100">
+      <circle cx="50" cy="55" r="38" fill="#fde68a" stroke="#92400e" stroke-width="1.5"/>
+      <!-- hair (long) -->
+      <path d="M 14 55 C 12 25, 30 12, 50 12 C 70 12, 88 25, 86 55 L 80 55 C 78 35, 65 25, 50 25 C 35 25, 22 35, 20 55 Z"
+            fill="#7c2d12"/>
+      <!-- eyes -->
+      <circle cx="38" cy="52" r="2.8" fill="#1f2937"/>
+      <circle cx="62" cy="52" r="2.8" fill="#1f2937"/>
+      <!-- smile -->
+      <path d="M 36 70 Q 50 82, 64 70" fill="none" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- face: neutral woman -->
+    <symbol id="face-nw" viewBox="0 0 100 100">
+      <circle cx="50" cy="55" r="38" fill="#fde68a" stroke="#92400e" stroke-width="1.5"/>
+      <path d="M 14 55 C 12 25, 30 12, 50 12 C 70 12, 88 25, 86 55 L 80 55 C 78 35, 65 25, 50 25 C 35 25, 22 35, 20 55 Z"
+            fill="#7c2d12"/>
+      <circle cx="38" cy="52" r="2.8" fill="#1f2937"/>
+      <circle cx="62" cy="52" r="2.8" fill="#1f2937"/>
+      <line x1="38" y1="74" x2="62" y2="74" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- face: neutral man -->
+    <symbol id="face-nm" viewBox="0 0 100 100">
+      <circle cx="50" cy="55" r="38" fill="#fde68a" stroke="#92400e" stroke-width="1.5"/>
+      <!-- short hair -->
+      <path d="M 16 48 C 18 22, 35 14, 50 14 C 65 14, 82 22, 84 48 L 78 42 C 70 32, 60 28, 50 28 C 40 28, 30 32, 22 42 Z"
+            fill="#1f2937"/>
+      <circle cx="38" cy="52" r="2.8" fill="#1f2937"/>
+      <circle cx="62" cy="52" r="2.8" fill="#1f2937"/>
+      <line x1="38" y1="74" x2="62" y2="74" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- face: smiling man -->
+    <symbol id="face-sm" viewBox="0 0 100 100">
+      <circle cx="50" cy="55" r="38" fill="#fde68a" stroke="#92400e" stroke-width="1.5"/>
+      <path d="M 16 48 C 18 22, 35 14, 50 14 C 65 14, 82 22, 84 48 L 78 42 C 70 32, 60 28, 50 28 C 40 28, 30 32, 22 42 Z"
+            fill="#1f2937"/>
+      <circle cx="38" cy="52" r="2.8" fill="#1f2937"/>
+      <circle cx="62" cy="52" r="2.8" fill="#1f2937"/>
+      <path d="M 36 70 Q 50 82, 64 70" fill="none" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- face: man with glasses -->
+    <symbol id="face-gm" viewBox="0 0 100 100">
+      <circle cx="50" cy="55" r="38" fill="#fde68a" stroke="#92400e" stroke-width="1.5"/>
+      <path d="M 16 48 C 18 22, 35 14, 50 14 C 65 14, 82 22, 84 48 L 78 42 C 70 32, 60 28, 50 28 C 40 28, 30 32, 22 42 Z"
+            fill="#1f2937"/>
+      <!-- glasses -->
+      <circle cx="38" cy="53" r="7" fill="none" stroke="#1f2937" stroke-width="2"/>
+      <circle cx="62" cy="53" r="7" fill="none" stroke="#1f2937" stroke-width="2"/>
+      <line x1="45" y1="53" x2="55" y2="53" stroke="#1f2937" stroke-width="1.5"/>
+      <line x1="38" y1="74" x2="62" y2="74" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+
+    <!-- face: woman with glasses -->
+    <symbol id="face-gw" viewBox="0 0 100 100">
+      <circle cx="50" cy="55" r="38" fill="#fde68a" stroke="#92400e" stroke-width="1.5"/>
+      <path d="M 14 55 C 12 25, 30 12, 50 12 C 70 12, 88 25, 86 55 L 80 55 C 78 35, 65 25, 50 25 C 35 25, 22 35, 20 55 Z"
+            fill="#7c2d12"/>
+      <circle cx="38" cy="53" r="7" fill="none" stroke="#1f2937" stroke-width="2"/>
+      <circle cx="62" cy="53" r="7" fill="none" stroke="#1f2937" stroke-width="2"/>
+      <line x1="45" y1="53" x2="55" y2="53" stroke="#1f2937" stroke-width="1.5"/>
+      <line x1="38" y1="74" x2="62" y2="74" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="32" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="600">
+    DCGAN Latent Space 算术 · G 的潜空间学到了语义结构
+  </text>
+  <text x="450" y="54" text-anchor="middle" font-size="12" fill="#6b7280">
+    每张脸下方的 z 是 G 的 100-d 输入向量；向量做加减后再喂给 G，得到语义合成的结果
+  </text>
+
+  <!-- ============== ROW 1: smile arithmetic ============== -->
+  <text x="60" y="100" font-size="13" fill="#1f2937" font-weight="600">① 表情：微笑 = ?</text>
+
+  <!-- positions: 4 faces + 3 operators, 80px faces -->
+  <!-- face 1 at x=70 -->
+  <use href="#face-sw" x="70" y="120" width="100" height="100"/>
+  <text x="120" y="240" text-anchor="middle" font-size="11" fill="#1f2937">微笑女</text>
+  <text x="120" y="255" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">z₁</text>
+
+  <text x="195" y="180" text-anchor="middle" font-size="38" fill="#dc2626" font-weight="700">−</text>
+
+  <use href="#face-nw" x="220" y="120" width="100" height="100"/>
+  <text x="270" y="240" text-anchor="middle" font-size="11" fill="#1f2937">中性女</text>
+  <text x="270" y="255" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">z₂</text>
+
+  <text x="345" y="180" text-anchor="middle" font-size="38" fill="#059669" font-weight="700">+</text>
+
+  <use href="#face-nm" x="370" y="120" width="100" height="100"/>
+  <text x="420" y="240" text-anchor="middle" font-size="11" fill="#1f2937">中性男</text>
+  <text x="420" y="255" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">z₃</text>
+
+  <text x="500" y="180" text-anchor="middle" font-size="32" fill="#1f2937" font-weight="700">≈</text>
+
+  <!-- G() arrow -->
+  <rect x="540" y="155" width="80" height="36" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="580" y="178" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">G(z₁−z₂+z₃)</text>
+
+  <text x="650" y="180" text-anchor="middle" font-size="32" fill="#1f2937" font-weight="700">=</text>
+
+  <use href="#face-sm" x="690" y="120" width="100" height="100"/>
+  <text x="740" y="240" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">微笑男</text>
+  <text x="740" y="255" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">（DCGAN 生成）</text>
+
+  <!-- divider -->
+  <line x1="40" y1="290" x2="860" y2="290" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== ROW 2: glasses arithmetic ============== -->
+  <text x="60" y="320" font-size="13" fill="#1f2937" font-weight="600">② 配饰：眼镜 = ?</text>
+
+  <use href="#face-gm" x="70" y="340" width="100" height="100"/>
+  <text x="120" y="460" text-anchor="middle" font-size="11" fill="#1f2937">戴镜男</text>
+  <text x="120" y="475" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">z₄</text>
+
+  <text x="195" y="400" text-anchor="middle" font-size="38" fill="#dc2626" font-weight="700">−</text>
+
+  <use href="#face-nm" x="220" y="340" width="100" height="100"/>
+  <text x="270" y="460" text-anchor="middle" font-size="11" fill="#1f2937">普通男</text>
+  <text x="270" y="475" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">z₅</text>
+
+  <text x="345" y="400" text-anchor="middle" font-size="38" fill="#059669" font-weight="700">+</text>
+
+  <use href="#face-nw" x="370" y="340" width="100" height="100"/>
+  <text x="420" y="460" text-anchor="middle" font-size="11" fill="#1f2937">普通女</text>
+  <text x="420" y="475" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">z₆</text>
+
+  <text x="500" y="400" text-anchor="middle" font-size="32" fill="#1f2937" font-weight="700">≈</text>
+
+  <rect x="540" y="375" width="80" height="36" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="580" y="398" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">G(z₄−z₅+z₆)</text>
+
+  <text x="650" y="400" text-anchor="middle" font-size="32" fill="#1f2937" font-weight="700">=</text>
+
+  <use href="#face-gw" x="690" y="340" width="100" height="100"/>
+  <text x="740" y="460" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">戴镜女</text>
+  <text x="740" y="475" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">（DCGAN 生成）</text>
+
+  <!-- ============== Bottom callout ============== -->
+  <rect x="40" y="500" width="820" height="100" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="450" y="525" text-anchor="middle" font-size="13"
+        fill="#92400e" font-weight="700">
+    G 的 latent space 学到了语义结构 —— DCGAN 论文最有"出圈"价值的发现
+  </text>
+  <text x="450" y="548" text-anchor="middle" font-size="11.5" fill="#92400e">
+    "微笑"、"性别"、"戴眼镜"这些抽象概念在 100-d 噪声空间里近似线性可分。
+  </text>
+  <text x="450" y="567" text-anchor="middle" font-size="11.5" fill="#92400e">
+    这意味着 G 不是"记忆训练图"，而是真的学到了图像分布的内在结构 —— 这一发现直接催生：
+  </text>
+  <text x="450" y="586" text-anchor="middle" font-size="11.5" fill="#92400e" font-weight="600">
+    InfoGAN（解耦 latent 维度）· StyleGAN（latent 风格控制）· 概念编辑 / GAN inversion 整条研究线
+  </text>
+</svg>

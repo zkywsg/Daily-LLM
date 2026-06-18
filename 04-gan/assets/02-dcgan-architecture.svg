@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-g" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-d" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#1e40af"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="600">
+    DCGAN 全卷积架构 · G 与 D 镜像对称
+  </text>
+  <text x="450" y="52" text-anchor="middle" font-size="12" fill="#6b7280">
+    G: transposed conv 上采样从 100d 噪声逐层放大到 64×64 图像；D: strided conv 下采样把图像压回 scalar
+  </text>
+
+  <!-- ============== LEFT: Generator ============== -->
+  <rect x="30" y="75" width="400" height="525" rx="10"
+        fill="#fdf2f8" stroke="#db2777" stroke-width="1.5"/>
+  <text x="230" y="100" text-anchor="middle" font-size="15"
+        fill="#9d174d" font-weight="600">Generator G</text>
+  <text x="230" y="118" text-anchor="middle" font-size="11" fill="#9d174d">
+    噪声 → 图像（上采样栈）
+  </text>
+
+  <!-- z input -->
+  <rect x="170" y="135" width="120" height="42" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="230" y="153" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">z ~ N(0, I)</text>
+  <text x="230" y="170" text-anchor="middle" font-size="11" fill="#92400e">100-d, reshape→1×1×100</text>
+
+  <line x1="230" y1="177" x2="230" y2="195" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <!-- Layer 1: 4×4×1024 -->
+  <rect x="100" y="200" width="260" height="44" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="120" y="218" font-size="12" fill="#9d174d" font-weight="600">ConvT 4×4 / s=1</text>
+  <text x="120" y="234" font-size="11" fill="#9d174d">+ BatchNorm + ReLU</text>
+  <text x="340" y="227" text-anchor="end" font-size="12" fill="#1f2937" font-weight="600">4×4×1024</text>
+
+  <line x1="230" y1="244" x2="230" y2="259" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <!-- Layer 2: 8×8×512 -->
+  <rect x="100" y="264" width="260" height="44" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="120" y="282" font-size="12" fill="#9d174d" font-weight="600">ConvT 4×4 / s=2</text>
+  <text x="120" y="298" font-size="11" fill="#9d174d">+ BatchNorm + ReLU</text>
+  <text x="340" y="291" text-anchor="end" font-size="12" fill="#1f2937" font-weight="600">8×8×512</text>
+
+  <line x1="230" y1="308" x2="230" y2="323" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <!-- Layer 3: 16×16×256 -->
+  <rect x="100" y="328" width="260" height="44" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="120" y="346" font-size="12" fill="#9d174d" font-weight="600">ConvT 4×4 / s=2</text>
+  <text x="120" y="362" font-size="11" fill="#9d174d">+ BatchNorm + ReLU</text>
+  <text x="340" y="355" text-anchor="end" font-size="12" fill="#1f2937" font-weight="600">16×16×256</text>
+
+  <line x1="230" y1="372" x2="230" y2="387" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <!-- Layer 4: 32×32×128 -->
+  <rect x="100" y="392" width="260" height="44" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="120" y="410" font-size="12" fill="#9d174d" font-weight="600">ConvT 4×4 / s=2</text>
+  <text x="120" y="426" font-size="11" fill="#9d174d">+ BatchNorm + ReLU</text>
+  <text x="340" y="419" text-anchor="end" font-size="12" fill="#1f2937" font-weight="600">32×32×128</text>
+
+  <line x1="230" y1="436" x2="230" y2="451" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <!-- Layer 5: 64×64×3 (output) -->
+  <rect x="100" y="456" width="260" height="44" rx="6"
+        fill="#fbcfe8" stroke="#db2777" stroke-width="2"/>
+  <text x="120" y="474" font-size="12" fill="#9d174d" font-weight="700">ConvT 4×4 / s=2</text>
+  <text x="120" y="490" font-size="11" fill="#9d174d">+ Tanh （无 BN）</text>
+  <text x="340" y="483" text-anchor="end" font-size="12" fill="#1f2937" font-weight="700">64×64×3</text>
+
+  <line x1="230" y1="500" x2="230" y2="515" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-g)"/>
+
+  <!-- Fake image output -->
+  <rect x="170" y="520" width="120" height="42" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="230" y="538" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">G(z)</text>
+  <text x="230" y="555" text-anchor="middle" font-size="11" fill="#92400e">假图，像素 ∈ [−1, 1]</text>
+
+  <!-- G note -->
+  <text x="230" y="585" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">
+    内部 ReLU · 输出 Tanh · 全程 BN（除最后一层）
+  </text>
+
+  <!-- ============== RIGHT: Discriminator (mirror) ============== -->
+  <rect x="470" y="75" width="400" height="525" rx="10"
+        fill="#eff6ff" stroke="#1e40af" stroke-width="1.5"/>
+  <text x="670" y="100" text-anchor="middle" font-size="15"
+        fill="#1e40af" font-weight="600">Discriminator D</text>
+  <text x="670" y="118" text-anchor="middle" font-size="11" fill="#1e40af">
+    图像 → real/fake（下采样栈）
+  </text>
+
+  <!-- Image input -->
+  <rect x="610" y="135" width="120" height="42" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="670" y="153" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">x 或 G(z)</text>
+  <text x="670" y="170" text-anchor="middle" font-size="11" fill="#92400e">64×64×3</text>
+
+  <line x1="670" y1="177" x2="670" y2="195" stroke="#1e40af" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+  <!-- Layer 1: 32×32×128 (no BN at input) -->
+  <rect x="540" y="200" width="260" height="44" rx="6"
+        fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+  <text x="560" y="218" font-size="12" fill="#1e40af" font-weight="700">Conv 4×4 / s=2</text>
+  <text x="560" y="234" font-size="11" fill="#1e40af">+ LeakyReLU(0.2)（无 BN）</text>
+  <text x="780" y="227" text-anchor="end" font-size="12" fill="#1f2937" font-weight="600">32×32×128</text>
+
+  <line x1="670" y1="244" x2="670" y2="259" stroke="#1e40af" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+  <!-- Layer 2: 16×16×256 -->
+  <rect x="540" y="264" width="260" height="44" rx="6"
+        fill="#dbeafe" stroke="#1e40af" stroke-width="1.5"/>
+  <text x="560" y="282" font-size="12" fill="#1e40af" font-weight="600">Conv 4×4 / s=2</text>
+  <text x="560" y="298" font-size="11" fill="#1e40af">+ BatchNorm + LeakyReLU(0.2)</text>
+  <text x="780" y="291" text-anchor="end" font-size="12" fill="#1f2937" font-weight="600">16×16×256</text>
+
+  <line x1="670" y1="308" x2="670" y2="323" stroke="#1e40af" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+  <!-- Layer 3: 8×8×512 -->
+  <rect x="540" y="328" width="260" height="44" rx="6"
+        fill="#dbeafe" stroke="#1e40af" stroke-width="1.5"/>
+  <text x="560" y="346" font-size="12" fill="#1e40af" font-weight="600">Conv 4×4 / s=2</text>
+  <text x="560" y="362" font-size="11" fill="#1e40af">+ BatchNorm + LeakyReLU(0.2)</text>
+  <text x="780" y="355" text-anchor="end" font-size="12" fill="#1f2937" font-weight="600">8×8×512</text>
+
+  <line x1="670" y1="372" x2="670" y2="387" stroke="#1e40af" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+  <!-- Layer 4: 4×4×1024 -->
+  <rect x="540" y="392" width="260" height="44" rx="6"
+        fill="#dbeafe" stroke="#1e40af" stroke-width="1.5"/>
+  <text x="560" y="410" font-size="12" fill="#1e40af" font-weight="600">Conv 4×4 / s=2</text>
+  <text x="560" y="426" font-size="11" fill="#1e40af">+ BatchNorm + LeakyReLU(0.2)</text>
+  <text x="780" y="419" text-anchor="end" font-size="12" fill="#1f2937" font-weight="600">4×4×1024</text>
+
+  <line x1="670" y1="436" x2="670" y2="451" stroke="#1e40af" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+  <!-- Layer 5: scalar -->
+  <rect x="540" y="456" width="260" height="44" rx="6"
+        fill="#bfdbfe" stroke="#1e40af" stroke-width="2"/>
+  <text x="560" y="474" font-size="12" fill="#1e40af" font-weight="700">Conv 4×4 / s=1</text>
+  <text x="560" y="490" font-size="11" fill="#1e40af">+ Sigmoid</text>
+  <text x="780" y="483" text-anchor="end" font-size="12" fill="#1f2937" font-weight="700">1×1×1</text>
+
+  <line x1="670" y1="500" x2="670" y2="515" stroke="#1e40af" stroke-width="1.5" marker-end="url(#arr-d)"/>
+
+  <!-- D output -->
+  <rect x="610" y="520" width="120" height="42" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="670" y="538" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">D(·) ∈ [0,1]</text>
+  <text x="670" y="555" text-anchor="middle" font-size="11" fill="#92400e">real / fake 概率</text>
+
+  <!-- D note -->
+  <text x="670" y="585" text-anchor="middle" font-size="10" fill="#1e40af" font-style="italic">
+    全程 LeakyReLU(0.2) · BN 用在中间层（除输入层）
+  </text>
+
+  <!-- ============== Symmetry callout ============== -->
+  <rect x="40" y="608" width="820" height="26" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="450" y="626" text-anchor="middle" font-size="11" fill="#92400e">
+    G 与 D 通道数完全镜像（1024/512/256/128）· 全卷积、零 fc、零 pool —— DCGAN 的工程指南六条全部体现在这一张图里
+  </text>
+</svg>

@@ -32,80 +32,80 @@ DCGAN 论文标题虽然是"Unsupervised Representation Learning"(强调无监�
 
 **没有 DCGAN 就没有后续 GAN 黄金时代**——CycleGAN、StyleGAN 等都建立在 DCGAN 的 CNN-GAN 范式上。
 
-## 核心思想:CNN-GAN 工程食谱
+## 核心思想
 
-DCGAN 的贡献不在数学,而在工程——一组具体的架构指南让 GAN 训练稳定。论文总结为几条规则:
+### 直觉:原版 GAN 训练靠运气,DCGAN 给出"几乎一定能训出来"的 CNN 配方
 
-### 规则 1: 用 strided conv / transpose conv 替代所有 pooling
+理解 DCGAN 真正需要先抓一件事:**[GAN](01-gan.md) 2014 概念优雅但训练失败率极高** —— 2014-2015 几乎只有 Goodfellow 团队和少数实验室能复现,大量人尝试都失败(D 突然赢、mode collapse、梯度爆炸三件事循环出现)。Radford & Metz 2016 反问:**能不能找出一组架构 / 优化 / 初始化的"recipe",让 GAN 在大多数图像数据上稳定训出来?**
+
+DCGAN 不是数学创新,而是**工程食谱** —— 它把 GAN 从"研究概念"变成"工程可复现"。三件事必须同时成立:
+
+- **全卷积架构** —— MLP 学不到图像的空间结构,GAN 加深加宽时崩溃;CNN 通过 strided conv / deconv 上下采样,空间结构和图像本身对齐
+- **训练稳定剂三件套**(BatchNorm + LeakyReLU + Adam β₁=0.5) —— GAN 训练对 BN / 激活 / 优化器超敏感,DCGAN 把这三件钉死成默认值
+- **明确的架构 guideline 6 条** —— 去 fc、加 BN、G 用 ReLU+tanh、D 用 LeakyReLU、strided conv 替代 pool、不用 max-pool。这套指南是 GAN 第一次有"工程标准"的版本
+
+三件套合起来才让 GAN 在 2016 年从"少数人的玩具"变成"任何人能跑"——DCGAN 之前 GAN 复现成功率 <30%,之后接近 90%+。这是后续 WGAN / Progressive GAN / CycleGAN / StyleGAN 一整条 GAN 黄金时代得以展开的根本前提。
+
+![DCGAN 全卷积架构 — G 和 D 对称设计](assets/02-dcgan-architecture.svg)
+*图 1:**左 Generator** — z (100d) 经几层 transposed conv 上采样(4×4×1024 → 8×8×512 → 16×16×256 → 32×32×128 → 64×64×3),每层 BN + ReLU,输出层 tanh。**右 Discriminator** — 64×64×3 经 strided conv 下采样到 4×4×1024 → flatten → sigmoid,每层 BN + LeakyReLU。两个网络结构完全对称 —— 一个把图像 conv 到 scalar,另一个把 scalar 反 conv 到图像,这种对称设计成后续所有 GAN 标配。*
+
+### 机制一:全卷积架构 — 用 strided conv / transposed conv 替代 pool 和 fc
+
+原版 GAN 是 MLP,DCGAN 全部用 conv:
+
+- **D**:用 strided conv(stride=2)下采样,**不用 max-pool**
+- **G**:用 transposed conv(stride=2)上采样,**不用 fc 层 reshape**
+
+为什么?Pooling 是固定不可学的算子,strided conv 让网络**自己学下/上采样方式**。这让模型学到的空间结构和图像本身的空间结构对齐,而不是被 pooling 的固定 stride 限制。
+
+去掉 fc 层是另一个关键 —— 原版 GAN 在 MLP 输入输出端用 fc 把 z reshape 成图像 / 把图像 flatten 成 scalar,这破坏了空间结构。DCGAN 直接从 1×1×100 噪声 conv 出图像、把图像 conv 到 1×1×1 输出,**整个网络全程在空间网格上操作**。
+
+### 机制二:BatchNorm + LeakyReLU + Adam(β₁=0.5) — 三个"必装"的训练稳定剂
+
+DCGAN 的训练稳定靠三件具体的工程默认:
+
+- **BatchNorm 用在 G 和 D 几乎所有层** —— 除了 G 的输出层(避免污染像素分布)和 D 的输入层(避免污染真实图像统计)。BN 让训练稳定,显著减少 mode collapse
+- **D 用 LeakyReLU(slope=0.2)** —— 替代 ReLU。让负梯度不消失(避免 dying ReLU),D 在区分难样本时仍有梯度流回。G 内部仍用 ReLU,因为 G 输出层用 tanh 已经处理了负区间
+- **Adam(lr=2e-4, β₁=0.5, β₂=0.999)** —— β₁ 从默认 0.9 改到 0.5 是关键!动量太大会把 G/D 推向极端(D 突然全赢或 G 突然崩溃),降低动量让两者博弈"软"一点
+
+这三件单独都是 2014-2015 已有的技术,**DCGAN 把它们钉死成默认值**,后来 4 年所有 GAN 工作几乎都用这套超参数,没人改。
+
+### 机制三:架构指南 6 条 — 让任何人都能复现
+
+DCGAN 论文最具影响力的部分是给出了 6 条明确的架构 guideline:
+
+1. **去 fc** —— G/D 全程在 conv 上操作
+2. **加 BN** —— G 和 D 几乎所有层都用,除了 G output 和 D input
+3. **G 用 ReLU 内部 + tanh 输出** —— 输出 normalize 到 [-1, 1]
+4. **D 用 LeakyReLU(0.2)** —— 避免 dying ReLU
+5. **strided conv 替代 pool** —— G 用 transposed conv 上采样,D 用 strided conv 下采样
+6. **不用 max-pool** —— 让网络学采样方式而不是用固定算子
+
+这 6 条规则在 2016 年之后成为所有 GAN 论文的隐含默认。即使 WGAN / SAGAN / Progressive GAN 改进 GAN 的损失函数或架构,核心仍基于 DCGAN 的 CNN 食谱。这种"明确写下来 + 实证有效"的工程指南,让大量研究者能进入 GAN 领域,直接推动 GAN 在 2016-2020 年的黄金时代。
+
+### 三件套协同:全卷积 + BN/LeakyReLU/Adam + 架构 guideline 缺一不可
+
+DCGAN 在 2016 年能把 GAN 从"研究概念"变成"工程可复现",**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 DCGAN 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有全卷积,没有 BN / LeakyReLU / Adam β₁=0.5** —— 训练仍然崩溃。光把 MLP 换成 CNN 不够,GAN 对优化超参数 / 归一化 / 激活函数极其敏感
+- **只有训练稳定剂,没有全卷积** —— MLP 学不到图像空间结构,GAN 加深后崩溃。Goodfellow 2014 原版的 MLP-GAN 即使加 BN 也跑不到 64×64
+- **只有全卷积 + 稳定剂,没有明确 guideline** —— 每个人凭运气调参,有人 work 有人不 work。DCGAN 6 条指南让"成功率"从 <30% 跳到 >90%,这是工程复现性的关键
+
+三件套合起来才让 GAN 在 2016 年从"少数人的玩具"变成"任何人能跑"。DCGAN 的最大遗产不在某一项技术,而在"提供可复现工程食谱"这件事本身 —— 后来所有 GAN 工作都站在它的肩膀上。
+
+### 一个意外发现:Latent Space Arithmetic
+
+DCGAN 论文里有一个"非工程"的副产品 —— **latent 空间算术**。把训完的 G 的 z 向量做加减,能得到语义合成的结果:
 
 ```
-# 不好(原始 CNN):
-Conv → Pool → Conv → Pool → ...
-
-# DCGAN:
-D 用 strided Conv 下采样:Conv(stride=2) → Conv(stride=2) → ...
-G 用 transposed Conv 上采样:ConvT(stride=2) → ConvT(stride=2) → ...
+G(z_smiling_woman) − G(z_neutral_woman) + G(z_neutral_man) ≈ G(z_smiling_man)
+G(z_glasses_man) − G(z_no_glasses_man) + G(z_woman) ≈ G(z_glasses_woman)
 ```
 
-为什么?Pooling 是固定的(不可学),strided conv 让网络自己学下/上采样方式。
+这个现象第一次让人直观看到 **G 学到了语义结构化的 latent 空间** —— GAN 不只是"乱画",而是真的"理解"了图像分布,把语义属性(性别、表情、戴不戴眼镜)对应到 latent 空间的某些方向。这一发现催生了 InfoGAN / BiGAN / StyleGAN 等"可解释 GAN"路线,也是 StyleGAN 后来能做 face editing / style mixing 的根本前提。
 
-### 规则 2: G 和 D 都用 BatchNorm(除了 D 的输入层和 G 的输出层)
-
-BatchNorm 让训练稳定,减少 mode collapse。这是 GAN 训练成功的关键 trick。
-
-### 规则 3: 去掉全连接层
-
-更深的 CNN,直接 conv 到 1×1 输出(D)或从 1×1×100 噪声 conv 出图像(G)。
-
-### 规则 4: G 用 ReLU(输出层用 Tanh),D 用 LeakyReLU(0.2)
-
-- G 内部 ReLU 让梯度流通
-- G 输出用 Tanh,把图像 normalize 到 [-1, 1]
-- D 用 LeakyReLU 避免 dying ReLU
-
-### Generator 结构(64×64 输出)
-
-```
-z (100-d 噪声)
-  ↓ reshape
-1 × 1 × 100
-  ↓ ConvT(stride=1)  → BatchNorm → ReLU
-4 × 4 × 1024
-  ↓ ConvT(stride=2)  → BatchNorm → ReLU
-8 × 8 × 512
-  ↓ ConvT(stride=2)  → BatchNorm → ReLU
-16 × 16 × 256
-  ↓ ConvT(stride=2)  → BatchNorm → ReLU
-32 × 32 × 128
-  ↓ ConvT(stride=2)  → Tanh
-64 × 64 × 3  ← 输出图像
-```
-
-### Discriminator 结构(64×64 输入)
-
-```
-64 × 64 × 3  ← 输入图像
-  ↓ Conv(stride=2)   → LeakyReLU
-32 × 32 × 128
-  ↓ Conv(stride=2)   → BatchNorm → LeakyReLU
-16 × 16 × 256
-  ↓ Conv(stride=2)   → BatchNorm → LeakyReLU
-8 × 8 × 512
-  ↓ Conv(stride=2)   → BatchNorm → LeakyReLU
-4 × 4 × 1024
-  ↓ Conv(stride=1)   → Sigmoid
-1 × 1 × 1  ← 是否真
-```
-
-D 与 G **结构对称**——一个把图像 conv 到 scalar,另一个把 scalar 反 conv 到图像。这种对称设计成后续 GAN 标配。
-
-### 训练超参数
-
-- 优化器:**Adam(lr=2e-4, β₁=0.5, β₂=0.999)** —— β₁ 从默认 0.9 改到 0.5 是关键,避免 momentum 把 G/D 推向极端
-- batch size = 128
-- 用 LeakyReLU 0.2 斜率
-
-这些超参数后来成为 GAN 训练默认配置。
+![DCGAN latent space arithmetic — 把 z 向量做算术得到语义合成](assets/02-dcgan-latent-arithmetic.svg)
+*图 2:DCGAN 论文最著名的可视化。**上行** smiling woman − neutral woman + neutral man ≈ smiling man;**下行** glasses man − no-glasses man + no-glasses woman ≈ glasses woman。这证明 G 的 latent space 学到了语义结构,是 StyleGAN / 概念编辑等后续工作的基础。*
 
 ## 关键代码
 
