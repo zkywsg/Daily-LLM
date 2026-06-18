@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Bahdanau Additive Attention · 单步 t 完整计算图
+  </text>
+
+  <!-- ============ Decoder s_{t-1} on top ============ -->
+  <rect x="380" y="55" width="140" height="38" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="450" y="79" text-anchor="middle" font-size="14"
+        fill="#92400e" font-weight="600">s_{t-1} (decoder)</text>
+  <text x="450" y="110" text-anchor="middle" font-size="11" fill="#92400e">
+    上一时刻 decoder 隐状态 [d]
+  </text>
+
+  <!-- ============ Encoder hidden states (left column) ============ -->
+  <g font-size="12">
+    <rect x="50"  y="155" width="80" height="34" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="90" y="177" text-anchor="middle" fill="#9d174d">h₁ (Bi)</text>
+    <rect x="50"  y="285" width="80" height="34" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="90" y="307" text-anchor="middle" fill="#9d174d">h₂ (Bi)</text>
+    <rect x="50"  y="415" width="80" height="34" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="90" y="437" text-anchor="middle" fill="#9d174d">h₃ (Bi)</text>
+  </g>
+  <text x="90" y="148" text-anchor="middle" font-size="10" fill="#6b7280">"I"</text>
+  <text x="90" y="278" text-anchor="middle" font-size="10" fill="#6b7280">"love"</text>
+  <text x="90" y="408" text-anchor="middle" font-size="10" fill="#6b7280">"cats"</text>
+
+  <!-- ============ MLPs a(s, h_i) — three boxes ============ -->
+  <g font-size="11">
+    <rect x="200" y="148" width="180" height="50" rx="6" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="290" y="167" text-anchor="middle" fill="#3730a3" font-weight="600">a(s_{t-1}, h₁)</text>
+    <text x="290" y="187" text-anchor="middle" fill="#4338ca">vᵀ tanh(W_s s + W_h h₁)</text>
+
+    <rect x="200" y="278" width="180" height="50" rx="6" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="290" y="297" text-anchor="middle" fill="#3730a3" font-weight="600">a(s_{t-1}, h₂)</text>
+    <text x="290" y="317" text-anchor="middle" fill="#4338ca">vᵀ tanh(W_s s + W_h h₂)</text>
+
+    <rect x="200" y="408" width="180" height="50" rx="6" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="290" y="427" text-anchor="middle" fill="#3730a3" font-weight="600">a(s_{t-1}, h₃)</text>
+    <text x="290" y="447" text-anchor="middle" fill="#4338ca">vᵀ tanh(W_s s + W_h h₃)</text>
+  </g>
+
+  <!-- Arrows: h_i → a(.,h_i) -->
+  <g stroke="#9d174d" stroke-width="1.4" fill="none">
+    <line x1="132" y1="172" x2="198" y2="172" marker-end="url(#arr-main)"/>
+    <line x1="132" y1="302" x2="198" y2="302" marker-end="url(#arr-main)"/>
+    <line x1="132" y1="432" x2="198" y2="432" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- Arrows: s_{t-1} (top) → each a(.,h_i) -->
+  <g stroke="#d97706" stroke-width="1.4" fill="none">
+    <path d="M 420 93 C 350 110, 280 130, 280 146" marker-end="url(#arr-amber)"/>
+    <path d="M 420 93 C 380 180, 290 250, 290 276" marker-end="url(#arr-amber)"/>
+    <path d="M 420 93 C 410 260, 300 380, 300 406" marker-end="url(#arr-amber)"/>
+  </g>
+
+  <!-- ============ Scores e_{t,i} ============ -->
+  <g font-size="11" fill="#1f2937">
+    <rect x="410" y="160" width="56" height="26" rx="4" fill="#f3f4f6" stroke="#6b7280" stroke-width="1"/>
+    <text x="438" y="178" text-anchor="middle">e_{t,1}</text>
+    <rect x="410" y="290" width="56" height="26" rx="4" fill="#f3f4f6" stroke="#6b7280" stroke-width="1"/>
+    <text x="438" y="308" text-anchor="middle">e_{t,2}</text>
+    <rect x="410" y="420" width="56" height="26" rx="4" fill="#f3f4f6" stroke="#6b7280" stroke-width="1"/>
+    <text x="438" y="438" text-anchor="middle">e_{t,3}</text>
+  </g>
+  <g stroke="#6366f1" stroke-width="1.4" fill="none">
+    <line x1="382" y1="173" x2="408" y2="173" marker-end="url(#arr-main)"/>
+    <line x1="382" y1="303" x2="408" y2="303" marker-end="url(#arr-main)"/>
+    <line x1="382" y1="433" x2="408" y2="433" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ============ Softmax block ============ -->
+  <rect x="500" y="240" width="100" height="140" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="550" y="305" text-anchor="middle" font-size="14"
+        fill="#92400e" font-weight="700">softmax</text>
+  <text x="550" y="325" text-anchor="middle" font-size="10"
+        fill="#92400e">over i = 1..T</text>
+
+  <!-- arrows e_i → softmax -->
+  <g stroke="#6b7280" stroke-width="1.2" fill="none">
+    <line x1="466" y1="173" x2="500" y2="270" marker-end="url(#arr-main)"/>
+    <line x1="466" y1="303" x2="500" y2="303" marker-end="url(#arr-main)"/>
+    <line x1="466" y1="433" x2="500" y2="350" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ============ Alpha weights ============ -->
+  <g font-size="11">
+    <rect x="635" y="160" width="60" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="665" y="178" text-anchor="middle" fill="#1e40af">α_{t,1}</text>
+    <rect x="635" y="290" width="60" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="665" y="308" text-anchor="middle" fill="#1e40af">α_{t,2}</text>
+    <rect x="635" y="420" width="60" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="665" y="438" text-anchor="middle" fill="#1e40af">α_{t,3}</text>
+  </g>
+  <text x="665" y="465" text-anchor="middle" font-size="10" fill="#6b7280">Σ αᵢ = 1</text>
+
+  <g stroke="#d97706" stroke-width="1.4" fill="none">
+    <line x1="600" y1="265" x2="635" y2="180" marker-end="url(#arr-amber)"/>
+    <line x1="600" y1="310" x2="635" y2="303" marker-end="url(#arr-amber)"/>
+    <line x1="600" y1="355" x2="635" y2="425" marker-end="url(#arr-amber)"/>
+  </g>
+
+  <!-- ============ Weighted sum → c_t ============ -->
+  <circle cx="765" cy="303" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="765" y="310" text-anchor="middle" font-size="20" fill="#92400e" font-weight="700">Σ</text>
+  <text x="765" y="345" text-anchor="middle" font-size="10" fill="#92400e">加权和</text>
+
+  <g stroke="#2563eb" stroke-width="1.4" fill="none">
+    <line x1="697" y1="173" x2="748" y2="290" marker-end="url(#arr-blue)"/>
+    <line x1="697" y1="303" x2="742" y2="303" marker-end="url(#arr-blue)"/>
+    <line x1="697" y1="433" x2="748" y2="318" marker-end="url(#arr-blue)"/>
+  </g>
+  <!-- also h_i piped to Σ for "α · h" -->
+  <g stroke="#9d174d" stroke-width="0.8" fill="none" stroke-dasharray="3,2">
+    <path d="M 130 172 C 720 90, 770 220, 763 281"/>
+    <path d="M 130 302 C 720 200, 770 250, 760 282"/>
+    <path d="M 130 432 C 720 500, 770 380, 762 325"/>
+  </g>
+
+  <!-- c_t output -->
+  <rect x="820" y="285" width="60" height="36" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="850" y="308" text-anchor="middle" font-size="14"
+        fill="#065f46" font-weight="700">c_t</text>
+  <line x1="788" y1="303" x2="818" y2="303" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- Formula below Σ -->
+  <text x="765" y="375" text-anchor="middle" font-size="12"
+        fill="#1f2937" font-style="italic">c_t = Σᵢ α_{t,i} · hᵢ</text>
+
+  <!-- Arrow c_t → decoder LSTM -->
+  <rect x="780" y="425" width="100" height="38" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="830" y="449" text-anchor="middle" font-size="13" fill="#9d174d">decoder GRU</text>
+  <line x1="850" y1="323" x2="830" y2="423"
+        stroke="#059669" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="870" y="395" font-size="10" fill="#065f46">喂入</text>
+
+  <!-- ============ Bottom callout ============ -->
+  <rect x="40" y="500" width="820" height="100" rx="8"
+        fill="#fefce8" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="450" y="525" text-anchor="middle" font-size="13"
+        fill="#713f12" font-weight="700">为什么叫 "additive"?</text>
+  <text x="60" y="548" font-size="11" fill="#713f12">
+    兼容度公式 a(s, h) = vᵀ tanh(W_s s + W_h h) 内部是 W_s s 与 W_h h 相加后过 tanh,故名 additive(加法注意力)。
+  </text>
+  <text x="60" y="568" font-size="11" fill="#713f12">
+    2015 Luong et al. 提出 multiplicative 版本:e = sᵀ W h(直接内积,少一个 MLP),GPU 上更快——
+  </text>
+  <text x="60" y="588" font-size="11" fill="#713f12" font-weight="600">
+    后来 2017 Transformer 把它推到极致:scaled dot-product attention = softmax(QKᵀ / √d_k) V,attention 主线由此分化为 add / dot 两脉,dot 系最终主导。
+  </text>
+</svg>

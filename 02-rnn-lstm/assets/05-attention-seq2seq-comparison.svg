@@ -1,0 +1,240 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-dot" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <!-- ============== UPPER PANEL: Vanilla Seq2Seq ============== -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Seq2Seq (Sutskever 2014) · 固定上下文向量
+  </text>
+
+  <!-- Source tokens -->
+  <g font-size="12" fill="#92400e">
+    <rect x="50"  y="60" width="70" height="34" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="85" y="82" text-anchor="middle">"I"</text>
+    <rect x="140" y="60" width="70" height="34" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="175" y="82" text-anchor="middle">"love"</text>
+    <rect x="230" y="60" width="70" height="34" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="265" y="82" text-anchor="middle">"cats"</text>
+  </g>
+
+  <!-- Encoder LSTMs -->
+  <g font-size="12" fill="#9d174d">
+    <rect x="50"  y="115" width="70" height="36" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="85" y="138" text-anchor="middle">LSTM</text>
+    <rect x="140" y="115" width="70" height="36" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="175" y="138" text-anchor="middle">LSTM</text>
+    <rect x="230" y="115" width="70" height="36" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="265" y="138" text-anchor="middle">LSTM</text>
+  </g>
+
+  <!-- Vertical arrows token → LSTM -->
+  <g stroke="#9d174d" stroke-width="1.4" fill="none">
+    <line x1="85"  y1="95" x2="85"  y2="113" marker-end="url(#arr-main)"/>
+    <line x1="175" y1="95" x2="175" y2="113" marker-end="url(#arr-main)"/>
+    <line x1="265" y1="95" x2="265" y2="113" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- Horizontal arrows between LSTMs (hidden state flow) -->
+  <g stroke="#9d174d" stroke-width="1.4" fill="none">
+    <line x1="122" y1="133" x2="138" y2="133" marker-end="url(#arr-main)"/>
+    <line x1="212" y1="133" x2="228" y2="133" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- Single context vector c -->
+  <rect x="335" y="115" width="80" height="36" rx="6"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="375" y="138" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="700">c (固定)</text>
+  <line x1="302" y1="133" x2="333" y2="133" stroke="#9d174d" stroke-width="1.4" marker-end="url(#arr-main)"/>
+
+  <!-- 信息瓶颈 callout -->
+  <text x="375" y="175" text-anchor="middle" font-size="12"
+        fill="#dc2626" font-weight="600">信息瓶颈:整句压成单一向量</text>
+  <text x="375" y="192" text-anchor="middle" font-size="11"
+        fill="#dc2626">长句 (>30 词) BLEU 单调下跌</text>
+
+  <!-- Decoder LSTMs -->
+  <g font-size="12" fill="#9d174d">
+    <rect x="450" y="115" width="70" height="36" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="485" y="138" text-anchor="middle">LSTM</text>
+    <rect x="540" y="115" width="70" height="36" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="575" y="138" text-anchor="middle">LSTM</text>
+    <rect x="630" y="115" width="70" height="36" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="665" y="138" text-anchor="middle">LSTM</text>
+  </g>
+  <line x1="417" y1="133" x2="448" y2="133" stroke="#9d174d" stroke-width="1.4" marker-end="url(#arr-main)"/>
+  <line x1="522" y1="133" x2="538" y2="133" stroke="#9d174d" stroke-width="1.4" marker-end="url(#arr-main)"/>
+  <line x1="612" y1="133" x2="628" y2="133" stroke="#9d174d" stroke-width="1.4" marker-end="url(#arr-main)"/>
+
+  <!-- Decoder outputs -->
+  <g font-size="12" fill="#065f46">
+    <rect x="450" y="60" width="70" height="34" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="485" y="82" text-anchor="middle">"我"</text>
+    <rect x="540" y="60" width="70" height="34" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="575" y="82" text-anchor="middle">"爱"</text>
+    <rect x="630" y="60" width="70" height="34" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="665" y="82" text-anchor="middle">"猫"</text>
+  </g>
+  <g stroke="#9d174d" stroke-width="1.4" fill="none">
+    <line x1="485" y1="113" x2="485" y2="96" marker-end="url(#arr-main)"/>
+    <line x1="575" y1="113" x2="575" y2="96" marker-end="url(#arr-main)"/>
+    <line x1="665" y1="113" x2="665" y2="96" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- 关键说明 -->
+  <text x="775" y="125" font-size="11" fill="#991b1b">decoder 每步</text>
+  <text x="775" y="140" font-size="11" fill="#991b1b">都只能看到</text>
+  <text x="775" y="155" font-size="11" fill="#991b1b">同一个 c</text>
+
+  <!-- ============== DIVIDER ============== -->
+  <line x1="40" y1="240" x2="860" y2="240"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== LOWER PANEL: Bahdanau Attention ============== -->
+  <text x="450" y="270" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Bahdanau Attention (2015) · 动态对齐,无瓶颈
+  </text>
+
+  <!-- Source tokens (lower) -->
+  <g font-size="12" fill="#92400e">
+    <rect x="50"  y="305" width="70" height="34" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="85" y="327" text-anchor="middle">"I"</text>
+    <rect x="140" y="305" width="70" height="34" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="175" y="327" text-anchor="middle">"love"</text>
+    <rect x="230" y="305" width="70" height="34" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="265" y="327" text-anchor="middle">"cats"</text>
+  </g>
+
+  <!-- BiRNN: each h_i preserved -->
+  <g font-size="11" fill="#9d174d">
+    <rect x="50"  y="358" width="70" height="36" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="85" y="382" text-anchor="middle">h₁ (Bi)</text>
+    <rect x="140" y="358" width="70" height="36" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="175" y="382" text-anchor="middle">h₂ (Bi)</text>
+    <rect x="230" y="358" width="70" height="36" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="265" y="382" text-anchor="middle">h₃ (Bi)</text>
+  </g>
+  <g stroke="#9d174d" stroke-width="1.4" fill="none">
+    <line x1="85"  y1="340" x2="85"  y2="356" marker-end="url(#arr-main)"/>
+    <line x1="175" y1="340" x2="175" y2="356" marker-end="url(#arr-main)"/>
+    <line x1="265" y1="340" x2="265" y2="356" marker-end="url(#arr-main)"/>
+  </g>
+  <!-- Bi arrows both directions -->
+  <g stroke="#6b7280" stroke-width="1" fill="none">
+    <line x1="122" y1="372" x2="138" y2="372" marker-end="url(#arr-dot)"/>
+    <line x1="212" y1="372" x2="228" y2="372" marker-end="url(#arr-dot)"/>
+    <line x1="138" y1="382" x2="122" y2="382" marker-end="url(#arr-dot)"/>
+    <line x1="228" y1="382" x2="212" y2="382" marker-end="url(#arr-dot)"/>
+  </g>
+
+  <text x="175" y="410" text-anchor="middle" font-size="11"
+        fill="#1e40af" font-weight="600">所有 hᵢ 保留 (不再压成 c)</text>
+
+  <!-- Attention heatmap (3 src × 3 tgt) -->
+  <text x="500" y="357" text-anchor="middle" font-size="12"
+        fill="#1f2937" font-weight="600">Attention 权重 α_{t,i}</text>
+
+  <!-- column headers (target words) -->
+  <g font-size="11" fill="#065f46">
+    <text x="440" y="378" text-anchor="middle">"我"</text>
+    <text x="495" y="378" text-anchor="middle">"爱"</text>
+    <text x="550" y="378" text-anchor="middle">"猫"</text>
+  </g>
+  <!-- row labels (source) -->
+  <g font-size="11" fill="#92400e">
+    <text x="395" y="402" text-anchor="end">I</text>
+    <text x="395" y="425" text-anchor="end">love</text>
+    <text x="395" y="448" text-anchor="end">cats</text>
+  </g>
+
+  <!-- Heatmap cells: rows = source, cols = target. Values illustrate alignment -->
+  <!-- 我 ← I (0.8); 爱 ← love (0.75); 猫 ← cats (0.85) -->
+  <!-- Row I -->
+  <rect x="415" y="390" width="35" height="20" fill="#1e40af" fill-opacity="0.85" stroke="#1e3a8a"/>
+  <rect x="470" y="390" width="35" height="20" fill="#1e40af" fill-opacity="0.15" stroke="#1e3a8a"/>
+  <rect x="525" y="390" width="35" height="20" fill="#1e40af" fill-opacity="0.10" stroke="#1e3a8a"/>
+  <text x="432" y="404" text-anchor="middle" font-size="10" fill="#fff">.80</text>
+  <text x="487" y="404" text-anchor="middle" font-size="10" fill="#1e3a8a">.15</text>
+  <text x="542" y="404" text-anchor="middle" font-size="10" fill="#1e3a8a">.05</text>
+  <!-- Row love -->
+  <rect x="415" y="413" width="35" height="20" fill="#1e40af" fill-opacity="0.15" stroke="#1e3a8a"/>
+  <rect x="470" y="413" width="35" height="20" fill="#1e40af" fill-opacity="0.80" stroke="#1e3a8a"/>
+  <rect x="525" y="413" width="35" height="20" fill="#1e40af" fill-opacity="0.15" stroke="#1e3a8a"/>
+  <text x="432" y="427" text-anchor="middle" font-size="10" fill="#1e3a8a">.15</text>
+  <text x="487" y="427" text-anchor="middle" font-size="10" fill="#fff">.75</text>
+  <text x="542" y="427" text-anchor="middle" font-size="10" fill="#1e3a8a">.10</text>
+  <!-- Row cats -->
+  <rect x="415" y="436" width="35" height="20" fill="#1e40af" fill-opacity="0.05" stroke="#1e3a8a"/>
+  <rect x="470" y="436" width="35" height="20" fill="#1e40af" fill-opacity="0.10" stroke="#1e3a8a"/>
+  <rect x="525" y="436" width="35" height="20" fill="#1e40af" fill-opacity="0.90" stroke="#1e3a8a"/>
+  <text x="432" y="450" text-anchor="middle" font-size="10" fill="#1e3a8a">.05</text>
+  <text x="487" y="450" text-anchor="middle" font-size="10" fill="#1e3a8a">.10</text>
+  <text x="542" y="450" text-anchor="middle" font-size="10" fill="#fff">.85</text>
+
+  <text x="487" y="475" text-anchor="middle" font-size="10" fill="#6b7280">每列 softmax 归一 → Σ αᵢ = 1</text>
+
+  <!-- Arrows from h_i to heatmap -->
+  <g stroke="#6b7280" stroke-width="0.8" fill="none" stroke-dasharray="3,2">
+    <line x1="120" y1="376" x2="413" y2="400"/>
+    <line x1="210" y1="376" x2="413" y2="423"/>
+    <line x1="300" y1="376" x2="413" y2="446"/>
+  </g>
+
+  <!-- Dynamic context vectors c_t (one per target step) -->
+  <g>
+    <rect x="600" y="390" width="60" height="22" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="630" y="406" text-anchor="middle" font-size="11" fill="#1e40af">c₁</text>
+    <rect x="600" y="415" width="60" height="22" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="630" y="431" text-anchor="middle" font-size="11" fill="#1e40af">c₂</text>
+    <rect x="600" y="440" width="60" height="22" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="630" y="456" text-anchor="middle" font-size="11" fill="#1e40af">c₃</text>
+  </g>
+  <!-- Arrows from heatmap rows merged into each c_t -->
+  <g stroke="#2563eb" stroke-width="1.2" fill="none">
+    <line x1="563" y1="400" x2="598" y2="400" marker-end="url(#arr-blue)"/>
+    <line x1="563" y1="423" x2="598" y2="425" marker-end="url(#arr-blue)"/>
+    <line x1="563" y1="446" x2="598" y2="451" marker-end="url(#arr-blue)"/>
+  </g>
+
+  <text x="630" y="480" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">每步重算 cₜ</text>
+
+  <!-- Decoder outputs -->
+  <g font-size="12" fill="#065f46">
+    <rect x="720" y="390" width="70" height="22" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="755" y="406" text-anchor="middle">y₁ "我"</text>
+    <rect x="720" y="415" width="70" height="22" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="755" y="431" text-anchor="middle">y₂ "爱"</text>
+    <rect x="720" y="440" width="70" height="22" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="755" y="456" text-anchor="middle">y₃ "猫"</text>
+  </g>
+  <g stroke="#2563eb" stroke-width="1.2" fill="none">
+    <line x1="663" y1="401" x2="718" y2="401" marker-end="url(#arr-blue)"/>
+    <line x1="663" y1="426" x2="718" y2="426" marker-end="url(#arr-blue)"/>
+    <line x1="663" y1="451" x2="718" y2="451" marker-end="url(#arr-blue)"/>
+  </g>
+
+  <!-- Bottom callout: green = 无瓶颈 -->
+  <rect x="180" y="555" width="540" height="60" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="450" y="578" text-anchor="middle" font-size="13"
+        fill="#065f46" font-weight="700">无瓶颈:信息载体从 1 个向量 → T 个向量集合</text>
+  <text x="450" y="598" text-anchor="middle" font-size="11" fill="#065f46">
+    源句长度 60+ 时 BLEU 从 12 (固定 c) 提升到 24 (attention),长句质量回到与短句平行水平
+  </text>
+</svg>

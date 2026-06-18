@@ -18,67 +18,91 @@ Bahdanau、Cho、Bengio 在 2014 年 9 月发表(ICLR 2015 接收)了 *Neural Ma
 
 ## 核心思想
 
-Bahdanau 把 Seq2Seq 改造成这样:
+### 直觉:解码端每步都"回头看"源序列,不被固定 context 卡死
 
-```mermaid
-graph LR
-    x1["x₁"]:::input --> h1["h₁"]:::compute
-    x2["x₂"]:::input --> h2["h₂"]:::compute
-    x3["x₃"]:::input --> h3["h₃"]:::compute
-    x4["x₄"]:::input --> h4["h₄"]:::compute
-    h1 -.->|"α_t,1"| ct["c_t = Σ α_t,i h_i"]:::compute
-    h2 -.->|"α_t,2"| ct
-    h3 -.->|"α_t,3"| ct
-    h4 -.->|"α_t,4"| ct
-    s_prev["s_{t-1}"]:::input --> ct
-    ct --> st["s_t (decoder)"]:::output --> yt["y_t"]:::output
+理解 Bahdanau attention 真正需要先抓一件事:**Seq2Seq 把整个源句子压成一个固定 vector,长句翻译时信息丢失严重;Bahdanau 反问——解码每个目标词时,能不能动态地从源序列里"挑相关位置"看?**
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
+在 Sutskever 2014 的 Seq2Seq 视角下,encoder LSTM 把整个源句"I love cats"逐步累积成一个 `c`,然后 decoder 每一步都只能看到同一个 `c` 来生成"我 / 爱 / 猫"。这本质是一次"全句先打包,再分批译"——信息载体是**单个 `d` 维向量**,容量是 `O(d)`,而一句 `T` 个词的语义量是 `O(T·d)`,长句必然挤掉细节。Sutskever 倒序输入只是把"忘记的位置"从开头挪到结尾,治标不治本。
 
-*图 1:Bahdanau attention——decoder 第 `t` 步的上下文 `c_t` 是 encoder 所有隐状态 `h_1, ..., h_T` 的加权和,权重 `α_t,i` 由 `s_{t-1}` 和 `h_i` 的兼容度学到。*
+Bahdanau 的反问把这个心智模型彻底替换掉:**译"我"时只盯"I",译"猫"时只盯"cats"——人类译者本来就这么做,为什么神经网络非要先压成一个向量再展开?** 解法是让 decoder 每一步**直接回头看 encoder 的所有时刻**,学一个该步该关注哪些源词的加权分布。这就是 **attention** 机制的第一次正式出场——比 Transformer 早整整 3 年,后来主导整个 NLP 的所有注意力路线都从这里发源。
 
-具体三件事:
+![Seq2Seq 固定 c vs Bahdanau 动态对齐](assets/05-attention-seq2seq-comparison.svg)
+*图 1:上半是原 Seq2Seq——"I love cats"经 encoder LSTM 压成单一向量 `c`,decoder 每步都只能看同一个 `c`,出现信息瓶颈;下半是 Bahdanau attention——encoder 输出 h₁/h₂/h₃ 三个 hidden state 全部保留,decoder 每步算一个 3 维 attention 分布(右侧 heatmap 中"我↔I"、"爱↔love"、"猫↔cats"高亮对角线),按权重加权得到该步专用的 `c_t`,**信息载体从 1 个向量换成 T 个向量的集合,长句质量回到与短句平行水平**。*
 
-**1. Encoder 用 BiRNN,保留全部时刻的隐状态**——不再只取最后一时刻 `h_T` 当 `c`。Bahdanau 用双向 GRU,前向 `\overrightarrow{h}_i` 看到 `x_1...x_i`,反向 `\overleftarrow{h}_i` 看到 `x_T...x_i`,拼起来 `h_i = [\overrightarrow{h}_i; \overleftarrow{h}_i]` 既覆盖左上下文又覆盖右上下文。所有 `T` 个 `h_i` 都保留下来。
+### 机制一:Encoder 输出每个位置的 hidden state(不只是最后一个)
 
-**2. Decoder 每一步算一个对齐分数 `α_t,i`**——给定 decoder 上一步状态 `s_{t-1}` 和 encoder 第 `i` 个隐状态 `h_i`,用一个小 MLP 算"兼容度":
+要让 decoder 能"回头看",前提是 encoder 必须把每个位置的信息**都留下来**,而不是压成一个 `c`。Bahdanau 在 encoder 端用 **双向 GRU**:
 
-$$
-e_{t,i} = v^\top \tanh(W_a s_{t-1} + U_a h_i)
-$$
+- 前向 GRU 从左到右读源句,产生 `\overrightarrow{h}_i`——它看到了 `x_1...x_i`(左上下文)
+- 反向 GRU 从右到左读源句,产生 `\overleftarrow{h}_i`——它看到了 `x_T...x_i`(右上下文)
+- 拼接得到 `h_i = [\overrightarrow{h}_i ; \overleftarrow{h}_i]`,**该位置的表示同时编码了它两侧的语境**
 
-这是 **additive attention**(也叫 Bahdanau attention),`v, W_a, U_a` 是要学的参数。然后用 softmax 归一化成一个分布:
+所有 `T` 个 `h_i` 都保留下来,encoder 的输出是一个 `T × 2d` 的矩阵而不是单个向量。这一步是 attention 能"回头看"的物理前提——**信息源不再是漏斗末端的一个点,而是一整条 hidden state 序列**。
+
+注意双向是 Bahdanau 的实现选择,不是 attention 机制本身的要求(单向 RNN 也能加 attention,只是少了右上下文)。但"保留全部时刻"这件事是**强制的**——如果只留 `h_T`,就退化回 Seq2Seq。
+
+### 机制二:Alignment Score——解码端 s_{t-1} 和每个 encoder h_i 算相关性
+
+有了完整的 `(h_1, ..., h_T)`,接下来要回答的问题是:**第 t 步该给哪些 `h_i` 多大权重?** Bahdanau 用一个小 feedforward 网络(单隐层 MLP)算每对 `(s_{t-1}, h_i)` 的"兼容度":
 
 $$
-\alpha_{t,i} = \frac{\exp(e_{t,i})}{\sum_{j=1}^{T} \exp(e_{t,j})}
+e_{t,i} = v^\top \tanh(W_s\, s_{t-1} + W_h\, h_i)
 $$
 
-`α_t = (α_t,1, ..., α_t,T)` 满足 `Σ α_t,i = 1`,可以解释为"decoder 第 `t` 步分配给源词 `x_i` 的注意力"。
+这里 `W_s, W_h, v` 是三个待学参数。**因为公式内部是 `W_s s` 与 `W_h h` 先相加再过 tanh,所以这种打分方式叫 additive attention(加法注意力)——Bahdanau 的名字由来正是这里**。
 
-**3. 上下文向量随时间变化**——把 encoder 隐状态按 `α_t` 加权,得到第 `t` 步专用的上下文:
-
-$$
-c_t = \sum_{i=1}^{T} \alpha_{t,i} \, h_i
-$$
-
-decoder 用 `c_t` 替代原来的固定 `c`,计算下一步隐状态:
+然后用 softmax 把 `T` 个分数归一化成一个分布:
 
 $$
-s_t = \text{GRU}(s_{t-1}, [y_{t-1}; c_t])
+\alpha_{t,i} = \frac{\exp(e_{t,i})}{\sum_{j=1}^{T} \exp(e_{t,j})}, \quad \sum_i \alpha_{t,i} = 1
 $$
 
-注意 `c_t` 随时间步变化——decoder 生成第 1 个目标词时,`α_1` 可能集中在源句开头;生成第 10 个词时,`α_{10}` 可能集中在源句中部。每一步都"按需"从 encoder 拉取最相关的信息。
+`α_t = (α_{t,1}, ..., α_{t,T})` 可以解释为"decoder 第 t 步分配给源词 `x_i` 的注意力比例"。实际训练出来的 `α_t` 通常很稀疏——80% 的权重集中在 2–3 个源词上,可视化出来就是论文里那张著名的对齐热图("European Economic Area" ↔ "zone économique européenne")。
 
-## 为什么 attention 解决了信息瓶颈
+这是 attention 第一次把"按相关性分配权重"这件事**显式参数化、可学化、可解释化**——也是后来 Transformer `softmax(QK^T / sqrt(d_k))` 的直接祖先。
 
-固定 `c` 的瓶颈来自一个数学事实:**单个 `d` 维向量的信息容量是 `O(d)`,但一句 `T` 个词的语义量是 `O(T·d)`**。`T = 50, d = 500` 时,源信息总量是 25K 单位,装进 500 维向量必然有 50× 的压缩,长句必然丢失细节。
+### 机制三:Context Vector——加权和后输入解码器
 
-Attention 把信息载体从单个向量换成了 `T` 个向量的集合 `(h_1, ..., h_T)`,**总容量随源句长度线性增长**。decoder 不再需要在 `c` 里同时保留 50 个词的细节,而是每一步只取该步需要的几个词——`α_t` 通常很稀疏(80% 集中在 2–3 个源词上)。
+有了权重 `α_t`,把 encoder 隐状态按权重加和,就得到第 t 步专用的上下文向量:
 
-Bahdanau 在论文里给出对比数据,在 WMT'14 英法上:
+$$
+c_t = \sum_{i=1}^{T} \alpha_{t,i}\, h_i
+$$
+
+decoder 用 `c_t` 替代原来的固定 `c`,作为额外输入喂给 GRU:
+
+$$
+s_t = \text{GRU}(s_{t-1},\ [y_{t-1}\,;\, c_t])
+$$
+
+关键是 **`c_t` 随 t 变化**——decoder 生成第 1 个目标词时,`α_1` 可能集中在源句开头;生成第 10 个词时,`α_{10}` 可能集中在源句中部。每一步都"按需"从 encoder 拉取最相关的信息,**不再像 Seq2Seq 那样所有步都共享同一个被压扁的 `c`**。
+
+![Bahdanau additive attention 单步完整计算图](assets/05-attention-additive-mechanism.svg)
+*图 2:Bahdanau attention 单步 t 的完整数据流——decoder 上一时刻 `s_{t-1}`(顶部)与每个 encoder `h_i`(左侧 h₁/h₂/h₃)分别送入小 MLP `a(s, h) = vᵀ tanh(W_s s + W_h h)`,得到 3 个 score `e_{t,i}` → softmax → 3 个权重 `α_{t,i}` → 与对应的 `h_i` 加权求和 → 得到 `c_t` → 喂入 decoder GRU。底部 callout 强调:`a(s, h)` 内部是 `W_s s + W_h h` 相加,故名 **additive**;2015 Luong 提出的 **multiplicative**(直接内积)版本更快,后来被 2017 Transformer 推到极致变成 scaled dot-product attention。*
+
+### 三件套协同:全 encoder 输出 + alignment score + 动态 context 缺一不可
+
+上面三个机制不是独立改进,而是**协同的工程契约**——少任何一个,Bahdanau attention 都不成立:
+
+- **只有 alignment score + 动态 context,没有全 encoder 输出**——如果 encoder 仍然只输出 `h_T`,那 attention 只能在一个 (s, h_T) 对上算分数,退化成 trivial 的 `α = 1`,等价于 Seq2Seq
+- **只有全 encoder 输出 + 动态 context,没有 alignment score**——没有学到的权重,只能均匀平均或简单启发式,无法分辨"译'猫'时该看'cats'而不是'I'",对齐质量崩塌
+- **只有全 encoder 输出 + alignment score,没有动态 context**——分数算出来不用,decoder 仍走固定 `c`,前两步白做
+
+这三件套的协同关系类似 [ResNet](../01-cnn/05-resnet.md) 里 `shortcut + BN + He 初始化` 的关系——任何一个单拿出来都不够,**三者一起才让"解码端动态回头看"从一个直觉变成可训练、可对齐、可解释的工程方案**。
+
+更深远的是,这三件套定义了**所有后续 attention 路线必须保留的骨架**。[Transformer](../05-transformer/01-transformer.md) 后来把这个思路推到极致:
+
+| Bahdanau 2014 三件套 | Transformer 2017 对应 |
+|------|------|
+| Encoder 全输出(BiRNN 保留 `h_1..h_T`) | Self-attention 每层都让所有位置互相看,天然"全输出" |
+| Alignment score(additive MLP) | Scaled dot-product `softmax(QK^T/√d_k)`(multiplicative + 缩放) |
+| 动态 context `c_t = Σ α h_i` | `Attention(Q,K,V) = αV`,所有 query 一次矩阵乘并行算 |
+
+Transformer 的革命是把这三件套从"decoder 看 encoder"的单一场景**推广到 self-attention + multi-head**,但 Bahdanau 的"动态对齐"是所有路线的起点——这也是为什么 Vaswani 2017 论文标题里 "Attention" 这个词不是凭空造的,它来自 2014 年这篇论文。
+
+### 长句质量数据:为什么 attention 真的解决了瓶颈
+
+Bahdanau 在论文里给出 WMT'14 英法上按源句长度切分的 BLEU 对比:
 
 | 源句长度 | RNN encdec(固定 c) | RNN encdec + attention |
 |------|------|------|
@@ -87,7 +111,7 @@ Bahdanau 在论文里给出对比数据,在 WMT'14 英法上:
 | 40–60 | 18 | 26 |
 | > 60 | 12 | 24 |
 
-固定 c 在长句上几乎不可用,attention 让长句质量回到与短句基本平行的水平。这是序列建模在长上下文上的第一次真正突破,直接铺平了 2017 年 Transformer 把整条循环主轴扔掉、彻底依赖 attention 的路径。
+固定 `c` 在长句上几乎不可用(>60 词时 BLEU 跌到 12),attention 让长句质量回到与短句基本平行的水平(>60 词时 BLEU 24,只比短句低 4 点)。这是序列建模在长上下文上的第一次真正突破,直接铺平了 2017 年 Transformer 把整条循环主轴扔掉、彻底依赖 attention 的路径。
 
 ## Luong attention 的两个改进
 
