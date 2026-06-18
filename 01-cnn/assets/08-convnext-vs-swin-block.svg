@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="cn-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="cn-corr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    ConvNeXt Block ↔ Swin Transformer Block — 一一对应
+  </text>
+
+  <!-- ============== LEFT: ConvNeXt Block ============== -->
+  <text x="180" y="62" text-anchor="middle" font-size="14" fill="#059669" font-weight="600">
+    ConvNeXt Block
+  </text>
+
+  <!-- Input x -->
+  <rect x="100" y="85" width="160" height="35" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="180" y="107" text-anchor="middle" font-size="12" fill="#92400e">Input x [B,C,H,W]</text>
+
+  <!-- Shortcut arc start -->
+  <circle cx="180" cy="120" r="4" fill="#7c3aed"/>
+
+  <line x1="180" y1="120" x2="180" y2="138" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- DWConv 7x7 -->
+  <rect x="100" y="140" width="160" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+  <text x="180" y="161" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">DWConv 7×7</text>
+  <text x="180" y="180" text-anchor="middle" font-size="10" fill="#9d174d">局部 token mixer</text>
+
+  <line x1="180" y1="190" x2="180" y2="208" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- LN -->
+  <rect x="100" y="210" width="160" height="32" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="180" y="231" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">LayerNorm</text>
+
+  <line x1="180" y1="242" x2="180" y2="260" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- PWConv 1x1 (4x hidden) -->
+  <rect x="100" y="262" width="160" height="42" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="180" y="282" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">PWConv 1×1</text>
+  <text x="180" y="297" text-anchor="middle" font-size="10" fill="#9d174d">→ 4× hidden</text>
+
+  <line x1="180" y1="304" x2="180" y2="320" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- GELU -->
+  <rect x="100" y="322" width="160" height="32" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="180" y="343" text-anchor="middle" font-size="11" fill="#713f12" font-weight="600">GELU</text>
+
+  <line x1="180" y1="354" x2="180" y2="370" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- PWConv 1x1 (down) -->
+  <rect x="100" y="372" width="160" height="42" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="180" y="392" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">PWConv 1×1</text>
+  <text x="180" y="407" text-anchor="middle" font-size="10" fill="#9d174d">→ C(降回)</text>
+
+  <line x1="180" y1="414" x2="180" y2="432" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- + shortcut -->
+  <circle cx="180" cy="445" r="14" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="180" y="450" text-anchor="middle" font-size="14" fill="#92400e" font-weight="700">⊕</text>
+
+  <!-- shortcut arc -->
+  <path d="M 180 120 C 50 120, 50 445, 165 445" stroke="#7c3aed" stroke-width="2" fill="none"/>
+  <text x="35" y="285" text-anchor="middle" font-size="10" fill="#7c3aed" font-style="italic" transform="rotate(-90 35 285)">shortcut(从 ResNet 继承)</text>
+
+  <!-- ============== RIGHT: Swin Transformer Block ============== -->
+  <text x="720" y="62" text-anchor="middle" font-size="14" fill="#2563eb" font-weight="600">
+    Swin Transformer Block
+  </text>
+
+  <!-- Input x -->
+  <rect x="640" y="85" width="160" height="35" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="720" y="107" text-anchor="middle" font-size="12" fill="#92400e">Input x [B,N,C]</text>
+
+  <circle cx="720" cy="120" r="4" fill="#7c3aed"/>
+  <line x1="720" y1="120" x2="720" y2="138" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- LN before W-MSA -->
+  <rect x="640" y="140" width="160" height="32" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="720" y="161" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">LayerNorm</text>
+
+  <line x1="720" y1="172" x2="720" y2="190" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- W-MSA -->
+  <rect x="640" y="192" width="160" height="50" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="2.5"/>
+  <text x="720" y="213" text-anchor="middle" font-size="12" fill="#075985" font-weight="700">W-MSA</text>
+  <text x="720" y="232" text-anchor="middle" font-size="10" fill="#075985">window attention(7×7)</text>
+
+  <line x1="720" y1="242" x2="720" y2="260" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- LN before MLP -->
+  <rect x="640" y="262" width="160" height="32" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="720" y="283" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">LayerNorm</text>
+
+  <line x1="720" y1="294" x2="720" y2="310" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <!-- MLP (Linear + GELU + Linear) -->
+  <rect x="640" y="312" width="160" height="100" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="720" y="335" text-anchor="middle" font-size="12" fill="#075985" font-weight="600">MLP (FFN)</text>
+  <text x="720" y="355" text-anchor="middle" font-size="10" fill="#075985">Linear → 4× hidden</text>
+  <text x="720" y="375" text-anchor="middle" font-size="10" fill="#713f12" font-weight="600">→ GELU →</text>
+  <text x="720" y="395" text-anchor="middle" font-size="10" fill="#075985">Linear → C</text>
+
+  <line x1="720" y1="412" x2="720" y2="432" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cn-arr)"/>
+
+  <circle cx="720" cy="445" r="14" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="720" y="450" text-anchor="middle" font-size="14" fill="#92400e" font-weight="700">⊕</text>
+
+  <path d="M 720 120 C 870 120, 870 445, 735 445" stroke="#7c3aed" stroke-width="2" fill="none"/>
+
+  <!-- ============== MIDDLE: correspondence arrows ============== -->
+  <!-- DWConv 7x7 ↔ W-MSA -->
+  <line x1="270" y1="165" x2="630" y2="217" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#cn-corr)"/>
+  <line x1="630" y1="217" x2="270" y2="165" stroke="#7c3aed" stroke-width="0.1"/>
+  <text x="450" y="178" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="600">局部 token mixer 对应</text>
+
+  <!-- PWConv↑+GELU+PWConv↓ ↔ MLP -->
+  <line x1="270" y1="370" x2="630" y2="362" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#cn-corr)"/>
+  <text x="450" y="345" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="600">PWConv↑↓+GELU = MLP/FFN</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="490" x2="860" y2="490" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: comparison bars ============== -->
+  <text x="450" y="518" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    ImageNet Top-1 + 推理 throughput
+  </text>
+
+  <g transform="translate(120, 540)">
+    <!-- ConvNeXt-T -->
+    <text x="0" y="20" font-size="11" fill="#059669" font-weight="600">ConvNeXt-T</text>
+    <rect x="130" y="8" width="300" height="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="440" y="22" font-size="11" fill="#059669" font-weight="700">82.1% Top-1</text>
+    <text x="540" y="22" font-size="11" fill="#059669">| 774 img/s</text>
+
+    <!-- Swin-T -->
+    <text x="0" y="48" font-size="11" fill="#2563eb" font-weight="600">Swin-T</text>
+    <rect x="130" y="36" width="296" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="436" y="50" font-size="11" fill="#1e40af" font-weight="600">81.3% Top-1</text>
+    <text x="540" y="50" font-size="11" fill="#2563eb">| 645 img/s</text>
+
+    <!-- gain -->
+    <text x="270" y="80" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="600">同算力 4.5 GFLOPs:精度 +0.8 / 吞吐 +20%</text>
+  </g>
+
+  <!-- bottom callout -->
+  <rect x="60" y="635" width="780" height="20" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="650" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">
+    架构争论的胜负往往不在算子,而在配套的训练 recipe — 这是 ConvNeXt 给的最大教训
+  </text>
+</svg>
