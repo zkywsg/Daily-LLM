@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    LLaVA 两阶段训练 · Feature Alignment + Visual Instruction Tuning
+  </text>
+
+  <!-- ===================== Stage 1(左) ===================== -->
+  <rect x="30" y="60" width="400" height="480" rx="10"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="230" y="88" text-anchor="middle" font-size="14" fill="#92400e" font-weight="700">
+    Stage 1 · Feature Alignment
+  </text>
+  <text x="230" y="108" text-anchor="middle" font-size="11" fill="#92400e">
+    教 projection 把视觉特征对齐到 LLM 空间
+  </text>
+
+  <!-- 数据 -->
+  <rect x="60" y="130" width="340" height="60" rx="6"
+        fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="230" y="153" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">
+    数据:CC3M 子集 558K image-caption 对
+  </text>
+  <text x="230" y="173" text-anchor="middle" font-size="10" fill="#92400e">
+    [图] → caption 作为 label,简单图文对齐任务
+  </text>
+
+  <!-- 训练目标:三个组件竖排 -->
+  <text x="230" y="215" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">
+    训什么 / 冻什么
+  </text>
+
+  <!-- CLIP 冻结 -->
+  <rect x="60" y="230" width="340" height="60" rx="6"
+        fill="#f3f4f6" stroke="#6b7280" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="230" y="252" text-anchor="middle" font-size="12" fill="#374151" font-weight="600">
+    CLIP ViT-L/14 ❄ 冻结
+  </text>
+  <text x="230" y="272" text-anchor="middle" font-size="10" fill="#6b7280">
+    0 可训练参数
+  </text>
+
+  <!-- Projection 训 -->
+  <rect x="60" y="305" width="340" height="60" rx="6"
+        fill="#fed7aa" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="230" y="327" text-anchor="middle" font-size="12" fill="#9a3412" font-weight="700">
+    MLP Projection 🔥 训
+  </text>
+  <text x="230" y="347" text-anchor="middle" font-size="10" fill="#9a3412">
+    ~20M 参数(整个 Stage 1 的全部可训参数)
+  </text>
+
+  <!-- LLM 冻结 -->
+  <rect x="60" y="380" width="340" height="60" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="230" y="402" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="600">
+    LLaMA / Vicuna ❄ 冻结
+  </text>
+  <text x="230" y="422" text-anchor="middle" font-size="10" fill="#1e3a8a">
+    0 可训练参数
+  </text>
+
+  <!-- 训练成本 -->
+  <rect x="60" y="465" width="340" height="55" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="230" y="486" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">
+    成本:8×A100 × 4 小时 ≈ 32 GPU 小时
+  </text>
+  <text x="230" y="505" text-anchor="middle" font-size="10" fill="#065f46">
+    lr 2e-3(大)· 1 epoch · 学会"投到对的空间"
+  </text>
+
+  <!-- ===================== Stage 2(右) ===================== -->
+  <rect x="470" y="60" width="400" height="480" rx="10"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="670" y="88" text-anchor="middle" font-size="14" fill="#9d174d" font-weight="700">
+    Stage 2 · Visual Instruction Tuning
+  </text>
+  <text x="670" y="108" text-anchor="middle" font-size="11" fill="#9d174d">
+    教 LLM "按指令使用视觉信息" 回答
+  </text>
+
+  <!-- 数据 -->
+  <rect x="500" y="130" width="340" height="60" rx="6"
+        fill="#fdf2f8" stroke="#db2777" stroke-width="1.5"/>
+  <text x="670" y="151" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">
+    数据:GPT-4 生成 158K 多模态指令
+  </text>
+  <text x="670" y="170" text-anchor="middle" font-size="10" fill="#9d174d">
+    58K 对话 · 23K 详细描述 · 77K 复杂推理
+  </text>
+  <text x="670" y="184" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">
+    (GPT-4 看 COCO caption + boxes 生成,不看图)
+  </text>
+
+  <!-- 训练目标 -->
+  <text x="670" y="215" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">
+    训什么 / 冻什么
+  </text>
+
+  <!-- CLIP 冻结 -->
+  <rect x="500" y="230" width="340" height="60" rx="6"
+        fill="#f3f4f6" stroke="#6b7280" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="670" y="252" text-anchor="middle" font-size="12" fill="#374151" font-weight="600">
+    CLIP ViT-L/14 ❄ 冻结
+  </text>
+  <text x="670" y="272" text-anchor="middle" font-size="10" fill="#6b7280">
+    始终不动
+  </text>
+
+  <!-- Projection 训 -->
+  <rect x="500" y="305" width="340" height="60" rx="6"
+        fill="#fed7aa" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="670" y="327" text-anchor="middle" font-size="12" fill="#9a3412" font-weight="700">
+    MLP Projection 🔥 继续训
+  </text>
+  <text x="670" y="347" text-anchor="middle" font-size="10" fill="#9a3412">
+    从 Stage 1 权重继续微调
+  </text>
+
+  <!-- LLM 解冻 -->
+  <rect x="500" y="380" width="340" height="60" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="670" y="402" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="700">
+    LLaMA / Vicuna 🔥 解冻 全微调
+  </text>
+  <text x="670" y="422" text-anchor="middle" font-size="10" fill="#1e3a8a">
+    7B 或 13B 参数全部更新
+  </text>
+
+  <!-- 训练成本 -->
+  <rect x="500" y="465" width="340" height="55" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="670" y="486" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">
+    成本:8×A100 × 8 小时 ≈ 64 GPU 小时
+  </text>
+  <text x="670" y="505" text-anchor="middle" font-size="10" fill="#065f46">
+    lr 2e-5(小 100×,保护预训练知识)· 3 epoch
+  </text>
+
+  <!-- 中间箭头 -->
+  <path d="M 430 300 L 470 300"
+        stroke="#7c3aed" stroke-width="2.5" fill="none" marker-end="url(#arr-main)"/>
+  <text x="450" y="290" text-anchor="middle" font-size="10" fill="#5b21b6" font-weight="600">投影权重</text>
+  <text x="450" y="320" text-anchor="middle" font-size="10" fill="#5b21b6">继承</text>
+
+  <!-- ===================== 底部 callout ===================== -->
+  <rect x="40" y="560" width="820" height="65" rx="8"
+        fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="450" y="583" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">
+    LLaVA 用 ~$300 训练成本 + 单 8×A100 节点(共 ~96 GPU 小时)
+  </text>
+  <text x="450" y="601" text-anchor="middle" font-size="11" fill="#5b21b6">
+    就达到接近 GPT-4V 的视觉理解能力
+  </text>
+  <text x="450" y="618" text-anchor="middle" font-size="11" fill="#5b21b6" font-style="italic">
+    "CLIP 视觉 + projection + LLM + 两阶段" 开源 VLM 范式由此确立
+  </text>
+</svg>

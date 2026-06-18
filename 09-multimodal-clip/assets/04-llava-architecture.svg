@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#1e40af"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    LLaVA 推理流程 · CLIP 眼睛 + Projection 桥 + LLaMA 脑子
+  </text>
+
+  <!-- ============= 视觉路径(上) ============= -->
+  <!-- 输入图像 -->
+  <rect x="30" y="80" width="110" height="80" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="85" y="108" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">输入图像</text>
+  <text x="85" y="128" text-anchor="middle" font-size="11" fill="#92400e">336×336 RGB</text>
+  <text x="85" y="146" text-anchor="middle" font-size="11" fill="#92400e">(一只猫在沙发上)</text>
+
+  <!-- CLIP ViT(冻结)— 浅灰 -->
+  <rect x="180" y="80" width="160" height="80" rx="6"
+        fill="#f3f4f6" stroke="#6b7280" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="260" y="105" text-anchor="middle" font-size="13" fill="#374151" font-weight="600">CLIP ViT-L/14</text>
+  <text x="260" y="124" text-anchor="middle" font-size="11" fill="#374151">(冻结 / 304M 参数)</text>
+  <text x="260" y="142" text-anchor="middle" font-size="10" fill="#6b7280">已被 4 亿图文对预对齐</text>
+  <text x="260" y="156" text-anchor="middle" font-size="10" fill="#6b7280">输出 grid patch features</text>
+
+  <!-- Visual tokens -->
+  <rect x="380" y="80" width="140" height="80" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="450" y="105" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Visual tokens</text>
+  <text x="450" y="124" text-anchor="middle" font-size="11" fill="#9d174d">[B, 576, 1024]</text>
+  <text x="450" y="142" text-anchor="middle" font-size="10" fill="#9d174d">(336/14)² = 576 patches</text>
+  <text x="450" y="156" text-anchor="middle" font-size="10" fill="#9d174d">CLIP hidden_dim = 1024</text>
+
+  <!-- MLP Projection — 橙色"唯一要训的" -->
+  <rect x="560" y="80" width="160" height="80" rx="6"
+        fill="#fed7aa" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="640" y="103" text-anchor="middle" font-size="13" fill="#9a3412" font-weight="700">MLP Projection</text>
+  <text x="640" y="121" text-anchor="middle" font-size="11" fill="#9a3412">Linear → GELU → Linear</text>
+  <text x="640" y="139" text-anchor="middle" font-size="11" fill="#9a3412">1024 → 4096</text>
+  <text x="640" y="156" text-anchor="middle" font-size="10" fill="#9a3412" font-weight="600">★ 唯一要训的桥 ★</text>
+
+  <!-- Projected visual tokens -->
+  <rect x="760" y="80" width="120" height="80" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="820" y="108" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="600">投影后 tokens</text>
+  <text x="820" y="128" text-anchor="middle" font-size="11" fill="#1e40af">[B, 576, 4096]</text>
+  <text x="820" y="146" text-anchor="middle" font-size="10" fill="#1e40af">已落在 LLM token 空间</text>
+
+  <!-- 视觉路径箭头 -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="142" y1="120" x2="178" y2="120" marker-end="url(#arr-main)"/>
+    <line x1="342" y1="120" x2="378" y2="120" marker-end="url(#arr-main)"/>
+    <line x1="522" y1="120" x2="558" y2="120" marker-end="url(#arr-main)"/>
+    <line x1="722" y1="120" x2="758" y2="120" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ============= 文本路径(中) ============= -->
+  <!-- 文本输入 -->
+  <rect x="30" y="240" width="160" height="60" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="110" y="265" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">文本 prompt</text>
+  <text x="110" y="285" text-anchor="middle" font-size="11" fill="#92400e">"What's in the image?"</text>
+
+  <!-- Tokenize + Embed -->
+  <rect x="220" y="240" width="160" height="60" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="300" y="265" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Tokenize + Embed</text>
+  <text x="300" y="285" text-anchor="middle" font-size="11" fill="#9d174d">[B, T, 4096]</text>
+
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="192" y1="270" x2="218" y2="270" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ============= 拼接 ============= -->
+  <!-- concat 节点 -->
+  <rect x="420" y="220" width="180" height="100" rx="8"
+        fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="510" y="248" text-anchor="middle" font-size="13" fill="#5b21b6" font-weight="700">前置拼接</text>
+  <text x="510" y="268" text-anchor="middle" font-size="11" fill="#5b21b6">[576 visual + T text]</text>
+  <text x="510" y="288" text-anchor="middle" font-size="10" fill="#5b21b6">视觉 token 与文本 token</text>
+  <text x="510" y="304" text-anchor="middle" font-size="10" fill="#5b21b6">"看起来一样",同维拼起来</text>
+
+  <!-- 拼接箭头(从视觉投影 + 文本嵌入都进入) -->
+  <path d="M 820 162 C 820 200, 600 200, 600 230"
+        stroke="#1e40af" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+  <path d="M 380 270 L 418 270"
+        stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+
+  <!-- LLaMA decoder -->
+  <rect x="640" y="220" width="220" height="100" rx="8"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="750" y="248" text-anchor="middle" font-size="14" fill="#1e3a8a" font-weight="700">LLaMA / Vicuna Decoder</text>
+  <text x="750" y="268" text-anchor="middle" font-size="11" fill="#1e3a8a">7B / 13B causal Transformer</text>
+  <text x="750" y="287" text-anchor="middle" font-size="10" fill="#1e3a8a">Stage 1 冻结 · Stage 2 全微调</text>
+  <text x="750" y="304" text-anchor="middle" font-size="10" fill="#1e3a8a">把 visual tokens 当 prompt 读</text>
+
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="602" y1="270" x2="638" y2="270" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- 输出 -->
+  <rect x="320" y="380" width="280" height="70" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="460" y="408" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">回答</text>
+  <text x="460" y="430" text-anchor="middle" font-size="11" fill="#065f46">"An orange cat is sitting on a sofa."</text>
+
+  <path d="M 750 322 C 750 360, 600 360, 600 414"
+        stroke="#9d174d" stroke-width="1.5" fill="none" marker-end="url(#arr-main)"/>
+
+  <!-- ============= 颜色图例 / 三件套说明 ============= -->
+  <rect x="40" y="490" width="820" height="130" rx="8"
+        fill="#fffbeb" stroke="#d97706" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="450" y="513" text-anchor="middle" font-size="13" fill="#92400e" font-weight="700">
+    三件套协同 · 三种颜色对应三种角色
+  </text>
+
+  <!-- 灰色:CLIP -->
+  <rect x="60" y="530" width="22" height="22" rx="4"
+        fill="#f3f4f6" stroke="#6b7280" stroke-width="2" stroke-dasharray="3,2"/>
+  <text x="90" y="546" font-size="11" fill="#374151" font-weight="600">CLIP ViT(冻结)</text>
+  <text x="90" y="562" font-size="10" fill="#6b7280">— 现成的"眼睛",已被语言对齐</text>
+  <text x="90" y="578" font-size="10" fill="#6b7280">— 0 个可训练参数</text>
+
+  <!-- 橙色:Projection -->
+  <rect x="330" y="530" width="22" height="22" rx="4"
+        fill="#fed7aa" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="360" y="546" font-size="11" fill="#9a3412" font-weight="600">MLP Projection(★ 关键)</text>
+  <text x="360" y="562" font-size="10" fill="#9a3412">— 1024 → 4096 的桥</text>
+  <text x="360" y="578" font-size="10" fill="#9a3412">— 仅 ~20M 参数,Stage 1 唯一训的</text>
+
+  <!-- 蓝色:LLM -->
+  <rect x="610" y="530" width="22" height="22" rx="4"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="640" y="546" font-size="11" fill="#1e3a8a" font-weight="600">LLaMA / Vicuna LLM</text>
+  <text x="640" y="562" font-size="10" fill="#1e3a8a">— 现成的"脑子",指令理解能力</text>
+  <text x="640" y="578" font-size="10" fill="#1e3a8a">— Stage 2 解冻全微调</text>
+
+  <text x="450" y="606" text-anchor="middle" font-size="11" fill="#92400e" font-style="italic">
+    CLIP 已预对齐 → projection 只学一步小投影 → LLM 直接把视觉 token 当 prompt 读
+  </text>
+</svg>

@@ -32,95 +32,69 @@ LLaVA 用这两件事训出第一个开源的 GPT-4V 风格视觉助手。LLaVA-
 
 LLaVA 的发布(开源代码 + 数据 + 模型权重)在 2023 年 4 月引爆了开源 VLM 浪潮——MiniGPT-4、Otter、mPLUG-Owl、Qwen-VL、InternLM-XComposer、Yi-VL 等几十个开源 VLM 都基于 LLaVA 思路,把"视觉 + 对话"的能力带到所有人。今天的开源 VLM 标配架构,几乎都是 LLaVA 的"CLIP visual + projection + LLM"模式。
 
-## 核心思想 1:Visual Instruction Tuning
+## 核心思想
 
-LLaVA 的第一个关键贡献是**用 GPT-4 自动生成视觉指令数据**。流程:
+### 直觉:用现成 CLIP + LLM 拼起来,projection 是唯一要学的"桥"
 
-```mermaid
-graph LR
-    img["COCO image"]:::input --> meta["人工标注:<br/>- captions(5 个)<br/>- bounding boxes"]:::compute
-    meta --> gpt4["GPT-4(纯文本)<br/>看 meta 描述"]:::compute
-    gpt4 --> data["生成视觉指令数据:<br/>对话 / 复杂推理 / 详细描述<br/>158K 条"]:::output
+理解 LLaVA 真正需要先抓一件事:**[Flamingo](03-flamingo.md) / GPT-4V 那种深度多模态融合需要从零联合预训练,数据 / 算力门槛极高(几百到几千 A100 天)**,开源社区根本玩不起。LLaVA 反问:**能不能用 CLIP 的 ViT 当眼睛、LLaMA 当脑子,只训一个 MLP 把 vision feature 投到 LLM 的 token embedding 空间,就让 LLM "看到"图像?**
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
+这件事在 2023 年才被做出来,需要三件事同时成立:
+
+- **CLIP 已经把图像和语言在向量空间对齐过** —— vision feature 投到 LLM token embedding 空间不需要从零学,只需要一个轻量 projection 桥
+- **GPT-4 能批量生成视觉指令数据** —— InstructGPT 需要海量人工标注,LLaVA 用 GPT-4 看 COCO 的 caption + bbox 生成 158K 多模态指令,合成数据完全替代人工
+- **LLM 输入端可以"插入"非文本 token** —— LLaMA decoder 接受任意 embedding 序列,把 visual token 当成 "特殊文本 token" 前置拼接即可,LLM 架构一行不改
+
+三件事合起来才让 LLaVA-7B 在 **8 A100 × 12 小时(~$200 训练成本)** 达到接近 GPT-4V 的视觉理解,而 BLIP-2 / Flamingo 要 10-1000× 更多算力。这是开源 VLM 范式的起点 —— 2023 下半年涌现的 MiniGPT-4 / Qwen-VL / InternVL / Yi-VL 几十个开源 VLM 几乎全部沿用 LLaVA 模板。
+
+### 机制一:Frozen CLIP Vision Encoder — 复用已有视觉表示
+
+LLaVA 用 **CLIP ViT-L/14**(SD / 几乎所有 VLM 共用的 vision encoder)把图像编码成 256 个 patch token,整个 vision encoder **完全冻结**。这是 LLaVA 极简哲学的核心 —— CLIP 已经把图像和语言对齐过,vision feature 投到 LLM 空间会容易得多,完全不需要重新训 vision encoder。
+
+具体:输入 224×224 图像 → CLIP ViT 切 14×14 patch → 输出 [B, 257, 768] 特征(256 patch + 1 CLS)。LLaVA 用 patch tokens(去掉 CLS),256 个 token × 768 维 visual feature 喂给下一步。
+
+冻结 CLIP 有几个好处:省 90% 训练算力 / 保留 CLIP 已学到的"语义概念"先验 / 与所有 CLIP-based 应用(SD / search / classification)共享同一套视觉表示。
+
+### 机制二:Linear / MLP Projection — 把 vision feature 投到 LLM token embedding 空间
+
+CLIP feature 是 768 维,LLaMA-7B 的 token embedding 是 4096 维,两者不在同一空间。LLaVA 加一个**单层 linear projection**(LLaVA-1.5 升级到 2 层 MLP)把 CLIP 的 768 → LLaMA 的 4096:
+
+```python
+visual_tokens = projection(clip_features)  # [B, 256, 4096]
+# 直接和文本 token embedding 拼接
+inputs = concat([visual_tokens, text_token_embeddings], dim=1)
 ```
 
-*图 1:LLaVA 数据生成流程 — 关键 trick 是 GPT-4 不直接看图,而是看图的人工标注(captions + boxes),按提示生成多种类型的视觉指令对话。*
+投影后 visual token 就和文本 token "看起来一样" —— 都是 4096 维向量,直接拼到 LLM input 序列里。LLM 一行架构改动都不需要,只是它的输入多了 256 个"特殊的 embedding"。
 
-**GPT-4 不需要看图** —— 这是 LLaVA 数据生成的关键 insight。GPT-4(2023 年 4 月时只有纯文本 API)看 COCO 图像的 5 个 caption + bounding box 的类别和位置,就有足够信息生成"如果它看了图,会怎么回答用户"的对话。
+参数账:projection 只有 768×4096 ≈ 3M(Linear)或 ~30M(2 层 MLP),相比 LLaMA-7B 的 7B 几乎可忽略。**这是 LLaVA 唯一一个从零开始训的组件**。
 
-具体 prompt 类型:
+比起 BLIP-2 的 Q-Former(108M 参数,需要复杂训练)或 Flamingo 的 Perceiver Resampler(数百 M),LLaVA 的极简 projection 是质的简化 —— "简洁有效胜过复杂精巧"在 VLM 领域被反复验证。
 
-**类型 1: 对话(Conversation, 58K 条)** —— 模拟用户和助手关于图像的多轮对话
+![LLaVA 极简架构 — CLIP + projection + LLM](assets/04-llava-architecture.svg)
+*图 1:**输入** 图像 + 文本 "What's in the image?" → **CLIP ViT(冻结,浅灰)** 把图编成 256 个 visual token → **MLP projection(橙色,唯一要训的)** 投到 LLM 空间 → **LLaMA decoder(蓝色)** 视觉 token 前置拼接到文本 token,生成回答。三个组件颜色突出可训练性差异。*
 
-```
-User: 图里有什么类型的车?
-Assistant: 我看到图像里有一辆白色 SUV 停在路边。
-User: SUV 旁边还有什么?
-Assistant: 旁边有几辆停放的轿车,以及人行道上的几个行人。
-```
+### 机制三:两阶段 instruction tuning — feature alignment + visual instruction
 
-**类型 2: 详细描述(Detailed description, 23K 条)** —— 让助手详细描述图像内容(物体、空间关系、动作、氛围)
+LLaVA 的训练分两阶段,这是它能用 90 GPU 小时达到 SOTA 的关键:
 
-**类型 3: 复杂推理(Complex reasoning, 77K 条)** —— 提问需要推理的问题
+**Stage 1: Pretraining for Feature Alignment** —— 只训 projection,冻结 CLIP + LLM。数据是 CC3M 595K 图文对,目标让模型学会把 visual token 投到"LLM 能理解"的空间。用极小数据(几小时)就能让投影学会基本对齐。
 
-```
-User: 这张图里的人面临什么挑战?
-Assistant: 图中的两个人在大风中举着一把伞。挑战是大风可能把伞吹翻,
-他们要努力保持平衡,同时避免被雨淋湿。
-```
+**Stage 2: Visual Instruction Tuning** —— 训 projection + LLM(LLM 全微调或 LoRA),数据是 GPT-4 生成的 158K 多模态指令(对话 58K + 详细描述 23K + 复杂推理 77K)。让 LLaMA 学会"按视觉指令完成任务"而不只是描述图像。
 
-这一数据生成的方法学意义:
+GPT-4 数据生成的关键 insight:**GPT-4 不需要看图**。看 COCO 的 5 个 caption + bbox 类别和位置,GPT-4 就有足够信息生成"如果它看了图会怎么回答用户"的对话。这把人工标注成本降到接近 0,合成数据可无限扩展。
 
-- **synthetic data 不需要重新标图** —— 利用现有的 COCO 标注,GPT-4 生成无穷多变种
-- **数据质量受 GPT-4 上限** —— 比人工标注便宜但有 GPT-4 的偏见
-- **可以快速迭代** —— 改 prompt 就能生成新数据类型,不需要重新雇佣标注员
+![LLaVA 两阶段训练](assets/04-llava-two-stage-training.svg)
+*图 2:**左 Stage 1 Feature Alignment** — 558K image-caption 对,只训 projection(蓝色高亮),冻结 CLIP + LLM,8 A100 × 4 小时。**右 Stage 2 Visual Instruction Tuning** — 158K GPT-4 生成的多模态指令(描述 / 推理 / 对话),训 projection + LLM 全微调,8 A100 × 8 小时。底部 callout:LLaVA 用 ~$200 训练成本达到接近 GPT-4V 的视觉理解,开源 VLM 范式由此确立。*
 
-LLaVA-1.5 后来扩展到 665K 数据,加入 OCR、表格、学术 VQA 等任务,质量进一步提升。
+### 三件套协同:CLIP 眼睛 + projection 桥 + instruction tuning 缺一不可
 
-## 核心思想 2:极简架构 + 两阶段训练
+LLaVA 在 2023 年能成立并定义开源 VLM 范式,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 LLaVA 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
 
-LLaVA 的架构比 [BLIP-2](02-blip.md) / [Flamingo](03-flamingo.md) 简单得多——**就是 CLIP visual + 一个 linear projection + LLM**:
+- **只有 projection + LLM,没有 CLIP 预对齐** —— 从零训 vision encoder 算力爆炸,且学不到"vision feature 该往 LLM 空间投到哪个位置";这是 LLaVA 跑得起的根因
+- **只有 CLIP + LLM,没有 projection 桥** —— vision feature 是 CLIP 空间的 768 维,LLM 是 LLaMA 空间的 4096 维,两者不在同一坐标系,LLM 直接看到的是噪声
+- **只有 CLIP + projection,没有 instruction tuning** —— Stage 1 只学会"对齐",但 LLM 不会"按指令使用视觉信息"输出;它会描述图像但不会回答 "what's the person doing?",更不会做视觉推理
 
-```mermaid
-graph LR
-    img["Image"]:::input --> clip["CLIP ViT-L/14<br/>(冻结)"]:::compute
-    clip --> proj["Linear projection<br/>(可训练 ~10M)"]:::compute
-    proj --> v_tokens["Visual tokens<br/>[256 tokens]"]:::compute
-    txt["Text prompt"]:::input --> llm["LLaMA / Vicuna<br/>(全微调)"]:::compute
-    v_tokens -.->|"前置拼接"| llm
-    llm --> out["Response"]:::output
-
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
-
-*图 2:LLaVA 架构 — 视觉 256 个 patch tokens 通过 linear projection 投到 LLM 词表维度,前置拼接到文本 prompt 喂给 LLM。极简到只有 10M 可训练参数(stage 1)。*
-
-**Vision Encoder** —— CLIP ViT-L/14,**完全冻结**。输出 256 个 patch tokens(14²=196,加 [CLS] 等共 256)
-
-**Projection** —— **就一个 nn.Linear**。把 768 维 CLIP 特征投到 LLaMA 的 4096 维。可训练参数 768 × 4096 = 3.1M(LLaVA-1.5 改成 2 层 MLP,参数稍多)
-
-**LLM** —— LLaMA 7B / 13B 或者 Vicuna。LLaVA-1.0 训练时全微调 LLM,LLaVA-1.5 后改成 LoRA / 部分微调
-
-**输入格式** —— 视觉 tokens 前置拼接到文本 token 序列:
-
-```
-[<image>] [256 visual tokens] [Human: 描述这张图. Assistant:]
-```
-
-这种"视觉 tokens as prompt"思路极其简洁——LLM 不需要任何架构改动,只是输入多了 256 个特殊的 embedding。
-
-**两阶段训练**:
-
-**Stage 1: Pretraining for feature alignment(预训练)** —— 只训 projection 层,让视觉特征对齐到 LLM 词表空间。数据是 CC3M 子集 595K 图文对(只用 caption 作 label)。**8 A100 × 4 小时**
-
-**Stage 2: Instruction tuning(指令微调)** —— 训 projection + LLM,在 158K visual instruction 数据上微调。让模型学到"按视觉指令完成任务"。**8 A100 × 8 小时**
-
-总计 **8 A100 × 12 小时 ≈ 90 GPU 小时**,成本约 $200 —— 比 BLIP-2 / Flamingo 低 10-1000×。这一可达性是开源 VLM 爆发的根本原因。
+三件套合起来才让 LLaVA-7B 用 $200 训练成本达到接近 GPT-4V 的视觉助手能力,直接催生整个开源 VLM 生态。也正是因为门槛被砸到这么低,2023 下半年开源 VLM 才能爆发到几十个。
 
 ## 性能数据
 
