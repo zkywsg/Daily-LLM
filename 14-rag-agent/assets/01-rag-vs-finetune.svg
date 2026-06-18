@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="700">
+    三种"给 LLM 注入领域知识"方案对比
+  </text>
+  <text x="450" y="52" text-anchor="middle" font-size="12" fill="#6b7280">
+    Fine-tune（改权重）· Long Context（塞 prompt）· RAG（检索片段）
+  </text>
+
+  <!-- Column 1: Fine-tune -->
+  <rect x="30" y="80" width="270" height="380" rx="12"
+        fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="165" y="110" text-anchor="middle" font-size="16"
+        fill="#991b1b" font-weight="700">Fine-tune</text>
+  <text x="165" y="130" text-anchor="middle" font-size="11" fill="#991b1b" font-style="italic">
+    把知识"烤进"权重
+  </text>
+
+  <!-- icon: weights -->
+  <g transform="translate(80, 150)">
+    <rect x="0" y="0" width="170" height="50" rx="6"
+          fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="85" y="22" text-anchor="middle" font-size="11" fill="#7f1d1d" font-weight="600">领域语料 → 训练</text>
+    <text x="85" y="40" text-anchor="middle" font-size="11" fill="#7f1d1d">LLM 权重被更新</text>
+  </g>
+
+  <text x="50" y="230" font-size="12" fill="#7f1d1d" font-weight="600">更新速度</text>
+  <text x="50" y="248" font-size="11" fill="#7f1d1d">慢（小时～天，需 GPU）</text>
+
+  <text x="50" y="278" font-size="12" fill="#7f1d1d" font-weight="600">算力成本</text>
+  <text x="50" y="296" font-size="11" fill="#7f1d1d">高（全参或 LoRA 训练）</text>
+
+  <text x="50" y="326" font-size="12" fill="#7f1d1d" font-weight="600">可解释性</text>
+  <text x="50" y="344" font-size="11" fill="#7f1d1d">差（黑盒，无引用）</text>
+
+  <text x="50" y="374" font-size="12" fill="#7f1d1d" font-weight="600">准确性</text>
+  <text x="50" y="392" font-size="11" fill="#7f1d1d">易遗忘老知识 / 幻觉</text>
+
+  <text x="165" y="430" text-anchor="middle" font-size="11" fill="#991b1b" font-style="italic">
+    适合：风格 / 格式 / 能力学习
+  </text>
+  <text x="165" y="446" text-anchor="middle" font-size="11" fill="#991b1b" font-style="italic">
+    不适合：高频更新的事实
+  </text>
+
+  <!-- Column 2: Long Context -->
+  <rect x="315" y="80" width="270" height="380" rx="12"
+        fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="450" y="110" text-anchor="middle" font-size="16"
+        fill="#854d0e" font-weight="700">Long Context</text>
+  <text x="450" y="130" text-anchor="middle" font-size="11" fill="#854d0e" font-style="italic">
+    全文档塞进 prompt
+  </text>
+
+  <g transform="translate(365, 150)">
+    <rect x="0" y="0" width="170" height="50" rx="6"
+          fill="#fef3c7" stroke="#ca8a04" stroke-width="1.5"/>
+    <text x="85" y="22" text-anchor="middle" font-size="11" fill="#713f12" font-weight="600">所有文档 → prompt</text>
+    <text x="85" y="40" text-anchor="middle" font-size="11" fill="#713f12">1M token context</text>
+  </g>
+
+  <text x="335" y="230" font-size="12" fill="#713f12" font-weight="600">更新速度</text>
+  <text x="335" y="248" font-size="11" fill="#713f12">快（换 prompt 即可）</text>
+
+  <text x="335" y="278" font-size="12" fill="#713f12" font-weight="600">算力成本</text>
+  <text x="335" y="296" font-size="11" fill="#713f12">每次推理都付 1M token 费</text>
+
+  <text x="335" y="326" font-size="12" fill="#713f12" font-weight="600">可解释性</text>
+  <text x="335" y="344" font-size="11" fill="#713f12">中（文档全在 context 里）</text>
+
+  <text x="335" y="374" font-size="12" fill="#713f12" font-weight="600">准确性</text>
+  <text x="335" y="392" font-size="11" fill="#713f12">"中间丢失"，噪声多</text>
+
+  <text x="450" y="430" text-anchor="middle" font-size="11" fill="#854d0e" font-style="italic">
+    适合：单次分析长文档
+  </text>
+  <text x="450" y="446" text-anchor="middle" font-size="11" fill="#854d0e" font-style="italic">
+    不适合：海量 / 高频查询
+  </text>
+
+  <!-- Column 3: RAG -->
+  <rect x="600" y="80" width="270" height="380" rx="12"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="735" y="110" text-anchor="middle" font-size="16"
+        fill="#064e3b" font-weight="700">RAG</text>
+  <text x="735" y="130" text-anchor="middle" font-size="11" fill="#064e3b" font-style="italic">
+    只检索相关片段
+  </text>
+
+  <g transform="translate(650, 150)">
+    <rect x="0" y="0" width="170" height="50" rx="6"
+          fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+    <text x="85" y="22" text-anchor="middle" font-size="11" fill="#064e3b" font-weight="600">top-k chunk → prompt</text>
+    <text x="85" y="40" text-anchor="middle" font-size="11" fill="#064e3b">几千 token context</text>
+  </g>
+
+  <text x="620" y="230" font-size="12" fill="#064e3b" font-weight="600">更新速度</text>
+  <text x="620" y="248" font-size="11" fill="#064e3b">实时（新增 chunk embed）</text>
+
+  <text x="620" y="278" font-size="12" fill="#064e3b" font-weight="600">算力成本</text>
+  <text x="620" y="296" font-size="11" fill="#064e3b">廉价（k 个小片段）</text>
+
+  <text x="620" y="326" font-size="12" fill="#064e3b" font-weight="600">可解释性</text>
+  <text x="620" y="344" font-size="11" fill="#064e3b">好（可引用 source）</text>
+
+  <text x="620" y="374" font-size="12" fill="#064e3b" font-weight="600">准确性</text>
+  <text x="620" y="392" font-size="11" fill="#064e3b">高（只看相关内容）</text>
+
+  <text x="735" y="430" text-anchor="middle" font-size="11" fill="#064e3b" font-style="italic">
+    适合：知识库 QA / 客服 / 搜索
+  </text>
+  <text x="735" y="446" text-anchor="middle" font-size="11" fill="#064e3b" font-style="italic">
+    LLM 应用的默认底盘
+  </text>
+
+  <!-- Divider -->
+  <line x1="40" y1="490" x2="860" y2="490"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- Bottom callout -->
+  <rect x="80" y="510" width="740" height="90" rx="10"
+        fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="450" y="540" text-anchor="middle" font-size="14"
+        fill="#1e3a8a" font-weight="700">
+    RAG 在 2024 年成为工业 LLM 应用的默认底盘
+  </text>
+  <text x="450" y="563" text-anchor="middle" font-size="11" fill="#1e3a8a">
+    Bing Chat / Perplexity / Notion AI / ChatGPT browsing / Claude Projects — 几乎所有"知识型助手"都是大规模 RAG
+  </text>
+  <text x="450" y="583" text-anchor="middle" font-size="11" fill="#1e3a8a">
+    fine-tune 与 long context 不是被替代，而是各司其职：fine-tune 教"风格 / 能力"，long context 处理"单文档深读"，RAG 做"大库实时查询"
+  </text>
+
+</svg>

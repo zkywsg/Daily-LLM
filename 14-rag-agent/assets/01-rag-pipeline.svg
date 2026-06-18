@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-p" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-b" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-g" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- ============== Title ============== -->
+  <text x="450" y="28" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="700">
+    RAG Pipeline · 离线索引 + 在线检索生成
+  </text>
+
+  <!-- ============== UPPER PANEL: Offline Indexing ============== -->
+  <rect x="20" y="55" width="860" height="240" rx="10"
+        fill="#fafaf9" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="6,4"/>
+  <text x="40" y="80" font-size="14" fill="#1e40af" font-weight="700">
+    阶段一 · 离线索引（Indexing，建一次，重复用）
+  </text>
+
+  <!-- Document corpus -->
+  <rect x="50" y="120" width="120" height="80" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="110" y="148" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">文档库</text>
+  <text x="110" y="168" text-anchor="middle" font-size="11" fill="#92400e">Wikipedia / PDF</text>
+  <text x="110" y="184" text-anchor="middle" font-size="11" fill="#92400e">网页 / 内部文档</text>
+
+  <!-- Chunking -->
+  <rect x="220" y="120" width="120" height="80" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="280" y="148" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Chunking</text>
+  <text x="280" y="168" text-anchor="middle" font-size="11" fill="#9d174d">按段 / 句切分</text>
+  <text x="280" y="184" text-anchor="middle" font-size="11" fill="#9d174d">~200–500 token + overlap</text>
+
+  <!-- Embedding model -->
+  <rect x="390" y="120" width="140" height="80" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="460" y="148" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Passage Encoder</text>
+  <text x="460" y="168" text-anchor="middle" font-size="11" fill="#9d174d">DPR / BGE / E5</text>
+  <text x="460" y="184" text-anchor="middle" font-size="11" fill="#9d174d">chunk → vec [d]</text>
+
+  <!-- Vector DB -->
+  <rect x="580" y="120" width="140" height="80" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="650" y="148" text-anchor="middle" font-size="13" fill="#065f46" font-weight="600">向量库</text>
+  <text x="650" y="168" text-anchor="middle" font-size="11" fill="#065f46">FAISS / Pinecone</text>
+  <text x="650" y="184" text-anchor="middle" font-size="11" fill="#065f46">[N, d] HNSW 索引</text>
+
+  <!-- 共享缓存 callout -->
+  <rect x="745" y="125" width="130" height="70" rx="8"
+        fill="#eff6ff" stroke="#2563eb" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="810" y="148" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">缓存复用</text>
+  <text x="810" y="166" text-anchor="middle" font-size="10" fill="#1e40af">建一次 N 条 vec</text>
+  <text x="810" y="182" text-anchor="middle" font-size="10" fill="#1e40af">所有 query 共享</text>
+
+  <!-- Offline arrows -->
+  <g stroke="#9d174d" stroke-width="1.8" fill="none">
+    <line x1="172" y1="160" x2="218" y2="160" marker-end="url(#arr-p)"/>
+    <line x1="342" y1="160" x2="388" y2="160" marker-end="url(#arr-p)"/>
+    <line x1="532" y1="160" x2="578" y2="160" marker-end="url(#arr-p)"/>
+  </g>
+
+  <!-- Offline注解 -->
+  <text x="450" y="240" text-anchor="middle" font-size="12" fill="#6b7280" font-style="italic">
+    一次性预处理：21M passages 编码为 [21M, 768] 矩阵，存入向量库
+  </text>
+  <text x="450" y="262" text-anchor="middle" font-size="11" fill="#6b7280">
+    （文档更新只需重新 embed 新增 chunk，不需要重训模型 — 这是 RAG 相对 fine-tune 的关键优势）
+  </text>
+
+  <!-- ============== DIVIDER ============== -->
+  <line x1="40" y1="315" x2="860" y2="315"
+        stroke="#d6d3d1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="450" y="335" text-anchor="middle" font-size="11" fill="#9ca3af">
+    ↑ 离线建好后，下方流程每次 query 重复执行 ↓
+  </text>
+
+  <!-- ============== LOWER PANEL: Online Query ============== -->
+  <rect x="20" y="350" width="860" height="310" rx="10"
+        fill="#fafaf9" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="6,4"/>
+  <text x="40" y="375" font-size="14" fill="#9d174d" font-weight="700">
+    阶段二 · 在线检索 + 生成（Query Time，毫秒级）
+  </text>
+
+  <!-- User question -->
+  <rect x="40" y="410" width="120" height="60" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="100" y="436" text-anchor="middle" font-size="13" fill="#92400e" font-weight="600">用户问题</text>
+  <text x="100" y="455" text-anchor="middle" font-size="11" fill="#92400e">"X 是谁写的？"</text>
+
+  <!-- Query Encoder -->
+  <rect x="190" y="410" width="120" height="60" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="250" y="436" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Query Encoder</text>
+  <text x="250" y="455" text-anchor="middle" font-size="11" fill="#9d174d">question → q_emb [d]</text>
+
+  <!-- Top-K retrieval -->
+  <rect x="340" y="410" width="140" height="60" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="410" y="430" text-anchor="middle" font-size="13" fill="#065f46" font-weight="600">Top-K Retrieval</text>
+  <text x="410" y="448" text-anchor="middle" font-size="11" fill="#065f46">cosine(q_emb, doc_embs)</text>
+  <text x="410" y="463" text-anchor="middle" font-size="11" fill="#065f46">取分数最高的 k=3~5</text>
+
+  <!-- Reference back to vector DB -->
+  <path d="M 650 200 C 650 320, 410 340, 410 408"
+        stroke="#059669" stroke-width="1.3" fill="none"
+        stroke-dasharray="4,3" marker-end="url(#arr-g)"/>
+  <text x="565" y="305" font-size="10" fill="#059669" font-style="italic">查询 [N,d] 索引</text>
+
+  <!-- Top-3 chunks -->
+  <rect x="510" y="395" width="160" height="90" rx="8"
+        fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="590" y="415" text-anchor="middle" font-size="13" fill="#854d0e" font-weight="600">Top-3 chunks</text>
+  <text x="590" y="435" text-anchor="middle" font-size="10" fill="#854d0e">doc_42: "...Aldous..."</text>
+  <text x="590" y="452" text-anchor="middle" font-size="10" fill="#854d0e">doc_17: "...Brave..."</text>
+  <text x="590" y="469" text-anchor="middle" font-size="10" fill="#854d0e">doc_91: "...1932..."</text>
+
+  <!-- Prompt assembly -->
+  <rect x="700" y="395" width="160" height="90" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="780" y="415" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Prompt 拼接</text>
+  <text x="780" y="435" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">Context: {docs}</text>
+  <text x="780" y="450" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">Question: {q}</text>
+  <text x="780" y="465" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">Answer:</text>
+
+  <!-- LLM -->
+  <rect x="450" y="540" width="180" height="70" rx="8"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="540" y="565" text-anchor="middle" font-size="14" fill="#1e3a8a" font-weight="700">LLM Generator</text>
+  <text x="540" y="585" text-anchor="middle" font-size="11" fill="#1e3a8a">BART / GPT / Claude</text>
+  <text x="540" y="600" text-anchor="middle" font-size="11" fill="#1e3a8a">基于 context 生成</text>
+
+  <!-- Answer -->
+  <rect x="680" y="540" width="160" height="70" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="760" y="568" text-anchor="middle" font-size="14" fill="#065f46" font-weight="700">Answer</text>
+  <text x="760" y="590" text-anchor="middle" font-size="11" fill="#065f46">"Aldous Huxley"</text>
+
+  <!-- Online arrows -->
+  <g stroke="#9d174d" stroke-width="1.8" fill="none">
+    <line x1="162" y1="440" x2="188" y2="440" marker-end="url(#arr-p)"/>
+    <line x1="312" y1="440" x2="338" y2="440" marker-end="url(#arr-p)"/>
+    <line x1="482" y1="440" x2="508" y2="440" marker-end="url(#arr-p)"/>
+    <line x1="672" y1="440" x2="698" y2="440" marker-end="url(#arr-p)"/>
+  </g>
+
+  <!-- Prompt → LLM -->
+  <path d="M 780 487 C 780 510, 540 510, 540 538"
+        stroke="#2563eb" stroke-width="1.8" fill="none"
+        marker-end="url(#arr-b)"/>
+  <line x1="630" y1="575" x2="678" y2="575"
+        stroke="#9d174d" stroke-width="1.8" fill="none" marker-end="url(#arr-p)"/>
+
+  <!-- Key insight -->
+  <rect x="40" y="540" width="380" height="70" rx="8"
+        fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="230" y="563" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">
+    关键：参数化知识（LLM 权重）+ 非参数化知识（向量库）
+  </text>
+  <text x="230" y="584" text-anchor="middle" font-size="11" fill="#92400e">
+    LLM 不必记住所有事实；retriever 实时提供
+  </text>
+  <text x="230" y="600" text-anchor="middle" font-size="11" fill="#92400e">
+    "外接硬盘"，更新文档库即更新知识
+  </text>
+
+</svg>
