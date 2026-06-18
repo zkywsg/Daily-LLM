@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Load Balancing · 为什么 MoE 必须强制均衡 routing
+  </text>
+
+  <!-- ============== UPPER PANEL: naive (no aux loss) ============== -->
+  <text x="450" y="60" text-anchor="middle" font-size="14"
+        fill="#b91c1c" font-weight="600">
+    Naive 训练(无 aux loss)· Router 塌缩
+  </text>
+
+  <!-- Baseline y -->
+  <line x1="120" y1="240" x2="780" y2="240" stroke="#374151" stroke-width="1.5"/>
+  <text x="100" y="245" text-anchor="end" font-size="11" fill="#374151">token 数</text>
+
+  <!-- 8 bars: extremely uneven -->
+  <!-- bar width 60, gap 20, total span = 8*60+7*20 = 620, x start = 130 -->
+  <g>
+    <!-- E0: tall -->
+    <rect x="130" y="100" width="60" height="140" fill="#dc2626"/>
+    <text x="160" y="258" text-anchor="middle" font-size="11" fill="#374151">E0</text>
+    <text x="160" y="93" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">38%</text>
+
+    <!-- E1: medium-tall -->
+    <rect x="210" y="135" width="60" height="105" fill="#dc2626"/>
+    <text x="240" y="258" text-anchor="middle" font-size="11" fill="#374151">E1</text>
+    <text x="240" y="128" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">27%</text>
+
+    <!-- E2: dead -->
+    <rect x="290" y="234" width="60" height="6" fill="#9ca3af"/>
+    <text x="320" y="258" text-anchor="middle" font-size="11" fill="#374151">E2</text>
+    <text x="320" y="227" text-anchor="middle" font-size="10" fill="#6b7280">1%</text>
+
+    <!-- E3: medium -->
+    <rect x="370" y="165" width="60" height="75" fill="#dc2626"/>
+    <text x="400" y="258" text-anchor="middle" font-size="11" fill="#374151">E3</text>
+    <text x="400" y="158" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">19%</text>
+
+    <!-- E4: dead -->
+    <rect x="450" y="238" width="60" height="2" fill="#9ca3af"/>
+    <text x="480" y="258" text-anchor="middle" font-size="11" fill="#374151">E4</text>
+    <text x="480" y="232" text-anchor="middle" font-size="10" fill="#6b7280">0%</text>
+
+    <!-- E5: small -->
+    <rect x="530" y="205" width="60" height="35" fill="#dc2626"/>
+    <text x="560" y="258" text-anchor="middle" font-size="11" fill="#374151">E5</text>
+    <text x="560" y="198" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">9%</text>
+
+    <!-- E6: dead -->
+    <rect x="610" y="237" width="60" height="3" fill="#9ca3af"/>
+    <text x="640" y="258" text-anchor="middle" font-size="11" fill="#374151">E6</text>
+    <text x="640" y="231" text-anchor="middle" font-size="10" fill="#6b7280">0.5%</text>
+
+    <!-- E7: small -->
+    <rect x="690" y="216" width="60" height="24" fill="#dc2626"/>
+    <text x="720" y="258" text-anchor="middle" font-size="11" fill="#374151">E7</text>
+    <text x="720" y="209" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">6%</text>
+  </g>
+
+  <!-- Dead expert callouts -->
+  <text x="320" y="290" text-anchor="middle" font-size="11"
+        fill="#b91c1c" font-weight="700">死 expert</text>
+  <text x="480" y="290" text-anchor="middle" font-size="11"
+        fill="#b91c1c" font-weight="700">死 expert</text>
+  <text x="640" y="290" text-anchor="middle" font-size="11"
+        fill="#b91c1c" font-weight="700">死 expert</text>
+
+  <text x="450" y="310" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    Router 偏好少数 expert → 它们梯度更大、学得更快 → 偏好加强 → 正反馈塌缩,3 个 expert 白白浪费
+  </text>
+
+  <!-- Divider -->
+  <line x1="40" y1="330" x2="860" y2="330"
+        stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== LOWER PANEL: with aux loss ============== -->
+  <text x="450" y="358" text-anchor="middle" font-size="14"
+        fill="#059669" font-weight="600">
+    加 Load Balancing Loss · 8 expert 均衡负载
+  </text>
+
+  <!-- Baseline -->
+  <line x1="120" y1="510" x2="780" y2="510" stroke="#374151" stroke-width="1.5"/>
+  <text x="100" y="515" text-anchor="end" font-size="11" fill="#374151">token 数</text>
+
+  <!-- 8 bars: roughly equal (~12.5%) -->
+  <g>
+    <rect x="130" y="412" width="60" height="98" fill="#059669"/>
+    <text x="160" y="528" text-anchor="middle" font-size="11" fill="#374151">E0</text>
+    <text x="160" y="405" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">13%</text>
+
+    <rect x="210" y="416" width="60" height="94" fill="#059669"/>
+    <text x="240" y="528" text-anchor="middle" font-size="11" fill="#374151">E1</text>
+    <text x="240" y="409" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">12%</text>
+
+    <rect x="290" y="408" width="60" height="102" fill="#059669"/>
+    <text x="320" y="528" text-anchor="middle" font-size="11" fill="#374151">E2</text>
+    <text x="320" y="401" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">13%</text>
+
+    <rect x="370" y="414" width="60" height="96" fill="#059669"/>
+    <text x="400" y="528" text-anchor="middle" font-size="11" fill="#374151">E3</text>
+    <text x="400" y="407" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">12%</text>
+
+    <rect x="450" y="406" width="60" height="104" fill="#059669"/>
+    <text x="480" y="528" text-anchor="middle" font-size="11" fill="#374151">E4</text>
+    <text x="480" y="399" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">13%</text>
+
+    <rect x="530" y="418" width="60" height="92" fill="#059669"/>
+    <text x="560" y="528" text-anchor="middle" font-size="11" fill="#374151">E5</text>
+    <text x="560" y="411" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">12%</text>
+
+    <rect x="610" y="410" width="60" height="100" fill="#059669"/>
+    <text x="640" y="528" text-anchor="middle" font-size="11" fill="#374151">E6</text>
+    <text x="640" y="403" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">13%</text>
+
+    <rect x="690" y="414" width="60" height="96" fill="#059669"/>
+    <text x="720" y="528" text-anchor="middle" font-size="11" fill="#374151">E7</text>
+    <text x="720" y="407" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">12%</text>
+  </g>
+
+  <!-- Bottom callout -->
+  <rect x="60" y="548" width="780" height="62" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="450" y="570" text-anchor="middle" font-size="13"
+        fill="#065f46" font-weight="700">
+    L_aux = α · N · Σᵢ fᵢ · Pᵢ
+  </text>
+  <text x="450" y="589" text-anchor="middle" font-size="11"
+        fill="#065f46">
+    fᵢ = 分到 expert i 的 token fraction · Pᵢ = router 给 expert i 的平均概率 · 两者乘积最小化 ⇔ 均匀分布
+  </text>
+  <text x="450" y="604" text-anchor="middle" font-size="10"
+        fill="#065f46" font-style="italic">
+    工程经验:α ≈ 0.01(Switch 原值)· Mixtral 用更小的 α ≈ 0.001(预训练数据规模大,routing 自然分散)
+  </text>
+</svg>

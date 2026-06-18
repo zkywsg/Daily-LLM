@@ -32,43 +32,63 @@ Mistral AI(法国创业公司,前 Meta / Google DeepMind 工程师创办)在 202
 
 Mixtral 不是工程创新最多的 MoE,但它是**第一个能让开源社区真正用上 MoE 的工作**——权重、论文、推理代码全开放。这是开源 MoE 时代的起点。
 
-## 核心思想:小 expert × 多 top-K
+## 核心思想
 
-Mixtral 与 Switch 的关键差异:**用 top-2 而不是 top-1**。
+### 直觉:总参数大 ≠ 激活参数大,稀疏激活让大模型推理变便宜
 
-### 整体架构
+理解 Mixtral 真正需要先抓一件事:**dense LLM 的训练成本 ≈ 推理成本 ≈ 参数量**。LLaMA-2-70B 训练完后推理也要按 70B 算力算,每个 token 都要走完所有 700 亿参数。Mixtral 反问:**能不能造一个总参数 47B 但每个 token 只激活 13B 的模型?推理算力按 13B 算,知识容量按 47B 算**。
+
+为什么这件事在 2024 年初才出现于开源生态?三件事必须同时成立:
+
+- **稀疏激活在质量上能 work** —— 早期 MoE(2017 [Sparsely-Gated MoE](01-sparsely-gated-moe.md))质量比同算力 dense 差,直到 Switch + Mixtral 把工程调到 dense 持平甚至更好
+- **load balancing 算法成熟** —— naive routing 会塌缩到只用 1-2 个 expert,其余成"死 expert",参数白浪费
+- **推理引擎支持稀疏激活** —— vLLM / TRT-LLM / llama.cpp 早期只支持 dense,Mixtral 发布逼着所有引擎在 1-2 个月内补齐 MoE 支持
+
+把这三件事合起来:Mixtral 用 13B 激活算力达到 LLaMA-2-70B 的质量,**性价比直接提升 4-5×**。这也是开源社区第一次拿到生产级 MoE,GPT-4 那种闭源 MoE 的"魔法"第一次有了开源对标。
+
+![Mixtral MoE Layer 数据流](assets/03-mixtral-moe-layer.svg)
+*图 1:一个 token x 经 router(softmax 输出 8 个 expert 分数) → 选 top-2(高亮 expert 3 和 7,其余 6 个灰掉) → 两个 expert 各自 SwiGLU FFN → 按 router 权重加权和 → 输出。底部 callout:47B 总参数 / 13B 激活,推理算力按 13B 算 / 知识容量按 47B 算。*
+
+### 机制一:Sparse MoE Layer — 用 router 把 token 路由到 top-k expert
 
 Mixtral 基于 Mistral-7B 的 dense backbone,把每层 FFN 替换为 MoE:
 
 ```
 Mistral-7B FFN:
-  x → W_gate(d=4096 → 14336) ↘
-                            → SiLU → × → W_down(14336 → 4096)
-  x → W_up(d=4096 → 14336) ↗
+  x → SwiGLU(W_gate, W_up, W_down)  (~50M 参数)
 
 Mixtral 8×7B MoE Layer:
   x → router(d=4096 → 8) → softmax → top-2
                                      ↓
-  对每个 token,选 2 个 expert(每个 expert 是 Mistral-7B 风格 FFN)
+  对每个 token,选 2 个 expert(每个是 Mistral 风格 SwiGLU FFN,~5.5B 参数)
   output = w₁ · E_{i₁}(x) + w₂ · E_{i₂}(x)
 ```
 
-### 参数账
+参数账:
+- N = 8 个 expert,每个 ~5.5B SwiGLU FFN → MoE 参数 ~44B
+- attention / embedding 等共享 ~2.7B
+- **总参数 46.7B / 激活参数 ~13B**(2 个 expert + 共享 attention)
 
-- N = 8 个 expert,每个 expert 是 SwiGLU FFN(46.7M 参数)
-- 总 MoE 参数 ~ 8 × 5.5B = 44B
-- attention / embedding 等共享 ~ 2.7B
-- **总参数 46.7B**
-- **激活参数 ~13B**(K=2 个 expert + 共享 attention)
+**关键反直觉点**:router 本身极小(只是一个 `4096 → 8` 的 linear),所有"智能"在 8 个 expert 里。这个轻量 router 决定每个 token 走哪 2 个 expert,等于给 dense 模型加了一层"动态参数调度"。
 
-### Top-2 Gating
+### 机制二:Load Balancing — 防止某些 expert 永远闲置
+
+Naive 训练 router 会塌缩 —— 训练早期某个 expert 偶然表现好,router 偏向它,它得到更多训练 → 表现更好 → 更被偏向。几轮后只用 1-2 个 expert,其余 6 个成"死 expert",47B 参数大部分白浪费。
+
+Mixtral 用 Switch Transformer 风格的 load balancing aux loss:
 
 $$
-G(x) = \text{Softmax}(\text{TopK}(x \cdot W_g, 2)) \\
-y = \sum_{i \in \text{top-2}} G(x)_i \cdot E_i(x)
+L_{\text{aux}} = \alpha \cdot N \cdot \sum_i f_i \cdot P_i
 $$
 
-为什么 top-2 而不是 top-1?Mistral 团队认为 top-1 在 expert 数较少(N=8)时表达力不够,top-2 是质量与算力的 sweet spot:
+其中 $f_i$ 是 batch 内第 i 个 expert 实际被选中的比例,$P_i$ 是 router 给它的平均概率。这个 loss 鼓励 router 在 batch 内**均匀分配 token 到所有 expert**。$\alpha$ 取 0.001 量级 —— 太大会拖累主任务,太小不起作用。
+
+![Naive vs Load-balanced 训练对比](assets/03-mixtral-load-balance.svg)
+*图 2:**上半** naive 训练(无 aux loss)—— 8 个 expert 的 token 数柱状图极不均匀,3 个高 5 个矮甚至 0,红字"死 expert"。**下半** 加 load balance loss 后 —— 8 个柱基本等高。底部 callout 给出 aux loss 公式 + α=0.001 经验值。*
+
+### 机制三:Top-2 Routing + Expert Parallelism — 推理与训练的工程基础
+
+为什么 top-2 而不是 top-1?Mistral 团队的经验:
 
 | Top-K | 激活 expert 数 | 质量 | 算力 |
 |------|------|------|------|
@@ -76,25 +96,19 @@ $$
 | **2** | **2** | **优** | **2×** |
 | 4 | 4 | 极弱提升 | 4× |
 
-Top-2 在 8 个 expert 中选 2 个,有 28 种组合,组合多样性丰富。
+Top-2 比 top-1 质量显著高(组合多样性:8 个 expert 选 2 个有 28 种组合),且能 fit GPU expert parallel —— 每个 expert 分到一组 GPU,token 按 router 决定 routing,跨 GPU all-to-all 通信。Top-K=4 几乎没收益但算力翻倍,top-2 是 sweet spot。
 
-### Load Balancing
+**Expert specialization 的反直觉发现**:Mixtral 论文做了个有意思的实验 —— 看不同领域 token 走的 expert 分布。结果**几乎没看到明显的领域特化**,所有 expert 在 Python / English / Math 等各领域 token 上激活率都很均衡。这修正了"expert = 不同专业领域"的早期直觉 —— **Top-K MoE 的 routing 主要按 token 级语法特征分,MoE 的能力增益更像"参数池放大",而非"显式分工"**。
 
-Mixtral 用 Switch Transformer 风格的 load balancing loss:
+### 三件套协同:稀疏 expert + load balance + top-k routing 缺一不可
 
-$$
-L_{\text{aux}} = \alpha \cdot N \cdot \sum_i f_i \cdot P_i
-$$
+Mixtral 在 2024 年能成立并引爆开源 MoE 生态,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 Mixtral 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
 
-但 $\alpha$ 比 Switch 小(Mistral 论文未公开具体值,推测 0.001 量级)——因为预训练数据已足够大,routing 自然分散。
+- **只有稀疏 expert,没有 load balance** —— 死 expert 让 47B 参数实际只用到 13B 水平,稀疏化白做
+- **只有 load balance,没有 top-k routing** —— top-1 准确率显著低于 top-2,top-many 又退化成 dense,失去稀疏激活的算力优势
+- **只有 top-k + load balance,没有真正的稀疏 expert(退化成 dense FFN)** —— 推理算力按 47B 算,失去"激活 13B"的核心卖点
 
-### Expert Specialization 分析
-
-Mixtral 论文做了一个有意思的实验:**不同领域 token 走的 expert 分布**。比如代码 token 是否都偏向某几个"代码专家"?
-
-结果让人意外——**几乎没看到明显的领域特化**。所有 expert 在 Python / English / Math / 等各领域 token 上的激活率都很均衡。论文得出结论:**Top-K MoE 的 routing 主要按 token 级语法特征分,而非语义/领域**。
-
-这一发现修正了"expert = 不同专业领域"的早期直觉。MoE 的能力增益更像"参数池放大",而非"显式分工"。
+三件套合起来才让 Mixtral 在 13B 激活算力下达到 LLaMA-2-70B 的质量,推理速度 ~50 tokens/s(70B 是 ~12)。这是开源社区第一次拿到"性价比超闭源旗舰"的 LLM,直接催生 DBRX / Qwen-MoE / DeepSeek-V3 等一整代开源 MoE。
 
 ## 关键代码
 

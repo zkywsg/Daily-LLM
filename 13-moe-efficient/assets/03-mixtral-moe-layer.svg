@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-active" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="arr-dead" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9ca3af"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Mixtral Sparse MoE Layer · Top-2 of 8 Experts
+  </text>
+
+  <!-- Input token -->
+  <rect x="40" y="295" width="80" height="50" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="80" y="320" text-anchor="middle" font-size="14" fill="#92400e">token x</text>
+  <text x="80" y="338" text-anchor="middle" font-size="11" fill="#92400e">[B,d=4096]</text>
+
+  <!-- Router box -->
+  <rect x="170" y="270" width="160" height="100" rx="8"
+        fill="#ede9fe" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="250" y="295" text-anchor="middle" font-size="14" fill="#5b21b6" font-weight="600">Router</text>
+  <text x="250" y="313" text-anchor="middle" font-size="11" fill="#5b21b6">W_g: 4096 → 8</text>
+  <text x="250" y="330" text-anchor="middle" font-size="11" fill="#5b21b6">softmax</text>
+  <text x="250" y="350" text-anchor="middle" font-size="11" fill="#5b21b6" font-style="italic">→ 8 个 expert 分数</text>
+
+  <line x1="120" y1="320" x2="168" y2="320"
+        stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-main)"/>
+
+  <!-- Router output: 8 scores bar (mini softmax visualization) -->
+  <text x="370" y="280" font-size="11" fill="#6b7280">Router scores</text>
+  <!-- 8 bars: heights vary; expert 3 and 7 are the top-2 -->
+  <!-- positions: x=370..530 width 20, gap 0 -->
+  <g>
+    <rect x="370" y="350" width="18" height="10" fill="#c4b5fd"/>
+    <text x="379" y="372" font-size="9" fill="#6b7280" text-anchor="middle">E0</text>
+
+    <rect x="390" y="345" width="18" height="15" fill="#c4b5fd"/>
+    <text x="399" y="372" font-size="9" fill="#6b7280" text-anchor="middle">E1</text>
+
+    <rect x="410" y="348" width="18" height="12" fill="#c4b5fd"/>
+    <text x="419" y="372" font-size="9" fill="#6b7280" text-anchor="middle">E2</text>
+
+    <!-- E3 top-2 highlighted -->
+    <rect x="430" y="318" width="18" height="42" fill="#059669"/>
+    <text x="439" y="372" font-size="9" fill="#065f46" text-anchor="middle" font-weight="700">E3</text>
+    <text x="439" y="312" font-size="10" fill="#065f46" text-anchor="middle" font-weight="700">0.62</text>
+
+    <rect x="450" y="350" width="18" height="10" fill="#c4b5fd"/>
+    <text x="459" y="372" font-size="9" fill="#6b7280" text-anchor="middle">E4</text>
+
+    <rect x="470" y="352" width="18" height="8" fill="#c4b5fd"/>
+    <text x="479" y="372" font-size="9" fill="#6b7280" text-anchor="middle">E5</text>
+
+    <rect x="490" y="346" width="18" height="14" fill="#c4b5fd"/>
+    <text x="499" y="372" font-size="9" fill="#6b7280" text-anchor="middle">E6</text>
+
+    <!-- E7 top-2 highlighted -->
+    <rect x="510" y="328" width="18" height="32" fill="#059669"/>
+    <text x="519" y="372" font-size="9" fill="#065f46" text-anchor="middle" font-weight="700">E7</text>
+    <text x="519" y="322" font-size="10" fill="#065f46" text-anchor="middle" font-weight="700">0.38</text>
+  </g>
+
+  <!-- "TopK=2" label -->
+  <text x="450" y="395" text-anchor="middle" font-size="11"
+        fill="#059669" font-weight="600" font-style="italic">TopK = 2 · 选中 E3 与 E7</text>
+
+  <!-- 8 expert boxes on the right side -->
+  <!-- positions: x=620, y=60..560 -->
+  <g font-size="11">
+    <!-- E0 gray -->
+    <rect x="620" y="60" width="100" height="40" rx="5"
+          fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+    <text x="670" y="78" text-anchor="middle" fill="#9ca3af">Expert 0 FFN</text>
+    <text x="670" y="93" text-anchor="middle" fill="#9ca3af" font-size="10">SwiGLU 5.5B</text>
+
+    <!-- E1 gray -->
+    <rect x="620" y="110" width="100" height="40" rx="5"
+          fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+    <text x="670" y="128" text-anchor="middle" fill="#9ca3af">Expert 1 FFN</text>
+    <text x="670" y="143" text-anchor="middle" fill="#9ca3af" font-size="10">SwiGLU 5.5B</text>
+
+    <!-- E2 gray -->
+    <rect x="620" y="160" width="100" height="40" rx="5"
+          fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+    <text x="670" y="178" text-anchor="middle" fill="#9ca3af">Expert 2 FFN</text>
+    <text x="670" y="193" text-anchor="middle" fill="#9ca3af" font-size="10">SwiGLU 5.5B</text>
+
+    <!-- E3 active green -->
+    <rect x="620" y="210" width="100" height="40" rx="5"
+          fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+    <text x="670" y="228" text-anchor="middle" fill="#065f46" font-weight="700">Expert 3 FFN</text>
+    <text x="670" y="243" text-anchor="middle" fill="#065f46" font-size="10">SwiGLU 5.5B ✓</text>
+
+    <!-- E4 gray -->
+    <rect x="620" y="260" width="100" height="40" rx="5"
+          fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+    <text x="670" y="278" text-anchor="middle" fill="#9ca3af">Expert 4 FFN</text>
+    <text x="670" y="293" text-anchor="middle" fill="#9ca3af" font-size="10">SwiGLU 5.5B</text>
+
+    <!-- E5 gray -->
+    <rect x="620" y="310" width="100" height="40" rx="5"
+          fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+    <text x="670" y="328" text-anchor="middle" fill="#9ca3af">Expert 5 FFN</text>
+    <text x="670" y="343" text-anchor="middle" fill="#9ca3af" font-size="10">SwiGLU 5.5B</text>
+
+    <!-- E6 gray -->
+    <rect x="620" y="360" width="100" height="40" rx="5"
+          fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.2"/>
+    <text x="670" y="378" text-anchor="middle" fill="#9ca3af">Expert 6 FFN</text>
+    <text x="670" y="393" text-anchor="middle" fill="#9ca3af" font-size="10">SwiGLU 5.5B</text>
+
+    <!-- E7 active green -->
+    <rect x="620" y="410" width="100" height="40" rx="5"
+          fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+    <text x="670" y="428" text-anchor="middle" fill="#065f46" font-weight="700">Expert 7 FFN</text>
+    <text x="670" y="443" text-anchor="middle" fill="#065f46" font-size="10">SwiGLU 5.5B ✓</text>
+  </g>
+
+  <!-- Routing lines from router to experts -->
+  <!-- gray dashed to inactive experts -->
+  <g stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,3" fill="none">
+    <line x1="330" y1="320" x2="618" y2="80"/>
+    <line x1="330" y1="320" x2="618" y2="130"/>
+    <line x1="330" y1="320" x2="618" y2="180"/>
+    <line x1="330" y1="320" x2="618" y2="280"/>
+    <line x1="330" y1="320" x2="618" y2="330"/>
+    <line x1="330" y1="320" x2="618" y2="380"/>
+  </g>
+  <!-- green solid to active experts (E3, E7) -->
+  <g stroke="#059669" stroke-width="2.2" fill="none">
+    <line x1="330" y1="320" x2="618" y2="230" marker-end="url(#arr-active)"/>
+    <line x1="330" y1="320" x2="618" y2="430" marker-end="url(#arr-active)"/>
+  </g>
+
+  <!-- Weighted sum node -->
+  <circle cx="800" cy="320" r="22" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="800" y="327" text-anchor="middle" font-size="20" fill="#92400e" font-weight="700">Σ</text>
+  <text x="800" y="362" text-anchor="middle" font-size="10" fill="#92400e">weighted sum</text>
+
+  <!-- Expert outputs to sum -->
+  <g stroke="#059669" stroke-width="2" fill="none">
+    <path d="M 720 230 C 760 230, 780 280, 798 308" marker-end="url(#arr-active)"/>
+    <path d="M 720 430 C 760 430, 780 360, 798 332" marker-end="url(#arr-active)"/>
+  </g>
+
+  <!-- weight labels on the connection -->
+  <text x="745" y="245" font-size="10" fill="#065f46" font-weight="600">× 0.62</text>
+  <text x="745" y="420" font-size="10" fill="#065f46" font-weight="600">× 0.38</text>
+
+  <!-- Output y -->
+  <rect x="770" y="465" width="60" height="40" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="800" y="490" text-anchor="middle" font-size="14" fill="#92400e">y</text>
+
+  <line x1="800" y1="342" x2="800" y2="463"
+        stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-main)"/>
+
+  <!-- y formula -->
+  <text x="700" y="540" font-size="13" fill="#1f2937" font-style="italic">
+    y = w₃ · E₃(x) + w₇ · E₇(x)
+  </text>
+
+  <!-- Bottom callout -->
+  <rect x="60" y="595" width="780" height="65" rx="8"
+        fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="450" y="618" text-anchor="middle" font-size="13"
+        fill="#9a3412" font-weight="700">
+    总参数 46.7B · 激活参数 13B · 推理算力按 13B 算
+  </text>
+  <text x="450" y="640" text-anchor="middle" font-size="11"
+        fill="#9a3412">
+    8 个 expert × 5.5B + 共享 attention/embedding 2.7B = 46.7B 总参,但每个 token 只激活 2 个 expert(11B)+ 共享层,FLOPs ≈ 13B dense
+  </text>
+  <text x="450" y="655" text-anchor="middle" font-size="10"
+        fill="#9a3412" font-style="italic">
+    知识容量按 47B,推理算力按 13B —— 稀疏激活让大模型推理便宜
+  </text>
+</svg>
