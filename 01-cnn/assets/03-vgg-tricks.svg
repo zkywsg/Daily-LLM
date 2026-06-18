@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="vgg-t-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    VGG 的工程三件套 — Seed 接力 + Multi-scale + 等效感受野
+  </text>
+
+  <!-- ============== LEFT: Seed 接力训练 ============== -->
+  <text x="160" y="68" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Seed 接力训练(BN 出现前)
+  </text>
+
+  <!-- VGG-11 -->
+  <rect x="60" y="90" width="200" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="160" y="113" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">VGG-11(11 层)</text>
+  <text x="160" y="130" text-anchor="middle" font-size="11" fill="#92400e">随机初始化可正常收敛</text>
+
+  <line x1="160" y1="140" x2="160" y2="168" stroke="#9d174d" stroke-width="1.5" marker-end="url(#vgg-t-arr)"/>
+  <text x="180" y="158" font-size="10" fill="#9d174d" font-style="italic">迁移 conv 权重</text>
+
+  <!-- VGG-13 -->
+  <rect x="60" y="170" width="200" height="40" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="160" y="195" text-anchor="middle" font-size="12" fill="#9d174d">VGG-13 (新增层随机初始)</text>
+
+  <line x1="160" y1="210" x2="160" y2="228" stroke="#9d174d" stroke-width="1.5" marker-end="url(#vgg-t-arr)"/>
+
+  <!-- VGG-16 -->
+  <rect x="60" y="230" width="200" height="40" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="160" y="255" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">VGG-16 (13 conv + 3 fc)</text>
+
+  <line x1="160" y1="270" x2="160" y2="288" stroke="#9d174d" stroke-width="1.5" marker-end="url(#vgg-t-arr)"/>
+
+  <!-- VGG-19 -->
+  <rect x="60" y="290" width="200" height="40" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="160" y="315" text-anchor="middle" font-size="12" fill="#9d174d">VGG-19 (后 3 block +1)</text>
+
+  <text x="160" y="355" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    BN 之后这套接力不再需要
+  </text>
+
+  <!-- ============== MIDDLE: Multi-scale 训练 ============== -->
+  <text x="450" y="68" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Multi-scale 训练
+  </text>
+
+  <!-- big scale: short side 512 -->
+  <rect x="340" y="90" width="220" height="120" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="450" y="112" text-anchor="middle" font-size="12" fill="#92400e">原图,短边 S=512</text>
+  <rect x="395" y="125" width="110" height="70" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="3,2"/>
+  <text x="450" y="207" text-anchor="middle" font-size="10" fill="#dc2626">crop 224×224(看局部)</text>
+
+  <text x="450" y="232" text-anchor="middle" font-size="14" fill="#9d174d">↕ S 从 [256, 512] 随机采样 ↕</text>
+
+  <!-- small scale: short side 256 -->
+  <rect x="380" y="245" width="140" height="80" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="450" y="265" text-anchor="middle" font-size="11" fill="#92400e">原图,短边 S=256</text>
+  <rect x="385" y="270" width="130" height="50" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="3,2"/>
+  <text x="450" y="322" text-anchor="middle" font-size="10" fill="#dc2626">crop 224×224(看全局)</text>
+
+  <text x="450" y="355" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    模型见不同尺度下的物体
+  </text>
+
+  <!-- ============== RIGHT: 等效感受野 ============== -->
+  <text x="730" y="68" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    3 个 3×3 = 1 个 7×7
+  </text>
+
+  <!-- 7×7 single -->
+  <rect x="620" y="90" width="100" height="100" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="670" y="125" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="600">1 层</text>
+  <text x="670" y="145" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="600">7×7 conv</text>
+  <text x="670" y="170" text-anchor="middle" font-size="11" fill="#991b1b">49 C²</text>
+  <text x="670" y="184" text-anchor="middle" font-size="10" fill="#991b1b">参数</text>
+
+  <text x="740" y="145" text-anchor="middle" font-size="20" fill="#1f2937">vs</text>
+
+  <!-- 3 stacked 3×3 -->
+  <rect x="760" y="90" width="80" height="30" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="800" y="110" text-anchor="middle" font-size="11" fill="#065f46">3×3 conv</text>
+  <rect x="760" y="125" width="80" height="30" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="800" y="145" text-anchor="middle" font-size="11" fill="#065f46">3×3 conv</text>
+  <rect x="760" y="160" width="80" height="30" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="800" y="180" text-anchor="middle" font-size="11" fill="#065f46">3×3 conv</text>
+
+  <text x="800" y="208" text-anchor="middle" font-size="11" fill="#059669" font-weight="600">27 C² (−45%)</text>
+
+  <!-- comparison table below -->
+  <g transform="translate(600, 230)">
+    <rect x="0" y="0" width="260" height="120" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1"/>
+    <text x="130" y="20" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">同等感受野下</text>
+    <g font-size="11" fill="#1f2937">
+      <text x="15" y="45">✓ 参数 ↓ 45%</text>
+      <text x="15" y="68">✓ 深度 ↑ 2 层</text>
+      <text x="15" y="91">✓ ReLU 非线性 ↑ 2 次</text>
+      <text x="15" y="114" font-style="italic" fill="#059669" font-weight="600">三个维度同时改善</text>
+    </g>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="400" x2="860" y2="400" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== ImageNet results ============== -->
+  <text x="450" y="430" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    ImageNet Top-5 错误率 — VGG 接近人类水平
+  </text>
+
+  <!-- Bars -->
+  <g transform="translate(80, 460)">
+    <!-- AlexNet 15.3 -->
+    <text x="0" y="20" font-size="11" fill="#1f2937">AlexNet 2012</text>
+    <rect x="120" y="8" width="306" height="18" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="436" y="22" font-size="11" fill="#9d174d">15.3%</text>
+
+    <!-- ZFNet 14.8 -->
+    <text x="0" y="44" font-size="11" fill="#1f2937">ZFNet 2013</text>
+    <rect x="120" y="32" width="296" height="18" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="426" y="46" font-size="11" fill="#9d174d">14.8%</text>
+
+    <!-- VGG-16 8.1 -->
+    <text x="0" y="68" font-size="11" fill="#1f2937" font-weight="600">VGG-16 single</text>
+    <rect x="120" y="56" width="162" height="18" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="292" y="70" font-size="11" fill="#5b21b6" font-weight="600">8.1%</text>
+
+    <!-- VGG ensemble 7.3 -->
+    <text x="0" y="92" font-size="11" fill="#1f2937" font-weight="600">VGG ensemble</text>
+    <rect x="120" y="80" width="146" height="18" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+    <text x="276" y="94" font-size="11" fill="#5b21b6" font-weight="700">7.3%</text>
+
+    <!-- Human ~5 -->
+    <text x="0" y="116" font-size="11" fill="#059669" font-style="italic">Human level</text>
+    <rect x="120" y="104" width="100" height="18" fill="#ecfdf5" stroke="#059669" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="230" y="118" font-size="11" fill="#059669" font-weight="600">~5%</text>
+  </g>
+</svg>

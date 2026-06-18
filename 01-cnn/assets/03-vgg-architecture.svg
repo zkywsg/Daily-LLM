@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="vgg-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    VGG-16 — 全 3×3 砖头堆叠,5 conv block + 3 fc
+  </text>
+
+  <!-- ============== TOP: 5 conv blocks horizontal ============== -->
+  <!-- Block 1: 64 ch -->
+  <rect x="50" y="80" width="120" height="60" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="110" y="100" text-anchor="middle" font-size="11" fill="#92400e">Block 1</text>
+  <text x="110" y="118" text-anchor="middle" font-size="11" fill="#92400e">3×3/64 × 2</text>
+  <text x="110" y="134" text-anchor="middle" font-size="10" fill="#92400e">→ MaxPool/2</text>
+  <text x="110" y="156" text-anchor="middle" font-size="10" fill="#6b7280">224→112</text>
+
+  <!-- Block 2: 128 ch -->
+  <rect x="200" y="80" width="120" height="60" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="260" y="100" text-anchor="middle" font-size="11" fill="#9d174d">Block 2</text>
+  <text x="260" y="118" text-anchor="middle" font-size="11" fill="#9d174d">3×3/128 × 2</text>
+  <text x="260" y="134" text-anchor="middle" font-size="10" fill="#9d174d">→ MaxPool/2</text>
+  <text x="260" y="156" text-anchor="middle" font-size="10" fill="#6b7280">112→56</text>
+
+  <!-- Block 3: 256 ch -->
+  <rect x="350" y="80" width="120" height="60" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="410" y="100" text-anchor="middle" font-size="11" fill="#9d174d">Block 3</text>
+  <text x="410" y="118" text-anchor="middle" font-size="11" fill="#9d174d">3×3/256 × 3</text>
+  <text x="410" y="134" text-anchor="middle" font-size="10" fill="#9d174d">→ MaxPool/2</text>
+  <text x="410" y="156" text-anchor="middle" font-size="10" fill="#6b7280">56→28</text>
+
+  <!-- Block 4: 512 ch -->
+  <rect x="500" y="80" width="120" height="60" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="560" y="100" text-anchor="middle" font-size="11" fill="#9d174d">Block 4</text>
+  <text x="560" y="118" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">3×3/512 × 3</text>
+  <text x="560" y="134" text-anchor="middle" font-size="10" fill="#9d174d">→ MaxPool/2</text>
+  <text x="560" y="156" text-anchor="middle" font-size="10" fill="#6b7280">28→14</text>
+
+  <!-- Block 5: 512 ch -->
+  <rect x="650" y="80" width="120" height="60" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="710" y="100" text-anchor="middle" font-size="11" fill="#9d174d">Block 5</text>
+  <text x="710" y="118" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">3×3/512 × 3</text>
+  <text x="710" y="134" text-anchor="middle" font-size="10" fill="#9d174d">→ MaxPool/2</text>
+  <text x="710" y="156" text-anchor="middle" font-size="10" fill="#6b7280">14→7</text>
+
+  <!-- arrows between blocks -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="170" y1="110" x2="198" y2="110" marker-end="url(#vgg-arr)"/>
+    <line x1="320" y1="110" x2="348" y2="110" marker-end="url(#vgg-arr)"/>
+    <line x1="470" y1="110" x2="498" y2="110" marker-end="url(#vgg-arr)"/>
+    <line x1="620" y1="110" x2="648" y2="110" marker-end="url(#vgg-arr)"/>
+  </g>
+
+  <!-- Input -->
+  <text x="40" y="50" text-anchor="start" font-size="11" fill="#92400e">Input 224×224×3</text>
+
+  <!-- FC layers -->
+  <text x="450" y="200" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">↓ flatten [B, 512×7×7 = 25088]</text>
+
+  <rect x="100" y="220" width="200" height="55" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="200" y="245" text-anchor="middle" font-size="13" fill="#5b21b6" font-weight="600">FC6: 25088 → 4096</text>
+  <text x="200" y="263" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">102M 参数(74%!)</text>
+
+  <rect x="350" y="220" width="200" height="55" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="450" y="245" text-anchor="middle" font-size="13" fill="#5b21b6">FC7: 4096 → 4096</text>
+  <text x="450" y="263" text-anchor="middle" font-size="11" fill="#5b21b6">16.8M 参数</text>
+
+  <rect x="600" y="220" width="200" height="55" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="700" y="245" text-anchor="middle" font-size="13" fill="#5b21b6">FC8: 4096 → 1000</text>
+  <text x="700" y="263" text-anchor="middle" font-size="11" fill="#5b21b6">4M 参数</text>
+
+  <g stroke="#7c3aed" stroke-width="1.5" fill="none">
+    <line x1="300" y1="248" x2="348" y2="248" marker-end="url(#vgg-arr)"/>
+    <line x1="550" y1="248" x2="598" y2="248" marker-end="url(#vgg-arr)"/>
+  </g>
+
+  <text x="450" y="305" text-anchor="middle" font-size="12" fill="#059669" font-weight="600">→ Softmax 1000 classes</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="345" x2="860" y2="345" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: parameter bar chart ============== -->
+  <text x="450" y="375" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    138M 参数分布 — fc6 一层就占 74%
+  </text>
+
+  <!-- horizontal bar: total 700px wide -->
+  <g transform="translate(100, 400)">
+    <!-- fc6 (102M / 138M ~ 74%) → 518 px -->
+    <rect x="0" y="0" width="518" height="40" fill="#dc2626" stroke="#7f1d1d" stroke-width="1"/>
+    <text x="259" y="25" text-anchor="middle" font-size="12" fill="#fef3c7" font-weight="700">fc6 (102M, 74%)</text>
+
+    <!-- fc7 (16.8M ~ 12%) → 85 px -->
+    <rect x="518" y="0" width="85" height="40" fill="#7c3aed" stroke="#4c1d95" stroke-width="1"/>
+    <text x="560" y="25" text-anchor="middle" font-size="11" fill="#fef3c7">fc7 12%</text>
+
+    <!-- conv (14.7M ~ 10.6%) → 74 px -->
+    <rect x="603" y="0" width="74" height="40" fill="#db2777" stroke="#9d174d" stroke-width="1"/>
+    <text x="640" y="25" text-anchor="middle" font-size="11" fill="#fef3c7">conv 11%</text>
+
+    <!-- fc8 (4M ~ 3%) → 23 px -->
+    <rect x="677" y="0" width="23" height="40" fill="#5b21b6" stroke="#3b0764" stroke-width="1"/>
+    <text x="688" y="25" text-anchor="middle" font-size="10" fill="#fef3c7">fc8</text>
+  </g>
+
+  <text x="450" y="475" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    名义上是"深 CNN",但参数主要分布在 fc 层 — 这是 Inception 用 GAP 替换 fc 的动机
+  </text>
+
+  <!-- BOTTOM CALLOUT -->
+  <rect x="60" y="510" width="780" height="100" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="535" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    所有 conv 3×3 / s=1 / p=1,所有 pool 2×2 / s=2,模块化堆叠
+  </text>
+  <g font-size="12" fill="#fef3c7">
+    <text x="80" y="560">• 13 层 conv(blocks 2/2/3/3/3)+ 3 层 fc = VGG-16;VGG-19 在后 3 个 block 各 +1 层 conv</text>
+    <text x="80" y="582">• 通道沿深度 64→128→256→512→512 翻倍再封顶,空间每过 pool 减半 — "空间换通道"从此定型</text>
+    <text x="80" y="604">• 整网超参数只有 2 个:block 数 + 每 block 内 conv 重复次数 — 后续 ResNet / Inception / ViT 全部继承</text>
+  </g>
+</svg>
