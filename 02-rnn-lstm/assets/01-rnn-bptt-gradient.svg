@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="bptt-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    BPTT 梯度连乘 — 消失 / 爆炸 / 平稳
+  </text>
+
+  <!-- ============== TOP: BPTT 反传路径 ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Loss L 对 h_1 的梯度 — 经过 T-1 次 ∂h_{t+1}/∂h_t 连乘
+  </text>
+
+  <!-- L -->
+  <rect x="780" y="100" width="70" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="815" y="124" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="700">L</text>
+
+  <!-- h4 -->
+  <circle cx="700" cy="120" r="26" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="700" y="125" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">h₄</text>
+
+  <!-- h3 -->
+  <circle cx="540" cy="120" r="26" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="540" y="125" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">h₃</text>
+
+  <!-- h2 -->
+  <circle cx="380" cy="120" r="26" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="380" y="125" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">h₂</text>
+
+  <!-- h1 -->
+  <circle cx="220" cy="120" r="30" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+  <text x="220" y="125" text-anchor="middle" font-size="13" fill="#92400e" font-weight="700">h₁</text>
+
+  <!-- gradient arrows (right to left, red) -->
+  <g stroke="#dc2626" stroke-width="2" fill="none">
+    <line x1="778" y1="120" x2="730" y2="120" marker-end="url(#bptt-arr)"/>
+    <line x1="672" y1="120" x2="570" y2="120" marker-end="url(#bptt-arr)"/>
+    <line x1="512" y1="120" x2="410" y2="120" marker-end="url(#bptt-arr)"/>
+    <line x1="352" y1="120" x2="252" y2="120" marker-end="url(#bptt-arr)"/>
+  </g>
+
+  <!-- factor labels on each arrow -->
+  <g font-family="ui-monospace, monospace" font-size="11" fill="#dc2626">
+    <text x="755" y="108" text-anchor="middle">×∂L/∂h₄</text>
+    <text x="621" y="108" text-anchor="middle">×W_h·tanh'</text>
+    <text x="461" y="108" text-anchor="middle">×W_h·tanh'</text>
+    <text x="302" y="108" text-anchor="middle">×W_h·tanh'</text>
+  </g>
+
+  <!-- gradient formula box -->
+  <rect x="100" y="170" width="700" height="55" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1"/>
+  <text x="450" y="195" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#1f2937">
+    ∂L/∂h₁ = ∂L/∂h_T · Π_{t=1..T-1} W_hᵀ · diag(tanh'(h_t))
+  </text>
+  <text x="450" y="215" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="600">
+    T 次连乘 → 谱半径 ρ(W_h) 决定 stability
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="250" x2="860" y2="250" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== MIDDLE: 三种情况曲线对比 ============== -->
+  <text x="450" y="280" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    谱半径不同 → 梯度按指数衰减 / 爆炸 / 平稳
+  </text>
+
+  <!-- chart area: x 100-820, y 305-460 -->
+  <line x1="120" y1="460" x2="820" y2="460" stroke="#1f2937" stroke-width="1.5"/>
+  <line x1="120" y1="305" x2="120" y2="460" stroke="#1f2937" stroke-width="1.5"/>
+
+  <!-- y labels (gradient magnitude, log scale conceptually) -->
+  <g font-size="10" fill="#6b7280">
+    <text x="113" y="463" text-anchor="end">10⁻⁴</text>
+    <text x="113" y="425" text-anchor="end">10⁻²</text>
+    <text x="113" y="385" text-anchor="end">1</text>
+    <text x="113" y="345" text-anchor="end">10²</text>
+    <text x="113" y="308" text-anchor="end">10⁴</text>
+  </g>
+  <text x="60" y="385" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600" transform="rotate(-90 60 385)">||∂L/∂h_t||</text>
+
+  <!-- x labels (time step) -->
+  <g font-size="10" fill="#6b7280">
+    <text x="170" y="475" text-anchor="middle">t=20</text>
+    <text x="320" y="475" text-anchor="middle">t=15</text>
+    <text x="470" y="475" text-anchor="middle">t=10</text>
+    <text x="620" y="475" text-anchor="middle">t=5</text>
+    <text x="770" y="475" text-anchor="middle">t=1</text>
+  </g>
+  <text x="470" y="495" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">时间步(反传方向 →)</text>
+
+  <!-- gridlines -->
+  <g stroke="#e5e7eb" stroke-width="1" stroke-dasharray="2,3">
+    <line x1="120" y1="425" x2="820" y2="425"/>
+    <line x1="120" y1="385" x2="820" y2="385"/>
+    <line x1="120" y1="345" x2="820" y2="345"/>
+  </g>
+
+  <!-- vanishing curve (gray to red, ρ < 1) -->
+  <path d="M 170 385 L 320 405 L 470 425 L 620 445 L 770 458" stroke="#dc2626" stroke-width="2.5" fill="none"/>
+  <text x="700" y="450" font-size="10" fill="#dc2626" font-weight="600">梯度消失(ρ&lt;1)</text>
+
+  <!-- exploding curve (gray to red exploding up) -->
+  <path d="M 170 385 L 320 365 L 470 340 L 620 320 L 770 308" stroke="#ea580c" stroke-width="2.5" fill="none"/>
+  <text x="700" y="320" font-size="10" fill="#ea580c" font-weight="600">梯度爆炸(ρ&gt;1)</text>
+
+  <!-- stable curve (green, ρ ≈ 1) -->
+  <path d="M 170 385 L 320 384 L 470 383 L 620 384 L 770 385" stroke="#059669" stroke-width="2.5" fill="none"/>
+  <text x="700" y="380" font-size="10" fill="#059669" font-weight="600">理想:ρ≈1 + 正交初始化</text>
+
+  <!-- baseline annotation at y=385 (gradient 1) -->
+  <text x="155" y="390" font-size="9" fill="#6b7280">∂L/∂h_T</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="515" x2="860" y2="515" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: Bengio 1994 结论 ============== -->
+  <rect x="60" y="540" width="780" height="110" rx="6" fill="#1f2937" stroke="none"/>
+
+  <text x="450" y="565" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    Bengio 1994 — 简单 RNN 学不到 T &gt; 10-20 的长依赖
+  </text>
+
+  <g font-size="11" fill="#fef3c7">
+    <text x="80" y="592">• 这是结构性问题,不是优化技巧能解决的:tanh' ∈ (0,1] 必然导致连乘衰减</text>
+    <text x="80" y="612">• 工程补丁:gradient clipping(||g||&gt;τ 就缩放回去)解决爆炸,但消失无补丁</text>
+    <text x="80" y="632">• 直接催生 LSTM 1997 用 cell highway(加法替代乘法)让梯度近似 *1 全程不衰减</text>
+  </g>
+</svg>

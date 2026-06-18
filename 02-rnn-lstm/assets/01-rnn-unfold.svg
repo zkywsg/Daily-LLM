@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="rnn-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    RNN 按时间展开 — 同一组权重在每个时间步复用
+  </text>
+
+  <!-- ============== TOP: RNN cell (循环表示) ============== -->
+  <text x="200" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    循环表示
+  </text>
+
+  <!-- input x_t -->
+  <rect x="100" y="160" width="70" height="40" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="135" y="184" text-anchor="middle" font-size="12" fill="#92400e">x_t</text>
+
+  <!-- hidden h_t with self-loop -->
+  <circle cx="280" cy="180" r="38" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="280" y="178" text-anchor="middle" font-size="14" fill="#9d174d" font-weight="700">h_t</text>
+  <text x="280" y="194" text-anchor="middle" font-size="10" fill="#9d174d">tanh</text>
+
+  <!-- self-loop -->
+  <path d="M 320 165 C 360 130, 360 230, 320 195" stroke="#7c3aed" stroke-width="2" fill="none" marker-end="url(#rnn-arr)"/>
+  <text x="370" y="183" font-size="11" fill="#7c3aed" font-style="italic">W_h</text>
+
+  <!-- output y_t -->
+  <rect x="390" y="160" width="70" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="425" y="184" text-anchor="middle" font-size="12" fill="#065f46">y_t</text>
+
+  <!-- arrows -->
+  <line x1="172" y1="180" x2="240" y2="180" stroke="#9d174d" stroke-width="1.5" marker-end="url(#rnn-arr)"/>
+  <text x="200" y="172" font-size="11" fill="#9d174d" font-style="italic">W_x</text>
+
+  <line x1="320" y1="180" x2="388" y2="180" stroke="#9d174d" stroke-width="1.5" marker-end="url(#rnn-arr)"/>
+  <text x="354" y="172" font-size="11" fill="#9d174d" font-style="italic">W_y</text>
+
+  <!-- equation -->
+  <rect x="500" y="120" width="380" height="120" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1"/>
+  <text x="690" y="145" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">隐状态递推公式</text>
+  <text x="690" y="178" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#9d174d">
+    h_t = tanh(W_x · x_t + W_h · h_{t-1} + b_h)
+  </text>
+  <text x="690" y="205" text-anchor="middle" font-family="ui-monospace, monospace" font-size="12" fill="#065f46">
+    y_t = g(W_y · h_t + b_y)
+  </text>
+  <text x="690" y="228" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    g: softmax(分类)或恒等(回归)
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="270" x2="860" y2="270" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: 按时间展开 ============== -->
+  <text x="450" y="300" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    按时间展开 — 同一组 (W_x, W_h, W_y) 复用 T=4 步
+  </text>
+
+  <!-- t=1,2,3,4 -->
+  <g>
+    <!-- inputs x1..x4 -->
+    <rect x="120" y="430" width="60" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="150" y="450" text-anchor="middle" font-size="11" fill="#92400e">x₁</text>
+
+    <rect x="290" y="430" width="60" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="320" y="450" text-anchor="middle" font-size="11" fill="#92400e">x₂</text>
+
+    <rect x="460" y="430" width="60" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="490" y="450" text-anchor="middle" font-size="11" fill="#92400e">x₃</text>
+
+    <rect x="630" y="430" width="60" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="660" y="450" text-anchor="middle" font-size="11" fill="#92400e">x₄</text>
+
+    <!-- hiddens h1..h4 -->
+    <circle cx="150" cy="380" r="26" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="150" y="385" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">h₁</text>
+
+    <circle cx="320" cy="380" r="26" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="320" y="385" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">h₂</text>
+
+    <circle cx="490" cy="380" r="26" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="490" y="385" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">h₃</text>
+
+    <circle cx="660" cy="380" r="26" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="660" y="385" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">h₄</text>
+
+    <!-- outputs y1..y4 -->
+    <rect x="120" y="320" width="60" height="32" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="150" y="340" text-anchor="middle" font-size="11" fill="#065f46">y₁</text>
+
+    <rect x="290" y="320" width="60" height="32" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="320" y="340" text-anchor="middle" font-size="11" fill="#065f46">y₂</text>
+
+    <rect x="460" y="320" width="60" height="32" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="490" y="340" text-anchor="middle" font-size="11" fill="#065f46">y₃</text>
+
+    <rect x="630" y="320" width="60" height="32" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="660" y="340" text-anchor="middle" font-size="11" fill="#065f46">y₄</text>
+  </g>
+
+  <!-- vertical arrows: x→h, h→y -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="150" y1="428" x2="150" y2="408" marker-end="url(#rnn-arr)"/>
+    <line x1="320" y1="428" x2="320" y2="408" marker-end="url(#rnn-arr)"/>
+    <line x1="490" y1="428" x2="490" y2="408" marker-end="url(#rnn-arr)"/>
+    <line x1="660" y1="428" x2="660" y2="408" marker-end="url(#rnn-arr)"/>
+
+    <line x1="150" y1="354" x2="150" y2="354" marker-end="url(#rnn-arr)"/>
+    <line x1="150" y1="354" x2="150" y2="354"/>
+
+    <line x1="150" y1="354" x2="150" y2="354" stroke-width="0"/>
+    <line x1="150" y1="354" x2="150" y2="354" stroke-width="0"/>
+
+    <line x1="150" y1="354" x2="150" y2="354" stroke-width="0"/>
+
+    <line x1="150" y1="354" x2="150" y2="354" stroke-width="0"/>
+  </g>
+
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="150" y1="354" x2="150" y2="354" stroke-width="0"/>
+    <line x1="150" y1="353" x2="150" y2="354" stroke-width="0"/>
+  </g>
+
+  <!-- redo h→y arrows correctly -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="150" y1="354" x2="150" y2="354" stroke-width="0"/>
+  </g>
+
+  <!-- proper h→y arrows -->
+  <line x1="150" y1="353" x2="150" y2="357" stroke="#9d174d" stroke-width="1.5"/>
+  <line x1="150" y1="357" x2="150" y2="354" stroke="#9d174d" stroke-width="1.5" marker-end="url(#rnn-arr)"/>
+
+  <!-- Easier: just use single lines for h to y -->
+  <line x1="150" y1="354" x2="150" y2="352" stroke="#9d174d" stroke-width="0"/>
+
+  <line x1="320" y1="354" x2="320" y2="352" stroke="#9d174d" stroke-width="0"/>
+
+  <!-- The above didn't work cleanly. Let me draw arrows again carefully -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="150" y1="354" x2="150" y2="357" marker-end="url(#rnn-arr)"/>
+    <line x1="320" y1="354" x2="320" y2="357" marker-end="url(#rnn-arr)"/>
+    <line x1="490" y1="354" x2="490" y2="357" marker-end="url(#rnn-arr)"/>
+    <line x1="660" y1="354" x2="660" y2="357" marker-end="url(#rnn-arr)"/>
+  </g>
+
+  <!-- horizontal hidden state propagation -->
+  <g stroke="#7c3aed" stroke-width="2" fill="none">
+    <line x1="176" y1="380" x2="294" y2="380" marker-end="url(#rnn-arr)"/>
+    <line x1="346" y1="380" x2="464" y2="380" marker-end="url(#rnn-arr)"/>
+    <line x1="516" y1="380" x2="634" y2="380" marker-end="url(#rnn-arr)"/>
+  </g>
+
+  <!-- weight labels on horizontal arrows -->
+  <g font-size="10" fill="#7c3aed" font-style="italic">
+    <text x="235" y="373" text-anchor="middle">W_h</text>
+    <text x="405" y="373" text-anchor="middle">W_h</text>
+    <text x="575" y="373" text-anchor="middle">W_h</text>
+  </g>
+
+  <!-- annotation -->
+  <text x="450" y="490" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="600">
+    紫色箭头 = 隐状态沿时间链向前传递,所有 W_h 是同一组权重
+  </text>
+
+  <text x="450" y="510" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    展开后等价于深度 4 的前馈网络,可跑标准反传(BPTT)
+  </text>
+
+  <!-- bottom callout -->
+  <rect x="60" y="540" width="780" height="60" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="565" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    参数共享让序列长度可任意但参数量不变
+  </text>
+  <text x="450" y="588" text-anchor="middle" font-size="11" fill="#fef3c7">
+    序列 10 步还是 1000 步,模型参数都是固定的 d² + d·input + d·output
+  </text>
+</svg>
