@@ -1,0 +1,215 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#6b7280"/>
+    </marker>
+    <marker id="arr-cell" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#db2777"/>
+    </marker>
+    <marker id="arr-forget" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="arr-input" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="arr-output" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="700">
+    LSTM Cell · 内部完整数据流
+  </text>
+
+  <!-- Top callout: cell highway -->
+  <rect x="120" y="50" width="660" height="38" rx="6"
+        fill="#fdf2f8" stroke="#db2777" stroke-width="1.5"/>
+  <text x="450" y="74" text-anchor="middle" font-size="13"
+        fill="#9d174d" font-weight="600">
+    粉色高亮的 Cell State 高速路只走「门控 + 加法」 → 梯度 ∂C_t/∂C_{t-1} ≈ f_t,不被反复乘 W,这是长程依赖的根本解
+  </text>
+
+  <!-- ============== Cell state highway (top horizontal band) ============== -->
+  <!-- background band for highlight -->
+  <rect x="40" y="118" width="820" height="56" rx="10"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5" stroke-dasharray="6,3"/>
+
+  <!-- C_{t-1} -->
+  <rect x="50" y="128" width="90" height="36" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="95" y="151" text-anchor="middle" font-size="14"
+        fill="#92400e" font-weight="600">C_{t-1}</text>
+
+  <!-- ⊙ f_t (forget multiply) -->
+  <circle cx="260" cy="146" r="22" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="260" y="152" text-anchor="middle" font-size="18"
+        fill="#991b1b" font-weight="700">⊙</text>
+  <text x="260" y="110" text-anchor="middle" font-size="11"
+        fill="#991b1b" font-weight="600">forget</text>
+
+  <!-- ⊕ add -->
+  <circle cx="490" cy="146" r="24" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+  <text x="490" y="153" text-anchor="middle" font-size="20"
+        fill="#92400e" font-weight="700">+</text>
+  <text x="490" y="108" text-anchor="middle" font-size="11"
+        fill="#92400e" font-weight="600">加法更新</text>
+
+  <!-- C_t -->
+  <rect x="690" y="128" width="90" height="36" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="735" y="151" text-anchor="middle" font-size="14"
+        fill="#92400e" font-weight="600">C_t</text>
+
+  <!-- Highway arrows -->
+  <g stroke="#db2777" stroke-width="2.5" fill="none">
+    <line x1="142" y1="146" x2="236" y2="146" marker-end="url(#arr-cell)"/>
+    <line x1="284" y1="146" x2="464" y2="146" marker-end="url(#arr-cell)"/>
+    <line x1="516" y1="146" x2="688" y2="146" marker-end="url(#arr-cell)"/>
+  </g>
+
+  <!-- ============== Concatenation block ============== -->
+  <rect x="60" y="380" width="180" height="50" rx="6"
+        fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+  <text x="150" y="402" text-anchor="middle" font-size="13"
+        fill="#312e81" font-weight="600">拼接 [h_{t-1}, x_t]</text>
+  <text x="150" y="420" text-anchor="middle" font-size="11"
+        fill="#312e81">维度 d_h + d_x</text>
+
+  <!-- inputs feeding concat -->
+  <rect x="60" y="470" width="80" height="36" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="100" y="493" text-anchor="middle" font-size="13" fill="#92400e">x_t</text>
+
+  <rect x="160" y="470" width="80" height="36" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="200" y="493" text-anchor="middle" font-size="13" fill="#92400e">h_{t-1}</text>
+
+  <g stroke="#6b7280" stroke-width="1.4" fill="none">
+    <line x1="100" y1="470" x2="120" y2="432" marker-end="url(#arr-main)"/>
+    <line x1="200" y1="470" x2="180" y2="432" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ============== Four gates row ============== -->
+  <!-- f_t gate -->
+  <rect x="290" y="330" width="100" height="50" rx="6"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="340" y="352" text-anchor="middle" font-size="13"
+        fill="#991b1b" font-weight="700">σ  →  f_t</text>
+  <text x="340" y="370" text-anchor="middle" font-size="10"
+        fill="#991b1b">forget gate</text>
+
+  <!-- i_t gate -->
+  <rect x="410" y="330" width="100" height="50" rx="6"
+        fill="#d1fae5" stroke="#059669" stroke-width="1.8"/>
+  <text x="460" y="352" text-anchor="middle" font-size="13"
+        fill="#065f46" font-weight="700">σ  →  i_t</text>
+  <text x="460" y="370" text-anchor="middle" font-size="10"
+        fill="#065f46">input gate</text>
+
+  <!-- g (candidate) -->
+  <rect x="530" y="330" width="100" height="50" rx="6"
+        fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="580" y="352" text-anchor="middle" font-size="13"
+        fill="#5b21b6" font-weight="700">tanh → g</text>
+  <text x="580" y="370" text-anchor="middle" font-size="10"
+        fill="#5b21b6">candidate C̃_t</text>
+
+  <!-- o_t gate -->
+  <rect x="650" y="330" width="100" height="50" rx="6"
+        fill="#ede9fe" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="700" y="352" text-anchor="middle" font-size="13"
+        fill="#5b21b6" font-weight="700">σ  →  o_t</text>
+  <text x="700" y="370" text-anchor="middle" font-size="10"
+        fill="#5b21b6">output gate</text>
+
+  <!-- Arrows: concat → four gates -->
+  <g stroke="#6b7280" stroke-width="1.3" fill="none">
+    <line x1="240" y1="395" x2="288" y2="365" marker-end="url(#arr-main)"/>
+    <line x1="240" y1="400" x2="408" y2="360" marker-end="url(#arr-main)"/>
+    <line x1="240" y1="405" x2="528" y2="358" marker-end="url(#arr-main)"/>
+    <line x1="240" y1="410" x2="648" y2="358" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- f_t → forget multiply on highway -->
+  <path d="M 340 330 C 340 240, 260 220, 260 170"
+        stroke="#dc2626" stroke-width="2" fill="none"
+        marker-end="url(#arr-forget)" stroke-dasharray="0"/>
+
+  <!-- i_t and g converge into a small ⊙ before ⊕ -->
+  <circle cx="490" cy="260" r="18" fill="#d1fae5" stroke="#059669" stroke-width="2"/>
+  <text x="490" y="266" text-anchor="middle" font-size="15"
+        fill="#065f46" font-weight="700">⊙</text>
+  <text x="528" y="263" font-size="10" fill="#065f46">i_t · g</text>
+
+  <!-- i_t → ⊙ -->
+  <path d="M 460 330 C 460 300, 480 280, 488 278"
+        stroke="#059669" stroke-width="1.8" fill="none"
+        marker-end="url(#arr-input)"/>
+  <!-- g → ⊙ -->
+  <path d="M 560 330 C 540 305, 510 285, 504 273"
+        stroke="#7c3aed" stroke-width="1.8" fill="none"
+        marker-end="url(#arr-input)"/>
+  <!-- ⊙ → ⊕ on highway -->
+  <path d="M 490 242 L 490 172"
+        stroke="#059669" stroke-width="2" fill="none"
+        marker-end="url(#arr-input)"/>
+
+  <!-- C_t → tanh(C_t) → output multiply -->
+  <rect x="690" y="200" width="90" height="36" rx="6"
+        fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="735" y="223" text-anchor="middle" font-size="13"
+        fill="#5b21b6" font-weight="600">tanh(C_t)</text>
+
+  <line x1="735" y1="166" x2="735" y2="198"
+        stroke="#db2777" stroke-width="2" fill="none"
+        marker-end="url(#arr-cell)"/>
+
+  <!-- ⊙ with o_t -->
+  <circle cx="830" cy="218" r="18" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="830" y="224" text-anchor="middle" font-size="15"
+        fill="#5b21b6" font-weight="700">⊙</text>
+
+  <line x1="780" y1="218" x2="810" y2="218"
+        stroke="#7c3aed" stroke-width="1.8" fill="none"
+        marker-end="url(#arr-output)"/>
+
+  <!-- o_t feed into ⊙ -->
+  <path d="M 740 330 C 800 320, 830 280, 830 238"
+        stroke="#7c3aed" stroke-width="1.8" fill="none"
+        marker-end="url(#arr-output)"/>
+
+  <!-- h_t output -->
+  <rect x="800" y="450" width="80" height="40" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="840" y="475" text-anchor="middle" font-size="14"
+        fill="#065f46" font-weight="700">h_t</text>
+
+  <path d="M 830 236 L 830 448"
+        stroke="#7c3aed" stroke-width="2" fill="none"
+        marker-end="url(#arr-output)"/>
+
+  <text x="845" y="350" font-size="10" fill="#5b21b6">o_t ⊙ tanh(C_t)</text>
+
+  <!-- ============== Bottom legend / equations ============== -->
+  <rect x="40" y="540" width="820" height="86" rx="8"
+        fill="#f9fafb" stroke="#d1d5db" stroke-width="1"/>
+
+  <text x="60" y="562" font-size="12" fill="#1f2937" font-weight="700">关键方程:</text>
+  <text x="60" y="582" font-size="12" fill="#991b1b">f_t = σ(W_f [h_{t-1}, x_t] + b_f)</text>
+  <text x="320" y="582" font-size="12" fill="#065f46">i_t = σ(W_i [...] + b_i)</text>
+  <text x="540" y="582" font-size="12" fill="#5b21b6">g = tanh(W_C [...] + b_C)</text>
+  <text x="60" y="602" font-size="13" fill="#9d174d" font-weight="700">C_t = f_t ⊙ C_{t-1} + i_t ⊙ g   ← 加法主干 = 梯度高速路</text>
+  <text x="540" y="602" font-size="12" fill="#5b21b6">h_t = o_t ⊙ tanh(C_t)</text>
+  <text x="60" y="619" font-size="11" fill="#6b7280" font-style="italic">门是逐维独立的 sigmoid;同一时刻不同维度可以按完全不同的节奏更新记忆</text>
+
+</svg>
