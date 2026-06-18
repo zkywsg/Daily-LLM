@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="ef-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Compound Scaling — 三轴联合缩放胜过任一单轴
+  </text>
+
+  <!-- ============== LEFT: 4 scaling strategies ============== -->
+  <text x="225" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    4 种缩放策略
+  </text>
+
+  <!-- baseline B0 -->
+  <g transform="translate(60, 90)">
+    <rect width="80" height="50" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="40" y="22" text-anchor="middle" font-size="11" fill="#92400e" font-weight="600">B0 baseline</text>
+    <text x="40" y="38" text-anchor="middle" font-size="10" fill="#92400e">d=1 w=1 r=1</text>
+  </g>
+
+  <!-- depth only -->
+  <g transform="translate(60, 155)">
+    <rect width="170" height="40" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="85" y="24" text-anchor="middle" font-size="11" fill="#9d174d">只加 depth(更深)</text>
+    <text x="85" y="36" text-anchor="middle" font-size="10" fill="#9d174d">d↑, w=1, r=1 — 边际收益快递减</text>
+  </g>
+
+  <!-- width only -->
+  <g transform="translate(60, 205)">
+    <rect width="170" height="40" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="85" y="24" text-anchor="middle" font-size="11" fill="#9d174d">只加 width(更宽)</text>
+    <text x="85" y="36" text-anchor="middle" font-size="10" fill="#9d174d">d=1, w↑, r=1 — 参数涨快但精度提升小</text>
+  </g>
+
+  <!-- resolution only -->
+  <g transform="translate(60, 255)">
+    <rect width="170" height="40" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="85" y="24" text-anchor="middle" font-size="11" fill="#9d174d">只加 resolution(更大图)</text>
+    <text x="85" y="36" text-anchor="middle" font-size="10" fill="#9d174d">d=1, w=1, r↑ — FLOPs 平方涨</text>
+  </g>
+
+  <!-- compound (highlighted) -->
+  <g transform="translate(60, 305)">
+    <rect width="220" height="60" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="110" y="22" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">Compound Scaling</text>
+    <text x="110" y="40" text-anchor="middle" font-size="11" fill="#065f46">d=α^φ, w=β^φ, r=γ^φ</text>
+    <text x="110" y="55" text-anchor="middle" font-size="10" fill="#059669" font-weight="600">三轴等比联合缩放 ★</text>
+  </g>
+
+  <!-- ============== RIGHT: Top-1 vs FLOPs chart ============== -->
+  <text x="650" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    同 FLOPs 预算下 Top-1 准确率对比
+  </text>
+
+  <!-- chart -->
+  <line x1="400" y1="350" x2="850" y2="350" stroke="#1f2937" stroke-width="1.5"/>
+  <line x1="400" y1="90" x2="400" y2="350" stroke="#1f2937" stroke-width="1.5"/>
+
+  <!-- y labels (Top-1 %) -->
+  <g font-size="10" fill="#6b7280">
+    <text x="395" y="353" text-anchor="end">76%</text>
+    <text x="395" y="298" text-anchor="end">78</text>
+    <text x="395" y="244" text-anchor="end">80</text>
+    <text x="395" y="190" text-anchor="end">82</text>
+    <text x="395" y="135" text-anchor="end">84</text>
+  </g>
+  <text x="345" y="220" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600" transform="rotate(-90 345 220)">Top-1 Acc</text>
+
+  <!-- x labels (FLOPs scale) -->
+  <g font-size="10" fill="#6b7280">
+    <text x="430" y="365" text-anchor="middle">B0</text>
+    <text x="540" y="365" text-anchor="middle">B2</text>
+    <text x="650" y="365" text-anchor="middle">B4</text>
+    <text x="760" y="365" text-anchor="middle">B6</text>
+    <text x="820" y="365" text-anchor="middle">B7</text>
+  </g>
+  <text x="625" y="385" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">FLOPs(log scale,φ=0..7)</text>
+
+  <!-- gridlines -->
+  <g stroke="#e5e7eb" stroke-width="1" stroke-dasharray="2,3">
+    <line x1="400" y1="298" x2="850" y2="298"/>
+    <line x1="400" y1="244" x2="850" y2="244"/>
+    <line x1="400" y1="190" x2="850" y2="190"/>
+    <line x1="400" y1="135" x2="850" y2="135"/>
+  </g>
+
+  <!-- Compound (green, top) - from B0 (430, 320) to B7 (820, 138) -->
+  <path d="M 430 320 L 480 290 L 540 255 L 600 225 L 650 195 L 710 170 L 760 155 L 820 138"
+        stroke="#059669" stroke-width="3" fill="none"/>
+  <g fill="#059669">
+    <circle cx="430" cy="320" r="5"/>
+    <circle cx="540" cy="255" r="5"/>
+    <circle cx="650" cy="195" r="5"/>
+    <circle cx="760" cy="155" r="5"/>
+    <circle cx="820" cy="138" r="5"/>
+  </g>
+
+  <!-- depth only (pink, middle) -->
+  <path d="M 430 320 L 540 280 L 650 240 L 760 215 L 820 205"
+        stroke="#db2777" stroke-width="2" fill="none" stroke-dasharray="6,3"/>
+  <g fill="#db2777">
+    <circle cx="650" cy="240" r="4"/>
+    <circle cx="820" cy="205" r="4"/>
+  </g>
+
+  <!-- width only (orange, lower) -->
+  <path d="M 430 320 L 540 295 L 650 270 L 760 252 L 820 245"
+        stroke="#ea580c" stroke-width="2" fill="none" stroke-dasharray="4,3"/>
+  <g fill="#ea580c">
+    <circle cx="650" cy="270" r="4"/>
+    <circle cx="820" cy="245" r="4"/>
+  </g>
+
+  <!-- resolution only (purple) -->
+  <path d="M 430 320 L 540 290 L 650 260 L 760 235 L 820 225"
+        stroke="#7c3aed" stroke-width="2" fill="none" stroke-dasharray="2,3"/>
+  <g fill="#7c3aed">
+    <circle cx="650" cy="260" r="4"/>
+    <circle cx="820" cy="225" r="4"/>
+  </g>
+
+  <!-- legend -->
+  <g transform="translate(430, 105)" font-size="10">
+    <line x1="0" y1="0" x2="20" y2="0" stroke="#059669" stroke-width="3"/>
+    <text x="25" y="3" fill="#059669" font-weight="600">Compound(三轴等比)</text>
+
+    <line x1="0" y1="16" x2="20" y2="16" stroke="#db2777" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="25" y="19" fill="#db2777">仅 depth</text>
+
+    <line x1="0" y1="32" x2="20" y2="32" stroke="#7c3aed" stroke-width="2" stroke-dasharray="2,3"/>
+    <text x="25" y="35" fill="#7c3aed">仅 resolution</text>
+
+    <line x1="0" y1="48" x2="20" y2="48" stroke="#ea580c" stroke-width="2" stroke-dasharray="4,3"/>
+    <text x="25" y="51" fill="#ea580c">仅 width</text>
+  </g>
+
+  <!-- highlight gap -->
+  <line x1="820" y1="138" x2="820" y2="205" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <text x="828" y="175" font-size="10" fill="#dc2626" font-weight="600">+2.5%</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="415" x2="860" y2="415" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: Compound formula ============== -->
+  <text x="450" y="445" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    Compound Scaling 公式 — 单系数 φ 控制整个模型族
+  </text>
+
+  <!-- formula box -->
+  <rect x="100" y="470" width="700" height="130" rx="8" fill="#1f2937" stroke="none"/>
+
+  <text x="450" y="500" text-anchor="middle" font-family="ui-monospace, monospace" font-size="16" fill="#fef3c7">
+    depth = α^φ,  width = β^φ,  resolution = γ^φ
+  </text>
+
+  <text x="450" y="528" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" fill="#a7f3d0">
+    s.t.  α · β² · γ² ≈ 2  (FLOPs 翻倍的约束)
+  </text>
+
+  <text x="450" y="558" text-anchor="middle" font-size="12" fill="#fef3c7">
+    在 B0 上 grid search 得 α=1.2, β=1.1, γ=1.15 — FLOPs 翻倍时 depth+20% / width+10% / resolution+15%
+  </text>
+
+  <text x="450" y="582" text-anchor="middle" font-size="12" fill="#fbbf24" font-weight="600">
+    φ=0 → B0,φ=1 → B1,...,φ=7 → B7,不再有任何手工调超参
+  </text>
+
+  <text x="450" y="625" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    width 和 resolution 对 FLOPs 是平方贡献,所以分给它们的 exponent 必须更小
+  </text>
+</svg>

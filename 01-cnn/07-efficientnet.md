@@ -20,50 +20,77 @@ key_idea: "用复合缩放系数把 depth/width/resolution 三轴联合缩放公
 
 ## 核心思想
 
-EfficientNet 把"放大网络"重新表述成一个带约束的优化问题。设有一个种子模型，它的深度、宽度、分辨率为基准 1。引入单一**复合缩放系数 φ**（compound coefficient），三轴按下式联合缩放：
+### 直觉:不要单轴放大,depth/width/resolution 必须按公式联合缩放
+
+理解 EfficientNet 真正需要先抓一件事:**[ResNet](05-resnet.md) 之后,把 CNN"做大"有三个旋钮 — 加深 / 加宽 / 加分辨率,但三者间的关系没人系统问过**。常见做法是"一次只调一个旋钮,凭经验" — ResNet-50 → ResNet-200 / WideResNet 加宽 10× / 多尺度训练把输入拉到 600。Tan & Le 2019 反问:**给定 FLOPs 预算,depth/width/resolution 应该按什么比例联合分配?能不能把"网络放大"形式化为一个数学公式?**
+
+三件事必须同时成立才让 EfficientNet 在 2019 年 work:
+
+- **三轴可形式化为一个 compound 公式** — depth=α^φ / width=β^φ / resolution=γ^φ,单一系数 φ 控制整网规模,FLOPs 按 α·β²·γ² 缩放
+- **种子模型 B0 必须用 NAS 搜出强基准** — α/β/γ 是在 B0 上 grid search 得来,如果 B0 本身不够好,后续 B1-B7 全部放大也救不回精度
+- **大模型必须同步加正则** — B0 dropout=0.2 / B7 dropout=0.5,stochastic depth 也按规模线性涨;不加 B7 直接掉 1+ 个点
+
+三件事合起来:**EfficientNet-B7 用 66M 参数达到 84.3% Top-1(2019 ImageNet SOTA)**,比 GPipe(557M)小 8.4× 同精度。这是"参数效率"由 Inception 开启的路线在 EfficientNet 上的进一步推进,也是后续 RegNet / NFNet / V2 沿用的"用单参数控制模型族放大"框架的起点。
+
+![Compound Scaling — depth/width/resolution 联合缩放公式](assets/07-efficientnet-compound-scaling.svg)
+*图 1:**左** 4 种缩放策略对比 — 只加深 / 只加宽 / 只加分辨率 / **三轴等比联合缩放**;**右** 在相同 FLOPs 预算下,三轴等比的 Top-1 准确率比任一单轴高 0.5-2.5 个百分点(论文 Figure 5 风格)。底部 callout 给出公式 `depth=α^φ, width=β^φ, resolution=γ^φ` 和 `α·β²·γ²≈2` 约束,φ 每加 1 整网 FLOPs 翻倍。*
+
+### 机制一:Compound Coefficient φ — 单参数控制整网规模
+
+EfficientNet 把"放大网络"重新表述成一个带约束的优化问题。设种子模型(B0)的 depth/width/resolution 为基准 1,引入单一**复合缩放系数 φ**:
 
 $$
 \text{depth} = \alpha^\phi, \quad \text{width} = \beta^\phi, \quad \text{resolution} = \gamma^\phi
 $$
 
-其中 $\alpha, \beta, \gamma \geq 1$ 是三个常数，满足约束：
+其中 $\alpha, \beta, \gamma \geq 1$ 是三个常数,满足:
 
 $$
 \alpha \cdot \beta^2 \cdot \gamma^2 \approx 2
 $$
 
-这条约束有非常具体的物理含义：卷积的 FLOPs 与 depth 成正比、与 width² 成正比（每层输入通道 × 输出通道）、与 resolution²（H×W）成正比。所以 $\alpha \cdot \beta^2 \cdot \gamma^2$ 恰好是 FLOPs 的总缩放系数。把它钉在 2，意味着 **φ 每加 1，整网 FLOPs 翻倍**。φ=0 是基准模型 B0，φ=1, 2, …, 7 依次得到 B1–B7。
+这条约束有具体物理含义:**卷积 FLOPs 与 depth 成正比、与 width² 成正比、与 resolution² 成正比**。所以 $\alpha \cdot \beta^2 \cdot \gamma^2$ 恰好是 FLOPs 的总缩放系数。把它钉在 2 意味着 **φ 每加 1,整网 FLOPs 翻倍**。φ=0 是 B0,φ=1, 2, ..., 7 依次得到 B1-B7。
 
-α, β, γ 的具体值通过在 B0 上做一次小规模 grid search 得到：**α=1.2, β=1.1, γ=1.15**——这意味着 FLOPs 翻倍时，深度涨 20%、宽度涨 10%、分辨率涨 15%。比例并不对等：宽度比深度便宜（宽度对 FLOPs 是平方贡献，所以同样翻倍预算下分给宽度的 exponent 必须小），分辨率也是平方贡献。这组数字一旦定下来，B1–B7 全部按 φ 推出来，**不再有任何额外的手工调超参**。
+α, β, γ 通过在 B0 上做一次小规模 grid search 得到:**α=1.2, β=1.1, γ=1.15** —— FLOPs 翻倍时深度涨 20% / 宽度涨 10% / 分辨率涨 15%。比例不对等是因为 width / resolution 都对 FLOPs 是平方贡献,所以分给它们的 exponent 必须小。**一旦定下来,B1-B7 全部按 φ 推出来,不再有任何手工调超参**。
 
-种子模型 EfficientNet-B0 自身是用 NAS 在"FLOPs ≈ 400M、精度最优"的目标下搜出来的——和 MnasNet 同一套搜索空间。结构上 B0 由一个 stem（3×3 conv）+ 7 个 stage 的 **MBConv**（Mobile Inverted Bottleneck Conv，源自 MobileNet v2）堆叠 + head（1×1 conv + GAP + FC）构成。MBConv 内部用 **inverted bottleneck**（1×1 升维 → depthwise 3×3 → 1×1 降维）+ **Squeeze-Excitation**（源自 SE-Net）+ Swish 激活，这些都是横切组件——本节不展开，留给 [foundations/02-activations](../foundations/02-activations/) 和后续 MobileNet/SENet 专题。
+### 机制二:NAS 搜出强种子 B0 — MBConv + SE + Swish
 
-```mermaid
-graph LR
-    x["Input [B,3,224,224]"]:::input
-    stem["Stem: Conv 3×3 / s=2 / 32"]:::compute
-    s1["Stage 1: MBConv1 / k=3×3 / 16ch × 1"]:::compute
-    s2["Stage 2: MBConv6 / k=3×3 / 24ch × 2 / s=2"]:::compute
-    s3["Stage 3: MBConv6 / k=5×5 / 40ch × 2 / s=2"]:::compute
-    s4["Stage 4: MBConv6 / k=3×3 / 80ch × 3 / s=2"]:::compute
-    s5["Stage 5: MBConv6 / k=5×5 / 112ch × 3"]:::compute
-    s6["Stage 6: MBConv6 / k=5×5 / 192ch × 4 / s=2"]:::compute
-    s7["Stage 7: MBConv6 / k=3×3 / 320ch × 1"]:::compute
-    head["Head: Conv 1×1 / 1280 + GAP"]:::compute
-    fc["FC 1000"]:::compute
-    y["Softmax [B,1000]"]:::output
+种子模型 EfficientNet-B0 是用 **NAS 在"FLOPs ≈ 400M、精度最优"目标下搜出来**的,和 MnasNet 同一套搜索空间。结构上是 stem + 7 个 stage 的 **MBConv**(Mobile Inverted Bottleneck Conv,源自 MobileNet v2)+ head:
 
-    x --> stem --> s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7 --> head --> fc --> y
+| Stage | MBConv | kernel | 通道 | block 数 | stride |
+|---|---|---|---|---|---|
+| 1 | MBConv1 | 3×3 | 16 | 1 | 1 |
+| 2 | MBConv6 | 3×3 | 24 | 2 | 2 |
+| 3 | MBConv6 | 5×5 | 40 | 2 | 2 |
+| 4 | MBConv6 | 3×3 | 80 | 3 | 2 |
+| 5 | MBConv6 | 5×5 | 112 | 3 | 1 |
+| 6 | MBConv6 | 5×5 | 192 | 4 | 2 |
+| 7 | MBConv6 | 3×3 | 320 | 1 | 1 |
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
-*图 1：EfficientNet-B0 主干，7 个 stage 的 MBConv 堆叠。MBConv1/6 中数字为 expansion ratio，每 stage 标 kernel / 输出通道 / block 数 / stride。*
+MBConv 内部:**1×1 升维(expand 6×)→ depthwise k×k → SE 门控 → 1×1 降维(线性瓶颈,无激活)+ shortcut**。激活用 Swish/SiLU 而非 ReLU。这套设计本质是 [Inception](04-inception.md) 1×1 瓶颈思想 + depthwise 的现代化,SE 来自 SE-Net 2017 的"通道注意力"。
 
-**三轴等比 vs 单轴缩放**——论文中的关键消融是在"相同 FLOPs 预算"下对比四种缩放策略：只加深、只加宽、只加分辨率、三轴等比。**同 FLOPs 下三轴联合缩放比任一单轴策略高 0.5–2.5 个 Top-1 百分点**。这条曲线为"复合缩放"提供了实证依据——φ 这一公式是基于实测的帕累托线，而非经验性选择。
+种子选对了再 scale 才有意义 —— **如果 B0 本身不强,后续 B1-B7 按公式放大也救不回精度**。NAS + compound scaling 是 EfficientNet 真正的两件套。
 
-最终得到一个完整的模型族 B0–B7。B0 用 5.3M 参数达到 77.1% Top-1，B7 用 66M 参数达到 **84.3% Top-1（2019 ImageNet SOTA）**。同精度下 EfficientNet-B7 比 GPipe 小 8.4×、比 ResNeXt-101 小数倍——"参数效率"这一由 Inception 开启的路线，在 EfficientNet 上进一步推进。
+### 机制三:大模型同步加正则 — Dropout / Stochastic Depth 按 φ 线性涨
+
+EfficientNet 的一个隐藏关键:**模型放大时,正则强度必须同步增加**。B0 dropout=0.2,B1=0.2,...,B7=**0.5**;stochastic depth 丢弃率 B0=0.0,B4=0.2,B7=0.2(按 block 深度线性 schedule)。
+
+为什么?大模型容量大、容易过拟合,固定正则强度会让 B5+ 训不动或泛化差。**论文消融:B7 关闭 stochastic depth 时 Top-1 下降 0.7-1.0 个百分点** —— 这一超参的影响在 2019 年常被第三方复现忽略,导致 torchvision 早期 B5-B7 比论文低 ~1 个点,社区耗时几个月才定位到。
+
+这一发现后来被广泛接受:**正则强度不是"backbone 超参",是"模型规模函数"**。ViT / ConvNeXt 等大模型族训练 recipe 都把 dropout / stochastic depth / drop path 按规模线性 schedule。
+
+### 三件套协同:compound 公式 + 强种子 B0 + 同步正则 缺一不可
+
+EfficientNet 在 2019 年能定义"参数效率新帕累托线",**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 EfficientNet 都不成立,这一点和 [ResNet](05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 compound 公式,没有强 B0 种子** — α/β/γ 是在 B0 上搜的,如果种子模型本身不够好,放大后所有 B1-B7 都被天花板压住,SOTA 拿不到
+- **只有强 B0,没有 compound 公式** — 退化成"训一个好的 EfficientNet-B0",怎么做更大模型只能凭经验调,失去"单参数 φ 控制模型族"的核心创新
+- **只有 compound + 强 B0,没有同步正则** — B5+ 直接掉 1+ 个百分点,B7 拿不到 84.3% Top-1,SOTA 论据破灭
+
+三件套合起来才让 EfficientNet 在 2019 年开辟"用一个 φ 控制整个模型族"的新范式。但 EfficientNet 也留下两个明确遗憾:**α/β/γ 是 backbone 相关的**(V2 重新搜索发现 width 该更激进、resolution 该放缓)、**Depthwise conv FLOPs 便宜但 GPU 上 wall-clock 不快**(V2 把前 3 个 stage 换回 Fused-MBConv)。这也是后续 ConvNeXt 等工作把训练 recipe 升级反而能在精度上超越 EfficientNet 的根因。
+
+![EfficientNet 模型族 B0-B7 帕累托线](assets/07-efficientnet-model-family.svg)
+*图 2:**主图** 参数量 vs Top-1 accuracy 散点 — ResNet-50/152、ResNeXt-101、GPipe(557M, 84.3%)和 EfficientNet B0-B7 全部画在同一坐标系。EfficientNet B0-B7 曲线整体位于 ResNet/ResNeXt 左上方(更少参数 + 更高精度),**B7 用 1/8.4 of GPipe 参数达到 SOTA 84.3%**。每个点旁标注 dropout / stochastic depth 配置,展示"正则随规模线性涨"的 schedule。底部 callout:这条帕累托线在 2019-2021 主导参数效率坐标轴,直到 ConvNeXt 用现代训练 recipe 超越。*
 
 ## 工程陷阱
 
