@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-vote" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="700">
+    Reasoning 三代范式 · CoT prompt → Self-Consistency → o1
+  </text>
+  <text x="450" y="50" text-anchor="middle" font-size="12" fill="#6b7280">
+    推理从 inference-time prompt 技巧,演化为 RL 训练目标
+  </text>
+
+  <!-- 三栏分隔线 -->
+  <line x1="300" y1="80" x2="300" y2="540"
+        stroke="#e5e7eb" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="600" y1="80" x2="600" y2="540"
+        stroke="#e5e7eb" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ===== 第 1 栏: CoT prompt ===== -->
+  <text x="150" y="100" text-anchor="middle" font-size="15"
+        fill="#1f2937" font-weight="600">① CoT prompt (2022)</text>
+  <text x="150" y="118" text-anchor="middle" font-size="11" fill="#6b7280">
+    单次 forward + few-shot 触发
+  </text>
+
+  <!-- prompt box -->
+  <rect x="50" y="140" width="200" height="50" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="150" y="160" text-anchor="middle" font-size="12" fill="#92400e">prompt</text>
+  <text x="150" y="178" text-anchor="middle" font-size="10" fill="#92400e">
+    "Q: ... Let's think step by step."
+  </text>
+
+  <!-- LLM -->
+  <rect x="80" y="220" width="140" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="150" y="245" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">LLM</text>
+  <text x="150" y="262" text-anchor="middle" font-size="10" fill="#9d174d">single forward</text>
+
+  <!-- 短 CoT + answer -->
+  <rect x="50" y="300" width="200" height="80" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="150" y="320" text-anchor="middle" font-size="11" fill="#065f46">
+    "5 + 2×3 = 11."
+  </text>
+  <text x="150" y="338" text-anchor="middle" font-size="11" fill="#065f46">
+    "答案是 11."
+  </text>
+  <text x="150" y="362" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    短 CoT (~50 token) + answer
+  </text>
+
+  <!-- 箭头 -->
+  <line x1="150" y1="190" x2="150" y2="218" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="150" y1="270" x2="150" y2="298" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 指标 -->
+  <rect x="50" y="420" width="200" height="90" rx="6"
+        fill="#f9fafb" stroke="#d1d5db" stroke-width="1"/>
+  <text x="150" y="442" text-anchor="middle" font-size="11" fill="#374151" font-weight="600">GSM8K 准确率</text>
+  <text x="150" y="466" text-anchor="middle" font-size="22" fill="#9d174d" font-weight="700">~57%</text>
+  <text x="150" y="488" text-anchor="middle" font-size="10" fill="#6b7280">thinking tokens</text>
+  <text x="150" y="504" text-anchor="middle" font-size="13" fill="#374151" font-weight="600">~50 / query</text>
+
+  <!-- ===== 第 2 栏: Self-Consistency ===== -->
+  <text x="450" y="100" text-anchor="middle" font-size="15"
+        fill="#1f2937" font-weight="600">② Self-Consistency (2022)</text>
+  <text x="450" y="118" text-anchor="middle" font-size="11" fill="#6b7280">
+    同 prompt 多次采样 + majority vote
+  </text>
+
+  <!-- prompt -->
+  <rect x="350" y="140" width="200" height="50" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="450" y="160" text-anchor="middle" font-size="12" fill="#92400e">prompt (CoT)</text>
+  <text x="450" y="178" text-anchor="middle" font-size="10" fill="#92400e">
+    + temperature = 0.7
+  </text>
+
+  <!-- 5 个 LLM 采样 -->
+  <g>
+    <rect x="350" y="220" width="32" height="50" rx="4"
+          fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+    <text x="366" y="248" text-anchor="middle" font-size="10" fill="#9d174d">LLM</text>
+    <text x="366" y="262" text-anchor="middle" font-size="9" fill="#9d174d">s1</text>
+
+    <rect x="390" y="220" width="32" height="50" rx="4"
+          fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+    <text x="406" y="248" text-anchor="middle" font-size="10" fill="#9d174d">LLM</text>
+    <text x="406" y="262" text-anchor="middle" font-size="9" fill="#9d174d">s2</text>
+
+    <rect x="430" y="220" width="32" height="50" rx="4"
+          fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+    <text x="446" y="248" text-anchor="middle" font-size="10" fill="#9d174d">LLM</text>
+    <text x="446" y="262" text-anchor="middle" font-size="9" fill="#9d174d">s3</text>
+
+    <rect x="470" y="220" width="32" height="50" rx="4"
+          fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+    <text x="486" y="248" text-anchor="middle" font-size="10" fill="#9d174d">LLM</text>
+    <text x="486" y="262" text-anchor="middle" font-size="9" fill="#9d174d">s4</text>
+
+    <rect x="510" y="220" width="32" height="50" rx="4"
+          fill="#fce7f3" stroke="#db2777" stroke-width="1.2"/>
+    <text x="526" y="248" text-anchor="middle" font-size="10" fill="#9d174d">LLM</text>
+    <text x="526" y="262" text-anchor="middle" font-size="9" fill="#9d174d">s5</text>
+  </g>
+
+  <!-- 多个答案 -->
+  <g font-size="11">
+    <text x="366" y="290" text-anchor="middle" fill="#065f46">11</text>
+    <text x="406" y="290" text-anchor="middle" fill="#065f46">11</text>
+    <text x="446" y="290" text-anchor="middle" fill="#dc2626">9</text>
+    <text x="486" y="290" text-anchor="middle" fill="#065f46">11</text>
+    <text x="526" y="290" text-anchor="middle" fill="#dc2626">13</text>
+  </g>
+
+  <!-- vote -->
+  <rect x="350" y="310" width="200" height="70" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="450" y="332" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="600">
+    majority vote
+  </text>
+  <text x="450" y="352" text-anchor="middle" font-size="11" fill="#1e40af">
+    11 (×3) ≻ 9 (×1) ≻ 13 (×1)
+  </text>
+  <text x="450" y="370" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">
+    → answer = 11
+  </text>
+
+  <line x1="450" y1="190" x2="450" y2="218" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="446" y1="297" x2="446" y2="308" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arr-vote)"/>
+
+  <!-- 指标 -->
+  <rect x="350" y="420" width="200" height="90" rx="6"
+        fill="#f9fafb" stroke="#d1d5db" stroke-width="1"/>
+  <text x="450" y="442" text-anchor="middle" font-size="11" fill="#374151" font-weight="600">GSM8K 准确率</text>
+  <text x="450" y="466" text-anchor="middle" font-size="22" fill="#9d174d" font-weight="700">~75%</text>
+  <text x="450" y="488" text-anchor="middle" font-size="10" fill="#6b7280">thinking tokens</text>
+  <text x="450" y="504" text-anchor="middle" font-size="13" fill="#374151" font-weight="600">~50 × 5 / query</text>
+
+  <!-- ===== 第 3 栏: o1 ===== -->
+  <text x="750" y="100" text-anchor="middle" font-size="15"
+        fill="#1f2937" font-weight="700">③ o1 (2024)</text>
+  <text x="750" y="118" text-anchor="middle" font-size="11" fill="#6b7280">
+    RL 训出长链 thinking,内化为默认行为
+  </text>
+
+  <!-- prompt 极简 -->
+  <rect x="650" y="140" width="200" height="50" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="750" y="160" text-anchor="middle" font-size="12" fill="#92400e">prompt</text>
+  <text x="750" y="178" text-anchor="middle" font-size="10" fill="#92400e">
+    "Q: ..."  (无需 step by step)
+  </text>
+
+  <!-- LLM with big thinking box inside -->
+  <rect x="650" y="220" width="200" height="160" rx="8"
+        fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="750" y="240" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">o1 LLM</text>
+
+  <!-- 内部 thinking 黑盒 -->
+  <rect x="668" y="252" width="164" height="115" rx="6"
+        fill="#1f2937" stroke="#111827" stroke-width="1.5"/>
+  <text x="750" y="270" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="600">
+    &lt;thinking&gt; (隐藏)
+  </text>
+  <g font-size="9" fill="#e5e7eb">
+    <text x="750" y="288" text-anchor="middle">"让我先理解问题..."</text>
+    <text x="750" y="302" text-anchor="middle">"尝试方法 1... 不行"</text>
+    <text x="750" y="316" text-anchor="middle">"Wait, 等等..."</text>
+    <text x="750" y="330" text-anchor="middle">"换个角度试试..."</text>
+    <text x="750" y="344" text-anchor="middle">"验证: 代回原式 ✓"</text>
+  </g>
+  <text x="750" y="360" text-anchor="middle" font-size="10" fill="#fbbf24" font-style="italic">
+    ~8000+ token
+  </text>
+
+  <!-- answer -->
+  <rect x="650" y="400" width="200" height="40" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="750" y="416" text-anchor="middle" font-size="11" fill="#065f46">
+    &lt;answer&gt; "答案是 11."
+  </text>
+  <text x="750" y="432" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    短 summary,thinking 不给用户看
+  </text>
+
+  <line x1="750" y1="190" x2="750" y2="218" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="750" y1="380" x2="750" y2="398" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 指标 -->
+  <rect x="650" y="450" width="200" height="90" rx="6"
+        fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="750" y="472" text-anchor="middle" font-size="11" fill="#713f12" font-weight="600">GSM8K 准确率</text>
+  <text x="750" y="496" text-anchor="middle" font-size="22" fill="#9d174d" font-weight="700">~95%</text>
+  <text x="750" y="518" text-anchor="middle" font-size="10" fill="#713f12">thinking tokens</text>
+  <text x="750" y="534" text-anchor="middle" font-size="13" fill="#713f12" font-weight="700">8K+ / query</text>
+
+  <!-- 底部 callout -->
+  <rect x="40" y="565" width="820" height="42" rx="6"
+        fill="#f0f9ff" stroke="#0284c7" stroke-width="1.2"/>
+  <text x="450" y="585" text-anchor="middle" font-size="12" fill="#075985" font-weight="600">
+    范式跃迁: prompt 触发 (CoT) → 多次采样 (SC) → RL 训练内化 (o1)
+  </text>
+  <text x="450" y="600" text-anchor="middle" font-size="11" fill="#075985">
+    "想" 从 inference 技巧变成模型默认行为; thinking token 数从 50 → 8000+,准确率从 57% → 95%
+  </text>
+</svg>
