@@ -28,7 +28,18 @@ DPO 的核心论点:**LLM 本身已经隐式定义了一个 reward model**——
 
 这一发现在 2023 年下半年迅速被开源社区采用,Hugging Face TRL、Axolotl 等工具默认支持 DPO,LLaMA-2 衍生模型(Zephyr、Tulu、Nous Hermes)几乎全部用 DPO 而不是 PPO。**DPO 让 RLHF 从"几个公司的专利"变成了"任何人都能跑"**。
 
-## 核心思想:把 RL 推导成监督学习
+## 核心思想
+
+### 直觉:RM + PPO 可以被一个 closed-form loss 替代
+
+[InstructGPT](02-instructgpt.md) 的 RM + PPO pipeline 工程上太重——要训 RM + 维护 ref policy + PPO 调参,4 个模型常驻显存、十几个超参互相牵扯、on-policy 采样让每一步训练都要 actor 重新生成回答。整个流程在 2022–2023 期间是顶级公司的"专利",开源社区想跑通都极其困难。
+
+Rafailov 等人 2023 年的核心发现是:从 Bradley-Terry 偏好模型 + KL 约束 RL 这个完全等价的数学起点出发,可以推出一个**直接对 (chosen, rejected) pair 做 SFT-style loss 的等价形式**,完全跳过 RM 和 RL。RLHF 的整个三阶段被折叠成一个 cross-entropy 形式的损失,工程复杂度降一个数量级——而且数学上**没有任何近似**,只是把同一个优化问题换了一种解法。
+
+![图 1:InstructGPT/PPO vs DPO 工程复杂度对比](assets/04-dpo-vs-ppo.svg)
+*图 1:左 — InstructGPT 三阶段(SFT → 训 RM → PPO 同时维护 actor/critic/RM/π_SFT 四模型 + 十几个超参);右 — DPO 用同一份 (chosen, rejected) 偏好数据直接喂进一个 SFT-style loss,只需 actor + π_ref 两个模型、一个 β 超参。底部对比工程开销:几千行 vs 几百行,几天 vs 几小时,几节点 vs 单节点。*
+
+### 机制一:从 PPO 反推 — 最优 policy 有 closed-form 解
 
 RLHF 的标准目标是最大化期望 reward,同时受 KL 约束:
 
@@ -36,75 +47,64 @@ $$
 \max_{\pi_\theta} \, \mathbb{E}_{x \sim D, y \sim \pi_\theta(\cdot|x)} \left[ r(x, y) \right] - \beta \cdot \text{KL}(\pi_\theta(\cdot|x) \,\|\, \pi_{\text{ref}}(\cdot|x))
 $$
 
-DPO 论文的关键观察:**这个目标有闭式解**(closed-form optimal policy)。固定 reward `r(x, y)` 和参考模型 `\pi_{\text{ref}}`,最优策略 `\pi^*` 是:
+固定 reward `r(x, y)` 和参考模型 `\pi_{\text{ref}}`,这个 KL-regularized RL 问题**有闭式最优解**:
 
 $$
 \pi^*(y|x) = \frac{1}{Z(x)} \pi_{\text{ref}}(y|x) \exp\!\left(\frac{1}{\beta} r(x, y)\right)
 $$
 
-`Z(x)` 是归一化因子。这个式子等价于把 reward 函数解出来:
+`Z(x)` 是归一化因子。**反过来把这个式子解出来,reward 就可以用 policy 表达**:
 
 $$
 r(x, y) = \beta \log \frac{\pi^*(y|x)}{\pi_{\text{ref}}(y|x)} + \beta \log Z(x)
 $$
 
-**关键洞察 1**:**reward 函数可以用 policy 表达**。任何 reward model 都对应一个最优 policy,反过来任何 policy 也对应一个 reward——它们是一一对应的。
+这就是 DPO 的第一关键洞察:**隐 reward 等于 log-ratio**。任何 reward 函数都唯一对应一个最优 policy,反过来任何 policy 也唯一对应一个 reward——它们是一一对应的两面。InstructGPT 训了一个 6B RM 来近似 reward,DPO 说:**你的 LLM 本身就是个 reward model**(论文副标题"Your Language Model is Secretly a Reward Model"正是此意)。
 
-**关键洞察 2**:**Bradley-Terry 偏好模型只依赖 reward 差值**:
+### 机制二:Bradley-Terry + 隐 reward → DPO loss
 
-$$
-p(y_w \succ y_l | x) = \sigma\!\left(r(x, y_w) - r(x, y_l)\right)
-$$
-
-代入上面 reward 的表达式,**`Z(x)` 这一项消掉了**(因为是相减):
+[InstructGPT 的 RM 训练](02-instructgpt.md) 用的就是 Bradley-Terry 偏好模型:
 
 $$
-p(y_w \succ y_l | x) = \sigma\!\left(\beta \log \frac{\pi^*(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi^*(y_l|x)}{\pi_{\text{ref}}(y_l|x)}\right)
+P(y_w \succ y_l | x) = \sigma\!\left(r(x, y_w) - r(x, y_l)\right)
 $$
 
-**关键洞察 3**:这就是一个**直接用 policy 表达的偏好概率**。不需要 reward model,可以直接最大化偏好对的 log-likelihood:
+把机制一里 reward 的 policy 表达式代回来——关键奇迹是 **`Z(x)` 在 log-ratio 相减时被抵消**(同一个 x 的 Z 相同):
+
+$$
+P(y_w \succ y_l | x) = \sigma\!\left(\beta \log \frac{\pi^*(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi^*(y_l|x)}{\pi_{\text{ref}}(y_l|x)}\right)
+$$
+
+`Z(x)` 是 DPO 推导里最让人头大的难算量(要对整个生成空间求和),它的消失是整套方法能落地的真正前提。直接对这个偏好概率取负 log-likelihood 就得到:
 
 $$
 \boxed{\mathcal{L}_{\text{DPO}} = -\mathbb{E}_{(x, y_w, y_l)} \left[ \log \sigma \!\left( \beta \log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)} \right) \right]}
 $$
 
-这就是 **DPO loss**。它的结构和 cross-entropy 完全一样,可以用标准 SFT 框架训练。**没有 reward model、没有 PPO、没有 critic、没有 advantage estimation**,只需要 actor(`\pi_\theta`)和 reference(`\pi_{\text{ref}}`)两个模型。
+**没有 RM、没有 actor 采样、没有 PPO clip、没有 advantage estimation**——只剩 actor `\pi_\theta` 和冻结的 `\pi_{\text{ref}}` 两个模型,以及一个和 cross-entropy 同构的损失。它可以用任何标准 SFT 训练框架跑。
 
-## DPO loss 的直觉
+### 机制三:训练等价于"对 chosen 提概率,对 rejected 降概率"+ KL 约束
 
-把 DPO loss 展开看看模型在做什么:
+DPO loss 的梯度形式非常直观——展开 `log π_θ(y_w)/π_ref(y_w) - log π_θ(y_l)/π_ref(y_l)`,每一步训练就在做三件事:
 
-$$
-\log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)} = \text{(模型对 winner 的偏置)} - \text{(模型对 loser 的偏置)}
-$$
+- **提高 `\pi_\theta(y_w|x)`**(相对 `\pi_{\text{ref}}` 而言),让 chosen 在模型分布里更可能
+- **降低 `\pi_\theta(y_l|x)`**(相对 `\pi_{\text{ref}}` 而言),让 rejected 更不可能
+- **两个方向都被 `\pi_{\text{ref}}` 锚定**——log-ratio 的存在意味着 π_θ 任何偏离 π_ref 的方向都会被记账,等价于 PPO 那个 `-β·KL` 项,只是 KL 不再显式出现,而是融进 loss 的代数结构里
 
-模型在每一对 (winner, loser) 上的目标是:
+`β` 是唯一旋钮,**等价于 PPO 的 KL penalty 系数**。从 SFT 的角度看,DPO 是"带负样本的 SFT"——SFT 只用正样本让模型模仿,DPO 加入负样本让模型同时学会"什么不该说",但被 ref 拉住不会跑偏。
 
-- **提高 winner 的概率**(相对 reference 而言)
-- **降低 loser 的概率**(相对 reference 而言)
-- **`\beta` 控制偏离 reference 的程度**——大 `\beta` = 保守(像 RLHF 的强 KL 惩罚),小 `\beta` = 激进
+![图 2:DPO Loss 的工作机制](assets/04-dpo-loss-mechanism.svg)
+*图 2:左 — 数据流。一条 (prompt, y_w, y_l) 经 actor 和 π_ref 各算两个 log-prob 共 4 个值 → log-ratio 差 → σ → -log 得到 loss。右 — 梯度方向。π_θ(y_w) 被推高、π_θ(y_l) 被压低,但两者都被虚线表示的 π_ref 基线拉住。底部 callout:β 大 → 严格遵从 π_ref(慢但安全);β 小 → 激进偏向 chosen(快但易过拟合,DPO 版 reward hacking)。*
 
-这就是 SFT 的自然推广——SFT 只有正样本(高质量回答),让 model 学习模仿;DPO 有正样本 + 负样本,让 model 学习区分。从这个角度看,**DPO 是"带负样本的 SFT"**。
+### 三件套协同:closed-form 最优 policy + BT 偏好替换 + β 控制 KL 缺一不可
 
-```mermaid
-graph LR
-    prompt["prompt x"]:::input --> actor["π_θ (要训的 actor)"]:::compute
-    prompt --> ref["π_ref (冻结)"]:::compute
-    actor --> r_w["log π_θ(y_w|x)"]:::compute
-    actor --> r_l["log π_θ(y_l|x)"]:::compute
-    ref --> ref_w["log π_ref(y_w|x)"]:::compute
-    ref --> ref_l["log π_ref(y_l|x)"]:::compute
-    r_w --> loss["DPO loss<br/>= -log σ(β·(ratio_w - ratio_l))"]:::output
-    r_l --> loss
-    ref_w --> loss
-    ref_l --> loss
+类比 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系——DPO 的三件套同样任意抽掉一件整套方法就垮掉:
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
+- **抽掉 closed-form 最优 policy 推导** —— 跑不出"reward = β·log-ratio"这个等价关系,RM 和 policy 之间不再可互换,DPO 没有理论合法性,只剩一个看起来像 cross-entropy 但来历不明的 loss
+- **抽掉 Bradley-Terry 偏好替换** —— 偏好数据没法以可微分形式接入,只能像 InstructGPT 那样训一个 RM 然后再 RL,**Z(x) 这一项就消不掉了**(没有"相减"这个动作),整套推导卡在第一步
+- **抽掉 β 控制 KL** —— 模型会无限激进地把 π_θ(y_w) 推高、π_θ(y_l) 压低,几步内严重偏离 π_ref,失去通用语言能力。这是 reward hacking 在 DPO 框架下的另一种形式——不再是"骗 RM",而是"过拟合偏好对"。DPO 论文和后续 Zephyr/Tulu 实践都反复发现 β 和 lr 是最敏感的两个超参
 
-*图 1:DPO 数据流——只需要 actor 和冻结的 reference 两个模型,计算两对 log-prob 然后算 sigmoid loss。整个流程没有 reward model、没有 sampling、没有 critic。*
+三件套合起来,DPO 才能在数学等价、性能持平的前提下把 RLHF 的工程复杂度降一个数量级——这是它从"一篇 NeurIPS 论文"变成"2024 年开源 LLM 默认对齐方法"的真正原因。
 
 ## DPO vs PPO 性能对比
 

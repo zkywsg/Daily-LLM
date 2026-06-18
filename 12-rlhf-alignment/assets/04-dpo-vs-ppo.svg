@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="32" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="700">
+    InstructGPT / PPO  vs.  DPO  ——  两条对齐路径的工程复杂度对比
+  </text>
+
+  <!-- =================== LEFT PANEL: PPO pipeline =================== -->
+  <text x="225" y="66" text-anchor="middle" font-size="15"
+        fill="#9d174d" font-weight="600">
+    InstructGPT (SFT + RM + PPO)
+  </text>
+
+  <!-- Panel background -->
+  <rect x="30" y="80" width="390" height="460" rx="8"
+        fill="#fdf2f8" stroke="#fbcfe8" stroke-width="1.5"/>
+
+  <!-- Step 1: SFT -->
+  <rect x="55" y="100" width="340" height="56" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="225" y="122" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Step 1: SFT</text>
+  <text x="225" y="142" text-anchor="middle" font-size="11" fill="#9d174d">13K demonstrations → GPT-3 监督微调</text>
+
+  <line x1="225" y1="156" x2="225" y2="178" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-main)"/>
+
+  <!-- Step 2: Train RM -->
+  <rect x="55" y="180" width="340" height="76" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="225" y="202" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Step 2: 训练 Reward Model</text>
+  <text x="225" y="222" text-anchor="middle" font-size="11" fill="#9d174d">33K 偏好对 → 6B RM (Bradley-Terry)</text>
+  <text x="225" y="240" text-anchor="middle" font-size="11" fill="#9d174d">L_RM = -log σ(r(y_w) − r(y_l))</text>
+
+  <line x1="225" y1="256" x2="225" y2="278" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-main)"/>
+
+  <!-- Step 3: PPO (big box with sub-components) -->
+  <rect x="55" y="280" width="340" height="210" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="225" y="302" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">Step 3: PPO RL（同时维护 4 个模型）</text>
+
+  <!-- 4 sub-blocks for PPO models -->
+  <rect x="70" y="318" width="75" height="38" rx="4" fill="#fff" stroke="#db2777" stroke-width="1"/>
+  <text x="107" y="334" text-anchor="middle" font-size="10" fill="#9d174d">Actor π_θ</text>
+  <text x="107" y="348" text-anchor="middle" font-size="9" fill="#9d174d">(被更新)</text>
+
+  <rect x="155" y="318" width="75" height="38" rx="4" fill="#fff" stroke="#db2777" stroke-width="1"/>
+  <text x="192" y="334" text-anchor="middle" font-size="10" fill="#9d174d">Critic V_φ</text>
+  <text x="192" y="348" text-anchor="middle" font-size="9" fill="#9d174d">(算 advantage)</text>
+
+  <rect x="240" y="318" width="75" height="38" rx="4" fill="#fff" stroke="#db2777" stroke-width="1"/>
+  <text x="277" y="334" text-anchor="middle" font-size="10" fill="#9d174d">RM (冻结)</text>
+  <text x="277" y="348" text-anchor="middle" font-size="9" fill="#9d174d">(打分)</text>
+
+  <rect x="325" y="318" width="65" height="38" rx="4" fill="#fff" stroke="#db2777" stroke-width="1"/>
+  <text x="357" y="334" text-anchor="middle" font-size="10" fill="#9d174d">π_SFT (冻结)</text>
+  <text x="357" y="348" text-anchor="middle" font-size="9" fill="#9d174d">(KL anchor)</text>
+
+  <!-- PPO loss formula -->
+  <rect x="70" y="372" width="320" height="42" rx="4" fill="#fff" stroke="#db2777" stroke-width="1"/>
+  <text x="230" y="389" text-anchor="middle" font-size="11" fill="#9d174d">reward = r_θ(x,y) − β·KL(π_θ ‖ π_SFT)</text>
+  <text x="230" y="405" text-anchor="middle" font-size="10" fill="#9d174d">PPO clipped surrogate + advantage estimation</text>
+
+  <!-- Hyperparameter list -->
+  <text x="70" y="432" font-size="10" fill="#6b7280">超参: β (KL), clip ε, value coef,</text>
+  <text x="70" y="446" font-size="10" fill="#6b7280">lr_actor, lr_critic, GAE λ, reward scale...</text>
+
+  <text x="70" y="468" font-size="10" fill="#dc2626" font-weight="600">显存: 4 × 模型权重</text>
+  <text x="70" y="482" font-size="10" fill="#dc2626" font-weight="600">采样: actor 每 step 都要生成 (慢)</text>
+
+  <!-- Output -->
+  <rect x="125" y="500" width="200" height="32" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="225" y="521" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">InstructGPT (对齐后)</text>
+
+  <!-- =================== RIGHT PANEL: DPO =================== -->
+  <text x="675" y="66" text-anchor="middle" font-size="15"
+        fill="#1e40af" font-weight="600">
+    DPO (单一 SFT-style loss)
+  </text>
+
+  <!-- Panel background -->
+  <rect x="480" y="80" width="390" height="460" rx="8"
+        fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+
+  <!-- Input: preference dataset -->
+  <rect x="505" y="100" width="340" height="56" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="675" y="122" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="600">偏好数据集 (chosen, rejected)</text>
+  <text x="675" y="142" text-anchor="middle" font-size="11" fill="#1e40af">(x, y_w, y_l) — 与 PPO 用同样的数据</text>
+
+  <line x1="675" y1="156" x2="675" y2="200" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- Big DPO loss box -->
+  <rect x="505" y="202" width="340" height="200" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="675" y="224" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="600">DPO Loss (SFT-style,只 2 个模型)</text>
+
+  <!-- 2 sub-blocks -->
+  <rect x="540" y="240" width="120" height="42" rx="4" fill="#fff" stroke="#2563eb" stroke-width="1"/>
+  <text x="600" y="258" text-anchor="middle" font-size="11" fill="#1e40af">Actor π_θ</text>
+  <text x="600" y="273" text-anchor="middle" font-size="10" fill="#1e40af">(被更新)</text>
+
+  <rect x="690" y="240" width="120" height="42" rx="4" fill="#fff" stroke="#2563eb" stroke-width="1"/>
+  <text x="750" y="258" text-anchor="middle" font-size="11" fill="#1e40af">π_ref (冻结)</text>
+  <text x="750" y="273" text-anchor="middle" font-size="10" fill="#1e40af">(隐式 baseline)</text>
+
+  <!-- Loss formula -->
+  <rect x="520" y="298" width="310" height="56" rx="4" fill="#fff" stroke="#2563eb" stroke-width="1"/>
+  <text x="675" y="318" text-anchor="middle" font-size="11" fill="#1e40af">L_DPO = −log σ(</text>
+  <text x="675" y="334" text-anchor="middle" font-size="11" fill="#1e40af">  β·log(π_θ(y_w)/π_ref(y_w))</text>
+  <text x="675" y="349" text-anchor="middle" font-size="11" fill="#1e40af">  − β·log(π_θ(y_l)/π_ref(y_l))  )</text>
+
+  <!-- Hyperparameter list -->
+  <text x="520" y="374" font-size="10" fill="#6b7280">超参: 只有 β (一个)</text>
+  <text x="520" y="388" font-size="10" fill="#059669" font-weight="600">显存: 2 × 模型权重</text>
+
+  <line x1="675" y1="402" x2="675" y2="498" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <text x="690" y="430" font-size="10" fill="#059669" font-weight="600">无 RM 训练</text>
+  <text x="690" y="446" font-size="10" fill="#059669" font-weight="600">无 actor 采样</text>
+  <text x="690" y="462" font-size="10" fill="#059669" font-weight="600">无 PPO clip</text>
+  <text x="690" y="478" font-size="10" fill="#059669" font-weight="600">无 advantage</text>
+
+  <!-- Output -->
+  <rect x="575" y="500" width="200" height="32" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="675" y="521" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">对齐后的 π_θ</text>
+
+  <!-- =================== BOTTOM CALLOUT =================== -->
+  <rect x="60" y="580" width="780" height="78" rx="8"
+        fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="450" y="608" text-anchor="middle" font-size="13" fill="#713f12" font-weight="600">
+    DPO 把 RM + RL 两个阶段折叠成一个 SFT-like loss,工程复杂度降一个数量级
+  </text>
+  <text x="450" y="630" text-anchor="middle" font-size="11" fill="#713f12">
+    PPO: 4 模型常驻 · 十几个超参 · on-policy 采样 · 多节点分布式 · 几千行代码 · 训练几天
+  </text>
+  <text x="450" y="648" text-anchor="middle" font-size="11" fill="#713f12">
+    DPO: 2 模型 · 一个 β · off-policy 直接用现成偏好对 · 单节点 8×A100 · 几百行 · 训练几小时
+  </text>
+</svg>

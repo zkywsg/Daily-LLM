@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-pink" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-up" viewBox="0 0 10 10" refX="5" refY="1"
+            markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 10 L 5 0 L 10 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="arr-down" viewBox="0 0 10 10" refX="5" refY="9"
+            markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 5 10 L 10 0 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="32" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="700">
+    DPO Loss 的工作机制 —— 4 个 log-prob 拼出一个 SFT-like 损失
+  </text>
+
+  <!-- =================== LEFT: data flow =================== -->
+  <text x="305" y="66" text-anchor="middle" font-size="14"
+        fill="#1f2937" font-weight="600">数据流：(prompt, y_w, y_l) → loss</text>
+
+  <!-- Input triple -->
+  <rect x="40" y="86" width="170" height="76" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="125" y="106" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">输入三元组</text>
+  <text x="125" y="124" text-anchor="middle" font-size="11" fill="#92400e">prompt x</text>
+  <text x="125" y="139" text-anchor="middle" font-size="11" fill="#92400e">chosen y_w (人类偏好)</text>
+  <text x="125" y="154" text-anchor="middle" font-size="11" fill="#92400e">rejected y_l (人类拒绝)</text>
+
+  <!-- Two model boxes -->
+  <rect x="250" y="86" width="160" height="36" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="330" y="108" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="600">Actor π_θ (训练中)</text>
+
+  <rect x="250" y="132" width="160" height="36" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="330" y="154" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="600">π_ref (SFT 后,冻结)</text>
+
+  <!-- Arrows from input to models -->
+  <line x1="210" y1="115" x2="248" y2="104" stroke="#9d174d" stroke-width="1.5" marker-end="url(#arr-pink)"/>
+  <line x1="210" y1="130" x2="248" y2="150" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+
+  <!-- 4 log-prob outputs -->
+  <text x="305" y="200" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">4 个 log-prob</text>
+
+  <rect x="40" y="214" width="240" height="34" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="160" y="235" text-anchor="middle" font-size="12" fill="#9d174d">log π_θ(y_w | x)</text>
+
+  <rect x="330" y="214" width="240" height="34" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="450" y="235" text-anchor="middle" font-size="12" fill="#9d174d">log π_θ(y_l | x)</text>
+
+  <rect x="40" y="256" width="240" height="34" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="160" y="277" text-anchor="middle" font-size="12" fill="#1e40af">log π_ref(y_w | x)</text>
+
+  <rect x="330" y="256" width="240" height="34" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="450" y="277" text-anchor="middle" font-size="12" fill="#1e40af">log π_ref(y_l | x)</text>
+
+  <!-- Log-ratio diff -->
+  <text x="305" y="320" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">log-ratio 差值 (隐式 reward 差)</text>
+
+  <rect x="40" y="334" width="530" height="48" rx="6"
+        fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="305" y="354" text-anchor="middle" font-size="12" fill="#713f12">
+    Δ = β · [ (log π_θ(y_w) − log π_ref(y_w))  −  (log π_θ(y_l) − log π_ref(y_l)) ]
+  </text>
+  <text x="305" y="372" text-anchor="middle" font-size="11" fill="#713f12">
+    = β · log(π_θ(y_w)/π_ref(y_w))  −  β · log(π_θ(y_l)/π_ref(y_l))
+  </text>
+
+  <!-- sigma + -log -->
+  <rect x="40" y="400" width="250" height="44" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="165" y="420" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">P(y_w ≻ y_l) = σ(Δ)</text>
+  <text x="165" y="436" text-anchor="middle" font-size="10" fill="#065f46">Bradley-Terry 偏好概率</text>
+
+  <rect x="320" y="400" width="250" height="44" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="445" y="420" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">L_DPO = −log σ(Δ)</text>
+  <text x="445" y="436" text-anchor="middle" font-size="10" fill="#065f46">就是一个 cross-entropy</text>
+
+  <!-- Flow arrows on left side -->
+  <line x1="125" y1="162" x2="125" y2="210" stroke="#9d174d" stroke-width="1" marker-end="url(#arr-pink)" opacity="0.5"/>
+  <line x1="305" y1="294" x2="305" y2="330" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr-pink)"/>
+  <line x1="305" y1="384" x2="305" y2="398" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr-pink)"/>
+
+  <!-- =================== RIGHT: gradient direction =================== -->
+  <line x1="610" y1="80" x2="610" y2="460" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <text x="755" y="66" text-anchor="middle" font-size="14"
+        fill="#1f2937" font-weight="600">梯度方向：提 chosen, 压 rejected</text>
+
+  <!-- Reference anchor line -->
+  <line x1="650" y1="240" x2="860" y2="240"
+        stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="868" y="244" font-size="10" fill="#1e40af">π_ref</text>
+  <text x="630" y="244" font-size="10" fill="#1e40af">基线</text>
+
+  <!-- y_w bar going up -->
+  <rect x="670" y="160" width="60" height="80"
+        fill="#dcfce7" stroke="#059669" stroke-width="1.5"/>
+  <text x="700" y="155" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">π_θ(y_w)</text>
+  <text x="700" y="205" text-anchor="middle" font-size="14" fill="#065f46" font-weight="700">↑</text>
+  <!-- up arrow -->
+  <line x1="700" y1="190" x2="700" y2="140"
+        stroke="#059669" stroke-width="2.5" marker-end="url(#arr-up)"/>
+  <text x="700" y="135" text-anchor="middle" font-size="10" fill="#059669" font-weight="600">提升</text>
+
+  <!-- y_l bar going down -->
+  <rect x="780" y="240" width="60" height="80"
+        fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="810" y="335" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="600">π_θ(y_l)</text>
+  <text x="810" y="285" text-anchor="middle" font-size="14" fill="#991b1b" font-weight="700">↓</text>
+  <!-- down arrow -->
+  <line x1="810" y1="290" x2="810" y2="340"
+        stroke="#dc2626" stroke-width="2.5" marker-end="url(#arr-down)"/>
+  <text x="810" y="355" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="600">压低</text>
+
+  <!-- Anchor tether annotations -->
+  <text x="755" y="385" text-anchor="middle" font-size="11" fill="#1e40af">
+    但 π_θ 始终被 π_ref 拉住
+  </text>
+  <text x="755" y="402" text-anchor="middle" font-size="11" fill="#1e40af">
+    (log-ratio 取代了显式 KL penalty)
+  </text>
+
+  <!-- Beta knob -->
+  <rect x="640" y="425" width="230" height="32" rx="4"
+        fill="#fef9c3" stroke="#ca8a04" stroke-width="1"/>
+  <text x="755" y="446" text-anchor="middle" font-size="11" fill="#713f12" font-weight="600">
+    β = 等价 PPO 的 KL 系数
+  </text>
+
+  <!-- =================== BOTTOM CALLOUT =================== -->
+  <rect x="60" y="490" width="780" height="100" rx="8"
+        fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="450" y="516" text-anchor="middle" font-size="13" fill="#713f12" font-weight="600">
+    β 大 → 更严格遵从 π_ref;β 小 → 更激进偏向 chosen,容易过拟合偏好数据
+  </text>
+  <text x="450" y="540" text-anchor="middle" font-size="11" fill="#713f12">
+    β 大 (如 0.5):chosen / rejected 都不能离 π_ref 太远 → 安全但提升慢,等价于 PPO 强 KL penalty
+  </text>
+  <text x="450" y="558" text-anchor="middle" font-size="11" fill="#713f12">
+    β 小 (如 0.01):log-ratio 被放大,梯度激进 → 模型快速过拟合到偏好数据,丢失通用能力 (DPO 版 reward hacking)
+  </text>
+  <text x="450" y="578" text-anchor="middle" font-size="11" fill="#713f12">
+    典型 β = 0.1 + 极小 lr (5e-7) 是实践经验的甜点;搭配过大 lr 会让 π_θ 数步内严重偏离 π_ref
+  </text>
+</svg>
