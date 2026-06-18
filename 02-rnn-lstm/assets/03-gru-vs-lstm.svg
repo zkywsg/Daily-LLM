@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="cmp-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GRU vs LSTM — 把 LSTM 三门 + 双状态简成 GRU 两门 + 单状态
+  </text>
+
+  <!-- ============== LEFT: LSTM Cell ============== -->
+  <text x="220" y="65" text-anchor="middle" font-size="14" fill="#991b1b" font-weight="600">
+    LSTM(4 矩阵组,双状态 C+h)
+  </text>
+
+  <rect x="80" y="85" width="280" height="320" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+
+  <!-- C state highway (top horizontal) -->
+  <rect x="100" y="110" width="240" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="220" y="131" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">C_t = f⊙C_{t-1} + i⊙C̃</text>
+
+  <text x="115" y="160" font-size="10" fill="#92400e">cell highway</text>
+  <text x="115" y="173" font-size="10" fill="#92400e">(加法,梯度不衰减)</text>
+
+  <!-- gates row -->
+  <rect x="100" y="190" width="55" height="38" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="127" y="207" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="700">f</text>
+  <text x="127" y="221" text-anchor="middle" font-size="9" fill="#1e40af">forget</text>
+
+  <rect x="163" y="190" width="55" height="38" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="190" y="207" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="700">i</text>
+  <text x="190" y="221" text-anchor="middle" font-size="9" fill="#1e40af">input</text>
+
+  <rect x="226" y="190" width="55" height="38" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="253" y="207" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="700">o</text>
+  <text x="253" y="221" text-anchor="middle" font-size="9" fill="#1e40af">output</text>
+
+  <rect x="289" y="190" width="55" height="38" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="316" y="207" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">C̃</text>
+  <text x="316" y="221" text-anchor="middle" font-size="9" fill="#9d174d">候选</text>
+
+  <text x="220" y="252" text-anchor="middle" font-size="10" fill="#991b1b" font-style="italic">4 组独立学习的矩阵</text>
+
+  <!-- h state -->
+  <rect x="100" y="270" width="240" height="32" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="220" y="291" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">h_t = o ⊙ tanh(C_t)</text>
+
+  <!-- key features -->
+  <g font-size="11" fill="#991b1b" font-weight="600">
+    <text x="100" y="330">• 双状态:C(长期)+ h(短期)</text>
+    <text x="100" y="350">• f, i 独立 — 可以同时全开/全关</text>
+    <text x="100" y="370">• 自由度高,大数据上略优</text>
+    <text x="100" y="390">• 参数 4× / 训练慢 / 1 次大矩阵乘</text>
+  </g>
+
+  <!-- arrow LSTM → GRU -->
+  <line x1="380" y1="250" x2="500" y2="250" stroke="#7c3aed" stroke-width="3" marker-end="url(#cmp-arr)"/>
+  <text x="440" y="240" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="600">简化</text>
+  <text x="440" y="270" text-anchor="middle" font-size="10" fill="#7c3aed" font-style="italic">省 25% 参数</text>
+
+  <!-- ============== RIGHT: GRU Cell ============== -->
+  <text x="680" y="65" text-anchor="middle" font-size="14" fill="#065f46" font-weight="600">
+    GRU(3 矩阵组,单状态 h)
+  </text>
+
+  <rect x="540" y="85" width="280" height="320" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+
+  <!-- h state highway (single combined state) -->
+  <rect x="560" y="110" width="240" height="60" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="680" y="135" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">h_t = (1-z)⊙h_{t-1} + z⊙h̃</text>
+  <text x="680" y="158" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="600">凸组合:加法 highway,梯度不衰减</text>
+
+  <!-- gates row (only 2 + cand) -->
+  <rect x="565" y="200" width="75" height="38" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="602" y="217" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="700">r</text>
+  <text x="602" y="231" text-anchor="middle" font-size="9" fill="#1e40af">reset</text>
+
+  <rect x="650" y="200" width="75" height="38" rx="4" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="687" y="217" text-anchor="middle" font-size="10" fill="#9a3412" font-weight="700">z</text>
+  <text x="687" y="231" text-anchor="middle" font-size="9" fill="#9a3412">update</text>
+
+  <rect x="735" y="200" width="75" height="38" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="772" y="217" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">h̃</text>
+  <text x="772" y="231" text-anchor="middle" font-size="9" fill="#9d174d">候选</text>
+
+  <text x="680" y="260" text-anchor="middle" font-size="10" fill="#065f46" font-style="italic">3 组矩阵(少 1 组)</text>
+
+  <text x="680" y="290" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">f 和 i 被绑定成 (1-z, z) 凸组合</text>
+
+  <!-- key features -->
+  <g font-size="11" fill="#065f46" font-weight="600">
+    <text x="560" y="320">• 单一状态:h(C 和 h 合并)</text>
+    <text x="560" y="340">• 更新门 z 自动满足忘+写=1</text>
+    <text x="560" y="360">• 小数据 / 短序列略优</text>
+    <text x="560" y="380">• 参数 3× / 训练快 15-20% / 2 次矩阵乘</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="430" x2="860" y2="430" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: side-by-side equation comparison ============== -->
+  <text x="450" y="460" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    数学公式对比 — 状态更新部分
+  </text>
+
+  <!-- LSTM equation -->
+  <rect x="60" y="480" width="370" height="80" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="502" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">LSTM</text>
+  <text x="245" y="528" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#991b1b">
+    C_t = f_t ⊙ C_{t-1} + i_t ⊙ C̃_t
+  </text>
+  <text x="245" y="548" text-anchor="middle" font-size="10" fill="#991b1b" font-style="italic">
+    f 和 i 独立学习,无约束
+  </text>
+
+  <!-- GRU equation -->
+  <rect x="470" y="480" width="370" height="80" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="655" y="502" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">GRU</text>
+  <text x="655" y="528" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#065f46">
+    h_t = (1-z_t) ⊙ h_{t-1} + z_t ⊙ h̃_t
+  </text>
+  <text x="655" y="548" text-anchor="middle" font-size="10" fill="#065f46" font-style="italic">
+    "忘" + "写" = 1 凸组合约束
+  </text>
+
+  <!-- bottom callout -->
+  <rect x="60" y="585" width="780" height="50" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="610" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    Jozefowicz 2015 搜索 1 万种 RNN 变体 — LSTM/GRU 都在帕累托前沿,各任务上互有胜负
+  </text>
+  <text x="450" y="628" text-anchor="middle" font-size="11" fill="#fef3c7">
+    GRU 的"凸组合 + 单一状态"思路被 Highway Networks / Transformer residual 继续借鉴
+  </text>
+</svg>
