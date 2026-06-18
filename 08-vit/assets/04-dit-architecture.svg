@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-cond" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    DiT 前向流程 — Latent Patchify + AdaLN-Zero + Transformer 主干
+  </text>
+
+  <!-- Top callout -->
+  <rect x="190" y="48" width="520" height="32" rx="6"
+        fill="#fff7ed" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="450" y="69" text-anchor="middle" font-size="12" fill="#9a3412">
+    和 ViT 几乎一样,只多了 AdaLN 接收 t / c 条件
+  </text>
+
+  <!-- ============== LEFT: Input latent ============== -->
+  <rect x="30" y="280" width="110" height="60" rx="6"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="85" y="305" text-anchor="middle" font-size="13" fill="#92400e">Noisy latent x_t</text>
+  <text x="85" y="322" text-anchor="middle" font-size="11" fill="#92400e">[B, 32, 32, 4]</text>
+
+  <!-- Patchify -->
+  <rect x="170" y="280" width="100" height="60" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="220" y="302" text-anchor="middle" font-size="13" fill="#9d174d">Patchify</text>
+  <text x="220" y="318" text-anchor="middle" font-size="11" fill="#9d174d">2×2 patch</text>
+  <text x="220" y="332" text-anchor="middle" font-size="11" fill="#9d174d">→ 256 tokens</text>
+
+  <!-- Token seq + pos emb -->
+  <rect x="300" y="280" width="120" height="60" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="360" y="302" text-anchor="middle" font-size="13" fill="#9d174d">+ pos emb</text>
+  <text x="360" y="318" text-anchor="middle" font-size="11" fill="#9d174d">[B, 256, d]</text>
+  <text x="360" y="332" text-anchor="middle" font-size="10" fill="#9d174d">token sequence</text>
+
+  <!-- N × DiT Block (group) -->
+  <rect x="450" y="220" width="240" height="180" rx="8"
+        fill="#fdf2f8" stroke="#db2777" stroke-width="1.8" stroke-dasharray="5,3"/>
+  <text x="570" y="240" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="600">
+    N × DiT Block
+  </text>
+
+  <!-- Expanded one block inside -->
+  <rect x="465" y="252" width="100" height="32" rx="4"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="515" y="272" text-anchor="middle" font-size="11" fill="#9d174d">Self-Attn</text>
+
+  <rect x="575" y="252" width="100" height="32" rx="4"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="625" y="272" text-anchor="middle" font-size="11" fill="#92400e">AdaLN</text>
+
+  <rect x="465" y="298" width="100" height="32" rx="4"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="515" y="318" text-anchor="middle" font-size="11" fill="#9d174d">FFN</text>
+
+  <rect x="575" y="298" width="100" height="32" rx="4"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="625" y="318" text-anchor="middle" font-size="11" fill="#92400e">AdaLN</text>
+
+  <!-- intra-block arrows -->
+  <g stroke="#9d174d" stroke-width="1.2" fill="none">
+    <line x1="565" y1="268" x2="573" y2="268" marker-end="url(#arr-main)"/>
+    <line x1="565" y1="314" x2="573" y2="314" marker-end="url(#arr-main)"/>
+    <line x1="515" y1="284" x2="515" y2="296" marker-end="url(#arr-main)"/>
+    <line x1="625" y1="284" x2="625" y2="296" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- block note -->
+  <text x="570" y="356" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    AdaLN 的 γ, β, gate 由 t/c MLP 生成
+  </text>
+  <text x="570" y="372" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    gate 零初始化 ⇒ 初始 residual = identity
+  </text>
+  <text x="570" y="388" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    标准 Transformer block 结构
+  </text>
+
+  <!-- Output: predict ε -->
+  <rect x="720" y="280" width="140" height="60" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="790" y="302" text-anchor="middle" font-size="13" fill="#065f46">Linear unpatch</text>
+  <text x="790" y="318" text-anchor="middle" font-size="11" fill="#065f46">→ 预测 ε</text>
+  <text x="790" y="332" text-anchor="middle" font-size="11" fill="#065f46">[B, 32, 32, 4]</text>
+
+  <!-- Main path arrows -->
+  <g stroke="#9d174d" stroke-width="1.8" fill="none">
+    <line x1="142" y1="310" x2="168" y2="310" marker-end="url(#arr-main)"/>
+    <line x1="272" y1="310" x2="298" y2="310" marker-end="url(#arr-main)"/>
+    <line x1="422" y1="310" x2="448" y2="310" marker-end="url(#arr-main)"/>
+    <line x1="692" y1="310" x2="718" y2="310" marker-end="url(#arr-main)"/>
+  </g>
+
+  <!-- ============== TOP: Condition input (t, c) ============== -->
+  <rect x="180" y="120" width="140" height="50" rx="6"
+        fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="250" y="140" text-anchor="middle" font-size="13" fill="#9a3412">timestep t</text>
+  <text x="250" y="158" text-anchor="middle" font-size="11" fill="#9a3412">(sinusoidal embed)</text>
+
+  <rect x="340" y="120" width="140" height="50" rx="6"
+        fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="410" y="140" text-anchor="middle" font-size="13" fill="#9a3412">class label c</text>
+  <text x="410" y="158" text-anchor="middle" font-size="11" fill="#9a3412">(learned embed)</text>
+
+  <rect x="500" y="120" width="160" height="50" rx="6"
+        fill="#fff7ed" stroke="#ea580c" stroke-width="1.8"/>
+  <text x="580" y="140" text-anchor="middle" font-size="13" fill="#9a3412" font-weight="600">MLP → γ, β, gate</text>
+  <text x="580" y="158" text-anchor="middle" font-size="11" fill="#9a3412">(per-block 调制系数)</text>
+
+  <!-- condition merge arrows -->
+  <g stroke="#ea580c" stroke-width="1.5" fill="none">
+    <line x1="320" y1="145" x2="338" y2="145" marker-end="url(#arr-cond)"/>
+    <line x1="480" y1="145" x2="498" y2="145" marker-end="url(#arr-cond)"/>
+  </g>
+
+  <!-- Orange condition lines flowing DOWN into every AdaLN sublayer -->
+  <g stroke="#ea580c" stroke-width="1.8" fill="none" stroke-dasharray="6,3" opacity="0.85">
+    <!-- main bus down from MLP -->
+    <path d="M 580 170 L 580 195 L 625 195 L 625 250" marker-end="url(#arr-cond)"/>
+    <path d="M 580 195 L 625 195 L 625 296" marker-end="url(#arr-cond)"/>
+  </g>
+
+  <!-- additional cond line bleeding into block group sides showing "every block" -->
+  <g stroke="#ea580c" stroke-width="1.2" fill="none" stroke-dasharray="3,3" opacity="0.55">
+    <path d="M 580 170 C 410 200, 410 410, 570 410"/>
+    <path d="M 580 170 C 720 200, 720 410, 570 410"/>
+  </g>
+
+  <text x="710" y="200" font-size="11" fill="#9a3412" font-style="italic">
+    条件信号注入每个 block
+  </text>
+
+  <!-- ============== BOTTOM: stage labels ============== -->
+  <g font-size="11" fill="#6b7280" text-anchor="middle">
+    <text x="85" y="365">VAE encoded</text>
+    <text x="220" y="365">机制一</text>
+    <text x="360" y="365">+ pos</text>
+    <text x="570" y="425">机制二 + 机制三</text>
+    <text x="790" y="365">噪声预测</text>
+  </g>
+
+  <!-- ============== KEY POINTS BOX ============== -->
+  <rect x="60" y="470" width="780" height="180" rx="8"
+        fill="#fafaf9" stroke="#a8a29e" stroke-width="1"/>
+  <text x="450" y="495" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三件套协同
+  </text>
+
+  <g font-size="12" fill="#374151">
+    <text x="80" y="522">
+      <tspan font-weight="600" fill="#9d174d">机制一 · Latent Patchify </tspan>
+      <tspan>把 32×32×4 latent 切 2×2 patch → 256 个 token,和 ViT 同款,序列长度可控</tspan>
+    </text>
+    <text x="80" y="555">
+      <tspan font-weight="600" fill="#9a3412">机制二 · AdaLN-Zero </tspan>
+      <tspan>t / c → MLP → 每个 block 的 LN scale / shift / gate;gate 零初始化让训练稳</tspan>
+    </text>
+    <text x="80" y="588">
+      <tspan font-weight="600" fill="#065f46">机制三 · Transformer 主干 </tspan>
+      <tspan>替换 U-Net,继承 ViT 的 scaling 红利,FID 随参数量单调下降</tspan>
+    </text>
+    <text x="80" y="625" font-style="italic" fill="#6b7280">
+      缺任何一件:patch 没了跑不动 attention;AdaLN 没了 t/c 条件无法稳定注入;Transformer 没换上拿不到 scaling 收益。
+    </text>
+  </g>
+</svg>
