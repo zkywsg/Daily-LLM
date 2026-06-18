@@ -1,0 +1,219 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr-pink" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle" font-size="17"
+        fill="#1f2937" font-weight="700">
+    从 task-specific fine-tuning 到 zero-shot prompt 范式
+  </text>
+
+  <!-- ============== LEFT PANEL: BERT / GPT-1 paradigm ============== -->
+  <text x="225" y="68" text-anchor="middle" font-size="15"
+        fill="#9d174d" font-weight="600">
+    BERT / GPT-1 范式
+  </text>
+  <text x="225" y="86" text-anchor="middle" font-size="11" fill="#6b7280">
+    预训练 LM + N 个任务专属 head + N 份监督数据
+  </text>
+
+  <!-- Pretrained LM -->
+  <rect x="155" y="110" width="140" height="55" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="225" y="132" text-anchor="middle" font-size="13"
+        fill="#92400e" font-weight="600">Pretrained LM</text>
+  <text x="225" y="150" text-anchor="middle" font-size="11" fill="#92400e">
+    (BERT / GPT-1)
+  </text>
+
+  <!-- Three branching arrows to task heads -->
+  <line x1="190" y1="166" x2="100" y2="230" stroke="#9d174d"
+        stroke-width="1.5" marker-end="url(#arr-pink)"/>
+  <line x1="225" y1="166" x2="225" y2="230" stroke="#9d174d"
+        stroke-width="1.5" marker-end="url(#arr-pink)"/>
+  <line x1="260" y1="166" x2="350" y2="230" stroke="#9d174d"
+        stroke-width="1.5" marker-end="url(#arr-pink)"/>
+
+  <!-- + supervised data labels on arrows -->
+  <text x="135" y="200" font-size="10" fill="#6b7280" font-style="italic">+ WMT</text>
+  <text x="240" y="200" font-size="10" fill="#6b7280" font-style="italic">+ SQuAD</text>
+  <text x="320" y="200" font-size="10" fill="#6b7280" font-style="italic">+ CNN/DM</text>
+
+  <!-- Three task heads -->
+  <rect x="50" y="235" width="100" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="100" y="255" text-anchor="middle" font-size="12"
+        fill="#9d174d" font-weight="600">翻译 head</text>
+  <text x="100" y="272" text-anchor="middle" font-size="10" fill="#9d174d">
+    enc-dec + 微调
+  </text>
+
+  <rect x="175" y="235" width="100" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="225" y="255" text-anchor="middle" font-size="12"
+        fill="#9d174d" font-weight="600">QA head</text>
+  <text x="225" y="272" text-anchor="middle" font-size="10" fill="#9d174d">
+    span 预测 + 微调
+  </text>
+
+  <rect x="300" y="235" width="100" height="50" rx="6"
+        fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="350" y="255" text-anchor="middle" font-size="12"
+        fill="#9d174d" font-weight="600">摘要 head</text>
+  <text x="350" y="272" text-anchor="middle" font-size="10" fill="#9d174d">
+    seq2seq + 微调
+  </text>
+
+  <!-- Three outputs -->
+  <rect x="50" y="320" width="100" height="35" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="100" y="343" text-anchor="middle" font-size="11" fill="#065f46">译文</text>
+
+  <rect x="175" y="320" width="100" height="35" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="225" y="343" text-anchor="middle" font-size="11" fill="#065f46">答案 span</text>
+
+  <rect x="300" y="320" width="100" height="35" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="350" y="343" text-anchor="middle" font-size="11" fill="#065f46">摘要</text>
+
+  <!-- Arrows from head to output -->
+  <g stroke="#059669" stroke-width="1.2" fill="none">
+    <line x1="100" y1="287" x2="100" y2="318" marker-end="url(#arr-green)"/>
+    <line x1="225" y1="287" x2="225" y2="318" marker-end="url(#arr-green)"/>
+    <line x1="350" y1="287" x2="350" y2="318" marker-end="url(#arr-green)"/>
+  </g>
+
+  <!-- Left bottom callout -->
+  <rect x="50" y="395" width="350" height="62" rx="6"
+        fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+  <text x="225" y="415" text-anchor="middle" font-size="11"
+        fill="#991b1b" font-weight="600">
+    每个新任务 = 新 head + 新标注数据 + 重新微调
+  </text>
+  <text x="225" y="433" text-anchor="middle" font-size="10" fill="#7f1d1d">
+    LM 是"半成品",任务头才是"成品"
+  </text>
+  <text x="225" y="449" text-anchor="middle" font-size="10" fill="#7f1d1d">
+    Scale 的收益被任务头隔断在每个任务里
+  </text>
+
+  <!-- Divider -->
+  <line x1="450" y1="60" x2="450" y2="540"
+        stroke="#d6d3d1" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+  <!-- Arrow across divider -->
+  <path d="M 420 250 Q 450 230 480 250" fill="none"
+        stroke="#d97706" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <text x="450" y="218" text-anchor="middle" font-size="11"
+        fill="#92400e" font-style="italic">范式转移</text>
+
+  <!-- ============== RIGHT PANEL: GPT-2 paradigm ============== -->
+  <text x="675" y="68" text-anchor="middle" font-size="15"
+        fill="#065f46" font-weight="600">
+    GPT-2 范式
+  </text>
+  <text x="675" y="86" text-anchor="middle" font-size="11" fill="#6b7280">
+    一个 LM + 自然语言 prompt + 共享解码 head(权重不动)
+  </text>
+
+  <!-- Pretrained LM (large, central) -->
+  <rect x="605" y="110" width="140" height="55" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="675" y="132" text-anchor="middle" font-size="13"
+        fill="#92400e" font-weight="600">GPT-2 (1.5B)</text>
+  <text x="675" y="150" text-anchor="middle" font-size="11" fill="#92400e">
+    权重永远不动
+  </text>
+
+  <!-- Three prompts (all feed into same LM) -->
+  <rect x="500" y="200" width="160" height="60" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="580" y="220" text-anchor="middle" font-size="11"
+        fill="#1e40af" font-weight="600">翻译 prompt</text>
+  <text x="580" y="238" text-anchor="middle" font-size="10"
+        fill="#1e40af" font-family="monospace">"Translate to French:</text>
+  <text x="580" y="252" text-anchor="middle" font-size="10"
+        fill="#1e40af" font-family="monospace">hello → "</text>
+
+  <rect x="690" y="200" width="160" height="60" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="770" y="220" text-anchor="middle" font-size="11"
+        fill="#1e40af" font-weight="600">QA prompt</text>
+  <text x="770" y="238" text-anchor="middle" font-size="10"
+        fill="#1e40af" font-family="monospace">"Q: ...?</text>
+  <text x="770" y="252" text-anchor="middle" font-size="10"
+        fill="#1e40af" font-family="monospace">A: "</text>
+
+  <rect x="595" y="285" width="160" height="60" rx="6"
+        fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="675" y="305" text-anchor="middle" font-size="11"
+        fill="#1e40af" font-weight="600">摘要 prompt</text>
+  <text x="675" y="323" text-anchor="middle" font-size="10"
+        fill="#1e40af" font-family="monospace">"&lt;article&gt;</text>
+  <text x="675" y="337" text-anchor="middle" font-size="10"
+        fill="#1e40af" font-family="monospace">TL;DR: "</text>
+
+  <!-- Arrows from prompts UP into LM -->
+  <g stroke="#2563eb" stroke-width="1.5" fill="none">
+    <line x1="580" y1="200" x2="630" y2="166" marker-end="url(#arr-pink)"
+          stroke="#2563eb"/>
+    <line x1="770" y1="200" x2="720" y2="166" marker-end="url(#arr-pink)"
+          stroke="#2563eb"/>
+    <line x1="675" y1="285" x2="675" y2="240" marker-end="url(#arr-pink)"
+          stroke="#2563eb"/>
+  </g>
+
+  <!-- LM auto-regressive generation arrow (downward to single output) -->
+  <line x1="675" y1="370" x2="675" y2="400" stroke="#059669"
+        stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <!-- Single shared decoder output -->
+  <rect x="555" y="402" width="240" height="50" rx="8"
+        fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="675" y="422" text-anchor="middle" font-size="12"
+        fill="#065f46" font-weight="600">共享解码 head(next-token prediction)</text>
+  <text x="675" y="441" text-anchor="middle" font-size="11" fill="#065f46">
+    续写出译文 / 答案 / 摘要
+  </text>
+
+  <!-- Right bottom callout -->
+  <rect x="500" y="475" width="350" height="62" rx="6"
+        fill="#ecfdf5" stroke="#059669" stroke-width="1"/>
+  <text x="675" y="495" text-anchor="middle" font-size="11"
+        fill="#065f46" font-weight="600">
+    所有任务 = LM 续写问题
+  </text>
+  <text x="675" y="513" text-anchor="middle" font-size="10" fill="#064e3b">
+    一个 checkpoint,零监督数据,零微调
+  </text>
+  <text x="675" y="529" text-anchor="middle" font-size="10" fill="#064e3b">
+    LM 直接成为"通用执行器"
+  </text>
+
+  <!-- Bottom comparison summary -->
+  <rect x="80" y="572" width="740" height="50" rx="8"
+        fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="450" y="595" text-anchor="middle" font-size="12"
+        fill="#92400e" font-weight="600">
+    关键差别:Task → 算法层(架构 + 数据 + 训练) 变成 Task → 输入层(prompt)
+  </text>
+  <text x="450" y="613" text-anchor="middle" font-size="11" fill="#92400e">
+    这是 GPT-3 in-context learning 和 2022 之后整个 prompt engineering 学科的种子
+  </text>
+</svg>

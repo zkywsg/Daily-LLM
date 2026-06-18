@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 580"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="gpt2-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GPT-2 四个规模 × 四个 zero-shot 任务 — scale 涌现的早期证据
+  </text>
+
+  <!-- 4 panels in 2x2 layout -->
+  <!-- Panel positions: TL(60,70), TR(460,70), BL(60,290), BR(460,290) -->
+  <!-- Each panel ~360w x 180h -->
+
+  <!-- ==== Panel 1: LAMBADA (top-left, smooth) ==== -->
+  <g transform="translate(60, 70)">
+    <text x="180" y="15" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">LAMBADA Accuracy (语言建模)</text>
+    <!-- axes -->
+    <line x1="40" y1="170" x2="350" y2="170" stroke="#1f2937" stroke-width="1.2"/>
+    <line x1="40" y1="30" x2="40" y2="170" stroke="#1f2937" stroke-width="1.2"/>
+    <!-- y labels -->
+    <text x="33" y="173" text-anchor="end" font-size="10" fill="#6b7280">0%</text>
+    <text x="33" y="135" text-anchor="end" font-size="10" fill="#6b7280">25</text>
+    <text x="33" y="97" text-anchor="end" font-size="10" fill="#6b7280">50</text>
+    <text x="33" y="60" text-anchor="end" font-size="10" fill="#6b7280">75</text>
+    <!-- x labels -->
+    <g font-size="10" fill="#6b7280">
+      <text x="75" y="184" text-anchor="middle">124M</text>
+      <text x="160" y="184" text-anchor="middle">355M</text>
+      <text x="245" y="184" text-anchor="middle">774M</text>
+      <text x="330" y="184" text-anchor="middle">1.5B</text>
+    </g>
+    <!-- smooth curve - GPT-2 LAMBADA: 45.99 → 55.48 → 60.12 → 63.24% -->
+    <path d="M 75 116 Q 160 102, 245 87 T 330 75"
+          stroke="#db2777" stroke-width="2.5" fill="none"/>
+    <g fill="#db2777">
+      <circle cx="75" cy="116" r="4"/>
+      <circle cx="160" cy="100" r="4"/>
+      <circle cx="245" cy="87" r="4"/>
+      <circle cx="330" cy="75" r="4"/>
+    </g>
+    <text x="180" y="200" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">平滑增长 — LM 任务对规模线性敏感</text>
+  </g>
+
+  <!-- ==== Panel 2: WikiText perplexity (top-right, smooth descending) ==== -->
+  <g transform="translate(460, 70)">
+    <text x="180" y="15" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">WikiText Perplexity(越低越好)</text>
+    <line x1="40" y1="170" x2="350" y2="170" stroke="#1f2937" stroke-width="1.2"/>
+    <line x1="40" y1="30" x2="40" y2="170" stroke="#1f2937" stroke-width="1.2"/>
+    <text x="33" y="173" text-anchor="end" font-size="10" fill="#6b7280">15</text>
+    <text x="33" y="135" text-anchor="end" font-size="10" fill="#6b7280">20</text>
+    <text x="33" y="97" text-anchor="end" font-size="10" fill="#6b7280">25</text>
+    <text x="33" y="60" text-anchor="end" font-size="10" fill="#6b7280">30</text>
+    <g font-size="10" fill="#6b7280">
+      <text x="75" y="184" text-anchor="middle">124M</text>
+      <text x="160" y="184" text-anchor="middle">355M</text>
+      <text x="245" y="184" text-anchor="middle">774M</text>
+      <text x="330" y="184" text-anchor="middle">1.5B</text>
+    </g>
+    <!-- WikiText PPL: 29.41 → 22.76 → 19.93 → 18.34 (mapped) -->
+    <path d="M 75 60 Q 160 105, 245 130 T 330 145"
+          stroke="#2563eb" stroke-width="2.5" fill="none"/>
+    <g fill="#2563eb">
+      <circle cx="75" cy="60" r="4"/>
+      <circle cx="160" cy="105" r="4"/>
+      <circle cx="245" cy="130" r="4"/>
+      <circle cx="330" cy="145" r="4"/>
+    </g>
+    <text x="180" y="200" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">PPL 单调下降 — 模型越大,语言建模越准</text>
+  </g>
+
+  <!-- ==== Panel 3: CBT (bottom-left, smooth) ==== -->
+  <g transform="translate(60, 310)">
+    <text x="180" y="15" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">CBT (Children's Book) Accuracy</text>
+    <line x1="40" y1="170" x2="350" y2="170" stroke="#1f2937" stroke-width="1.2"/>
+    <line x1="40" y1="30" x2="40" y2="170" stroke="#1f2937" stroke-width="1.2"/>
+    <text x="33" y="173" text-anchor="end" font-size="10" fill="#6b7280">70%</text>
+    <text x="33" y="135" text-anchor="end" font-size="10" fill="#6b7280">80</text>
+    <text x="33" y="97" text-anchor="end" font-size="10" fill="#6b7280">90</text>
+    <text x="33" y="60" text-anchor="end" font-size="10" fill="#6b7280">95</text>
+    <g font-size="10" fill="#6b7280">
+      <text x="75" y="184" text-anchor="middle">124M</text>
+      <text x="160" y="184" text-anchor="middle">355M</text>
+      <text x="245" y="184" text-anchor="middle">774M</text>
+      <text x="330" y="184" text-anchor="middle">1.5B</text>
+    </g>
+    <!-- CBT-CN: 85.7 → 87.6 → 88.6 → 89.0 (mapped) -->
+    <path d="M 75 96 Q 160 80, 245 72 T 330 67"
+          stroke="#059669" stroke-width="2.5" fill="none"/>
+    <g fill="#059669">
+      <circle cx="75" cy="96" r="4"/>
+      <circle cx="160" cy="80" r="4"/>
+      <circle cx="245" cy="72" r="4"/>
+      <circle cx="330" cy="67" r="4"/>
+    </g>
+    <text x="180" y="200" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">平滑接近饱和 — 类完形任务</text>
+  </g>
+
+  <!-- ==== Panel 4: WMT translation (bottom-right, emergent ~775M+) ==== -->
+  <g transform="translate(460, 310)">
+    <text x="180" y="15" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">WMT-14 EN-FR Zero-shot BLEU</text>
+    <line x1="40" y1="170" x2="350" y2="170" stroke="#1f2937" stroke-width="1.2"/>
+    <line x1="40" y1="30" x2="40" y2="170" stroke="#1f2937" stroke-width="1.2"/>
+    <text x="33" y="173" text-anchor="end" font-size="10" fill="#6b7280">0</text>
+    <text x="33" y="140" text-anchor="end" font-size="10" fill="#6b7280">5</text>
+    <text x="33" y="108" text-anchor="end" font-size="10" fill="#6b7280">8</text>
+    <text x="33" y="76" text-anchor="end" font-size="10" fill="#6b7280">11</text>
+    <g font-size="10" fill="#6b7280">
+      <text x="75" y="184" text-anchor="middle">124M</text>
+      <text x="160" y="184" text-anchor="middle">355M</text>
+      <text x="245" y="184" text-anchor="middle">774M</text>
+      <text x="330" y="184" text-anchor="middle">1.5B</text>
+    </g>
+    <!-- emergent: 0.5 → 1.2 → 3.5 → 11.5 BLEU -->
+    <path d="M 75 167 Q 160 162, 245 137 C 280 110, 310 85, 330 70"
+          stroke="#dc2626" stroke-width="2.8" fill="none"/>
+    <g fill="#dc2626">
+      <circle cx="75" cy="167" r="4"/>
+      <circle cx="160" cy="162" r="4"/>
+      <circle cx="245" cy="137" r="4"/>
+      <circle cx="330" cy="70" r="4"/>
+    </g>
+    <!-- emergence annotation -->
+    <circle cx="245" cy="137" r="9" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="3,2"/>
+    <text x="180" y="200" text-anchor="middle" font-size="10" fill="#dc2626" font-style="italic" font-weight="600">~775M 后陡升 — 涌现型 zero-shot</text>
+  </g>
+
+  <!-- ============== BOTTOM CALLOUT ============== -->
+  <rect x="60" y="510" width="780" height="55" rx="6"
+        fill="#1f2937" stroke="none"/>
+  <text x="450" y="535" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    GPT-2 第一次展示 LLM 的 zero-shot 能力,但还没到 GPT-3 in-context learning 的水平
+  </text>
+  <text x="450" y="555" text-anchor="middle" font-size="11" fill="#fef3c7">
+    LM 任务平滑可预测 / 翻译之类的迁移任务在 ~1B 后才"涌现",这是后来 Wei 2022 Emergent Abilities 论文的雏形
+  </text>
+</svg>
