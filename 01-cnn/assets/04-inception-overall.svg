@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="inc-o-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GoogLeNet 整网 + Inception 参数效率对比
+  </text>
+
+  <!-- ============== TOP: Overall pipeline ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Stem + 9 个 Inception block + GAP + 单 FC,22 层,5M 参数
+  </text>
+
+  <!-- Input -->
+  <rect x="40" y="85" width="80" height="40" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="80" y="102" text-anchor="middle" font-size="11" fill="#92400e">Input</text>
+  <text x="80" y="118" text-anchor="middle" font-size="10" fill="#92400e">224²×3</text>
+
+  <!-- Stem -->
+  <rect x="140" y="85" width="100" height="40" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="190" y="103" text-anchor="middle" font-size="11" fill="#065f46">Stem</text>
+  <text x="190" y="118" text-anchor="middle" font-size="10" fill="#065f46">7×7 + 3×3 conv + pools</text>
+
+  <!-- Inception 3a/3b -->
+  <rect x="260" y="85" width="90" height="40" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="305" y="102" text-anchor="middle" font-size="11" fill="#9d174d">Inception</text>
+  <text x="305" y="118" text-anchor="middle" font-size="10" fill="#9d174d">3a, 3b</text>
+
+  <!-- pool -->
+  <rect x="370" y="95" width="30" height="20" rx="2" fill="#e5e7eb" stroke="#6b7280" stroke-width="1"/>
+  <text x="385" y="109" text-anchor="middle" font-size="9" fill="#374151">pool</text>
+
+  <!-- Inception 4a-4e -->
+  <rect x="420" y="85" width="100" height="40" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="470" y="102" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">Inception × 5</text>
+  <text x="470" y="118" text-anchor="middle" font-size="10" fill="#9d174d">4a–4e</text>
+
+  <!-- pool -->
+  <rect x="540" y="95" width="30" height="20" rx="2" fill="#e5e7eb" stroke="#6b7280" stroke-width="1"/>
+  <text x="555" y="109" text-anchor="middle" font-size="9" fill="#374151">pool</text>
+
+  <!-- Inception 5a/5b -->
+  <rect x="590" y="85" width="90" height="40" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="635" y="102" text-anchor="middle" font-size="11" fill="#9d174d">Inception</text>
+  <text x="635" y="118" text-anchor="middle" font-size="10" fill="#9d174d">5a, 5b</text>
+
+  <!-- GAP -->
+  <rect x="700" y="85" width="70" height="40" rx="4" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="735" y="103" text-anchor="middle" font-size="11" fill="#5b21b6" font-weight="600">GAP</text>
+  <text x="735" y="118" text-anchor="middle" font-size="10" fill="#5b21b6">1024-d</text>
+
+  <!-- FC -->
+  <rect x="790" y="85" width="70" height="40" rx="4" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="825" y="103" text-anchor="middle" font-size="11" fill="#5b21b6">FC 1000</text>
+  <text x="825" y="118" text-anchor="middle" font-size="10" fill="#5b21b6">→softmax</text>
+
+  <!-- arrows -->
+  <g stroke="#9d174d" stroke-width="1.2" fill="none">
+    <line x1="120" y1="105" x2="138" y2="105" marker-end="url(#inc-o-arr)"/>
+    <line x1="240" y1="105" x2="258" y2="105" marker-end="url(#inc-o-arr)"/>
+    <line x1="350" y1="105" x2="368" y2="105" marker-end="url(#inc-o-arr)"/>
+    <line x1="400" y1="105" x2="418" y2="105" marker-end="url(#inc-o-arr)"/>
+    <line x1="520" y1="105" x2="538" y2="105" marker-end="url(#inc-o-arr)"/>
+    <line x1="570" y1="105" x2="588" y2="105" marker-end="url(#inc-o-arr)"/>
+    <line x1="680" y1="105" x2="698" y2="105" marker-end="url(#inc-o-arr)"/>
+    <line x1="770" y1="105" x2="788" y2="105" marker-end="url(#inc-o-arr)"/>
+  </g>
+
+  <!-- Aux heads -->
+  <rect x="395" y="160" width="60" height="32" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1"/>
+  <text x="425" y="175" text-anchor="middle" font-size="10" fill="#713f12">Aux head</text>
+  <text x="425" y="187" text-anchor="middle" font-size="9" fill="#713f12">@4a</text>
+
+  <rect x="475" y="160" width="60" height="32" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1"/>
+  <text x="505" y="175" text-anchor="middle" font-size="10" fill="#713f12">Aux head</text>
+  <text x="505" y="187" text-anchor="middle" font-size="9" fill="#713f12">@4d</text>
+
+  <line x1="445" y1="125" x2="425" y2="158" stroke="#ca8a04" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="495" y1="125" x2="505" y2="158" stroke="#ca8a04" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="465" y="208" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    辅助分类器:训练时给底层加梯度回路,推理时舍弃(BN/ResNet 之后不再需要)
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="240" x2="860" y2="240" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== MIDDLE: 三模型参数对比柱状图 ============== -->
+  <text x="450" y="272" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    三模型参数对比 — GoogLeNet 1/28 of VGG
+  </text>
+
+  <!-- AlexNet 60M -->
+  <text x="100" y="305" text-anchor="end" font-size="11" fill="#1f2937">AlexNet</text>
+  <text x="100" y="320" text-anchor="end" font-size="10" fill="#6b7280">2012</text>
+  <rect x="120" y="295" width="260" height="22" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+  <text x="395" y="312" font-size="11" fill="#9d174d" font-weight="600">60M</text>
+
+  <!-- VGG-16 138M -->
+  <text x="100" y="340" text-anchor="end" font-size="11" fill="#1f2937">VGG-16</text>
+  <text x="100" y="355" text-anchor="end" font-size="10" fill="#6b7280">2014</text>
+  <rect x="120" y="330" width="600" height="22" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="735" y="347" font-size="11" fill="#991b1b" font-weight="700">138M</text>
+
+  <!-- GoogLeNet 5M -->
+  <text x="100" y="375" text-anchor="end" font-size="11" fill="#059669" font-weight="600">GoogLeNet</text>
+  <text x="100" y="390" text-anchor="end" font-size="10" fill="#059669">2014</text>
+  <rect x="120" y="365" width="22" height="22" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="160" y="382" font-size="11" fill="#059669" font-weight="700">5M(VGG 的 1/28!)</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="415" x2="860" y2="415" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: ImageNet Top-5 + key takeaway ============== -->
+  <text x="450" y="445" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    ImageNet 2014 Top-5 错误率
+  </text>
+
+  <g transform="translate(140, 470)">
+    <!-- AlexNet 15.3 -->
+    <text x="0" y="20" font-size="11" fill="#1f2937">AlexNet</text>
+    <rect x="100" y="8" width="306" height="18" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="416" y="22" font-size="11" fill="#9d174d">15.3%</text>
+
+    <!-- VGG ensemble 7.3 -->
+    <text x="0" y="48" font-size="11" fill="#1f2937">VGG ensemble</text>
+    <rect x="100" y="36" width="146" height="18" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="256" y="50" font-size="11" fill="#991b1b">7.3%</text>
+
+    <!-- GoogLeNet 6.67 -->
+    <text x="0" y="76" font-size="11" fill="#059669" font-weight="600">GoogLeNet</text>
+    <rect x="100" y="64" width="133" height="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="243" y="78" font-size="11" fill="#059669" font-weight="700">6.67% — ImageNet 2014 冠军</text>
+  </g>
+
+  <!-- bottom callout -->
+  <rect x="60" y="585" width="780" height="50" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="610" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    参数效率作为独立优化轴第一次在 ImageNet 上取得领先
+  </text>
+  <text x="450" y="628" text-anchor="middle" font-size="11" fill="#fef3c7">
+    后续视觉论文同时报告精度 + 参数 / FLOPs,双轴评估习惯由 Inception 推动形成
+  </text>
+</svg>

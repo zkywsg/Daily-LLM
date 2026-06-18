@@ -20,77 +20,63 @@ key_idea: "用 1×1 卷积降维 + 多尺度并行的 Inception 模块，把参�
 
 ## 核心思想
 
-GoogLeNet 没有继续往"更深更窄"那条路上走，而是回到一个更基本的问题：**视觉模式天然没有单一尺度**。一张图里既有覆盖整张脸的轮廓、也有几个像素的眼角细节；一个分类器要应对所有这些，理论上应该在每一层同时观察多个尺度。
+### 直觉：视觉模式没有单一尺度,与其堆深不如多分支并行
 
-VGG 的做法是"统一使用一个尺度（3×3）再堆深"，依靠堆叠扩大感受野。Inception 的做法是：**在同一层并行使用多种尺度的卷积，再把结果拼接**——1×1 看通道关系、3×3 看小邻域、5×5 看更大邻域、3×3 MaxPool 提供位置不变性。最后在通道维度 concat，由下一层自适应学习如何加权这些通道。
+理解 Inception 真正需要先抓一件事:**[VGG](03-vgg.md) 走的是"统一 3×3 + 堆深"路线,但视觉模式天然没有单一尺度**——一张脸里既有覆盖整张脸的轮廓、也有几个像素的眼角细节。VGG 的解决方案是堆叠 3×3 慢慢扩大感受野。Szegedy 等人 2014 反问:**为什么不在同一层并行使用 1×1 / 3×3 / 5×5 / pool 多个尺度,让网络自己学如何加权这些通道?**
 
-```mermaid
-graph LR
-    x["Input [B,3,224,224]"]:::input
-    stem["Stem: Conv 7×7/s=2/64 + MaxPool 3×3/s=2 + Conv 3×3/192 + MaxPool 3×3/s=2"]:::compute
-    i3a["Inception 3a/3b (× 2)"]:::compute
-    p3["MaxPool 3×3 / s=2"]:::compute
-    i4["Inception 4a–4e (× 5)"]:::compute
-    p4["MaxPool 3×3 / s=2"]:::compute
-    i5["Inception 5a/5b (× 2)"]:::compute
-    gap["Global Avg Pool 7×7 → [B,1024]"]:::compute
-    drop["Dropout p=0.4"]:::compute
-    fc["FC 1000"]:::compute
-    y["Softmax [B,1000]"]:::output
+三件事必须同时成立才让 Inception 在 2014 年 work:
 
-    aux1["Aux Head @ 4a"]:::compute
-    aux2["Aux Head @ 4d"]:::compute
+- **多分支并行能让网络在同一层看多尺度** — 不堆深就能扩大有效感受野的覆盖范围,但简单多分支会让通道数累积爆炸
+- **1×1 卷积作为"瓶颈"压通道** — 在贵的 3×3 / 5×5 之前先用 1×1 把通道砍下来,参数 / 算力降一个数量级
+- **GAP 替代大 FC 干掉参数尾巴** — VGG 的 fc6 一层就 102M 参数,GoogLeNet 用 global average pooling 把它压到 1M
 
-    x --> stem --> i3a --> p3 --> i4 --> p4 --> i5 --> gap --> drop --> fc --> y
-    i4 -.-> aux1
-    i4 -.-> aux2
+三件事合起来:GoogLeNet 整网仅 **5M 参数**(比 VGG-16 的 138M 少 28 倍、比 AlexNet 的 60M 少 12 倍),ImageNet Top-5 错误率 **6.67%**(优于 VGG 的 7.3%),拿下 ImageNet 2014 冠军。这是"参数效率"作为独立优化目标第一次在 ImageNet 上取得领先 —— 后续视觉论文普遍同时报告精度和参数 / FLOPs,**双轴评估**习惯由 Inception 推动形成。
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
-*图 1：GoogLeNet 整体结构——stem + 9 个 Inception block + GAP + 单层 FC。两个辅助分类器只在训练时挂在 4a/4d 后面。*
+![Inception block 4 分支并行 + 1×1 瓶颈](assets/04-inception-block.svg)
+*图 1:Inception block 内部 — 输入并行走 4 条分支:**纯 1×1 conv**(看通道关系)、**1×1 → 3×3**(1×1 先把通道砍下再算 3×3)、**1×1 → 5×5**(同理)、**MaxPool → 1×1**(pool 不改通道,1×1 在 pool 后压通道)。最后在通道维 concat。底部 callout 给出参数对比:**5×5 直接算 1.6M vs 1×1 先压到 64 再算 0.2M,降 8×** — 这是 Inception 5M 整网参数的根本来源。*
 
-这条结构里，GoogLeNet 含 22 层有参层（不算池化），9 个 Inception block 占绝大部分计算。整网参数约 **5M**——比 VGG-16 (138M) 少约 28 倍，比 AlexNet (60M) 少约 12 倍。ImageNet Top-5 错误率为 **6.67%**（VGG 7.3%），获得 ImageNet 2014 冠军。
+### 机制一:多分支并行 — 同一层同时看多个尺度
 
-但简单的多分支并行存在一个严重问题——**通道数会随分支累积**。假设输入 256 通道，每分支各输出 128 通道，concat 后变成 512 通道，下一层的 5×5 卷积就需要在 512 通道上计算，参数量为 $5 \times 5 \times 512 \times 128 = 1.6\text{M}$ 一层。堆叠几个 block 后参数量就会回到 VGG 的量级。
-
-Inception 的核心设计是**在每个 3×3 / 5×5 之前先用 1×1 卷积做"瓶颈降维"**——把输入通道从 256 降到 64 再做 5×5，参数量降至 $5 \times 5 \times 64 \times 128 = 0.2\text{M}$，**约为原来的 1/8**。1×1 卷积只对通道维做线性组合（不改变空间维），计算便宜且能学到通道压缩，是 Inception 设计的核心机制。
-
-```mermaid
-graph TD
-    in["Input [B,C_in,H,W]"]:::input
-    b1["1×1 Conv / C₁"]:::compute
-    b2a["1×1 Conv / C₂ʳ (降维)"]:::compute
-    b2b["3×3 Conv / C₂"]:::compute
-    b3a["1×1 Conv / C₃ʳ (降维)"]:::compute
-    b3b["5×5 Conv / C₃"]:::compute
-    b4a["3×3 MaxPool / s=1"]:::compute
-    b4b["1×1 Conv / C₄ (降维)"]:::compute
-    cat["Concat (通道维)"]:::compute
-    out["Output [B,C₁+C₂+C₃+C₄,H,W]"]:::output
-
-    in --> b1 --> cat
-    in --> b2a --> b2b --> cat
-    in --> b3a --> b3b --> cat
-    in --> b4a --> b4b --> cat
-    cat --> out
-
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
-*图 2：Inception block 内部——4 分支并行，3×3/5×5 之前先用 1×1 瓶颈降维，最后在通道维 concat。*
-
-形式上，Inception block 的输出可以写成 4 路分支在通道维的拼接：
+Inception block 的输出是 4 路分支在通道维的拼接:
 
 $$
-y = \text{Concat}\Big(\, f_{1\times 1}(x),\; f_{3\times 3}(g^{(2)}_{1\times 1}(x)),\; f_{5\times 5}(g^{(3)}_{1\times 1}(x)),\; g^{(4)}_{1\times 1}(\text{MaxPool}(x)) \,\Big)
+y = \text{Concat}\Big( f_{1\times 1}(x),\; f_{3\times 3}(g^{(2)}_{1\times 1}(x)),\; f_{5\times 5}(g^{(3)}_{1\times 1}(x)),\; g^{(4)}_{1\times 1}(\text{MaxPool}(x)) \Big)
 $$
 
-每条分支的 $g_{1\times 1}$ 把输入通道压低后再走更贵的 3×3 / 5×5。这种"先压再算"的结构后来在 ResNet 的 bottleneck block、MobileNet 的 inverted residual 里被反复借用。
+每条分支负责一个不同的感受野尺度 —— 1×1 看像素本身的通道组合、3×3 看小邻域、5×5 看更大邻域、3×3 MaxPool 提供位置不变性。**下一层 Inception block 通过它自己的 1×1 自适应学习如何加权这些通道**,等于网络自己决定每层用哪种尺度。
 
-**用 GAP 取代大 FC** —— GoogLeNet 的另一个关键设计是：去掉 VGG/AlexNet 那两层 4096 维的 FC。最后一个 Inception block 输出 $7 \times 7 \times 1024$，直接做 Global Average Pooling 把每个通道平均为 1 个数，得到 1024 维向量，再接一层 FC 到 1000 类。这一改动把参数从 VGG 的 102M 降至约 1M，**是 5M 整网参数预算的主要来源**。GAP 这个技巧（连同 1×1 卷积）来自 Lin 等人 2013 年的 "Network in Network"，Inception 是它在大规模视觉模型上的首次应用。
+与 VGG"单一 3×3 + 堆深"对比:VGG 用 3 层 3×3 才等价于 1 个 7×7 感受野,这意味着 VGG 浅层只能看局部、深层才能看全局。Inception 在每层都同时看多尺度,**信息流更扁更宽**。这种"多分支自适应"思想后来被 ResNeXt(多分支 + group conv)、Xception(depthwise + pointwise)、ViT 的 multi-head attention 各自借鉴。
+
+### 机制二:1×1 卷积瓶颈 — "先压再算"防止通道爆炸
+
+简单多分支并行有一个致命问题:**通道数会随分支累积**。假设输入 256 通道,每分支各输出 128 通道,concat 后是 512 通道,下一层 5×5 卷积参数量 $5 \times 5 \times 512 \times 128 = 1.6$M 一层,堆几个 block 就回到 VGG 量级。
+
+Inception 的核心 trick 是**在每个 3×3 / 5×5 之前先用 1×1 卷积做"瓶颈降维"**——把输入通道从 256 降到 64 再做 5×5,参数量降至 $5 \times 5 \times 64 \times 128 = 0.2$M,**约为原来的 1/8**。1×1 卷积只对通道维做线性组合(不改变空间维),计算便宜但能学到通道压缩。
+
+工程上有一个常见坑:**1×1 必须在 3×3 / 5×5 之前**(顺序反了就失去意义)。pool 分支的 1×1 放在 MaxPool **之后**——因为 MaxPool 不改通道,只在 concat 前压一下就够。
+
+这一"先压再算"的 bottleneck 结构后来在 [ResNet bottleneck](05-resnet.md)、MobileNet inverted residual、Transformer FFN(`d → 4d → d`)里被反复借用。
+
+### 机制三:GAP 替代大 FC — 干掉 VGG 的参数尾巴
+
+GoogLeNet 的另一个关键设计是**去掉 VGG/AlexNet 那两层 4096 维的 FC**。最后一个 Inception block 输出 $7 \times 7 \times 1024$,直接做 Global Average Pooling 把每个通道平均成 1 个数 → 得到 1024 维向量 → 再接一层 FC 到 1000 类。
+
+参数账:VGG 的 fc6 是 102M(74% of total),GoogLeNet 的 GAP+FC 只有 ~1M。**这一步贡献了 5M 整网参数预算的主要来源**。GAP 这个技巧(连同 1×1 卷积)来自 Lin 等人 2013 年的 *Network in Network*,Inception 是它在大规模视觉模型上的首次成功应用。
+
+GAP 之后成为视觉模型的标准 head 设计 —— ResNet / DenseNet / EfficientNet 全部用 GAP,VGG 那种"flatten + 大 FC"模式被彻底抛弃。
+
+### 三件套协同:多分支 + 1×1 瓶颈 + GAP 缺一不可
+
+Inception 在 2014 年能用 5M 参数(VGG 1/28)拿下 ImageNet 冠军,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 Inception 都不成立,这一点和 [ResNet](05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有多分支,没有 1×1 瓶颈** — 通道数随分支累积爆炸,几个 block 后参数回到 VGG 138M 量级,"参数效率"卖点直接消失
+- **只有 1×1 瓶颈,没有多分支** — 退化成普通 CNN,只有 bottleneck 没有多尺度并行,失去 Inception 在每层"自动选尺度"的核心创新
+- **只有多分支 + 1×1,没有 GAP** — 整网参数 99% 仍卡在 fc6 那一层 102M 大头上,Conv 端的 1×1 瓶颈再省也救不回来 — 5M 整网参数根本拿不到
+
+三件套合起来才让 Inception 在 2014 年开辟"参数效率"这条独立优化轴。这也是为什么 VGG 之后再没人用 fc6 那种"flatten + 大 FC"的 head,GAP 成了所有现代视觉模型的标准结尾。
+
+![GoogLeNet 整网 + 参数对比 vs VGG/AlexNet](assets/04-inception-overall.svg)
+*图 2:**上** GoogLeNet 整网 — stem + 9 个 Inception block + GAP + 单层 FC,2 个 aux head 训练时挂在 4a/4d。**下** 三模型参数对比柱状图 — AlexNet 60M / VGG-16 138M / GoogLeNet 5M,GoogLeNet 比 VGG 少 28×、比 AlexNet 少 12×。底部 ImageNet Top-5 错误率:AlexNet 15.3% → VGG 7.3% → GoogLeNet 6.67%,**参数效率作为独立优化轴第一次在 ImageNet 上取得领先**。*
 
 ## 工程陷阱
 
