@@ -27,36 +27,40 @@ NLP 社区在 2010 年前后用神经网络做语言模型(Bengio 2003 / Mikolov
 
 两篇论文给的是同一个范式——**Sequence to Sequence**——只是用不同的循环单元和工程 trick 实现。这个范式后来不只用在翻译上,而是覆盖了对话、摘要、问答、代码生成、语音转写,成为 NLP 在 Transformer 之前的核心架构。
 
-## 核心思想:Encoder + Decoder + 上下文向量
+## 核心思想
 
-Seq2Seq 把翻译拆成两步:**编码**和**解码**。
+### 直觉:用一个固定维度的"语义向量"解耦输入和输出的长度
 
-```mermaid
-graph LR
-    x1["x₁"]:::input --> e1["enc"]:::compute
-    x2["x₂"]:::input --> e2["enc"]:::compute
-    x3["x₃"]:::input --> e3["enc"]:::compute
-    e1 --> e2 --> e3 --> c["c"]:::output
-    c --> d1["dec"]:::compute --> y1["y₁"]:::output
-    d1 --> d2["dec"]:::compute --> y2["y₂"]:::output
-    d2 --> d3["dec"]:::compute --> y3["y₃"]:::output
+理解 Seq2Seq 真正需要先抓一件事:**翻译是变长输入到变长输出**,英语 12 词可以翻译成中文 8 字或 18 字,事先不知道。MLP / CNN / RNN 都做不了:MLP 输入固定大小,CNN 输出和输入空间结构对应,RNN 每步一个输出 — **长度天然绑定**。Sutskever / Cho 2014 反问:**能不能用一个 RNN 把任意长输入压成一个固定向量 c,再用另一个 RNN 从 c 起步生成任意长输出?**
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
+三件事必须同时成立才让 Seq2Seq 在 2014 年成立:
 
-*图 1:Seq2Seq 整体——encoder 把任意长输入 `x_1, ..., x_T` 压进一个固定维度的上下文向量 `c`,decoder 从 `c` 起步逐步生成 `y_1, ..., y_T'`,输入输出长度独立。*
+- **encoder-decoder 解耦输入输出长度** — encoder 把变长输入压成固定维度向量 c(信息瓶颈),decoder 从 c 起步自回归生成,长度由 EOS token 控制
+- **teacher forcing 让训练稳定** — 训练时 decoder 输入用 ground truth y_{t-1} 而非自己上一步预测,梯度不会随预测错误累积
+- **工程 trick 三件套(深层 LSTM + 倒序输入 + beam search)** — Sutskever 把原本不强的基础架构推到 WMT'14 SOTA 的关键
 
-**Encoder** 是一个标准的 RNN(原版用 LSTM 或 GRU)。它读完整个输入序列 `x_1, x_2, ..., x_T`,把最后一时刻的隐状态当作整个句子的语义向量:
+三件事合起来:Seq2Seq 第一次让"端到端神经网络翻译超过统计 SMT" — Sutskever NIPS 2014 在 WMT'14 英法上 BLEU 34.8,首次超过 SMT 33.3。这个范式不仅统一了机器翻译,2014-2017 整个 NLP 把"对话 / 摘要 / 问答 / 代码生成 / 语音识别"全部改写成 Seq2Seq 形式,直接催生 [Bahdanau Attention](05-attention.md)、[Transformer](../05-transformer/01-transformer.md)、T5、GPT 等后续工作 — encoder-decoder 骨架延续至今。
+
+![Seq2Seq Encoder-Decoder + 信息瓶颈](assets/04-seq2seq-encoder-decoder.svg)
+*图 1:**上** 完整 Seq2Seq pipeline — encoder LSTM 读 "I love cats" 三个词,把最后一时刻隐状态当作上下文向量 c(粉色高亮的瓶颈)。**下** decoder LSTM 以 c 为初始状态,从 `<SOS>` 起步,逐字生成 "我 / 爱 / 猫 / <EOS>"。每步 decoder 用上一步输出作输入(自回归);训练时用 ground truth(teacher forcing)、推理时用模型预测。底部 callout 强调:c 的固定维度是信息瓶颈,长句翻译质量急剧下降 — 这是后续 Bahdanau attention 要解决的核心问题。*
+
+### 机制一:Encoder — 把任意长输入压成固定向量 c
+
+Encoder 是一个标准 RNN(原版用 LSTM 或 GRU)。它读完整个输入序列 `x_1, x_2, ..., x_T`,把最后一时刻的隐状态当作整个句子的语义向量:
 
 $$
 h_t = \text{LSTM}(x_t, h_{t-1}), \quad c = h_T
 $$
 
-`c` 称为 **context vector**,典型维度 500–1000。所有信息——词序、句法、语义——都被压在这个固定维度向量里。
+`c` 称为 **context vector**,典型维度 500-1000。所有信息 — 词序、句法、语义 — 都被压在这一固定维度向量里。
 
-**Decoder** 也是一个 RNN,但它的初始状态是 `c`,每一步根据上一时刻的输出 `y_{t-1}` 和当前隐状态 `s_t` 生成下一个词:
+**这一压缩是 Seq2Seq 整套架构的关键也是局限**。优点是 decoder 只需要一个起点向量,与输入长度无关;缺点是 c 的容量有限,长输入序列(50+ 词)会丢失细节 — Sutskever 论文实测源句从 20 词到 70 词,BLEU 从 35 跌到 25 以下。这就是后来 Bahdanau attention 要解决的"信息瓶颈"。
+
+工程上 c 可以是 encoder 最后一层 LSTM 的 (h_T, C_T) 也可以是所有层的拼接,后者信息更丰富但 decoder 接口更复杂。
+
+### 机制二:Decoder + 自回归生成 — 从 c 起步逐字预测
+
+Decoder 也是 RNN,初始状态是 c,每步根据上一时刻的输出 y_{t-1} 和当前隐状态 s_t 生成下一个词:
 
 $$
 s_t = \text{LSTM}(y_{t-1}, s_{t-1}), \quad s_0 = c
@@ -66,25 +70,34 @@ $$
 p(y_t | y_{<t}, x) = \text{softmax}(W_o s_t)
 $$
 
-特殊 token `<SOS>`(start of sentence)作为 `y_0` 起步,生成到 `<EOS>`(end of sentence)停止。这种"自回归"生成方式——逐字预测、上一步的输出作为下一步输入——是后来所有语言模型(GPT/BERT 解码端/Transformer)的标准做法。
+特殊 token `<SOS>` 作 y_0 起步,生成到 `<EOS>` 停止。这种**自回归生成方式** — 逐字预测、上一步输出作为下一步输入 — 后来成为所有语言模型(GPT/BERT decoder/Transformer)的标准。
 
-**训练目标**是最大化目标序列的对数似然:
+**训练目标**是最大化目标序列的对数似然:$\mathcal{L} = -\sum_{t} \log p(y_t | y_{<t}, x)$
 
-$$
-\mathcal{L} = -\sum_{t=1}^{T'} \log p(y_t | y_{<t}, x)
-$$
+训练时用 **teacher forcing**:decoder 输入用 ground truth 的 y_{t-1}(而不是模型自己上一步预测的)。这让训练稳定 — 否则一步错就全错,梯度信号几乎学不到东西。代价是训练 / 推理 distribution 不一致(exposure bias),但实际效果良好。
 
-训练时用 **teacher forcing**:decoder 的输入用 ground truth 的 `y_{t-1}`(而不是模型自己上一步预测的),让训练更稳定。
+### 机制三:深层 LSTM + 倒序输入 + Beam Search — Sutskever 的三件工程胜利
 
-## Sutskever 的两个工程 trick
+基本架构 Cho 6 月已发,但 Sutskever 9 月才让 Seq2Seq 在 WMT'14 上超过 SMT。差距来自三个工程 trick:
 
-Sutskever 那篇 NIPS 论文真正让 Seq2Seq 在 WMT'14 上超过 SMT 的不是基本架构(基本架构和 Cho 同年提出),而是几个看起来微小但关键的工程选择:
+**1. 4 层深 LSTM** — encoder 和 decoder 各堆 4 层 LSTM,每层 1000 维,~380M 参数。当时大多数神经模型只用 1 层,堆深从浅模型的 BLEU 28.5 推到 34.8(+6.3)。
 
-**1. 4 层深 LSTM**——encoder 和 decoder 各堆 4 层 LSTM,每层 1000 维。当时大多数神经网络模型只用 1 层,堆深的设计提升了模型容量,在 WMT'14 上从浅模型的 BLEU 28.5 推到了 34.8。
+**2. 倒序输入** — Sutskever 发现把源句**反过来**喂给 encoder(`x_T, ..., x_1`)能显著改善翻译,BLEU +4-5。**直观解释**:正序时 x_1 离 c 是 T 步,模型要记 T 步才能用上;倒序后 x_1 离 c 只有 1 步,**缩短源句和目标句开头之间的"梯度路径"**,LSTM 更容易学到对齐。这个 trick 后来被 attention 直接淘汰(attention 让每个目标词可直接看任意源词),但在 attention 出现前是工业翻译标配。
 
-**2. 倒序输入**——Sutskever 发现把源句**反过来**喂给 encoder(`x_T, x_{T-1}, ..., x_1`)能显著改善翻译质量,BLEU 提升 4–5 个点。直观解释:正序情况下源句开头 `x_1` 离最终上下文向量 `c` 的距离是 `T` 步,模型要记 `T` 步才能用上;倒序后 `x_1` 离 `c` 只有 1 步,**缩短了源句和目标句开头之间的"梯度路径"**,让 LSTM 更容易学到对齐。这个 trick 后来被 Bahdanau 的 attention 直接淘汰掉(attention 让每个目标词可以直接看任意源词),但在 attention 出来之前是工业翻译的标配。
+**3. Beam search 解码** — 推理时不只取每步最高概率的词(greedy),而是同时维护 top-k(典型 k=5 或 10)候选序列,每步扩展所有候选,最后取整体 log-prob 最高的。BLEU +1-2,代价是推理慢 k 倍。沿用至今。
 
-**3. Beam search 解码**——推理时不只取每步概率最高的词(greedy),而是同时维护 top-`k`(典型 `k = 5` 或 `10`)候选序列,每步扩展所有候选,最后取整体 log-prob 最高的。BLEU 提升 1–2 个点,代价是推理慢 `k` 倍。这是序列生成的标准做法,沿用到今天。
+### 三件套协同:encoder-decoder + teacher forcing + 工程三件 缺一不可
+
+Seq2Seq 在 2014 年能成为统一的 NLP 范式,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 Seq2Seq 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 encoder-decoder 架构,没有 teacher forcing** — 训练时 decoder 用自己上一步预测做输入,一步错就全错,梯度信号学不到东西,WMT 上 BLEU 只能到 15-20 量级
+- **只有 teacher forcing + encoder-decoder,没有深层 LSTM + 倒序 + beam** — 基本架构(Cho 那种 1 层 GRU + 正序 + greedy)的 BLEU 在 WMT 上只有 26-28,**和 SMT 33 还差一截**,无法证明"神经网络翻译可工业化"
+- **只有工程 trick,没有 encoder-decoder 信息瓶颈架构** — 退化成"在 RNN 上堆 trick",但没法处理变长输入到变长输出的任务结构,翻译 / 摘要 / 对话都做不了
+
+三件套合起来才让 Seq2Seq 在 2014 年第一次让端到端神经翻译超过 SMT,把整个 NLP 推进"用统一架构解决所有序列任务"的新范式。但 Seq2Seq 也留下两个明确遗憾 — **信息瓶颈**(由 [Bahdanau attention](05-attention.md) 2014 用动态对齐解决)和 **串行不可并行**(由 [Transformer](../05-transformer/01-transformer.md) 2017 用 self-attention 彻底解决)。
+
+![Sutskever 三件工程 trick — 深层 LSTM + 倒序 + Beam search](assets/04-seq2seq-tricks.svg)
+*图 2:**左** 4 层深 LSTM — encoder/decoder 各 4 层 × 1000 维,~380M 参数,堆深从 BLEU 28.5 推到 34.8(+6.3)。**中** 倒序输入 — 把源句 "I love cats" 反过来喂 → "cats love I",x_1("I")离 c 从 T 步缩到 1 步,**缩短梯度路径**,BLEU +4-5。**右** Beam search 解码 — 维护 top-k=5 候选序列,每步扩展所有候选,最后取整体 log-prob 最高的,BLEU +1-2。底部柱状图:基础 GRU+正序+greedy(BLEU 28)→ +4层 LSTM(31)→ +倒序(33.5)→ +beam(34.8),首次超过 SMT baseline 33.3。*
 
 ## 信息瓶颈
 

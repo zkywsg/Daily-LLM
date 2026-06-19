@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="s2s-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Seq2Seq Encoder-Decoder — 用固定向量 c 解耦输入输出长度
+  </text>
+
+  <!-- ============== TOP: Encoder ============== -->
+  <text x="240" y="70" text-anchor="middle" font-size="13" fill="#2563eb" font-weight="600">
+    Encoder LSTM(读源句压成 c)
+  </text>
+
+  <!-- Source tokens -->
+  <g>
+    <rect x="60" y="190" width="70" height="32" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="95" y="210" text-anchor="middle" font-size="11" fill="#92400e">"I"</text>
+
+    <rect x="160" y="190" width="70" height="32" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="195" y="210" text-anchor="middle" font-size="11" fill="#92400e">"love"</text>
+
+    <rect x="260" y="190" width="70" height="32" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="295" y="210" text-anchor="middle" font-size="11" fill="#92400e">"cats"</text>
+  </g>
+
+  <!-- Encoder hiddens -->
+  <g>
+    <circle cx="95" cy="120" r="26" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="95" y="125" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">h₁</text>
+
+    <circle cx="195" cy="120" r="26" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="195" y="125" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">h₂</text>
+
+    <circle cx="295" cy="120" r="30" fill="#fce7f3" stroke="#db2777" stroke-width="3"/>
+    <text x="295" y="118" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">h_T = c</text>
+    <text x="295" y="132" text-anchor="middle" font-size="9" fill="#9d174d">瓶颈</text>
+  </g>
+
+  <!-- arrows -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="95" y1="188" x2="95" y2="148" marker-end="url(#s2s-arr)"/>
+    <line x1="195" y1="188" x2="195" y2="148" marker-end="url(#s2s-arr)"/>
+    <line x1="295" y1="188" x2="295" y2="152" marker-end="url(#s2s-arr)"/>
+  </g>
+
+  <g stroke="#2563eb" stroke-width="2" fill="none">
+    <line x1="121" y1="120" x2="169" y2="120" marker-end="url(#s2s-arr)"/>
+    <line x1="221" y1="120" x2="263" y2="120" marker-end="url(#s2s-arr)"/>
+  </g>
+
+  <!-- c 强调 -->
+  <line x1="325" y1="120" x2="430" y2="120" stroke="#db2777" stroke-width="3" stroke-dasharray="5,3" marker-end="url(#s2s-arr)"/>
+  <text x="377" y="108" text-anchor="middle" font-size="11" fill="#db2777" font-weight="700">c(context vector)</text>
+  <text x="377" y="138" text-anchor="middle" font-size="10" fill="#db2777" font-style="italic">500-1000 维</text>
+
+  <!-- ============== RIGHT: Decoder ============== -->
+  <text x="640" y="70" text-anchor="middle" font-size="13" fill="#059669" font-weight="600">
+    Decoder LSTM(从 c 起步生成目标句)
+  </text>
+
+  <!-- Decoder inputs (SOS + previous outputs) -->
+  <g>
+    <rect x="445" y="190" width="60" height="32" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="475" y="210" text-anchor="middle" font-size="10" fill="#92400e">&lt;SOS&gt;</text>
+
+    <rect x="540" y="190" width="60" height="32" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="570" y="210" text-anchor="middle" font-size="11" fill="#92400e">"我"</text>
+
+    <rect x="635" y="190" width="60" height="32" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="665" y="210" text-anchor="middle" font-size="11" fill="#92400e">"爱"</text>
+
+    <rect x="730" y="190" width="60" height="32" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="760" y="210" text-anchor="middle" font-size="11" fill="#92400e">"猫"</text>
+  </g>
+
+  <!-- Decoder hiddens -->
+  <g>
+    <circle cx="475" cy="120" r="26" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="475" y="125" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">s₁</text>
+
+    <circle cx="570" cy="120" r="26" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="570" y="125" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">s₂</text>
+
+    <circle cx="665" cy="120" r="26" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="665" y="125" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">s₃</text>
+
+    <circle cx="760" cy="120" r="26" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="760" y="125" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">s₄</text>
+  </g>
+
+  <!-- Decoder outputs -->
+  <g>
+    <rect x="445" y="40" width="60" height="32" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="475" y="60" text-anchor="middle" font-size="11" fill="#9d174d">"我"</text>
+
+    <rect x="540" y="40" width="60" height="32" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="570" y="60" text-anchor="middle" font-size="11" fill="#9d174d">"爱"</text>
+
+    <rect x="635" y="40" width="60" height="32" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="665" y="60" text-anchor="middle" font-size="11" fill="#9d174d">"猫"</text>
+
+    <rect x="730" y="40" width="60" height="32" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="760" y="60" text-anchor="middle" font-size="10" fill="#9d174d">&lt;EOS&gt;</text>
+  </g>
+
+  <!-- decoder arrows -->
+  <g stroke="#9d174d" stroke-width="1.5" fill="none">
+    <line x1="475" y1="188" x2="475" y2="148" marker-end="url(#s2s-arr)"/>
+    <line x1="570" y1="188" x2="570" y2="148" marker-end="url(#s2s-arr)"/>
+    <line x1="665" y1="188" x2="665" y2="148" marker-end="url(#s2s-arr)"/>
+    <line x1="760" y1="188" x2="760" y2="148" marker-end="url(#s2s-arr)"/>
+
+    <line x1="475" y1="94" x2="475" y2="74" marker-end="url(#s2s-arr)"/>
+    <line x1="570" y1="94" x2="570" y2="74" marker-end="url(#s2s-arr)"/>
+    <line x1="665" y1="94" x2="665" y2="74" marker-end="url(#s2s-arr)"/>
+    <line x1="760" y1="94" x2="760" y2="74" marker-end="url(#s2s-arr)"/>
+  </g>
+
+  <g stroke="#059669" stroke-width="2" fill="none">
+    <line x1="501" y1="120" x2="544" y2="120" marker-end="url(#s2s-arr)"/>
+    <line x1="596" y1="120" x2="639" y2="120" marker-end="url(#s2s-arr)"/>
+    <line x1="691" y1="120" x2="734" y2="120" marker-end="url(#s2s-arr)"/>
+  </g>
+
+  <!-- autoregressive: output feeds next input -->
+  <g stroke="#7c3aed" stroke-width="1" fill="none" stroke-dasharray="3,2">
+    <path d="M 475 75 C 475 25, 570 25, 570 192" marker-end="url(#s2s-arr)"/>
+    <path d="M 570 75 C 570 25, 665 25, 665 192" marker-end="url(#s2s-arr)"/>
+    <path d="M 665 75 C 665 25, 760 25, 760 192" marker-end="url(#s2s-arr)"/>
+  </g>
+
+  <text x="620" y="20" text-anchor="middle" font-size="10" fill="#7c3aed" font-style="italic">自回归:上一步输出 → 下一步输入</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="280" x2="860" y2="280" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: 信息瓶颈现象 ============== -->
+  <text x="450" y="310" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    信息瓶颈现象 — 翻译质量随源句长度急剧下降
+  </text>
+
+  <!-- chart: BLEU vs source length -->
+  <line x1="120" y1="490" x2="780" y2="490" stroke="#1f2937" stroke-width="1.5"/>
+  <line x1="120" y1="335" x2="120" y2="490" stroke="#1f2937" stroke-width="1.5"/>
+
+  <!-- y labels BLEU -->
+  <g font-size="10" fill="#6b7280">
+    <text x="113" y="493" text-anchor="end">15</text>
+    <text x="113" y="455" text-anchor="end">20</text>
+    <text x="113" y="417" text-anchor="end">25</text>
+    <text x="113" y="379" text-anchor="end">30</text>
+    <text x="113" y="341" text-anchor="end">35</text>
+  </g>
+  <text x="68" y="412" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600" transform="rotate(-90 68 412)">BLEU</text>
+
+  <!-- x labels source length -->
+  <g font-size="10" fill="#6b7280">
+    <text x="170" y="505" text-anchor="middle">10</text>
+    <text x="280" y="505" text-anchor="middle">20</text>
+    <text x="390" y="505" text-anchor="middle">30</text>
+    <text x="500" y="505" text-anchor="middle">40</text>
+    <text x="610" y="505" text-anchor="middle">50</text>
+    <text x="720" y="505" text-anchor="middle">70</text>
+  </g>
+  <text x="450" y="525" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">源句长度(词数)</text>
+
+  <!-- gridlines -->
+  <g stroke="#e5e7eb" stroke-width="1" stroke-dasharray="2,3">
+    <line x1="120" y1="455" x2="780" y2="455"/>
+    <line x1="120" y1="417" x2="780" y2="417"/>
+    <line x1="120" y1="379" x2="780" y2="379"/>
+    <line x1="120" y1="341" x2="780" y2="341"/>
+  </g>
+
+  <!-- Seq2Seq curve (drops sharply) -->
+  <path d="M 170 350 L 280 345 L 390 360 L 500 390 L 610 425 L 720 465" stroke="#dc2626" stroke-width="2.5" fill="none"/>
+  <g fill="#dc2626">
+    <circle cx="170" cy="350" r="4"/>
+    <circle cx="280" cy="345" r="4"/>
+    <circle cx="390" cy="360" r="4"/>
+    <circle cx="500" cy="390" r="4"/>
+    <circle cx="610" cy="425" r="4"/>
+    <circle cx="720" cy="465" r="4"/>
+  </g>
+  <text x="650" y="475" font-size="11" fill="#dc2626" font-weight="600">Seq2Seq(基础)</text>
+
+  <!-- SMT baseline (relatively flat) -->
+  <path d="M 170 370 L 280 372 L 390 375 L 500 378 L 610 380 L 720 385" stroke="#6b7280" stroke-width="2" fill="none" stroke-dasharray="5,3"/>
+  <g fill="#6b7280">
+    <circle cx="280" cy="372" r="3"/>
+    <circle cx="500" cy="378" r="3"/>
+    <circle cx="720" cy="385" r="3"/>
+  </g>
+  <text x="700" y="400" font-size="10" fill="#6b7280">SMT(对比)</text>
+
+  <!-- callout: bottleneck -->
+  <rect x="430" y="335" width="240" height="46" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="550" y="354" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">长句 → c 装不下 → 翻译崩</text>
+  <text x="550" y="372" text-anchor="middle" font-size="10" fill="#991b1b">由 Bahdanau attention 解决</text>
+
+  <!-- bottom callout -->
+  <rect x="60" y="555" width="780" height="50" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="580" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    encoder-decoder 骨架从 Seq2Seq 沿用至今 — Transformer / T5 / GPT 解码端继承
+  </text>
+  <text x="450" y="600" text-anchor="middle" font-size="11" fill="#fef3c7">
+    自回归生成 + teacher forcing 成为所有 LM 标准训练方式
+  </text>
+</svg>

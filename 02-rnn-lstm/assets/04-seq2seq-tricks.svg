@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="trk-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Sutskever 三件工程 trick — 让 Seq2Seq 在 WMT'14 超过 SMT
+  </text>
+
+  <!-- ============== LEFT: 4-layer LSTM ============== -->
+  <text x="160" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    ① 4 层深 LSTM
+  </text>
+
+  <!-- 4 stacked LSTM layers -->
+  <g>
+    <rect x="80" y="85" width="160" height="32" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="160" y="106" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">LSTM L4(1000d)</text>
+
+    <rect x="80" y="125" width="160" height="32" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="160" y="146" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">LSTM L3(1000d)</text>
+
+    <rect x="80" y="165" width="160" height="32" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="160" y="186" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">LSTM L2(1000d)</text>
+
+    <rect x="80" y="205" width="160" height="32" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="160" y="226" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">LSTM L1(1000d)</text>
+
+    <rect x="80" y="245" width="160" height="30" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="160" y="265" text-anchor="middle" font-size="11" fill="#92400e">Embedding</text>
+  </g>
+
+  <g stroke="#9d174d" stroke-width="1.2" fill="none">
+    <line x1="160" y1="245" x2="160" y2="240" marker-end="url(#trk-arr)"/>
+    <line x1="160" y1="205" x2="160" y2="200" marker-end="url(#trk-arr)"/>
+    <line x1="160" y1="165" x2="160" y2="160" marker-end="url(#trk-arr)"/>
+    <line x1="160" y1="125" x2="160" y2="120" marker-end="url(#trk-arr)"/>
+  </g>
+
+  <text x="160" y="297" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    encoder/decoder 各 4 层
+  </text>
+  <text x="160" y="313" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="600">
+    ~380M 参数
+  </text>
+  <text x="160" y="330" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">
+    BLEU 28.5 → 34.8(+6.3)
+  </text>
+
+  <!-- ============== MIDDLE: 倒序输入 ============== -->
+  <text x="450" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    ② 倒序输入(reversed input)
+  </text>
+
+  <!-- 正序 forward -->
+  <text x="450" y="95" text-anchor="middle" font-size="11" fill="#6b7280">正序:x_1 离 c 是 T 步</text>
+
+  <g>
+    <rect x="335" y="105" width="50" height="28" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="360" y="123" text-anchor="middle" font-size="11" fill="#92400e">I</text>
+
+    <rect x="395" y="105" width="50" height="28" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="420" y="123" text-anchor="middle" font-size="11" fill="#92400e">love</text>
+
+    <rect x="455" y="105" width="50" height="28" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="480" y="123" text-anchor="middle" font-size="11" fill="#92400e">cats</text>
+
+    <circle cx="555" cy="119" r="20" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="555" y="124" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">c</text>
+  </g>
+
+  <line x1="386" y1="119" x2="394" y2="119" stroke="#9d174d" stroke-width="1" marker-end="url(#trk-arr)"/>
+  <line x1="446" y1="119" x2="454" y2="119" stroke="#9d174d" stroke-width="1" marker-end="url(#trk-arr)"/>
+  <line x1="506" y1="119" x2="534" y2="119" stroke="#9d174d" stroke-width="1" marker-end="url(#trk-arr)"/>
+
+  <!-- x_1 距离箭头 -->
+  <path d="M 360 145 C 360 175, 555 175, 555 142" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+  <text x="455" y="195" text-anchor="middle" font-size="10" fill="#dc2626">x_1 到 c 走 3 步</text>
+
+  <!-- 分隔线 -->
+  <line x1="320" y1="215" x2="585" y2="215" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2,2"/>
+
+  <!-- 倒序 -->
+  <text x="450" y="235" text-anchor="middle" font-size="11" fill="#059669" font-weight="600">倒序:x_1 离 c 只有 1 步</text>
+
+  <g>
+    <rect x="335" y="245" width="50" height="28" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1"/>
+    <text x="360" y="263" text-anchor="middle" font-size="11" fill="#065f46">cats</text>
+
+    <rect x="395" y="245" width="50" height="28" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1"/>
+    <text x="420" y="263" text-anchor="middle" font-size="11" fill="#065f46">love</text>
+
+    <rect x="455" y="245" width="50" height="28" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="480" y="263" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">I</text>
+
+    <circle cx="555" cy="259" r="20" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="555" y="264" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">c</text>
+  </g>
+
+  <line x1="386" y1="259" x2="394" y2="259" stroke="#059669" stroke-width="1" marker-end="url(#trk-arr)"/>
+  <line x1="446" y1="259" x2="454" y2="259" stroke="#059669" stroke-width="1" marker-end="url(#trk-arr)"/>
+  <line x1="506" y1="259" x2="534" y2="259" stroke="#059669" stroke-width="2" marker-end="url(#trk-arr)"/>
+
+  <path d="M 480 280 C 480 295, 555 295, 555 282" stroke="#059669" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+  <text x="520" y="318" text-anchor="middle" font-size="10" fill="#059669" font-weight="600">x_1("I")到 c 只走 1 步</text>
+
+  <text x="450" y="345" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">BLEU +4-5</text>
+
+  <!-- ============== RIGHT: Beam search ============== -->
+  <text x="740" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    ③ Beam search(k=5)
+  </text>
+
+  <!-- Tree -->
+  <g>
+    <!-- root -->
+    <circle cx="740" cy="100" r="10" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="755" y="103" font-size="9" fill="#5b21b6">SOS</text>
+
+    <!-- top 5 candidates step 1 -->
+    <g font-size="9" fill="#5b21b6">
+      <circle cx="635" cy="155" r="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1"/>
+      <text x="635" y="173" text-anchor="middle">我 .3</text>
+      <circle cx="685" cy="155" r="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1"/>
+      <text x="685" y="173" text-anchor="middle">是 .2</text>
+      <circle cx="735" cy="155" r="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1"/>
+      <text x="735" y="173" text-anchor="middle">有 .2</text>
+      <circle cx="785" cy="155" r="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1"/>
+      <text x="785" y="173" text-anchor="middle">他 .15</text>
+      <circle cx="835" cy="155" r="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1"/>
+      <text x="835" y="173" text-anchor="middle">这 .15</text>
+    </g>
+
+    <g stroke="#7c3aed" stroke-width="1" fill="none" opacity="0.6">
+      <line x1="740" y1="110" x2="635" y2="147"/>
+      <line x1="740" y1="110" x2="685" y2="147"/>
+      <line x1="740" y1="110" x2="735" y2="147"/>
+      <line x1="740" y1="110" x2="785" y2="147"/>
+      <line x1="740" y1="110" x2="835" y2="147"/>
+    </g>
+
+    <!-- step 2 best beam path emphasized -->
+    <g font-size="9" fill="#5b21b6">
+      <circle cx="635" cy="215" r="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <text x="635" y="233" text-anchor="middle" font-weight="700">爱 .85</text>
+    </g>
+    <line x1="635" y1="163" x2="635" y2="207" stroke="#d97706" stroke-width="2"/>
+
+    <g font-size="9" fill="#5b21b6">
+      <circle cx="635" cy="275" r="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <text x="635" y="293" text-anchor="middle" font-weight="700">猫 .9</text>
+    </g>
+    <line x1="635" y1="223" x2="635" y2="267" stroke="#d97706" stroke-width="2"/>
+
+    <g font-size="9" fill="#5b21b6">
+      <circle cx="635" cy="335" r="8" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+      <text x="635" y="353" text-anchor="middle" font-weight="700">EOS</text>
+    </g>
+    <line x1="635" y1="283" x2="635" y2="327" stroke="#059669" stroke-width="2"/>
+
+    <!-- other beam paths shown thinner -->
+    <line x1="685" y1="163" x2="700" y2="215" stroke="#7c3aed" stroke-width="0.8" opacity="0.4"/>
+    <line x1="735" y1="163" x2="760" y2="215" stroke="#7c3aed" stroke-width="0.8" opacity="0.4"/>
+  </g>
+
+  <text x="740" y="385" text-anchor="middle" font-size="10" fill="#7c3aed" font-style="italic">
+    每步保留 top-5 序列
+  </text>
+  <text x="740" y="402" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">
+    最终 BLEU +1-2
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="425" x2="860" y2="425" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: BLEU progression bars ============== -->
+  <text x="450" y="455" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    WMT'14 英法 BLEU 累积提升 — 首次超过 SMT
+  </text>
+
+  <g transform="translate(140, 480)">
+    <!-- Base GRU + 正序 + greedy: 28.0 -->
+    <text x="0" y="20" font-size="11" fill="#1f2937">基础(1 层 GRU+正序+greedy)</text>
+    <rect x="220" y="8" width="280" height="18" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="510" y="22" font-size="11" fill="#92400e">28.0</text>
+
+    <!-- +4-layer LSTM: 31.0 -->
+    <text x="0" y="48" font-size="11" fill="#1f2937">+ 4 层 LSTM</text>
+    <rect x="220" y="36" width="310" height="18" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="540" y="50" font-size="11" fill="#9d174d">31.0</text>
+
+    <!-- +reversed: 33.5 -->
+    <text x="0" y="76" font-size="11" fill="#1f2937">+ 倒序输入</text>
+    <rect x="220" y="64" width="335" height="18" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="565" y="78" font-size="11" fill="#9d174d" font-weight="600">33.5</text>
+
+    <!-- +beam search: 34.8 -->
+    <text x="0" y="104" font-size="11" fill="#059669" font-weight="700">+ Beam search ⭐</text>
+    <rect x="220" y="92" width="348" height="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="578" y="106" font-size="11" fill="#059669" font-weight="700">34.8 — Sutskever 2014</text>
+
+    <!-- SMT baseline (gray line for reference) -->
+    <text x="0" y="132" font-size="11" fill="#6b7280">SMT 2014 baseline</text>
+    <rect x="220" y="120" width="333" height="18" fill="#f3f4f6" stroke="#6b7280" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="563" y="134" font-size="11" fill="#6b7280">33.3</text>
+  </g>
+
+  <!-- bottom callout -->
+  <rect x="60" y="635" width="780" height="20" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="650" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">
+    Beam search 沿用至今(GPT/Claude 推理也用),倒序输入被 Bahdanau attention 后淘汰
+  </text>
+</svg>
