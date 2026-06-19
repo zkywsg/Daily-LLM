@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    现代 LLM 配方 — LLaMA 6 件套替换 + 全行业采用
+  </text>
+
+  <!-- ============== TOP: 6 components evolution ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    原版 Transformer(2017)→ GPT-3(2020)→ LLaMA(2023)
+  </text>
+
+  <!-- Header -->
+  <rect x="60" y="80" width="780" height="30" fill="#1f2937"/>
+  <text x="160" y="100" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">组件</text>
+  <text x="345" y="100" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">原版 Transformer 2017</text>
+  <text x="540" y="100" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">GPT-3 2020</text>
+  <text x="745" y="100" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">LLaMA 2023</text>
+
+  <!-- Row 1: Norm 位置 -->
+  <rect x="60" y="110" width="780" height="28" fill="#fef3c7"/>
+  <text x="70" y="129" font-size="11" fill="#92400e" font-weight="600">Norm 位置</text>
+  <text x="345" y="129" text-anchor="middle" font-size="11" fill="#92400e">Post-LN</text>
+  <text x="540" y="129" text-anchor="middle" font-size="11" fill="#92400e">Pre-LN</text>
+  <text x="745" y="129" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">Pre-LN</text>
+
+  <!-- Row 2: Norm 类型 -->
+  <rect x="60" y="138" width="780" height="28" fill="#ecfdf5"/>
+  <text x="70" y="157" font-size="11" fill="#065f46" font-weight="600">Norm 类型</text>
+  <text x="345" y="157" text-anchor="middle" font-size="11" fill="#065f46">LayerNorm</text>
+  <text x="540" y="157" text-anchor="middle" font-size="11" fill="#065f46">LayerNorm</text>
+  <text x="745" y="157" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">RMSNorm ★</text>
+
+  <!-- Row 3: 位置编码 -->
+  <rect x="60" y="166" width="780" height="28" fill="#fef3c7"/>
+  <text x="70" y="185" font-size="11" fill="#92400e" font-weight="600">位置编码</text>
+  <text x="345" y="185" text-anchor="middle" font-size="11" fill="#92400e">正余弦 PE</text>
+  <text x="540" y="185" text-anchor="middle" font-size="11" fill="#92400e">learned PE</text>
+  <text x="745" y="185" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">RoPE ★</text>
+
+  <!-- Row 4: FFN 激活 -->
+  <rect x="60" y="194" width="780" height="28" fill="#ecfdf5"/>
+  <text x="70" y="213" font-size="11" fill="#065f46" font-weight="600">FFN 激活</text>
+  <text x="345" y="213" text-anchor="middle" font-size="11" fill="#065f46">ReLU</text>
+  <text x="540" y="213" text-anchor="middle" font-size="11" fill="#065f46">GELU</text>
+  <text x="745" y="213" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">SwiGLU ★</text>
+
+  <!-- Row 5: FFN 维度 -->
+  <rect x="60" y="222" width="780" height="28" fill="#fef3c7"/>
+  <text x="70" y="241" font-size="11" fill="#92400e" font-weight="600">FFN 中间维度</text>
+  <text x="345" y="241" text-anchor="middle" font-size="11" fill="#92400e">4 × d_model</text>
+  <text x="540" y="241" text-anchor="middle" font-size="11" fill="#92400e">4 × d_model</text>
+  <text x="745" y="241" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">8/3 × d_model</text>
+
+  <!-- Row 6: Attention -->
+  <rect x="60" y="250" width="780" height="28" fill="#ecfdf5"/>
+  <text x="70" y="269" font-size="11" fill="#065f46" font-weight="600">Attention</text>
+  <text x="345" y="269" text-anchor="middle" font-size="11" fill="#065f46">Multi-Head</text>
+  <text x="540" y="269" text-anchor="middle" font-size="11" fill="#065f46">MHA + Sparse</text>
+  <text x="745" y="269" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">MHA / GQA ★</text>
+
+  <!-- Row 7: Tokenizer -->
+  <rect x="60" y="278" width="780" height="28" fill="#fef3c7"/>
+  <text x="70" y="297" font-size="11" fill="#92400e" font-weight="600">Tokenizer</text>
+  <text x="345" y="297" text-anchor="middle" font-size="11" fill="#92400e">BPE</text>
+  <text x="540" y="297" text-anchor="middle" font-size="11" fill="#92400e">BPE</text>
+  <text x="745" y="297" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">SentencePiece BPE</text>
+
+  <!-- 来源 annotations -->
+  <text x="450" y="325" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    源头:Pre-LN ← Xiong 2019 / RMSNorm ← Zhang 2019 / RoPE ← Su 2021 / SwiGLU ← Shazeer 2020 / GQA ← Ainslie 2023
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="350" x2="860" y2="350" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: 全行业采用 ============== -->
+  <text x="450" y="378" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    2023+ 全行业采用 — 几乎全部照抄 LLaMA 配方
+  </text>
+
+  <!-- table of 2023+ models -->
+  <rect x="60" y="395" width="780" height="28" fill="#1f2937"/>
+  <text x="120" y="414" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">模型</text>
+  <text x="280" y="414" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">Norm</text>
+  <text x="400" y="414" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">PE</text>
+  <text x="500" y="414" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">FFN</text>
+  <text x="610" y="414" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">Attention</text>
+  <text x="745" y="414" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">特色</text>
+
+  <rect x="60" y="423" width="780" height="24" fill="#ecfdf5"/>
+  <text x="120" y="439" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">LLaMA-1/2/3</text>
+  <text x="280" y="439" text-anchor="middle" font-size="10" fill="#065f46">Pre-RMSNorm</text>
+  <text x="400" y="439" text-anchor="middle" font-size="10" fill="#065f46">RoPE</text>
+  <text x="500" y="439" text-anchor="middle" font-size="10" fill="#065f46">SwiGLU</text>
+  <text x="610" y="439" text-anchor="middle" font-size="10" fill="#065f46">MHA/GQA</text>
+  <text x="745" y="439" text-anchor="middle" font-size="10" fill="#065f46">over-train 路线</text>
+
+  <rect x="60" y="447" width="780" height="24" fill="#ecfdf5"/>
+  <text x="120" y="463" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">Mistral / Mixtral</text>
+  <text x="280" y="463" text-anchor="middle" font-size="10" fill="#065f46">Pre-RMSNorm</text>
+  <text x="400" y="463" text-anchor="middle" font-size="10" fill="#065f46">RoPE</text>
+  <text x="500" y="463" text-anchor="middle" font-size="10" fill="#065f46">SwiGLU</text>
+  <text x="610" y="463" text-anchor="middle" font-size="10" fill="#065f46">GQA / SWA</text>
+  <text x="745" y="463" text-anchor="middle" font-size="10" fill="#065f46">+ MoE / SWA</text>
+
+  <rect x="60" y="471" width="780" height="24" fill="#ecfdf5"/>
+  <text x="120" y="487" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">Qwen / Qwen2</text>
+  <text x="280" y="487" text-anchor="middle" font-size="10" fill="#065f46">Pre-RMSNorm</text>
+  <text x="400" y="487" text-anchor="middle" font-size="10" fill="#065f46">RoPE</text>
+  <text x="500" y="487" text-anchor="middle" font-size="10" fill="#065f46">SwiGLU</text>
+  <text x="610" y="487" text-anchor="middle" font-size="10" fill="#065f46">GQA</text>
+  <text x="745" y="487" text-anchor="middle" font-size="10" fill="#065f46">多语言数据</text>
+
+  <rect x="60" y="495" width="780" height="24" fill="#ecfdf5"/>
+  <text x="120" y="511" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">Yi-34B</text>
+  <text x="280" y="511" text-anchor="middle" font-size="10" fill="#065f46">Pre-RMSNorm</text>
+  <text x="400" y="511" text-anchor="middle" font-size="10" fill="#065f46">RoPE</text>
+  <text x="500" y="511" text-anchor="middle" font-size="10" fill="#065f46">SwiGLU</text>
+  <text x="610" y="511" text-anchor="middle" font-size="10" fill="#065f46">GQA</text>
+  <text x="745" y="511" text-anchor="middle" font-size="10" fill="#065f46">中英 200K 上下文</text>
+
+  <rect x="60" y="519" width="780" height="24" fill="#ecfdf5"/>
+  <text x="120" y="535" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">DeepSeek-V3</text>
+  <text x="280" y="535" text-anchor="middle" font-size="10" fill="#065f46">Pre-RMSNorm</text>
+  <text x="400" y="535" text-anchor="middle" font-size="10" fill="#065f46">RoPE</text>
+  <text x="500" y="535" text-anchor="middle" font-size="10" fill="#065f46">SwiGLU</text>
+  <text x="610" y="535" text-anchor="middle" font-size="10" fill="#065f46">MLA(改进)</text>
+  <text x="745" y="535" text-anchor="middle" font-size="10" fill="#065f46">+ MoE 256 experts</text>
+
+  <rect x="60" y="543" width="780" height="24" fill="#fee2e2"/>
+  <text x="120" y="559" text-anchor="middle" font-size="10" fill="#991b1b" font-weight="600">GPT-4(推测)</text>
+  <text x="280" y="559" text-anchor="middle" font-size="10" fill="#991b1b">Pre-RMSNorm</text>
+  <text x="400" y="559" text-anchor="middle" font-size="10" fill="#991b1b">RoPE/类似</text>
+  <text x="500" y="559" text-anchor="middle" font-size="10" fill="#991b1b">SwiGLU/类似</text>
+  <text x="610" y="559" text-anchor="middle" font-size="10" fill="#991b1b">GQA/MQA</text>
+  <text x="745" y="559" text-anchor="middle" font-size="10" fill="#991b1b">+ MoE + 多模态</text>
+
+  <!-- bottom callout -->
+  <rect x="60" y="585" width="780" height="60" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="610" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    架构创新结束 — LLM 演化转向数据 / MoE / 长上下文 / RLHF / test-time scaling
+  </text>
+  <text x="450" y="630" text-anchor="middle" font-size="11" fill="#fef3c7">
+    2024-2025 LLM 论文几乎不改基础组件,创新转移到正交方向
+  </text>
+</svg>

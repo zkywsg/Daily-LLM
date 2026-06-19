@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="dt-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GPT-4 vs LLaMA — 2023 双轨格局,但架构高度趋同
+  </text>
+
+  <!-- ============== LEFT: GPT-4 闭源前沿 ============== -->
+  <text x="180" y="65" text-anchor="middle" font-size="14" fill="#dc2626" font-weight="700">
+    GPT-4 — 闭源前沿
+  </text>
+
+  <rect x="50" y="85" width="260" height="380" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2.5"/>
+
+  <text x="180" y="110" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">参数 / 规模</text>
+  <g font-size="11" fill="#991b1b">
+    <text x="65" y="132">• 参数 ~1.8T(MoE 16×110B)</text>
+    <text x="65" y="150">• 训练 token ~13T</text>
+    <text x="65" y="168">• 训练算力 ~2×10²⁵ FLOPs</text>
+    <text x="65" y="186">• 成本 ~1 亿美元</text>
+    <text x="65" y="204">• 硬件 ~25000 A100 / 3 个月</text>
+  </g>
+
+  <line x1="65" y1="220" x2="295" y2="220" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="180" y="240" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">关键技术</text>
+  <g font-size="11" fill="#991b1b">
+    <text x="65" y="262">• MoE(16 专家,top-2 激活)</text>
+    <text x="65" y="280">• 多模态原生预训练(GPT-4V)</text>
+    <text x="65" y="298">• 可预测 scaling(10000× 小</text>
+    <text x="75" y="312">  算力 loss 预测最终性能)</text>
+    <text x="65" y="332">• 8K→32K→128K 上下文扩展</text>
+  </g>
+
+  <line x1="65" y1="350" x2="295" y2="350" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="180" y="370" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">访问方式</text>
+  <g font-size="11" fill="#991b1b">
+    <text x="65" y="392">• 闭源 API($30/M tokens)</text>
+    <text x="65" y="410">• 技术报告几乎不透露细节</text>
+    <text x="65" y="428">• 行业共识来自泄漏 + 推理</text>
+  </g>
+
+  <text x="180" y="455" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">
+    验证 scaling 仍未饱和 ★
+  </text>
+
+  <!-- ============== MIDDLE: Shared modern recipe ============== -->
+  <rect x="335" y="170" width="230" height="210" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="195" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="700">
+    共用现代配方
+  </text>
+  <text x="450" y="212" text-anchor="middle" font-size="10" fill="#fef3c7" font-style="italic">(架构高度趋同!)</text>
+
+  <line x1="355" y1="225" x2="545" y2="225" stroke="#fef3c7" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <g font-size="11" fill="#fbbf24" font-weight="600">
+    <text x="355" y="248">✓ Pre-RMSNorm</text>
+    <text x="355" y="270">✓ RoPE 位置编码</text>
+    <text x="355" y="292">✓ SwiGLU FFN</text>
+    <text x="355" y="314">✓ GQA / MHA</text>
+    <text x="355" y="336">✓ SentencePiece</text>
+    <text x="355" y="358">✓ BF16 训练</text>
+  </g>
+
+  <!-- Arrows connecting -->
+  <line x1="310" y1="275" x2="335" y2="275" stroke="#7c3aed" stroke-width="2" marker-end="url(#dt-arr)"/>
+  <line x1="565" y1="275" x2="590" y2="275" stroke="#7c3aed" stroke-width="2" marker-end="url(#dt-arr)"/>
+
+  <!-- ============== RIGHT: LLaMA 开源民主 ============== -->
+  <text x="720" y="65" text-anchor="middle" font-size="14" fill="#059669" font-weight="700">
+    LLaMA — 开源民主化
+  </text>
+
+  <rect x="590" y="85" width="260" height="380" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+
+  <text x="720" y="110" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">参数 / 规模</text>
+  <g font-size="11" fill="#065f46">
+    <text x="605" y="132">• LLaMA-1: 7B / 13B / 33B / 65B</text>
+    <text x="605" y="150">• 训练 token: 1.0T / 1.4T</text>
+    <text x="605" y="168">• 数据/参数比 143:1(7B 模型)</text>
+    <text x="605" y="186">• 远超 Chinchilla 20:1</text>
+    <text x="605" y="204">• "故意 over-train 小模型"</text>
+  </g>
+
+  <line x1="605" y1="220" x2="835" y2="220" stroke="#059669" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="720" y="240" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">关键技术</text>
+  <g font-size="11" fill="#065f46">
+    <text x="605" y="262">• 全套现代配方公开</text>
+    <text x="605" y="280">• Pre-RMSNorm + RoPE + SwiGLU</text>
+    <text x="605" y="298">• 34B+ 用 GQA(KV cache 压缩)</text>
+    <text x="605" y="316">• LLaMA-2 商用开源许可</text>
+    <text x="605" y="334">• LLaMA-3: 8B 训 15T token</text>
+  </g>
+
+  <line x1="605" y1="350" x2="835" y2="350" stroke="#059669" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="720" y="370" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">访问方式</text>
+  <g font-size="11" fill="#065f46">
+    <text x="605" y="392">• 权重免费下载(HuggingFace)</text>
+    <text x="605" y="410">• 论文 + 数据描述 + 训练细节</text>
+    <text x="605" y="428">• 自部署(消费 GPU 可推理)</text>
+  </g>
+
+  <text x="720" y="455" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">
+    LLM 民主化基础 ★
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="490" x2="860" y2="490" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: Bidirectional Influence ============== -->
+  <text x="450" y="515" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    两条路线竞争 → 推动 LLM 生态向 2024+ 时代演化
+  </text>
+
+  <g transform="translate(60, 535)">
+    <rect x="0" y="0" width="370" height="100" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="185" y="22" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="700">闭源贡献</text>
+    <g font-size="10" fill="#991b1b">
+      <text x="15" y="45">• 验证 scaling 1.8T 仍未饱和</text>
+      <text x="15" y="63">• MoE 在前沿 LLM 大规模可行</text>
+      <text x="15" y="81">• 推动整个领域继续投入</text>
+    </g>
+
+    <rect x="410" y="0" width="370" height="100" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="595" y="22" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">开源贡献</text>
+    <g font-size="10" fill="#065f46">
+      <text x="425" y="45">• 给社区可复现的工业级基础</text>
+      <text x="425" y="63">• 现代配方公开,生态(vLLM/llama.cpp)成型</text>
+      <text x="425" y="81">• "推理优先 over-train"路线被验证</text>
+    </g>
+  </g>
+</svg>

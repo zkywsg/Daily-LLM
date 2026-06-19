@@ -25,7 +25,24 @@ key_idea: "GPT-4 把 LLM 推到万亿级 + 多模态闭源;LLaMA 给社区第一
 
 GPT-4 和 LLaMA 代表了 LLM 的两条平行路线——**闭源前沿** vs **开源民主化**——但它们在架构选择上**高度趋同**:Pre-RMSNorm、RoPE、SwiGLU、GQA 这套现代配方两边都用。这一节把这两个 2023 年的标志事件放在一起,把"现代 LLM 长什么样"讲清楚。
 
-## GPT-4:闭源前沿的形态
+## 核心思想
+
+### 直觉:闭源前沿 + 开源民主化双轨,架构却高度趋同
+
+理解 2023 LLM 转折点真正需要先抓一件事:**GPT-4 闭源把 LLM 推到万亿参数 + 多模态,LLaMA 开源给社区第一个工业级基础模型 — 两条平行路线**。但反直觉的是,两者在架构选择上**高度趋同** — Pre-RMSNorm + RoPE + GQA + SwiGLU 这套现代配方两边都用。这说明:**LLM 架构在 2023 年趋向收敛**,差异主要在数据 / 算力 / 后训练,而非基础结构。
+
+三件事必须同时成立才让 2023 成为 LLM 的范式定型年:
+
+- **GPT-4 验证 scaling 还没饱和** — 1.8T MoE / 13T token / 1 亿美元训练,在专业 benchmark 上达人类专家水平;**用 10000× 小算力 loss 准确预测 GPT-4 性能**,scaling law 在万亿参数级仍精确成立
+- **LLaMA 给社区可复现的工业级基础模型** — 7B / 13B / 33B / 65B 四档,数据/参数/训练全部公开;**LLaMA 7B 在 1T token 上 over-train(143:1 vs Chinchilla 20:1)** 实证"推理优先小模型"路线
+- **现代配方在 GPT-4 / LLaMA 上同时定型** — Pre-RMSNorm(替 LayerNorm)+ RoPE(替 learned PE)+ SwiGLU(替 ReLU/GELU FFN)+ GQA(替 MHA)+ SentencePiece(替 BPE);后续所有开源 LLM(Mistral / Qwen / Yi / DeepSeek)几乎照抄
+
+三件事合起来:**2023 是 LLM 历史的"配方定型年"**。前沿 GPT-4 验证 scaling 仍可走,但训练成本上亿美元的天花板已显现;开源 LLaMA 把可用的 LLM 推到每个研究者手里,**差距从 GPT-3 时代的 18 个月缩短到 6 个月**。这套现代配方在 2024 → 2025 几乎没改动,LLM 架构创新主要转向 MoE、长上下文、test-time scaling 等正交方向。
+
+![GPT-4 vs LLaMA 双轨架构对比](assets/05-gpt4-llama-dual-track.svg)
+*图 1:**左 GPT-4 闭源前沿** — 1.8T MoE / 13T token / 1 亿美元 / 25000 A100 / 128K 上下文 / 多模态原生;闭源 API。**右 LLaMA 开源民主** — 7B-65B / 1T-1.4T token / 公开权重 + 论文 + 数据描述;over-train 路线(143:1 数据参数比);自部署。**中央** 两者共用现代配方:Pre-RMSNorm + RoPE + GQA + SwiGLU + SentencePiece。底部 callout:两条路线竞争 → 推动整个 LLM 生态向 2024+ 时代演化。*
+
+### 机制一:GPT-4 — 闭源前沿的形态(MoE + 多模态 + 可预测 scaling)
 
 GPT-4 的技术细节几乎完全不公开,但通过观察、推理、社区泄漏,行业共识是:
 
@@ -49,7 +66,7 @@ GPT-4 的技术细节几乎完全不公开,但通过观察、推理、社区泄�
 
 **4. 8K → 32K → 128K 上下文扩展**——GPT-4 发布时是 8K,4 个月后扩到 32K,2023 年底扩到 128K。这是通过 [RoPE](../05-transformer/04-rope.md) 的 position interpolation / YaRN 类技术 + 持续 fine-tune 实现的。是 RoPE 数学结构允许的"长上下文外推 + 少量微调"的实际案例
 
-## LLaMA:开源现代 LLM 的样板
+### 机制二:LLaMA — 开源现代 LLM 的样板(可复现 + over-train 小模型)
 
 LLaMA-1 论文(2023 2 月)的核心贡献是**给社区一个可复现、高质量、架构现代化的基础模型**。所有训练细节、架构选择、数据组成全部公开(数据集本身没开源但描述足够详细)。LLaMA-1 给出 4 个规模:
 
@@ -62,7 +79,7 @@ LLaMA-1 论文(2023 2 月)的核心贡献是**给社区一个可复现、高质�
 
 **关键观察:LLaMA-1 7B 在 1T token 上训练,数据/参数比 = 143:1,远超 Chinchilla 的 20:1**。这就是"故意 over-train 小模型"的实证——LLaMA-1 7B 的 loss 比 Chinchilla optimal 略高,但模型小 10 倍,推理时省 10× 算力,部署成本完全胜出。LLaMA-2 7B 推到 2T token(286:1),LLaMA-3 8B 推到 15T token(1875:1),数据/参数比持续推高。
 
-## 现代 LLM 配方:LLaMA 的具体选择
+### 机制三:现代 LLM 配方 — LLaMA 的 6 件套替换
 
 LLaMA-1 的架构是**当时所有"现代 LLM 改进"的集大成**:
 
@@ -86,6 +103,19 @@ LLaMA-1 的架构是**当时所有"现代 LLM 改进"的集大成**:
 - **SentencePiece** ← Kudo 2018(中文 / 多语言更友好)
 
 这套配方在 LLaMA-2 / 3 / Mistral / Qwen / Yi / DeepSeek 上**几乎完全一致**,只有数据组成 / 训练策略 / 后训练有差异。从架构看,2023 之后的开源 LLM 都长得很像 LLaMA。
+
+### 三件套协同:GPT-4 + LLaMA + 现代配方 缺一不可
+
+2023 年成为 LLM 的"配方定型年",**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 2023 LLM 转折点都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 GPT-4 闭源前沿,没有 LLaMA 开源** — 整个生态停留在 OpenAI / Google 几家闭源公司,**没有 fine-tune / 对齐 / 领域适配 / 学术研究的开放底座**;LLM 民主化推后 2-3 年,fast.ai / HuggingFace / vLLM 等开源生态无法成型
+- **只有 LLaMA 开源,没有 GPT-4 验证 scaling 仍可走** — 社区不知道继续投资 LLM 是否值得,**前沿停止推进 LLM 走向闭门造车**;chain of thought / reasoning / MoE 等下一代方向缺少前沿模型验证可行性
+- **只有两条路线,没有现代配方定型(还用 GPT-3 旧架构)** — 每家模型架构各异,生态难以兼容(tokenizer / weights / inference engines);现在 LLaMA 风格的 Pre-RMSNorm + RoPE + GQA + SwiGLU 让 vLLM / llama.cpp / Transformers 等推理框架可以一套代码跑所有开源 LLM
+
+三件套合起来才让 2023 成为 LLM 的范式定型年。**前沿 + 开源 + 配方收敛**三者形成正反馈循环:GPT-4 验证 scaling 可走 → 开源跟进 → 现代配方在双方收敛 → 工具生态成型 → 加速下一代 LLM 演化(MoE / 长上下文 / RLHF / o1 reasoning)。这也是为什么 2024-2025 LLM 进展速度比 2020-2022 快得多 —— **基础设施和共识在 2023 年就位**。
+
+![现代 LLM 配方 — LLaMA 6 件套替换 + 全行业采用](assets/05-gpt4-llama-modern-recipe.svg)
+*图 2:**上半** 原版 Transformer(2017)→ GPT-3(2020)→ LLaMA(2023)6 个组件演化对比 — Post-LN → Pre-LN → Pre-LN / LayerNorm → LayerNorm → RMSNorm / 正余弦 PE → learned PE → RoPE / ReLU → GELU → SwiGLU / MHA → MHA+Sparse → MHA+GQA / BPE → BPE → SentencePiece。每个替换标注来源论文。**下半** 2023+ 全行业采用对比 — LLaMA / LLaMA-2/3 / Mistral / Mixtral / Qwen / Yi / DeepSeek-V3 几乎全部采用同一配方,差异只在数据 / 训练策略 / 后训练。底部 callout:架构创新结束,**LLM 演化转向 MoE / 长上下文 / RLHF / test-time scaling 等正交方向**。*
 
 ## 关键代码
 
