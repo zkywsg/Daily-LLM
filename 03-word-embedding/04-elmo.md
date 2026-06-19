@@ -38,89 +38,106 @@ Peters 等人(AllenAI + UW,2018 年 2 月,NAACL 2018 best paper)的 ELMo(**E**mb
 
 ELMo 之后 6 个月,Google 发布 [BERT](../06-bert-family/01-bert.md),用 Transformer + masked LM 把 contextualized embedding 推到更高水平。**ELMo 是 LSTM 时代的最后辉煌,也是 BERT/GPT 时代的直接前驱**。
 
-## 核心思想:Contextualized Embedding from biLM
+## 核心思想
 
-### 双向语言模型(biLM)
+### 直觉:词向量应该是"上下文的函数",不是固定查表
 
-ELMo 训练一个双向 LSTM 语言模型:
+理解 ELMo 真正需要先抓一件事:**[Word2Vec](01-word2vec.md) / [GloVe](02-glove.md) / [FastText](03-fasttext.md) 都是静态查表 — 同一个 "bank" 在 "river bank" 和 "money bank" 里向量完全相同**,多义词信息丢失。之前的 sense embedding / topic-word 等尝试都没有彻底解决,因为它们仍然把"义项"当成预定义的离散类别。Peters 等人 2018 反问:**为什么不让词向量直接从上下文 LSTM 计算出来?同一个 "bank" 在不同句子里走过不同的 LSTM 路径,自然得到不同向量**。
+
+三件事必须同时成立才让 ELMo 在 2018 年成为 NLP 范式转折:
+
+- **预训练双向 LSTM 语言模型** — 用大语料(1B Word Benchmark)无监督训 2 层 biLSTM,正向 + 反向各预测下一个词
+- **取所有层的 hidden state 而非只取顶层** — input(char-CNN)+ LSTM-L1 + LSTM-L2 三层各自输出,**底层偏语法 / 顶层偏语义**
+- **task-specific 加权组合** — 对每个下游任务学一组 softmax 权重 s_j 加 γ scale,让任务自己决定用哪层多
+
+三件事合起来:ELMo 在 SQuAD / SNLI / SRL / Coref / NER / SST 六个主流 NLP 任务上**全面 SOTA**,平均提升 2-5 个 F1/Acc 点 — 媒体把这一时刻称为 **"NLP 的 ImageNet 时刻"**(类比 AlexNet 2012)。8 个月后 Google 发布 [BERT](../06-bert-family/01-bert.md),用 Transformer + masked LM 把这一范式推到更高水平。**ELMo 是 LSTM 时代的最后辉煌,也是 LLM 时代的真正起点**。
+
+![同一个 "bank" 在不同上下文得到不同向量](assets/04-elmo-contextualized.svg)
+*图 1:**左** 静态词向量(Word2Vec/GloVe)— "bank" 在 "I deposited money at the bank" 和 "I walked along the river bank" 里都是同一个 [0.2, -0.5, ...],无法区分。**右** ELMo contextualized — 同一个 "bank" 走过两条不同的 biLSTM 路径(蓝色和绿色),输出的向量明显不同,语义聚类对应"银行"和"河岸"。底部 callout 给出余弦相似度:静态 ≡ 1.0,ELMo ≈ 0.3-0.5,清晰区分。*
+
+### 机制一:Deep biLM 预训练 — 正向 + 反向独立 LSTM
+
+ELMo 训练一个双向 LSTM 语言模型(biLM):
 
 **正向 LM**:从左到右预测下一个词
 
 $$
-p(t_1, ..., t_N) = \prod_{k=1}^N p(t_k | t_1, ..., t_{k-1})
+p(t_1, ..., t_N) = \prod_{k=1}^N p(t_k | t_1, ..., t_{k-1};\, \Theta_{\text{fwd}})
 $$
 
 **反向 LM**:从右到左预测前一个词
 
 $$
-p(t_1, ..., t_N) = \prod_{k=1}^N p(t_k | t_{k+1}, ..., t_N)
+p(t_1, ..., t_N) = \prod_{k=1}^N p(t_k | t_{k+1}, ..., t_N;\, \Theta_{\text{bwd}})
 $$
 
-联合目标:
+联合目标是两者对数似然之和。**关键细节**:ELMo 的"双向"是**两个独立 LSTM 训完拼接**,不像 BERT 那种 self-attention 真双向(BERT 论文专门指出这是 ELMo 的局限)。
 
-$$
-\sum_{k=1}^N \log p(t_k | t_{1:k-1}; \Theta_{\text{fwd}}) + \log p(t_k | t_{k+1:N}; \Theta_{\text{bwd}})
-$$
-
-注意 ELMo 的"双向"是**两个独立 LSTM**(forward + backward),最后 concat。不像 BERT 那种真正双向的 self-attention(后续 BERT 论文专门指出 ELMo 不是"真双向")。
-
-### 网络结构
+网络结构:
 
 ```
-Input: char-level CNN encoder(类似 FastText subword 思想)
+Input: char-level CNN encoder(借鉴 FastText subword 思想)
    ↓
 biLSTM Layer 1: 4096 hidden + 512 projected, 双向
    ↓
 biLSTM Layer 2: 4096 hidden + 512 projected, 双向
-   ↓
-Output:每个位置每层都输出 hidden state
 ```
 
-对一个长度 N 的句子,每个位置 $k$ 有:
+对长度 N 的句子,每个位置 k 有 **2L+1 = 5 个表示**:char-CNN 输出 + LSTM-L1(forward+backward 各 1)+ LSTM-L2(各 1)。这一"分层输出"是 ELMo 区别于 CoVe / context2vec 等前作的关键 — **不丢弃中间层信息**。
 
-- $h_k^{LM,0}$ —— input 层(char-CNN 输出)
-- $h_k^{LM,1}$ —— LSTM 第 1 层 hidden(forward + backward concat,4096 维)
-- $h_k^{LM,2}$ —— LSTM 第 2 层 hidden(4096 维)
+### 机制二:多层 hidden 加权组合 — 不同任务偏好不同层
 
-总共 **2L+1 = 5 个表示**(L=2 层 LSTM,加 input 层 ×1)。
-
-### Task-specific 加权组合
-
-ELMo 的核心创新:**不固定用哪一层,而是对每个下游任务学习加权**。
+ELMo 的核心创新:**不固定用哪一层,而是对每个下游任务学一组权重**:
 
 $$
 \text{ELMo}_k^{\text{task}} = \gamma^{\text{task}} \sum_{j=0}^L s_j^{\text{task}} \cdot h_k^{LM,j}
 $$
 
-- $s_j^{\text{task}}$ —— softmax-normalized 权重(对 L+1 层归一化)
-- $\gamma^{\text{task}}$ —— 全局 scaling
+- $s_j^{\text{task}}$:softmax-normalized 权重(对 L+1 层归一化)
+- $\gamma^{\text{task}}$:全局 scaling factor
 
-不同任务学到不同 layer 偏好:
+论文实测不同任务的 layer 权重分布显著不同:
 
-- **POS Tagging / syntactic 任务** —— 偏好底层 LSTM(语法信息)
-- **Word Sense Disambiguation / 语义任务** —— 偏好高层 LSTM(语义信息)
-- **NER** —— 中间层最重要
+| Task | Layer 0(char-CNN) | Layer 1(LSTM 底) | Layer 2(LSTM 顶) |
+|---|---|---|---|
+| POS Tagging | **0.49** | 0.30 | 0.21 |
+| Coref | 0.31 | **0.36** | 0.33 |
+| SQuAD | 0.27 | **0.39** | 0.34 |
+| WSD | 0.25 | 0.30 | **0.45** |
 
-### 多义词的 Contextualized 区分
+**这是 ELMo 最具洞察力的实证**:LSTM 不同层学到不同抽象层次的语言信息 — 底层(char-CNN / LSTM-L1)偏语法,顶层(LSTM-L2)偏语义。词嵌入(Word2Vec/GloVe)只有"一层",**根本没法区分这种层次**。
 
-ELMo 论文给的例子:用 ELMo 向量找 "play" 不同义项最近邻:
+这一发现后来在 BERT / GPT 时代被反复验证:Tenney 2019 *BERT Rediscovers the Classical NLP Pipeline* 证明 BERT 不同层对应不同语言学层次(POS → 句法 → 语义角色 → 指代消解),思想直接源于 ELMo。
 
-```
-"play(N)的乐器演奏": → nearest: "musical concert", "performance"
-"play(V)在比赛中比赛": → nearest: "league match", "fixture"
-```
+### 机制三:Frozen Feature 拼接到下游 — 不修改 ELMo 参数
 
-同一个 "play" 在不同上下文里,ELMo 输出的向量明显不同,聚类到对应义项。这是静态词向量(Word2Vec/GloVe/FastText)做不到的。
-
-### 使用方式:作为 input feature
-
-ELMo 不替换原 word embedding,而是**作为额外 feature 拼接**:
+ELMo 不替换原 word embedding,而是**作为额外 feature 拼接到下游模型 input**:
 
 ```python
-input = concat([word2vec_or_glove_embedding, elmo_embedding])
+input = concat([glove_embedding, elmo_embedding])  # [B, T, 300 + 1024]
 ```
 
-这样下游任务可以同时利用预训练静态向量和动态向量。这是 ELMo 与 BERT 的最大使用方式差异——**BERT 是端到端 fine-tune,ELMo 通常是 frozen feature**。
+下游模型(典型是 BiLSTM-CRF)在拼接后的 input 上训练,**ELMo 参数本身完全冻结**(只学下游模型 + 加权 s_j / γ)。
+
+这种 "frozen feature" 使用方式有两个工程优势:
+
+- **下游训练快** — 不用反传 ELMo 那 94M 参数
+- **多任务可共享** — 同一份 ELMo 表示喂给不同下游任务,每个任务只学自己的加权
+
+但也是 ELMo 与 BERT 的最大使用方式差异 —— **BERT 是端到端 fine-tune,ELMo 通常是 frozen feature**。这导致 ELMo 在下游任务上的表达力不如 BERT(因为 ELMo 内部参数不能针对任务调优),也是 ELMo 被 BERT 取代的关键原因之一。
+
+### 三件套协同:biLM 预训练 + 多层加权 + frozen feature 缺一不可
+
+ELMo 在 2018 年能开启"NLP 的 ImageNet 时刻",**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 ELMo 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 biLM 预训练,没有多层加权(只用顶层)** — 退化成 CoVe / context2vec 那类工作,失去"按任务选层"的核心创新,**SQuAD / NER 等任务的提升直接减半**
+- **只有多层加权,没有 biLM 预训练(随机初始化 biLSTM 直接 fine-tune)** — 没有大规模无监督预训练带来的语言知识,**6 任务 SOTA 拿不到**,与从零训 BiLSTM-CRF 无差别
+- **只有 biLM + 加权,没有 frozen feature 这种工程范式** — 早期 NLP 社区没有"用 LM 预训练 + 下游任务"的成熟流程,ELMo 必须给出明确的接入方式才能被快速采纳。frozen feature 让下游任务零成本接入,是 ELMo 火起来的工程关键
+
+三件套合起来才让 ELMo 在 2018 年同时验证"预训练 LM 学到通用语言表示"+ "不同层不同抽象" + "工程上可被广泛采纳" 三件事。这直接启发了 BERT(Transformer + 真双向 + fine-tune)+ GPT(decoder-only + 大规模自回归)两条主线,把整个 NLP 推进 LLM 时代。
+
+![ELMo biLM 结构 + 任务层权重分布](assets/04-elmo-bilm-layers.svg)
+*图 2:**上** ELMo 双向 LSTM 结构 — 输入经 char-CNN 编码 → 两层 biLSTM(forward + backward 独立) → 每位置输出 3 层 hidden(char + L1 + L2)。**下** 不同 NLP 任务的层权重分布 — POS Tagging 偏 char-CNN(语法浅) / Coref + SQuAD 偏 LSTM-L1(中等) / WSD 偏 LSTM-L2(语义深),实证 LSTM 不同层学到不同抽象层次。底部 callout:这一发现后来被 BERT/Tenney 2019 在 Transformer 上反复验证,**LSTM 时代的洞察直接迁移到 Transformer**。*
 
 ## 关键代码
 

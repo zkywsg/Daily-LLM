@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="bm-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="bm-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="bm-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    ELMo biLM 结构 + 任务层权重分布
+  </text>
+
+  <!-- ============== TOP: biLSTM structure ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Deep biLM 结构 — 每位置输出 3 层 hidden(char + L1 + L2)
+  </text>
+
+  <!-- 4 input tokens -->
+  <g>
+    <rect x="120" y="320" width="80" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="160" y="340" text-anchor="middle" font-size="11" fill="#92400e">I</text>
+
+    <rect x="260" y="320" width="80" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="300" y="340" text-anchor="middle" font-size="11" fill="#92400e">deposited</text>
+
+    <rect x="400" y="320" width="80" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="440" y="340" text-anchor="middle" font-size="11" fill="#92400e">money</text>
+
+    <rect x="540" y="320" width="80" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="580" y="340" text-anchor="middle" font-size="11" fill="#92400e">at</text>
+
+    <rect x="680" y="320" width="80" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="720" y="340" text-anchor="middle" font-size="11" fill="#92400e">bank</text>
+  </g>
+
+  <!-- char-CNN layer (Layer 0) -->
+  <g>
+    <rect x="120" y="265" width="640" height="40" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="440" y="287" text-anchor="middle" font-size="12" fill="#9a3412" font-weight="600">Layer 0:char-level CNN encoder</text>
+    <text x="816" y="287" text-anchor="middle" font-size="10" fill="#9a3412">h^0</text>
+  </g>
+
+  <g stroke="#9d174d" stroke-width="1" fill="none">
+    <line x1="160" y1="318" x2="160" y2="307" marker-end="url(#bm-arr)"/>
+    <line x1="300" y1="318" x2="300" y2="307" marker-end="url(#bm-arr)"/>
+    <line x1="440" y1="318" x2="440" y2="307" marker-end="url(#bm-arr)"/>
+    <line x1="580" y1="318" x2="580" y2="307" marker-end="url(#bm-arr)"/>
+    <line x1="720" y1="318" x2="720" y2="307" marker-end="url(#bm-arr)"/>
+  </g>
+
+  <!-- LSTM Layer 1 -->
+  <g>
+    <rect x="120" y="200" width="640" height="50" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="440" y="220" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="600">Layer 1:biLSTM(forward → + backward ←)</text>
+    <text x="440" y="240" text-anchor="middle" font-size="10" fill="#1e40af">4096 hidden + 512 projected</text>
+    <text x="816" y="225" text-anchor="middle" font-size="10" fill="#1e40af">h^1</text>
+  </g>
+
+  <g stroke="#9d174d" stroke-width="1" fill="none">
+    <line x1="160" y1="263" x2="160" y2="252" marker-end="url(#bm-arr)"/>
+    <line x1="300" y1="263" x2="300" y2="252" marker-end="url(#bm-arr)"/>
+    <line x1="440" y1="263" x2="440" y2="252" marker-end="url(#bm-arr)"/>
+    <line x1="580" y1="263" x2="580" y2="252" marker-end="url(#bm-arr)"/>
+    <line x1="720" y1="263" x2="720" y2="252" marker-end="url(#bm-arr)"/>
+  </g>
+
+  <!-- forward/backward arrows on L1 -->
+  <g stroke="#2563eb" stroke-width="2" fill="none">
+    <line x1="120" y1="232" x2="200" y2="232" marker-end="url(#bm-arr-blue)"/>
+    <text x="105" y="236" font-size="9" fill="#1e40af">→</text>
+  </g>
+  <g stroke="#059669" stroke-width="2" fill="none">
+    <line x1="760" y1="218" x2="680" y2="218" marker-end="url(#bm-arr-green)"/>
+    <text x="775" y="222" font-size="9" fill="#059669">←</text>
+  </g>
+
+  <!-- LSTM Layer 2 -->
+  <g>
+    <rect x="120" y="135" width="640" height="50" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="440" y="155" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="600">Layer 2:biLSTM(forward → + backward ←)</text>
+    <text x="440" y="175" text-anchor="middle" font-size="10" fill="#1e40af">4096 hidden + 512 projected</text>
+    <text x="816" y="160" text-anchor="middle" font-size="10" fill="#1e40af">h^2</text>
+  </g>
+
+  <g stroke="#9d174d" stroke-width="1" fill="none">
+    <line x1="160" y1="198" x2="160" y2="187" marker-end="url(#bm-arr)"/>
+    <line x1="300" y1="198" x2="300" y2="187" marker-end="url(#bm-arr)"/>
+    <line x1="440" y1="198" x2="440" y2="187" marker-end="url(#bm-arr)"/>
+    <line x1="580" y1="198" x2="580" y2="187" marker-end="url(#bm-arr)"/>
+    <line x1="720" y1="198" x2="720" y2="187" marker-end="url(#bm-arr)"/>
+  </g>
+
+  <!-- 5 输出层标注 + weighted sum -->
+  <text x="816" y="100" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="700">每位置</text>
+  <text x="816" y="115" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="700">3 层输出</text>
+
+  <!-- weighted sum equation -->
+  <rect x="180" y="75" width="520" height="42" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="440" y="92" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#065f46" font-weight="700">
+    ELMo_k = γ · (s_0 · h^0 + s_1 · h^1 + s_2 · h^2)
+  </text>
+  <text x="440" y="108" text-anchor="middle" font-size="10" fill="#065f46">
+    s_j: task-specific softmax 权重 / γ: 全局 scaling
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="385" x2="860" y2="385" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: layer weight per task ============== -->
+  <text x="450" y="415" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    不同 NLP 任务的层权重分布 — 实证 LSTM 不同层学到不同抽象
+  </text>
+
+  <!-- task rows: POS, Coref, SQuAD, WSD -->
+  <!-- positions y: 440, 480, 520, 560 -->
+  <!-- each task has 3 horizontal bars showing weight on L0/L1/L2 -->
+
+  <!-- header -->
+  <text x="100" y="445" font-size="11" fill="#1f2937" font-weight="600">Task</text>
+  <text x="335" y="445" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">Layer 0(char)</text>
+  <text x="540" y="445" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">Layer 1(LSTM 底)</text>
+  <text x="745" y="445" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">Layer 2(LSTM 顶)</text>
+
+  <!-- POS Tagging: 0.49 / 0.30 / 0.21 -->
+  <text x="100" y="475" font-size="11" fill="#1f2937" font-weight="600">POS Tagging</text>
+  <rect x="240" y="465" width="196" height="18" fill="#fed7aa" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="446" y="479" font-size="10" fill="#9a3412" font-weight="700">0.49 ★</text>
+  <rect x="490" y="465" width="120" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="620" y="479" font-size="10" fill="#1e40af">0.30</text>
+  <rect x="690" y="465" width="84" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="784" y="479" font-size="10" fill="#1e40af">0.21</text>
+  <text x="100" y="490" font-size="9" fill="#6b7280" font-style="italic">语法浅</text>
+
+  <!-- Coref: 0.31 / 0.36 / 0.33 -->
+  <text x="100" y="515" font-size="11" fill="#1f2937" font-weight="600">Coreference</text>
+  <rect x="240" y="505" width="124" height="18" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <text x="374" y="519" font-size="10" fill="#9a3412">0.31</text>
+  <rect x="490" y="505" width="144" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="644" y="519" font-size="10" fill="#1e40af" font-weight="700">0.36 ★</text>
+  <rect x="690" y="505" width="132" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="832" y="519" font-size="10" fill="#1e40af">0.33</text>
+
+  <!-- SQuAD: 0.27 / 0.39 / 0.34 -->
+  <text x="100" y="545" font-size="11" fill="#1f2937" font-weight="600">SQuAD(QA)</text>
+  <rect x="240" y="535" width="108" height="18" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <text x="358" y="549" font-size="10" fill="#9a3412">0.27</text>
+  <rect x="490" y="535" width="156" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="656" y="549" font-size="10" fill="#1e40af" font-weight="700">0.39 ★</text>
+  <rect x="690" y="535" width="136" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="836" y="549" font-size="10" fill="#1e40af">0.34</text>
+
+  <!-- WSD: 0.25 / 0.30 / 0.45 -->
+  <text x="100" y="575" font-size="11" fill="#1f2937" font-weight="600">WSD</text>
+  <rect x="240" y="565" width="100" height="18" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <text x="350" y="579" font-size="10" fill="#9a3412">0.25</text>
+  <rect x="490" y="565" width="120" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="620" y="579" font-size="10" fill="#1e40af">0.30</text>
+  <rect x="690" y="565" width="180" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="850" y="579" font-size="10" fill="#1e40af" font-weight="700">0.45 ★</text>
+  <text x="100" y="590" font-size="9" fill="#6b7280" font-style="italic">语义深</text>
+
+  <!-- bottom callout -->
+  <rect x="60" y="615" width="780" height="32" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="638" text-anchor="middle" font-size="12" fill="#fef3c7" font-weight="600">
+    LSTM 不同层 → 不同抽象层次 — 后被 BERT/Tenney 2019 在 Transformer 上反复验证
+  </text>
+</svg>
