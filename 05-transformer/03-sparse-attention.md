@@ -30,62 +30,72 @@ key_idea: "用滑窗局部 attention + 少量全局 token 把 attention 复杂�
 
 这一节聚焦 **Longformer 和 BigBird** 这两个最有影响力的工业实现。它们的方案高度相似——**用结构化稀疏模式取代 dense attention**——只是稀疏模式的具体形式略有差异。
 
-## 核心思想:结构化稀疏 attention
+## 核心思想
 
-Dense attention 的 `N × N` 矩阵里,Longformer/BigBird 只算几条"线":
+### 直觉:大多数 attention 权重接近 0,何必算所有对
 
-稀疏 attention 的三类连接(配合下面三小节看):
+理解 sparse attention 真正需要先抓一件事:**[原版 Transformer](01-transformer.md) attention 是 O(N²)** — 16K 上下文要算 2.7 亿个 attention 分数,QK^T 矩阵物化到 HBM 要 32GB,直接超出 A100 显存。但 dense attention 算完后,你会发现**大多数 (i, j) 位置的 attention 权重接近 0** — token 关心的几乎都是局部邻居 + 少数关键概念。Beltagy / Zaheer 等人 2020 反问:**为什么不直接选一个稀疏子集只算它们?如果选择得当,既保留表达力又把复杂度降到 O(N)**。
 
-- **局部滑窗** —— 每个 token 看周围 w 个邻居,O(N·w)
-- **全局 token** —— 少量 g 个特殊 token 对所有人做 dense,O(N·g)
-- **随机连接**(BigBird 独有)—— 每个 token 额外随机看 r 个,O(N·r)
+三件事必须同时成立才让 sparse attention 在 2020 年成立:
 
-三者加起来仍是 **O(N)**,因为 w/g/r 都是不随 N 增长的常数。
+- **局部滑窗** — 每个 token 只看周围 w=512 个邻居,捕捉短距依赖(动词找主语 / 形容词修饰名词等)
+- **全局 token** — 少量 g=8-16 个特殊位置(CLS / question tokens)对所有人做 dense,作为"信息枢纽"
+- **随机连接(BigBird)+ CUDA kernel** — random edges 让稀疏图的有效直径降到 O(log N),理论保证 universal approximation;但工程上必须有手写 CUDA kernel,否则 dense mask 实现仍是 O(N²)
 
-**1. Local 滑窗 attention**(Longformer 和 BigBird 都有)——每个位置 `i` 只 attend 到 `[i-w/2, i+w/2]` 这 `w` 个邻居。典型 `w = 512`。复杂度 `O(N × w) = O(N)`(因为 `w` 是常数)。
+三件事合起来:**Longformer / BigBird 把 attention 复杂度从 O(N²) 降到 O(N)**,4K 上下文显存从 16GB 降到 1GB,让 Transformer 第一次能在 4K-16K 长上下文上跑训练和推理。但 sparse attention 真正的历史地位是**它定义了"长上下文 = sparsity"的早期范式** — 2022 [FlashAttention](05-flash-attention.md) 出现后部分被取代(dense + IO-aware 优化让 dense 在 64K 也可行),但思想被 [Swin Transformer](../08-vit/) / [Mixtral MoE](../13-moe-efficient/) 等"结构化稀疏"工作继承。
 
-直觉:语言里大多数 token 的关键上下文是局部的——动词找主语、形容词修饰名词,通常都在 10–50 词之内。
+![三类稀疏 attention 模式 — local + global + random](assets/03-sparse-attention-patterns.svg)
+*图 1:N×N attention 矩阵可视化,三类稀疏连接组合 —— **① local 滑窗**(对角线带,每个 token 看周围 w 个邻居)+ **② global token**(几行几列,少量特殊位置看 / 被看所有)+ **③ random 连接**(BigBird,散点)。底部 callout 强调:三者加起来 (w + g + r) ≈ 500-550 不随 N 增长 → 复杂度 O(N × const) = O(N),而非朴素 dense 的 O(N²)。右侧对比 dense 全黑矩阵 vs sparse 稀疏点 — 视觉直观展示 99% 的 attention 位置实际可省。*
 
-**2. Global token**(Longformer 和 BigBird 都有)——指定**少量特殊位置**(典型 `g = 8–16`)作为 "global token",它们对所有其他位置做 dense attention,所有其他位置也 attend 到它们。复杂度 `O(N × g) = O(N)`。
+### 机制一:Local 滑窗 — 每个 token 看周围 w 个邻居
 
-实际中 global token 的选择有两种策略:
+每个位置 i 只 attend 到 `[i-w/2, i+w/2]` 这 w 个邻居(典型 w=512),复杂度 O(N × w) = O(N)。
 
-- **任务相关**——分类任务时把 `[CLS]` 设为 global,QA 任务时把整个 question 设为 global,这样关键问题 token 能看到全文
-- **位置固定**——每隔 `k` 个位置选一个作为 global(BigBird 用的方案)
+**直觉**:语言里大多数 token 的关键上下文是局部的 — 动词找主语、形容词修饰名词、代词找指代,通常都在 10-50 词之内。即使做长文档理解,大部分语义关系也集中在段落 / 句子级别的局部窗口。
 
-直觉:每篇文章里总有几个关键概念(主题、问题、答案),它们应该能和全文每个位置直接交互;global token 就是这些"枢纽"。
+**Dilated Sliding Window 扩展**(Longformer 用):像 CNN dilated convolution 一样,每隔 d 个位置取一个邻居 — 同样 w 个 attention 邻居但有效感受野扩大 d 倍。这一思想在 Swin Transformer 的"shifted window"里被进一步推广。
 
-**3. Random 连接**(只有 BigBird 有)——每个位置额外 attend 到 `r` 个随机选的 token(典型 `r = 3`)。复杂度 `O(N × r) = O(N)`。
+**为什么 w=512 是经验最优**?太小(w=64)丢失中距依赖,太大(w=2048)接近 dense 失去稀疏化意义。512 恰好覆盖大多数语言学局部依赖。
 
-直觉来自图论:**滑窗 + global 构成的图直径仍可能很大**(两个远端 token 要经过中央 global 中转)。加少量随机边能让图的有效直径降到 `O(log N)`,理论上保证"任意两点信息能在常数层内交互"。BigBird 论文证明:**滑窗 + global + random 的稀疏模式构成的 Transformer 是序列函数的通用近似器**——也就是说,理论上和 dense attention 表达能力等价。
+### 机制二:Global Token — 少量"信息枢纽"看所有人
 
-把这三类组合起来,每个位置的 attention 邻居数是 `w + g + r ≈ 500–550`,**不再随 N 增长**,所以总复杂度是 `O(N × (w + g + r)) = O(N)`。
+指定少量特殊位置(g=8-16 个)作为 **global token**:它们对所有其他位置做 dense attention,**所有其他位置也 attend 到它们**。复杂度 O(N × g) = O(N)。
 
-这一稀疏模式实际上和 attention mask 是等价的——可以理解为给 attention score 矩阵叠一个 `N × N` 的 binary mask,只有 mask=1 的位置参与 softmax。
+Global token 的两种选择策略:
 
-## Longformer 的具体实现
+- **任务相关**(Longformer 默认) — 分类时 `[CLS]` 设为 global,QA 时整个 question 设为 global → 关键问题 token 能直接看到全文每个位置
+- **位置固定**(BigBird 用) — 每隔 k 个位置选一个 → 不需要任务先验,通用性更强
 
-Longformer 的稀疏模式叫 **"sliding window + global attention"**,论文里实际跑的几个变体:
+**直觉**:每篇文章里总有几个关键概念(主题、问题、答案),它们应该能和全文每个位置直接双向交互。Global token 就是这些"信息枢纽" — 没有它们,远端 token 之间要传信息只能靠多层 attention 间接,效率极低。
 
-- **Sliding Window(SW)**——只有局部滑窗,w=512
-- **Dilated Sliding Window(DSW)**——稀疏化的滑窗,每隔 `d` 个位置取一个邻居,扩大有效感受野。借鉴 CNN 里 dilated convolution
-- **Global + Sliding Window(GSW)**——SW 基础上加 task-specific global token
+工程上 global token 的 attention pattern 是 N×N 矩阵里 g 行 + g 列填满的"十字形",和 local 滑窗的对角线带组合形成稀疏图。
 
-实际生产用的是 GSW。在 SQuAD/HotpotQA/IMDb 等任务上,Longformer-base(12 层、4096 上下文)对比 RoBERTa-base(12 层、512 上下文)在长文档任务上全面胜出。
+### 机制三:Random 连接 + CUDA Kernel — 理论保证 + 工程落地
 
-工程上最关键的是 **CUDA kernel 实现**。Dense attention 在 PyTorch 里就是两次 `torch.matmul`,但稀疏 attention 如果用 dense mask 实现,虽然语义正确但**计算量和内存仍然 O(N²)**——因为你还是先算了 `N × N` 然后再 mask 掉 0。Longformer 提供了**手写 CUDA kernel**,只计算非零位置,真正把内存压到 O(N)。这是论文之外但落地必备的一块工作。
+**Random connections**(BigBird 独有):每个位置额外 attend 到 r 个随机选的 token(典型 r=3),复杂度 O(N × r) = O(N)。
 
-## BigBird 的理论保证
+**直觉来自图论**:local + global 构成的图直径仍可能很大(两个远端 token 之间要绕道 global 枢纽中转,经过 2 层)。加少量随机边后,根据 small-world network 理论,**图的有效直径降到 O(log N)** — 任意两点信息能在常数层内交互。
 
-BigBird 的稀疏模式叫 **"window + global + random"**(WGR),核心差异是加了 random 连接。这一选择带来三个理论结果:
+BigBird 论文给出三个理论结果:
 
-**1. Universal Approximation**——堆 `O(N)` 层 BigBird 可以逼近任意 seq-to-seq 函数。这是 Yun et al. 2019 关于 Transformer universality 的扩展,把稀疏 attention 也纳入。
+- **Universal Approximation** — 堆 O(N) 层 BigBird 可逼近任意 seq-to-seq 函数,与 dense Transformer 表达力等价
+- **Turing Completeness** — 加 position-based 计算后可模拟图灵机
+- **某些对抗任务上 sparse 严格弱于 dense** — 但实际 NLP 任务上几乎没差距
 
-**2. Turing Complete**——加上额外的 position-based 计算后,BigBird 可以模拟图灵机(同样和 dense Transformer 等价)。
+**CUDA Kernel 是工程关键**。Dense attention 在 PyTorch 里就两次 `torch.matmul`,但 sparse attention 如果用 dense mask 实现(先算 N×N 再 mask 掉 0),**计算量和内存仍是 O(N²)**!Longformer 提供了**手写 CUDA kernel**(`diagonaled_mm.cu`),只计算非零位置,**真正把内存压到 O(N)**。这是论文之外但落地必备的一块工作 — 没有它 sparse attention 只能停在 paper。
 
-**3. 一些任务上稀疏 attention 严格弱于 dense**——但这些是构造出来的对抗任务,实际 NLP 任务上稀疏 attention 性能基本持平。
+### 三件套协同:Local 滑窗 + Global Token + Random/CUDA 缺一不可
 
-BigBird 在 Long Range Arena、TriviaQA、Natural Questions 等长上下文 benchmark 上和 Longformer 不相上下,某些任务略胜。两者的真正区别在工程:Longformer 的 CUDA kernel 在 2020 年更成熟,生产部署更多;BigBird 的理论保证更完整,学术引用更多。
+Sparse attention 在 2020 年能把 attention 复杂度从 O(N²) 降到 O(N),**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 sparse attention 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 local 滑窗,没有 global token** — 远端 token 之间无法直接交互,要经过 O(N/w) 层才能传信息,长依赖(跨段语义)学不到,长文档 QA 直接崩
+- **只有 global + random,没有 local 滑窗** — 局部信息(动词找主语等短依赖)被严重削弱,模型在短距任务上反而比 dense 差,综合性能拖后腿
+- **只有理论(local + global + random),没有 CUDA kernel** — dense mask 实现仍是 O(N²),"稀疏"只在数学定义上稀疏,工程上不带来任何加速。Longformer 不会成为生产可用方案
+
+三件套合起来才让 sparse attention 在 2020 年同时拿到 O(N) 复杂度 + 接近 dense 表达力 + 工程可部署。这一组合直接定义了 2020-2022 长上下文的主流范式,直到 FlashAttention(2022)让 dense 在 64K 也可行才被部分取代 — 但**"结构化稀疏"思想被 Swin Transformer / Mixtral MoE / MQA/GQA 等后续工作沿用至今**。
+
+![Dense vs Sparse 复杂度对比 + Longformer/BigBird 性能](assets/03-sparse-attention-complexity.svg)
+*图 2:**上半** 复杂度 vs 序列长度曲线 — Dense O(N²) 在 N=4K 已 16GB,N=8K 超 A100 40GB;Sparse Transformer O(N√N)、Reformer O(N log N)、Longformer/BigBird O(N) 在 N=16K 仅几 GB。**下半** 几个长上下文 benchmark 对比 — Longformer 4K vs RoBERTa 512 在 SQuAD / HotpotQA / IMDb 上全面胜出;BigBird WGR 在 LRA / TriviaQA 上和 Longformer 持平。右侧 callout:**FlashAttention 2022 后部分淘汰** sparse attention(dense 在 64K 也可行),但 100K+ 超长上下文场景仍是 sparse + Flash 组合。*
 
 ## 复杂度对比
 
