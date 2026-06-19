@@ -26,7 +26,24 @@ Imagen 在 COCO FID(zero-shot)上拿 7.27,击败 DALL-E 2 的 10.39 + 当时所�
 
 Imagen 本身没开源(Google 内部),但它的方法论(大文本编码器 + 高 guidance scale)直接影响了 SDXL / SD3 / Flux 的设计。
 
-## Classifier-Free Guidance:核心机制
+## 核心思想
+
+### 直觉:文生图瓶颈不在视觉建模,在文本理解 + 可控性
+
+理解 Imagen 真正需要先抓一件事:**2022 年初文生图 diffusion(DALL-E 2 / GLIDE / SD v1)都用 CLIP text encoder(0.4B)** — 但 CLIP 是对比学习产物,擅长"图文匹配相似度",**对长 prompt 的细节理解差**(否定 / 数量 / 空间关系经常忽略)。同时 diffusion 采样有随机性,**生成"忠实 prompt"还是"创造性偏离" trade-off 无法显式控制**。Google Brain 2022 同时解决这两件事 — 而且发现一个反直觉结论:**让文本编码器变大比让 diffusion U-Net 变大对图像质量影响更大**。
+
+三件事必须同时成立才让 Imagen 在 2022 年成立:
+
+- **T5-XXL(11B)替代 CLIP text encoder** — T5 是纯语言模型在 C4 上训练,语言能力远超对比学习产物;**文本端从 0.4B → 11B(28×),COCO FID 从 12.1 → 7.27 改善 40%**
+- **Classifier-Free Guidance(CFG)** — 训练时 10% 概率丢条件,采样时 `ε̃ = ε(uncond) + w·(ε(cond) - ε(uncond))` 放大条件信号;**给用户一个 cfg_scale 滑杆控制 prompt fidelity vs 创造性**
+- **三级 cascade diffusion** — 64×64 → 256×256 → 1024×1024 三个独立模型,第一阶段用大模型学语义,后续阶段小模型学高频细节
+
+三件事合起来:**Imagen 在 COCO zero-shot FID 7.27**(vs DALL-E 2 10.39 / GLIDE 12.24 / SD v1 12.6),**39% 时间被人工偏好胜过真实照片**(50% 是不可区分)。文生图第一次在 photorealism 上接近人类创作水平。**核心方法论贡献**:CFG 成为所有现代 diffusion 模型的标配(SD / SDXL / SD3 / Flux / DALL-E 2/3 / Midjourney 全部默认开启)+ "大文本编码器"成为 SOTA 文生图必备(SD3 / Flux 直接用 T5-XXL)。
+
+![Imagen 三件套 — T5-XXL + CFG + Cascade](assets/03-imagen-three-mechanisms.svg)
+*图 1:Imagen 三件套总览。**左** T5-XXL(11B 冻结)替代 CLIP(0.4B),文本理解 + COCO FID 改善 40%。**中** Classifier-Free Guidance — 训练时 10% 丢条件,采样时 ε̃ = ε(∅) + w·(ε(c) - ε(∅));用户调 cfg_scale 控 prompt fidelity vs 创造性。**右** 三级 cascade — 64² → 256² → 1024²,逐级 super-resolution。底部 callout:这三件套在 2022 年同时改变文生图行业 — CFG 成所有 diffusion 标配,T5-XXL 成 SOTA 文生图必备。*
+
+## 机制一:Classifier-Free Guidance — 用减法 + 放大控制条件强度
 
 CFG 的想法极其简洁但效果巨大。先看它要解决的问题:
 
@@ -69,7 +86,7 @@ graph LR
 
 **代价是采样速度变 2 倍**——每一步要 forward 两次 U-Net(一次条件一次无条件)。但因为质量提升巨大,所有工业 diffusion 都接受这个代价。
 
-## Imagen 架构:三级 cascade
+## 机制二:三级 Cascade Diffusion — 分辨率逐级提升
 
 Imagen 的另一关键设计是**三级 cascade diffusion**——三个独立的 diffusion 模型分别做不同分辨率:
 
@@ -95,7 +112,7 @@ T5-XXL(11B,冻结)→ text embedding
 
 Cascade 思路质量上可能略好(没有 VAE 信息损失),但工程复杂(3 个模型 + 3 套训练 + 3 次采样),且总算力比 LDM 大。Imagen 选 cascade 是因为 Google 不缺算力;社区(Stable Diffusion)选 LDM 是因为要塞进消费 GPU。**两条路并存** —— Imagen 系工业用,LDM 系开源主流。
 
-## "文本编码器越大越好" 的发现
+## 机制三:大文本编码器(T5-XXL)— 文本理解比视觉建模更重要
 
 Imagen 论文最重要的实证发现(论文 Figure 4)是:**让 text encoder 变大,比让 diffusion U-Net 变大对最终图像质量影响更大**。
 
@@ -125,6 +142,22 @@ T5-XXL 比 CLIP 大 28×,FID 改善 40%。这一发现颠覆了之前的常识�
 - **DeepFloyd IF**(2023)是 Imagen 的开源复现,也用 T5-XXL
 
 到 2024 年,几乎所有 SOTA 文生图模型都用 T5-XXL 或同级别的大文本编码器。
+
+## 三件套协同:CFG + Cascade + T5-XXL 缺一不可
+
+Imagen 在 2022 年能让文生图第一次接近 photorealism,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 Imagen 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 CFG + Cascade,没有 T5-XXL(还用 CLIP)** — 文本理解瓶颈无解,prompt 细节(数量 / 颜色 / 空间关系)生成不准;COCO FID 卡在 ~10,无法到 7.27
+- **只有 T5-XXL + Cascade,没有 CFG** — 给同一 prompt 模型可能生成"忠实"或"创造性偏离"的图,**用户无法显式控制 prompt fidelity**;高质量样本随机产生,无法稳定生产
+- **只有 T5-XXL + CFG,没有 Cascade(用 LDM 风格)** — 也可以 work(实际上 SD3 / Flux 就是这条路),但 Imagen 选 cascade 是为了**无 VAE 压缩损失** + **逐级算力分配**,在 1024² 高分辨率上质量略胜一筹
+
+三件套合起来才让 Imagen 在 COCO FID 7.27 + 39% photorealism 偏好上 SOTA。**核心方法论贡献**:
+1. **CFG 范式** — 用 conditioning dropout + 推理时 ε(c) - ε(∅) 放大,**已扩散到文本生成 / 3D / 视频 / 音频** 等所有条件生成模型,成通用工程范式
+2. **大文本编码器认知** — "文生图瓶颈在文本理解" 改变了行业的算力分配策略,SD3 / Flux 把 T5-XXL 当默认配置
+3. **Cascade vs Latent 两条工业路线** — Google 系(Imagen / Imagen Video / Lumiere)用 cascade,社区(SD / Midjourney / Flux)用 LDM,**两条路并存至今**
+
+![CFG 完整机制 + cfg_scale 效果对比](assets/03-imagen-cfg-mechanism.svg)
+*图 2:**上半** CFG 推理过程详解 — x_t 同时算 ε(条件)和 ε(无条件),取差 ε(c) - ε(∅) 作"条件特有方向",放大 w 倍加回 ε(∅) 得到 ε̃;每步采样要 forward 两次 U-Net(2× 显存可 batch 内并行,但 1× 时间)。**下半** cfg_scale 效果对比 — w=0(无关 prompt 的图)/ w=1(模糊接近)/ w=7.5(默认,fidelity + quality 平衡)/ w=15(过度放大,over-saturation 失真)。底部 callout:CFG 是所有现代 diffusion 模型的标配,SD WebUI 里那个 cfg_scale 滑杆就是这个数学公式。*
 
 ## 性能对比
 

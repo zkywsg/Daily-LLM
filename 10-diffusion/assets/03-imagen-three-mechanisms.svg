@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="im-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Imagen 三件套 — T5-XXL + CFG + Cascade
+  </text>
+
+  <!-- ============== Three columns ============== -->
+
+  <!-- LEFT: T5-XXL -->
+  <text x="160" y="65" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">
+    ① T5-XXL 大文本编码器
+  </text>
+
+  <rect x="40" y="80" width="240" height="300" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+
+  <!-- CLIP vs T5-XXL bars -->
+  <text x="160" y="105" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">参数对比</text>
+
+  <text x="55" y="130" font-size="10" fill="#9d174d">CLIP</text>
+  <rect x="100" y="118" width="20" height="18" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <text x="125" y="132" font-size="10" fill="#9a3412">0.4B</text>
+
+  <text x="55" y="158" font-size="10" fill="#dc2626" font-weight="700">T5-XXL ★</text>
+  <rect x="100" y="146" width="160" height="18" fill="#dc2626" stroke="#7f1d1d" stroke-width="1"/>
+  <text x="265" y="160" font-size="10" fill="#dc2626" font-weight="700">11B(28× 大)</text>
+
+  <line x1="55" y1="185" x2="265" y2="185" stroke="#db2777" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="160" y="205" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">COCO FID 改善</text>
+
+  <text x="55" y="228" font-size="10" fill="#9d174d">CLIP 12.1</text>
+  <rect x="120" y="216" width="100" height="18" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+
+  <text x="55" y="256" font-size="10" fill="#dc2626" font-weight="700">T5-XXL 7.27</text>
+  <rect x="130" y="244" width="60" height="18" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.5"/>
+
+  <text x="160" y="290" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">FID 改善 40%</text>
+
+  <text x="160" y="320" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">
+    瓶颈不在视觉建模
+  </text>
+  <text x="160" y="340" text-anchor="middle" font-size="10" fill="#9d174d" font-style="italic">
+    在文本理解
+  </text>
+  <text x="160" y="365" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="600">
+    → SD3 / Flux 直接用 T5-XXL
+  </text>
+
+  <!-- MIDDLE: CFG -->
+  <text x="450" y="65" text-anchor="middle" font-size="13" fill="#2563eb" font-weight="700">
+    ② Classifier-Free Guidance
+  </text>
+
+  <rect x="310" y="80" width="280" height="300" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+
+  <text x="450" y="105" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">训练时</text>
+  <rect x="325" y="115" width="250" height="50" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="450" y="135" text-anchor="middle" font-size="10" fill="#065f46">10% 概率把 prompt 替换成 ""</text>
+  <text x="450" y="155" text-anchor="middle" font-size="10" fill="#065f46">同模型同时学 ε(c) 和 ε(∅)</text>
+
+  <text x="450" y="190" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">推理时(关键公式)</text>
+  <rect x="325" y="200" width="250" height="55" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="225" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#fbbf24">
+    ε̃ = ε(∅) + w·(ε(c) − ε(∅))
+  </text>
+  <text x="450" y="245" text-anchor="middle" font-size="10" fill="#fef3c7">放大"条件特有方向"</text>
+
+  <line x1="325" y1="270" x2="575" y2="270" stroke="#2563eb" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="450" y="290" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">cfg_scale 控制权</text>
+  <g font-size="10" fill="#1e40af">
+    <text x="330" y="312">• w=0: 无关 prompt</text>
+    <text x="330" y="330">• w=1: 模糊接近</text>
+    <text x="330" y="348">• w=7.5: 默认,fidelity + quality 平衡</text>
+    <text x="330" y="366">• w=15: 过度放大,失真</text>
+  </g>
+
+  <!-- RIGHT: Cascade -->
+  <text x="740" y="65" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">
+    ③ Cascade Diffusion
+  </text>
+
+  <rect x="620" y="80" width="240" height="300" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+
+  <!-- Stage 1 -->
+  <rect x="640" y="100" width="200" height="50" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="740" y="120" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Stage 1: text → 64²</text>
+  <text x="740" y="138" text-anchor="middle" font-size="10" fill="#9d174d">~2B U-Net,学语义</text>
+
+  <line x1="740" y1="150" x2="740" y2="167" stroke="#9d174d" stroke-width="1.5" marker-end="url(#im-arr)"/>
+
+  <!-- Stage 2 -->
+  <rect x="640" y="170" width="200" height="45" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="740" y="188" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">Stage 2: 64² → 256²</text>
+  <text x="740" y="205" text-anchor="middle" font-size="10" fill="#9d174d">~600M super-res</text>
+
+  <line x1="740" y1="215" x2="740" y2="232" stroke="#9d174d" stroke-width="1.5" marker-end="url(#im-arr)"/>
+
+  <!-- Stage 3 -->
+  <rect x="640" y="235" width="200" height="45" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="740" y="253" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">Stage 3: 256² → 1024²</text>
+  <text x="740" y="270" text-anchor="middle" font-size="10" fill="#9d174d">~400M super-res</text>
+
+  <line x1="740" y1="280" x2="740" y2="295" stroke="#9d174d" stroke-width="1.5" marker-end="url(#im-arr)"/>
+
+  <rect x="660" y="298" width="160" height="32" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="740" y="318" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">1024×1024 photo</text>
+
+  <text x="740" y="350" text-anchor="middle" font-size="10" fill="#065f46" font-style="italic">无 VAE 压缩损失</text>
+  <text x="740" y="368" text-anchor="middle" font-size="10" fill="#065f46" font-style="italic">逐级算力分配</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="410" x2="860" y2="410" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: Industry impact ============== -->
+  <text x="450" y="440" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三件套对工业的长尾影响
+  </text>
+
+  <g transform="translate(60, 460)">
+    <rect x="0" y="0" width="250" height="135" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="125" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">T5-XXL 范式</text>
+    <g font-size="10" fill="#991b1b">
+      <text x="15" y="48">→ SD3 用 T5-XXL + 2 CLIP</text>
+      <text x="15" y="68">→ Flux 用 T5-XXL</text>
+      <text x="15" y="88">→ DeepFloyd IF 用 T5-XXL</text>
+      <text x="15" y="108">→ Sora 用 T5</text>
+      <text x="15" y="128" font-weight="700" fill="#dc2626">"大文本编码器"成 SOTA 必备</text>
+    </g>
+
+    <rect x="265" y="0" width="250" height="135" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="390" y="22" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">CFG 范式</text>
+    <g font-size="10" fill="#1e40af">
+      <text x="280" y="48">→ 所有 SD 版本默认开启</text>
+      <text x="280" y="68">→ DALL-E 2/3 用 CFG</text>
+      <text x="280" y="88">→ Midjourney 用 CFG</text>
+      <text x="280" y="108">→ 推广到 3D / 视频 / 音频</text>
+      <text x="280" y="128" font-weight="700" fill="#2563eb">通用条件生成工程范式</text>
+    </g>
+
+    <rect x="530" y="0" width="250" height="135" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="655" y="22" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">Cascade vs Latent</text>
+    <g font-size="10" fill="#065f46">
+      <text x="545" y="48">Cascade(Google 系):</text>
+      <text x="545" y="65">  Imagen / Imagen Video / Lumiere</text>
+      <text x="545" y="88">LDM(社区系):</text>
+      <text x="545" y="105">  SD / Midjourney / Flux</text>
+      <text x="545" y="128" font-weight="700" fill="#059669">两条工业路线并存</text>
+    </g>
+  </g>
+
+  <rect x="60" y="615" width="780" height="25" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="632" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">
+    Imagen 没开源,但它的方法论改变了所有现代文生图模型的设计
+  </text>
+</svg>

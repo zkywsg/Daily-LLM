@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="cfg-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="cfg-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    CFG 完整机制 + cfg_scale 效果对比
+  </text>
+
+  <!-- ============== TOP: CFG inference flow ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    CFG 推理过程 — 每步采样要 forward 两次 U-Net
+  </text>
+
+  <!-- x_t input -->
+  <rect x="50" y="120" width="100" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="100" y="145" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">x_t</text>
+  <text x="100" y="162" text-anchor="middle" font-size="10" fill="#92400e">当前 noisy latent</text>
+
+  <!-- two parallel U-Net forwards -->
+  <line x1="150" y1="135" x2="200" y2="115" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cfg-arr)"/>
+  <line x1="150" y1="155" x2="200" y2="175" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cfg-arr)"/>
+
+  <!-- Cond U-Net -->
+  <rect x="205" y="85" width="180" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="295" y="105" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">U-Net(condition c)</text>
+  <text x="295" y="125" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">ε(x_t, t, c)</text>
+
+  <!-- Uncond U-Net -->
+  <rect x="205" y="155" width="180" height="50" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="295" y="175" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">U-Net(uncond ∅)</text>
+  <text x="295" y="195" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">ε(x_t, t, ∅)</text>
+
+  <text x="295" y="225" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">同一 U-Net,batch 内并行</text>
+
+  <!-- arrows to subtraction -->
+  <line x1="385" y1="110" x2="430" y2="135" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cfg-arr)"/>
+  <line x1="385" y1="180" x2="430" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cfg-arr)"/>
+
+  <!-- subtraction box -->
+  <rect x="435" y="115" width="170" height="60" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="520" y="138" text-anchor="middle" font-size="11" fill="#5b21b6" font-weight="700">差 = ε(c) − ε(∅)</text>
+  <text x="520" y="155" text-anchor="middle" font-size="10" fill="#5b21b6">"条件特有方向"</text>
+  <text x="520" y="168" text-anchor="middle" font-size="10" fill="#5b21b6">(指向 prompt 描述的图)</text>
+
+  <line x1="605" y1="145" x2="635" y2="145" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cfg-arr)"/>
+
+  <!-- × w -->
+  <rect x="640" y="125" width="80" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="680" y="143" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="700">× w</text>
+  <text x="680" y="158" text-anchor="middle" font-size="9" fill="#991b1b">(放大 w=7.5)</text>
+
+  <!-- + uncond -->
+  <line x1="385" y1="180" x2="730" y2="180" stroke="#9d174d" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="720" y1="145" x2="755" y2="195" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cfg-arr)"/>
+
+  <circle cx="765" cy="200" r="14" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="765" y="206" text-anchor="middle" font-size="14" fill="#92400e" font-weight="700">+</text>
+
+  <line x1="395" y1="180" x2="751" y2="200" stroke="#9d174d" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <line x1="779" y1="200" x2="800" y2="200" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cfg-arr)"/>
+
+  <rect x="805" y="180" width="80" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="845" y="200" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">ε̃</text>
+  <text x="845" y="215" text-anchor="middle" font-size="9" fill="#065f46">guided</text>
+
+  <!-- formula box -->
+  <rect x="60" y="255" width="780" height="40" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="280" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#fbbf24" font-weight="700">
+    ε̃(x_t, t, c) = ε(∅) + w · [ε(c) − ε(∅)]
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="315" x2="860" y2="315" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: cfg_scale effect comparison ============== -->
+  <text x="450" y="340" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    cfg_scale 效果对比 — w 控制 prompt fidelity vs 创造性
+  </text>
+
+  <!-- 4 panels showing different w values -->
+  <!-- w=0 -->
+  <rect x="40" y="360" width="195" height="180" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="137" y="383" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">w = 0</text>
+  <rect x="80" y="395" width="115" height="80" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/>
+  <text x="137" y="425" text-anchor="middle" font-size="20">🎨</text>
+  <text x="137" y="455" text-anchor="middle" font-size="9" fill="#6b7280">(随机图,无关 prompt)</text>
+  <text x="137" y="495" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">无条件采样</text>
+  <text x="137" y="515" text-anchor="middle" font-size="10" fill="#dc2626">完全忽略 prompt</text>
+
+  <!-- w=1 -->
+  <rect x="245" y="360" width="195" height="180" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="342" y="383" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">w = 1</text>
+  <rect x="285" y="395" width="115" height="80" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="342" y="425" text-anchor="middle" font-size="20">🐱</text>
+  <text x="342" y="455" text-anchor="middle" font-size="9" fill="#9d174d">(模糊接近 prompt)</text>
+  <text x="342" y="495" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">标准条件预测</text>
+  <text x="342" y="515" text-anchor="middle" font-size="10" fill="#9d174d">质量平庸</text>
+
+  <!-- w=7.5 (default, best) -->
+  <rect x="450" y="360" width="195" height="180" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="547" y="383" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">w = 7.5 ★(默认)</text>
+  <rect x="490" y="395" width="115" height="80" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="547" y="425" text-anchor="middle" font-size="24">🐱</text>
+  <text x="547" y="455" text-anchor="middle" font-size="9" fill="#065f46">(忠实 + 高质量)</text>
+  <text x="547" y="495" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">SD WebUI 默认值</text>
+  <text x="547" y="515" text-anchor="middle" font-size="10" fill="#059669">fidelity + quality 平衡</text>
+
+  <!-- w=15 -->
+  <rect x="655" y="360" width="195" height="180" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="752" y="383" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="700">w = 15</text>
+  <rect x="695" y="395" width="115" height="80" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <text x="752" y="425" text-anchor="middle" font-size="20">🐱</text>
+  <text x="752" y="455" text-anchor="middle" font-size="9" fill="#991b1b">(over-saturation 失真)</text>
+  <text x="752" y="495" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">过度放大</text>
+  <text x="752" y="515" text-anchor="middle" font-size="10" fill="#dc2626">颜色重影 / 不自然</text>
+
+  <!-- BOTTOM CALLOUT -->
+  <rect x="60" y="555" width="780" height="50" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="580" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    CFG 是所有现代 diffusion 模型的标配 — SD WebUI 里那个 cfg_scale 滑杆就是这个公式
+  </text>
+  <text x="450" y="600" text-anchor="middle" font-size="11" fill="#fef3c7">
+    代价:每步采样要 forward 两次 U-Net(2× 显存可 batch 内并行,但 1× 时间)
+  </text>
+</svg>
