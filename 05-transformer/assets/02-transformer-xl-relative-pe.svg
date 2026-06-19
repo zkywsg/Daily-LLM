@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="pe-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Absolute PE 跨段歧义 → Relative PE 解决 + Left-shift trick
+  </text>
+
+  <!-- ============== TOP: 绝对 PE 跨段问题 ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="600">
+    绝对 PE 问题 — 段 1 位置 5 和段 2 位置 5 拿到同样 PE_5
+  </text>
+
+  <!-- Segment 1 -->
+  <rect x="80" y="85" width="320" height="80" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="240" y="108" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="700">Segment 1</text>
+
+  <!-- 5 tokens with PE -->
+  <g font-size="10" fill="#991b1b">
+    <rect x="100" y="118" width="50" height="38" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="125" y="135" text-anchor="middle">token</text>
+    <text x="125" y="148" text-anchor="middle">+ PE_1</text>
+
+    <rect x="160" y="118" width="50" height="38" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="185" y="135" text-anchor="middle">token</text>
+    <text x="185" y="148" text-anchor="middle">+ PE_2</text>
+
+    <rect x="220" y="118" width="50" height="38" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="245" y="135" text-anchor="middle">...</text>
+
+    <rect x="280" y="118" width="50" height="38" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="305" y="135" text-anchor="middle" font-weight="700">token</text>
+    <text x="305" y="148" text-anchor="middle" font-weight="700">+ PE_5</text>
+
+    <rect x="340" y="118" width="50" height="38" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="365" y="135" text-anchor="middle">...</text>
+  </g>
+
+  <!-- Segment 2 -->
+  <rect x="500" y="85" width="320" height="80" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="660" y="108" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="700">Segment 2</text>
+
+  <g font-size="10" fill="#991b1b">
+    <rect x="520" y="118" width="50" height="38" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="545" y="135" text-anchor="middle">token</text>
+    <text x="545" y="148" text-anchor="middle">+ PE_1</text>
+
+    <rect x="580" y="118" width="50" height="38" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="605" y="135" text-anchor="middle">token</text>
+    <text x="605" y="148" text-anchor="middle">+ PE_2</text>
+
+    <rect x="640" y="118" width="50" height="38" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="665" y="135" text-anchor="middle">...</text>
+
+    <rect x="700" y="118" width="50" height="38" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="725" y="135" text-anchor="middle" font-weight="700">token</text>
+    <text x="725" y="148" text-anchor="middle" font-weight="700">+ PE_5</text>
+
+    <rect x="760" y="118" width="50" height="38" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="785" y="135" text-anchor="middle">...</text>
+  </g>
+
+  <!-- annotation: same PE -->
+  <path d="M 305 156 Q 305 195, 515 195 Q 725 195, 725 156" stroke="#dc2626" stroke-width="2" fill="none" stroke-dasharray="3,3"/>
+  <text x="515" y="210" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">两个完全不同语境拿到同样 PE_5 → attention 无法区分 ✗</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="240" x2="860" y2="240" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== MIDDLE: Relative PE 公式 ============== -->
+  <text x="450" y="265" text-anchor="middle" font-size="13" fill="#059669" font-weight="600">
+    Relative PE — 把绝对位置项替换为相对距离 R_{i-j}
+  </text>
+
+  <!-- abs PE formula -->
+  <rect x="60" y="285" width="800" height="60" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="80" y="307" font-size="11" fill="#991b1b" font-weight="600">绝对 PE attention score:</text>
+  <text x="450" y="332" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#991b1b">
+    A_{i,j}^abs = (E_xi + U_i)ᵀ W_qᵀ W_k (E_xj + U_j)
+  </text>
+
+  <!-- relative PE formula -->
+  <rect x="60" y="360" width="800" height="100" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="80" y="382" font-size="11" fill="#065f46" font-weight="600">相对 PE attention score(展开 4 项):</text>
+
+  <text x="450" y="408" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#065f46">
+    A_{i,j}^rel = E_xiᵀ W_qᵀ W_{k,E} E_xj  +  E_xiᵀ W_qᵀ W_{k,R} R_{i-j}
+  </text>
+  <text x="450" y="432" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#065f46">
+                       + uᵀ W_{k,E} E_xj  +  vᵀ W_{k,R} R_{i-j}
+  </text>
+  <text x="450" y="452" text-anchor="middle" font-size="10" fill="#065f46" font-style="italic">
+    R_{i-j} 替代 U_j;u, v 是可学全局偏置;W_{k,E} 和 W_{k,R} 内容/位置独立 K 投影
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="480" x2="860" y2="480" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: Left-shift trick ============== -->
+  <text x="450" y="505" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Left-shift trick — 让相对 PE 额外开销只 ~10%
+  </text>
+
+  <!-- naive cost -->
+  <rect x="60" y="525" width="370" height="105" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="547" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">朴素实现</text>
+  <g font-size="11" fill="#991b1b">
+    <text x="75" y="570">• 为每对 (i, j) 显式构造 R_{i-j}</text>
+    <text x="75" y="590">• 矩阵乘 [N, d] × [d, N+M] × [N+M, d]</text>
+    <text x="75" y="610">• 额外开销 O(N² × d),工程上吃不消</text>
+  </g>
+
+  <!-- shift trick -->
+  <rect x="470" y="525" width="370" height="105" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="655" y="547" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">Left-shift trick</text>
+  <g font-size="11" fill="#065f46">
+    <text x="485" y="570">• 按"绝对距离 0..N+M"算一个大矩阵</text>
+    <text x="485" y="590">• 矩阵元素左移 + reshape 得到相对位置矩阵</text>
+    <text x="485" y="610">• 额外开销 ~10%,让相对 PE 实际跑得起</text>
+  </g>
+</svg>

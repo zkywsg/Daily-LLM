@@ -20,58 +20,54 @@ key_idea: "用段级循环把上一段隐状态作为这段的记忆 + 相对位
 
 Dai 等人 2019 的 Transformer-XL(extra long)对这两件事一起出手:**用段级循环让信息跨段流动 + 用相对位置编码让跨段位置可计算**。这是 Transformer 在长上下文方向的第一个结构性突破。
 
-## 核心思想 1:Segment-Level Recurrence
+## 核心思想
 
-Transformer-XL 的第一个想法是从 [RNN](../02-rnn-lstm/01-rnn.md) 那里偷来的——**让上一段的隐状态作为这一段的"记忆"传过来**。但和 RNN 的"逐 token 递推"不同,Transformer-XL 在**段的粒度**上做循环:段内仍然完全并行,只是段与段之间通过隐状态接力。
+### 直觉:让上一段的隐状态作为这段的"记忆",同时换掉绝对 PE
 
-```mermaid
-graph LR
-    s1["Segment 1"]:::input --> enc1["Transformer Layers"]:::compute --> h1["h⁽¹⁾"]:::output
-    h1 -.->|"cached (no grad)"| enc2
-    s2["Segment 2"]:::input --> enc2["Transformer Layers"]:::compute --> h2["h⁽²⁾"]:::output
-    h2 -.->|"cached (no grad)"| enc3
-    s3["Segment 3"]:::input --> enc3["Transformer Layers"]:::compute --> h3["h⁽³⁾"]:::output
+理解 Transformer-XL 真正需要先抓一件事:**[原版 Transformer](01-transformer.md) 在语言建模上有两个结构性病** — 上下文被硬切成 512 段、段边界处看不到前文;绝对 PE 让"第 1 段的位置 5"和"第 2 段的位置 5"拿到同样的位置信号,**结构上就无法跨段建模**。Al-Rfou 2018 用 stride-1 sliding window 暴力推理,慢 512 倍。Dai 等人 2019 反问:**为什么不从 [RNN](../02-rnn-lstm/01-rnn.md) 偷"段级循环"思想 + 把绝对 PE 换成相对 PE,两件事一起解?**
 
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
+三件事必须同时成立才让 Transformer-XL 在 2019 年成立:
 
-*图 1:Segment-level recurrence——每段处理完后,把每层的隐状态 `h⁽τ⁾` 缓存下来;下一段处理时,attention 的 K/V 同时拼接 `[h_prev, h_curr]`,让段 τ+1 能看到段 τ 的全部 token。*
+- **Segment-Level Recurrence** — 上一段每层隐状态 stop-gradient 缓存,作为当前段 attention 的 K/V 前缀;**段内并行 + 段间循环**,既不丢 Transformer 的并行性又有 RNN 的跨段记忆
+- **Relative Position Encoding** — 把位置从"加在输入上的绝对 PE"换成"加在 attention score 上的相对距离 R_{i-j}",跨段时无歧义
+- **Left-shift trick + 独立 K_R 投影** — 让相对 PE 的计算开销只多 ~10%,工程上跑得起;内容和位置用独立 K 投影,两类信号不干扰
 
-具体怎么做:第 `τ` 段第 `n` 层的输出 `h_τ^{(n)}` 在处理第 `τ+1` 段时被作为额外的 K/V 序列前缀拼进来:
+三件事合起来:**有效上下文从 512 → 3800 token(7.4×)**,WikiText-103 perplexity 从 30.0 → 18.3(降 39%),推理速度比 sliding window 快 1874×。但 Transformer-XL 真正的历史地位不在自己用得多 — 而在它**第一次系统验证"相对位置编码 + 跨段记忆"路线**,直接催生 T5(relative bias)/ [RoPE](04-rope.md)(旋转 PE)/ ALiBi 等几乎所有现代 LLM 的位置编码方案。
 
-$$
-\tilde{h}_{\tau+1}^{(n-1)} = [\text{SG}(h_\tau^{(n-1)}); \, h_{\tau+1}^{(n-1)}]
-$$
+![Segment-Level Recurrence — 段间循环的数据流](assets/02-transformer-xl-recurrence.svg)
+*图 1:**上半** 原版 Transformer 切段处理 — 段与段独立,段边界处"零记忆",跨段依赖丢失。**下半** Transformer-XL — 每段每层隐状态缓存(stop-gradient)+ 下段 K/V 拼上 `[memory; current]`,Q 只来自当前段。蓝色虚线展示信息"逐层向上累积"路径:第 1 段第 1 层信息 → 第 2 段第 2 层 → 第 3 段第 3 层 → 理论最大上下文 O(N×L)。底部 callout:有效上下文 512 → 3800 token,推理快 1874×。*
+
+### 机制一:Segment-Level Recurrence — 段内并行 + 段间循环
+
+第 τ 段第 n 层的输出 `h_τ^{(n)}` 在处理第 τ+1 段时被作为额外 K/V 序列前缀拼进来:
 
 $$
-Q_{\tau+1} = h_{\tau+1}^{(n-1)} W_Q
+\tilde{h}_{\tau+1}^{(n-1)} = [\text{SG}(h_\tau^{(n-1)});\, h_{\tau+1}^{(n-1)}]
 $$
 
 $$
-K_{\tau+1} = \tilde{h}_{\tau+1}^{(n-1)} W_K, \quad V_{\tau+1} = \tilde{h}_{\tau+1}^{(n-1)} W_V
+Q_{\tau+1} = h_{\tau+1}^{(n-1)} W_Q, \quad K_{\tau+1} = \tilde{h}_{\tau+1}^{(n-1)} W_K, \quad V_{\tau+1} = \tilde{h}_{\tau+1}^{(n-1)} W_V
 $$
 
-关键细节:
+关键工程细节:
 
-- **`SG(·)` 是 stop-gradient**——上一段的隐状态只参与 forward,不回传梯度。这避免了梯度跨段累积导致训练成本爆炸
-- **Q 只来自当前段**,K/V 来自"缓存的上一段 + 当前段"。也就是说当前段的 token 可以 attend 到上一段的全部 token,但上一段的 token 不参与本段的输出生成
-- **每层独立缓存**——第 `n` 层的 cache 来自上一段第 `n-1` 层的输出(注意是 `n-1`,不是 `n`)。这让信息有"逐层向上累积"的特性:第一段的第 1 层信息能传到第二段的第 2 层、第三段的第 3 层……理论最大上下文是 `O(N × L)`,N 是层数、L 是段长
+- **`SG(·)` 是 stop-gradient** — 上一段隐状态只参与 forward,不回传梯度。这避免梯度跨段累积导致训练成本爆炸,实测影响极小(loss 不掉)
+- **Q 只来自当前段,K/V 来自"缓存 + 当前"** — 当前段可以 attend 到上一段全部 token,但上一段 token 不参与本段输出生成。**信息单向流动**
+- **每层独立缓存,信息逐层向上累积** — 第 n 层 cache 来自上一段第 n-1 层输出(注意是 n-1)。这让第 1 段第 1 层信息能传到第 2 段第 2 层、第 3 段第 3 层…**理论最大上下文 O(N × L)**
 
-实际效果:Transformer-XL 在 WikiText-103 上把有效上下文从原版的 512 token 推到了 **3800 token**(论文报告的 *Relative Effective Context Length*),长依赖建模能力提升 80%。推理速度也快——因为不需要 sliding window,每生成 L 个 token 才重算一次 attention。
+和 RNN 的本质区别:RNN 在 token 粒度做循环(逐 token 不能并行),Transformer-XL 在**段的粒度**做循环 — **段内仍完全并行**,只是段之间通过缓存接力。这保留了 Transformer 的核心优势(并行计算)。
 
-## 核心思想 2:Relative Position Encoding
+### 机制二:Relative Position Encoding — 用相对距离替代绝对 PE
 
-Segment-level recurrence 立刻引入一个问题:**绝对 PE 在跨段时会重复**。第 1 段的第 5 个 token PE 是 `PE_5`,第 2 段的第 5 个 token PE 也是 `PE_5`——两个完全不同语境的 token 拿到同样的位置信号,attention 没法区分它们。
+Segment-level recurrence 立刻引入一个问题:**绝对 PE 跨段重复**。第 1 段位置 5 的 PE = `PE_5`,第 2 段位置 5 的 PE 也 = `PE_5`,两个不同语境拿到同样的位置信号,attention 无法区分。
 
-解法是把位置信息从"加在输入上的绝对编码"换成"加在 attention score 上的相对编码"。原版 attention score 展开是:
+解法是把位置信号从"加在输入上"换成"加在 attention score 上"。原版 attention score 展开:
 
 $$
-A_{i,j}^{\text{abs}} = (\underbrace{E_{x_i} + U_i}_{q_i})^\top W_q^\top W_k (\underbrace{E_{x_j} + U_j}_{k_j})
+A_{i,j}^{\text{abs}} = (E_{x_i} + U_i)^\top W_q^\top W_k (E_{x_j} + U_j)
 $$
 
-`E_x` 是 token embedding,`U_i` 是绝对 PE。展开成 4 项后,Dai 把它改造为只依赖**相对位置 `i - j`** 的形式:
+E_x 是 token embedding,U_i 是绝对 PE。Dai 把它改造成只依赖**相对位置 i−j** 的形式:
 
 $$
 A_{i,j}^{\text{rel}} = E_{x_i}^\top W_q^\top W_{k,E} E_{x_j} + E_{x_i}^\top W_q^\top W_{k,R} R_{i-j} + u^\top W_{k,E} E_{x_j} + v^\top W_{k,R} R_{i-j}
@@ -79,16 +75,40 @@ $$
 
 关键改动:
 
-- **`R_{i-j}` 替代 `U_j`**——位置项变成相对距离 `i - j` 的正余弦编码,跨段时无歧义
-- **`u, v` 是可学的全局偏置**——替代原版里 `q_i` 中的 `U_i` 项;意义是"无论 query 在哪个绝对位置,它对 key 的位置偏好是一致的"
-- **`W_{k,E}` 和 `W_{k,R}`**——内容和位置使用独立的 K 投影,让两类信号互不干扰
+- **`R_{i-j}` 替代 `U_j`** — 位置项变成相对距离的正余弦编码,跨段无歧义
+- **`u, v` 是可学的全局偏置** — 替代原版 q_i 中的 U_i 项;意义是"无论 query 在哪个绝对位置,它对 key 的位置偏好一致"
+- **`W_{k,E}` 和 `W_{k,R}` 内容/位置独立 K 投影** — 让两类信号互不干扰
 
-实际计算时,`R_{i-j}` 仍是正余弦定义,但论文给出了一个高效的 **left-shift trick**——避免显式构造 `(i-j)` 矩阵,把 `O(N²)` 的相对位置查询融进矩阵乘里。这一 trick 让 relative PE 的额外开销只有 ~10%。
+### 机制三:Left-shift trick + 工程加速 — 让 relative PE 实际跑得起
 
-这一设计的影响远超 Transformer-XL 本身:
+朴素实现 relative PE 需要为每对 (i, j) 算 R_{i-j},如果 N=384、M=384,N×(N+M)=384×768 ≈ 30 万对,每对 d 维 dot product,**额外开销 O(N²×d)**。
 
-- **T5**(Raffel 2019)沿用了相对位置思想,但简化成 **relative position bias**——直接学一个标量偏置加到 attention score 上,按相对距离分桶查表。比 Transformer-XL 的复杂矩阵推导简单得多,后来被 mBART、Flan-T5 等模型沿用
-- **RoPE**([04-rope.md](04-rope.md))走了完全不同的相对位置路线——把位置编码进 Q/K 的旋转里,而不是加在 score 上。但相对位置编码"必须可学且鲁棒外推"的理念是 Transformer-XL 第一次系统提出的
+Dai 给出 **left-shift trick**:先按"假设所有位置都是绝对距离 0 到 N+M"算一个大矩阵 [N, N+M],然后通过**矩阵元素左移 + reshape**直接得到等价的相对位置矩阵,避免显式构造 R_{i-j}。
+
+```python
+def relative_shift(x):
+    """[B, h, N, N+M] 绝对位置矩阵 → 相对位置矩阵"""
+    B, H, N, M = x.shape
+    zero_pad = torch.zeros(B, H, N, 1, device=x.device)
+    x = torch.cat([zero_pad, x], dim=-1)
+    x = x.view(B, H, M + 1, N)
+    return x[:, :, 1:].view(B, H, N, M)
+```
+
+这一 trick 把相对 PE 的额外开销从 O(N²·d) 降到 ~10%,**让 Transformer-XL 在工程上跑得起**。这是论文里非常 systems-level 的一个细节,但它决定了"相对 PE 能否被广泛采用"。
+
+### 三件套协同:Segment Cache + Relative PE + Left-shift Trick 缺一不可
+
+Transformer-XL 在 2019 年能让 Transformer 第一次跨越固定窗口,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 Transformer-XL 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 segment cache,没有 relative PE** — 跨段时绝对 PE 重复,模型无法区分"段内位置 5"和"段间位置 5",**结构上跨段建模不成立**,缓存了上段也无意义
+- **只有 relative PE,没有 segment cache** — 模型仍然只看当前段 N token,有效上下文还是 N,**relative PE 只解决了跨段位置歧义但没扩展实际上下文**
+- **只有 segment cache + relative PE,没有 left-shift trick** — 相对 PE 朴素实现额外开销 O(N²·d),工程上跑不动,Transformer-XL 只能停在 paper 不能开源
+
+三件套合起来才让 Transformer-XL 在 2019 年同时拿到长上下文 + 工程可行性。也正是因为 segment-level recurrence 仍然有点笨重(每段都要拼缓存),后续工作[Sparse Attention](03-sparse-attention.md) / [RoPE](04-rope.md) / [FlashAttention](05-flash-attention.md) 从不同方向继续优化 — 但**相对位置编码"必须可学且鲁棒外推"的理念是 Transformer-XL 第一次系统提出的**,T5 / RoPE / ALiBi 等全部沿这条路线。
+
+![Absolute PE vs Relative PE — 跨段位置歧义的解决](assets/02-transformer-xl-relative-pe.svg)
+*图 2:**上半** 绝对 PE 问题 — 段 1 位置 5 和段 2 位置 5 拿到同样 `PE_5`,模型无法区分。**中** Transformer-XL 改造 attention score:把 `U_j` 替换为相对距离 `R_{i-j}` + 加可学全局偏置 u/v + 独立 K_R 投影,公式展开成 4 项。**下半** Left-shift trick — 朴素相对 PE 需 O(N²·d) 开销,通过矩阵左移 + reshape 等价得到 [N, M] 相对位置矩阵,**额外开销降到 ~10%**。底部 callout:这一相对 PE 思想被 T5 relative bias / RoPE 旋转 PE / ALiBi 线性偏置等几乎所有现代 LLM 继承。*
 
 ## 性能数据
 
