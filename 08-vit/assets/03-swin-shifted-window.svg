@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="sh-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Shifted Window 信息流 + 多任务性能
+  </text>
+
+  <!-- ============== TOP: Shifted Window visualization ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Block n(W-MSA)→ Block n+1(SW-MSA)→ 跨窗口信息流动
+  </text>
+
+  <!-- Block n: W-MSA (standard windows) -->
+  <text x="200" y="95" text-anchor="middle" font-size="12" fill="#2563eb" font-weight="700">Block n: W-MSA(标准窗口)</text>
+
+  <!-- 8x8 feature map with 2x2 windows of 4x4 each (simplified - actual is 8x8 with 4 windows) -->
+  <g transform="translate(80, 105)">
+    <!-- Window borders (solid) -->
+    <rect x="0" y="0" width="240" height="240" fill="#ecfdf5" stroke="#2563eb" stroke-width="2"/>
+    <line x1="120" y1="0" x2="120" y2="240" stroke="#2563eb" stroke-width="3"/>
+    <line x1="0" y1="120" x2="240" y2="120" stroke="#2563eb" stroke-width="3"/>
+
+    <!-- Window labels -->
+    <text x="60" y="65" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">W₁</text>
+    <text x="180" y="65" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">W₂</text>
+    <text x="60" y="185" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">W₃</text>
+    <text x="180" y="185" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">W₄</text>
+
+    <!-- Highlight cross-window patches -->
+    <circle cx="100" cy="100" r="6" fill="#dc2626"/>
+    <circle cx="140" cy="100" r="6" fill="#dc2626"/>
+    <circle cx="100" cy="140" r="6" fill="#dc2626"/>
+    <circle cx="140" cy="140" r="6" fill="#dc2626"/>
+
+    <text x="120" y="130" text-anchor="middle" font-size="9" fill="#fef3c7" font-weight="700">跨边界 patches</text>
+  </g>
+
+  <!-- arrow -->
+  <line x1="335" y1="225" x2="375" y2="225" stroke="#7c3aed" stroke-width="3" marker-end="url(#sh-arr)"/>
+  <text x="355" y="215" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="700">下一层</text>
+
+  <!-- Block n+1: SW-MSA (shifted windows by (3, 3)) -->
+  <text x="510" y="95" text-anchor="middle" font-size="12" fill="#ea580c" font-weight="700">Block n+1: SW-MSA(偏移 (3,3) 窗口)</text>
+
+  <g transform="translate(390, 105)">
+    <!-- shifted windows shown as dashed -->
+    <rect x="0" y="0" width="240" height="240" fill="#fef3c7" stroke="#ea580c" stroke-width="2"/>
+    <!-- shifted lines (offset by 60 = M/2 of 120) -->
+    <line x1="60" y1="0" x2="60" y2="240" stroke="#ea580c" stroke-width="2" stroke-dasharray="5,3"/>
+    <line x1="180" y1="0" x2="180" y2="240" stroke="#ea580c" stroke-width="2" stroke-dasharray="5,3"/>
+    <line x1="0" y1="60" x2="240" y2="60" stroke="#ea580c" stroke-width="2" stroke-dasharray="5,3"/>
+    <line x1="0" y1="180" x2="240" y2="180" stroke="#ea580c" stroke-width="2" stroke-dasharray="5,3"/>
+
+    <!-- New window labels -->
+    <text x="30" y="35" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">W₁'</text>
+    <text x="120" y="35" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">W₂'</text>
+    <text x="210" y="35" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">W₃'</text>
+    <text x="30" y="125" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">W₄'</text>
+    <text x="120" y="125" text-anchor="middle" font-size="13" fill="#9a3412" font-weight="700">★ W₅'</text>
+    <text x="210" y="125" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">W₆'</text>
+    <text x="30" y="215" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">W₇'</text>
+    <text x="120" y="215" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">W₈'</text>
+    <text x="210" y="215" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">W₉'</text>
+
+    <!-- highlight the previously cross-boundary patches now in W5' -->
+    <rect x="80" y="80" width="80" height="80" fill="none" stroke="#dc2626" stroke-width="3"/>
+    <circle cx="100" cy="100" r="6" fill="#dc2626"/>
+    <circle cx="140" cy="100" r="6" fill="#dc2626"/>
+    <circle cx="100" cy="140" r="6" fill="#dc2626"/>
+    <circle cx="140" cy="140" r="6" fill="#dc2626"/>
+  </g>
+
+  <!-- explanation below the shifted window panel -->
+  <text x="510" y="375" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">
+    跨边界 patches 现在被合并到同一窗口 W₅' ✓
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="395" x2="860" y2="395" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== MIDDLE: Cyclic shift trick ============== -->
+  <text x="450" y="420" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Cyclic Shift + Attention Mask = 零额外开销
+  </text>
+
+  <rect x="60" y="435" width="780" height="55" rx="6" fill="#1f2937" stroke="none"/>
+  <g font-size="11" fill="#fef3c7">
+    <text x="80" y="457">• Cyclic shift:整个 feature map 循环移位 (M/2, M/2),然后切等大窗口</text>
+    <text x="80" y="476">• Attention mask:防止跨边界 patch 对(图像左边 attend 到右边)— 工程上和 W-MSA 等开销</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="510" x2="860" y2="510" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: multi-task performance ============== -->
+  <text x="450" y="535" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Swin-T vs ResNet-50 三任务对比 — 全面胜出
+  </text>
+
+  <g transform="translate(80, 555)">
+    <!-- ImageNet classification -->
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">ImageNet</text>
+    <rect x="120" y="8" width="260" height="18" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="390" y="22" font-size="11" fill="#9d174d">ResNet-50 76.1%</text>
+    <rect x="500" y="8" width="280" height="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="790" y="22" font-size="11" fill="#059669" font-weight="700">Swin-T 81.3% (+5.2)</text>
+
+    <!-- COCO Detection mAP -->
+    <text x="0" y="48" font-size="11" fill="#1f2937" font-weight="600">COCO mAP</text>
+    <rect x="120" y="36" width="220" height="18" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="350" y="50" font-size="11" fill="#9d174d">ResNet-50 38.6</text>
+    <rect x="500" y="36" width="265" height="18" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="775" y="50" font-size="11" fill="#059669" font-weight="700">Swin-T 46.0 (+7.4) ★</text>
+
+    <!-- ADE20K Segmentation mIoU -->
+    <text x="0" y="76" font-size="11" fill="#1f2937" font-weight="600">ADE20K mIoU</text>
+    <rect x="120" y="64" width="225" height="18" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="355" y="78" font-size="11" fill="#9d174d">ResNet-101 44.9</text>
+    <rect x="500" y="64" width="230" height="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="740" y="78" font-size="11" fill="#059669" font-weight="700">Swin-T 45.8 (+0.9)</text>
+  </g>
+
+  <text x="450" y="650" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">
+    Transformer 真正接管 detection / segmentation,ICCV 2021 Best Paper
+  </text>
+</svg>

@@ -34,7 +34,24 @@ ViT 在 224 输入下是 196 patches,attention 是 `196² = 38K` 分数。如果
 
 Swin 在 2021 年成为 detection / segmentation 的新 SOTA,并因为方法的优雅 + 强普适性获 ICCV 2021 Best Paper。这一节聚焦 Swin,因为它是后来 SwinV2 / MaskFormer / Mask2Former 等视觉 backbone 的直接母版。
 
-## 核心思想 1:Windowed Attention
+## 核心思想
+
+### 直觉:把 CNN 的"局部 + 层级"归纳偏置还给 ViT
+
+理解 Swin 真正需要先抓一件事:**[ViT](01-vit.md) / [DeiT](02-deit.md) 解决了 Transformer 能做视觉分类,但留下两个明确局限** — 所有层用同一分辨率(无法接 FPN 做 detection)+ 高分辨率 attention O(N²) 爆炸(800×800 detection 直接 OOM)。CNN backbone(ResNet)的两条归纳偏置 — **局部连接 + 层级下采样** — 正是密集预测任务的关键,但 ViT 全部抛弃了。Liu 等人 2021 反问:**为什么不把 CNN 的这两条偏置还给 ViT,但保留 Transformer 的强表达力?**
+
+三件事必须同时成立才让 Swin 在 2021 年成立:
+
+- **Windowed Attention** — 把 attention 限制在 7×7 局部窗口里,复杂度从 O(N²) 降到 O(N·M²) = O(N),让 800×800 detection 不再 OOM
+- **Shifted Window** — 交替用标准窗口和偏移窗口,让相邻 block 的窗口边界错开,两个 block 内信息跨窗口流动 — 通过 cyclic shift + attention mask 实现零额外开销
+- **Patch Merging 层级下采样** — 每 stage 2× 减空间 / 2× 增 channel,模仿 ResNet 金字塔,产出 4 个尺度特征图(56/28/14/7)可以直接接 FPN
+
+三件事合起来:**Swin-T 在 COCO Object Detection 上 mAP 46.0 vs ResNet-50 的 38.6(+7.4 mAP)**,ADE20K segmentation mIoU 53.5(Swin-L,2021 SOTA)。Swin 真正接管 detection / segmentation 任务,ICCV 2021 Best Paper。**核心方法论**:Transformer + 视觉归纳偏置(局部 + 层级)的组合比"纯 ViT"或"纯 CNN"都强 — 这一发现后被 ConvNeXt 反向用回 CNN,完成"两条路线互相借鉴"的演化对称。
+
+![Swin 三件套架构 — Windowed + Shifted + Patch Merging](assets/03-swin-architecture.svg)
+*图 1:Swin 完整架构 4 stage 层级化金字塔。**Stage 1** 56×56 patches × 96ch + 2 Swin blocks(W-MSA + SW-MSA)→ **Patch Merging**(2× 空间减半 + 2× channel 翻倍) → **Stage 2** 28×28 × 192ch + 2 blocks → ... → **Stage 4** 7×7 × 768ch + 2 blocks。每 stage 产出独立尺度特征图,4 个尺度直接接 FPN / detection head。底部对比:ViT 单一 14×14 vs Swin 4 个尺度(56/28/14/7),后者天然适合 detection / segmentation。*
+
+## 机制一:Windowed Attention
 
 Swin 的第一个想法是**把 attention 限制在局部窗口里,不再做全图**。具体:把 feature map(H×W 个 patch)切成不重叠的 `M × M` 窗口(典型 M=7),每个窗口内 self-attention。
 
@@ -49,7 +66,7 @@ Feature map 56×56 patches → 切成 8×8 = 64 个窗口,每窗口 7×7 = 49 pa
 
 但 windowed attention 有一个明显问题:**窗口之间没有信息交换**。如果一个物体跨在两个窗口边界上,模型永远看不到完整的它。
 
-## 核心思想 2:Shifted Window
+## 机制二:Shifted Window — 让信息跨窗口流动
 
 Swin 的精华是 **shifted window** 机制——**交替用两种窗口划分**:
 
@@ -69,7 +86,7 @@ graph LR
 
 工程实现上,SW-MSA 有个小麻烦:**偏移后窗口数量不固定**,边缘有"破碎的小窗口"。Liu 团队用 **cyclic shift + 注意力 mask** 巧妙解决——把整个 feature map 循环移位,然后还是切等大窗口,但在 attention 里 mask 掉跨边界的 patch 对(防止"图像左边的 patch 突然 attend 到图像右边")。这一 trick 让 SW-MSA 和 W-MSA 在工程上完全等价的开销,没有任何额外计算。
 
-## 核心思想 3:Patch Merging(层级化)
+## 机制三:Patch Merging — 层级化产出多尺度特征
 
 Swin 的第三个改进是**周期性把 patch 合并以产出层级特征**——这模仿了 CNN 的下采样金字塔。
 
@@ -101,6 +118,19 @@ Stage 4 输入: 7×7 patches × 768 channels
 ```
 
 这就是 **Swin-S(small)**。Swin-T(tiny)/ B(base)/ L(large)用同样结构但调整层数和宽度。
+
+## 三件套协同:Windowed + Shifted + Patch Merging 缺一不可
+
+Swin 在 2021 年能让 Transformer 接管 detection / segmentation,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 Swin 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 Windowed attention,没有 Shifted Window** — 窗口间永远不交互,跨边界物体被切割,信息孤岛;长距离依赖完全消失,**密集预测精度严重下降**(分割边界混乱)
+- **只有 Windowed + Shifted,没有 Patch Merging** — 所有层同分辨率,失去多尺度特征图,**无法接 FPN / detection head**,密集任务依然做不了
+- **只有 Patch Merging + 全局 Attention(无 windowed)** — 高分辨率(800×800)attention 直接 OOM,**detection / segmentation 在工程上根本跑不起来**
+
+三件套合起来才让 Transformer 第一次能用同一个 backbone 同时做 classification(ImageNet 81.3%)+ detection(COCO mAP 46.0)+ segmentation(ADE20K 53.5 mIoU)。**Swin 的核心方法论**:Transformer 强大但需要视觉归纳偏置(局部 + 层级)的辅助 — 这条路线后被 ConvNeXt 反向用回 CNN,完成"ViT 借 CNN 偏置 ↔ CNN 借 ViT 训练 recipe"的对称演化。
+
+![Shifted Window 信息流 + Detection / Segmentation 性能](assets/03-swin-shifted-window.svg)
+*图 2:**上半** Shifted Window 机制图解 — Block n 用标准窗口 W-MSA(实线 7×7 网格),Block n+1 用偏移 (3,3) 窗口 SW-MSA(虚线网格);红框标出"两个 block 后,跨边界 patch 被合并到同一窗口"。Cyclic shift 把整个 feature map 循环移位 + attention mask 防跨边界混乱,实现零额外开销。**下半** 多任务性能对比 — Swin-T vs ResNet-50 在 ImageNet 分类(81.3 vs 76.1,+5.2)/ COCO mAP(46.0 vs 38.6,+7.4)/ ADE20K mIoU(45.8 vs 44.9,+0.9)。底部 callout:Transformer 真正接管 detection / segmentation,ICCV 2021 Best Paper。*
 
 ## 模型规格
 

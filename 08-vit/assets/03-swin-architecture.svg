@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="sw-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Swin Transformer 4 Stage 层级化金字塔
+  </text>
+
+  <!-- ============== TOP: 4 stages with pyramid visualization ============== -->
+
+  <!-- Input -->
+  <rect x="40" y="100" width="80" height="100" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="80" y="130" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">Input</text>
+  <text x="80" y="155" text-anchor="middle" font-size="32">🖼</text>
+  <text x="80" y="185" text-anchor="middle" font-size="10" fill="#92400e">224×224×3</text>
+
+  <line x1="120" y1="150" x2="148" y2="150" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- Patchify 4×4 -->
+  <rect x="150" y="120" width="60" height="60" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="180" y="138" text-anchor="middle" font-size="10" fill="#9d174d">Patchify</text>
+  <text x="180" y="155" text-anchor="middle" font-size="10" fill="#9d174d">4×4</text>
+  <text x="180" y="172" text-anchor="middle" font-size="9" fill="#9d174d">stride 4</text>
+
+  <line x1="210" y1="150" x2="238" y2="150" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- Stage 1: 56×56 large -->
+  <rect x="240" y="80" width="120" height="140" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="300" y="100" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Stage 1</text>
+  <text x="300" y="118" text-anchor="middle" font-size="10" fill="#1e40af">56×56 × 96ch</text>
+
+  <!-- pyramid block visualization stage 1 -->
+  <rect x="260" y="130" width="80" height="40" fill="#bfdbfe" stroke="#2563eb" stroke-width="1"/>
+  <text x="300" y="155" text-anchor="middle" font-size="10" fill="#1e40af">2 Swin blocks</text>
+
+  <text x="300" y="190" text-anchor="middle" font-size="10" fill="#1e40af">高分辨率细粒度</text>
+  <text x="300" y="208" text-anchor="middle" font-size="9" fill="#6b7280" font-style="italic">(浅层定位)</text>
+
+  <line x1="360" y1="150" x2="386" y2="150" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- Patch Merging 1 -->
+  <rect x="388" y="135" width="34" height="30" rx="3" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="405" y="150" text-anchor="middle" font-size="9" fill="#9a3412">PM</text>
+  <text x="405" y="160" text-anchor="middle" font-size="9" fill="#9a3412">2×</text>
+
+  <line x1="422" y1="150" x2="448" y2="150" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- Stage 2: 28×28 -->
+  <rect x="450" y="95" width="105" height="110" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="502" y="115" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Stage 2</text>
+  <text x="502" y="132" text-anchor="middle" font-size="10" fill="#1e40af">28×28 × 192ch</text>
+
+  <rect x="470" y="142" width="65" height="38" fill="#bfdbfe" stroke="#2563eb" stroke-width="1"/>
+  <text x="502" y="166" text-anchor="middle" font-size="10" fill="#1e40af">2 Swin blocks</text>
+
+  <text x="502" y="195" text-anchor="middle" font-size="9" fill="#1e40af">中等分辨率</text>
+
+  <line x1="555" y1="150" x2="581" y2="150" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- PM 2 -->
+  <rect x="583" y="135" width="32" height="30" rx="3" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="599" y="150" text-anchor="middle" font-size="9" fill="#9a3412">PM</text>
+  <text x="599" y="160" text-anchor="middle" font-size="9" fill="#9a3412">2×</text>
+
+  <line x1="615" y1="150" x2="641" y2="150" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- Stage 3: 14×14 (deepest) -->
+  <rect x="643" y="115" width="90" height="80" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="688" y="133" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Stage 3 ★</text>
+  <text x="688" y="148" text-anchor="middle" font-size="10" fill="#1e40af">14×14 × 384ch</text>
+
+  <rect x="658" y="155" width="60" height="32" fill="#bfdbfe" stroke="#2563eb" stroke-width="1"/>
+  <text x="688" y="176" text-anchor="middle" font-size="9" fill="#1e40af" font-weight="700">6 blocks</text>
+
+  <text x="688" y="215" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="600">最深 stage</text>
+
+  <line x1="733" y1="150" x2="759" y2="150" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- PM 3 -->
+  <rect x="761" y="135" width="30" height="30" rx="3" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="776" y="150" text-anchor="middle" font-size="9" fill="#9a3412">PM</text>
+
+  <line x1="791" y1="150" x2="813" y2="150" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- Stage 4: 7×7 small -->
+  <rect x="815" y="125" width="70" height="60" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="850" y="143" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="700">Stage 4</text>
+  <text x="850" y="157" text-anchor="middle" font-size="9" fill="#1e40af">7×7</text>
+  <text x="850" y="170" text-anchor="middle" font-size="9" fill="#1e40af">768ch</text>
+  <text x="850" y="184" text-anchor="middle" font-size="8" fill="#1e40af">2 blocks</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="245" x2="860" y2="245" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== MIDDLE: 4 scale feature maps for FPN ============== -->
+  <text x="450" y="270" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    每 Stage 产出独立尺度特征图 → 直接接 FPN / Detection / Segmentation head
+  </text>
+
+  <!-- 4 feature maps as squares -->
+  <g>
+    <rect x="120" y="295" width="100" height="100" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="170" y="320" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">56×56</text>
+    <text x="170" y="338" text-anchor="middle" font-size="10" fill="#065f46">96 ch</text>
+    <text x="170" y="356" text-anchor="middle" font-size="9" fill="#065f46">细粒度 / 小物体</text>
+    <text x="170" y="375" text-anchor="middle" font-size="9" fill="#065f46">~314K pixels</text>
+    <text x="170" y="410" text-anchor="middle" font-size="10" fill="#1f2937" font-weight="600">P2(高分辨率)</text>
+
+    <rect x="280" y="320" width="75" height="75" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="318" y="345" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">28×28</text>
+    <text x="318" y="363" text-anchor="middle" font-size="10" fill="#065f46">192 ch</text>
+    <text x="318" y="381" text-anchor="middle" font-size="9" fill="#065f46">中等</text>
+    <text x="318" y="410" text-anchor="middle" font-size="10" fill="#1f2937" font-weight="600">P3</text>
+
+    <rect x="420" y="340" width="55" height="55" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="448" y="362" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">14×14</text>
+    <text x="448" y="378" text-anchor="middle" font-size="10" fill="#065f46">384 ch</text>
+    <text x="448" y="410" text-anchor="middle" font-size="10" fill="#1f2937" font-weight="600">P4</text>
+
+    <rect x="540" y="355" width="40" height="40" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="560" y="373" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">7×7</text>
+    <text x="560" y="388" text-anchor="middle" font-size="9" fill="#065f46">768</text>
+    <text x="560" y="410" text-anchor="middle" font-size="10" fill="#1f2937" font-weight="600">P5(高语义)</text>
+  </g>
+
+  <!-- FPN / detection head -->
+  <rect x="640" y="320" width="200" height="80" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+  <text x="740" y="345" text-anchor="middle" font-size="12" fill="#9a3412" font-weight="700">FPN + Detection</text>
+  <text x="740" y="365" text-anchor="middle" font-size="10" fill="#9a3412">Mask R-CNN / FCOS</text>
+  <text x="740" y="383" text-anchor="middle" font-size="10" fill="#9a3412">UPerNet 等</text>
+
+  <line x1="585" y1="375" x2="638" y2="365" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+  <line x1="475" y1="370" x2="638" y2="358" stroke="#9d174d" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <line x1="355" y1="358" x2="638" y2="350" stroke="#9d174d" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <line x1="220" y1="345" x2="638" y2="342" stroke="#9d174d" stroke-width="0.8" stroke-dasharray="2,2"/>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="450" x2="860" y2="450" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: ViT vs Swin comparison ============== -->
+  <text x="450" y="475" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    ViT 单一尺度 vs Swin 多尺度 — 后者天然适合 detection / segmentation
+  </text>
+
+  <!-- ViT side -->
+  <rect x="60" y="495" width="370" height="130" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="517" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">ViT(原版)</text>
+  <g font-size="11" fill="#991b1b">
+    <text x="75" y="540">• 所有层用同一分辨率(14×14)</text>
+    <text x="75" y="560">• 单一尺度特征图,无法接 FPN</text>
+    <text x="75" y="580">• 高分辨率 attention O(N²) 爆炸</text>
+    <text x="75" y="600">• 800×800 detection 直接 OOM</text>
+  </g>
+
+  <!-- Swin side -->
+  <rect x="470" y="495" width="370" height="130" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="655" y="517" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">Swin</text>
+  <g font-size="11" fill="#065f46">
+    <text x="485" y="540">• 4 stage 层级化(56/28/14/7)</text>
+    <text x="485" y="560">• 4 个尺度特征图,直接接 FPN</text>
+    <text x="485" y="580">• Windowed attention O(N)</text>
+    <text x="485" y="600">• 800×800 detection 跑得起</text>
+  </g>
+</svg>
