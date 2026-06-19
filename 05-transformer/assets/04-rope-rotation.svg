@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="rp-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    RoPE 的旋转直觉 — 位置 = 几何旋转角度
+  </text>
+
+  <!-- ============== LEFT: 2D rotation visualization ============== -->
+  <text x="160" y="65" text-anchor="middle" font-size="13" fill="#2563eb" font-weight="600">
+    ① 2D 平面旋转 R_m
+  </text>
+
+  <!-- coordinate axes -->
+  <line x1="60" y1="240" x2="280" y2="240" stroke="#9ca3af" stroke-width="1"/>
+  <line x1="160" y1="100" x2="160" y2="350" stroke="#9ca3af" stroke-width="1"/>
+
+  <!-- original x at angle 0 (right) -->
+  <line x1="160" y1="240" x2="250" y2="240" stroke="#6b7280" stroke-width="2" marker-end="url(#rp-arr)"/>
+  <text x="260" y="244" font-size="11" fill="#6b7280">x(位置 0)</text>
+
+  <!-- R_1 x at angle 30 deg -->
+  <line x1="160" y1="240" x2="238" y2="195" stroke="#fed7aa" stroke-width="2.5" marker-end="url(#rp-arr)"/>
+  <text x="245" y="195" font-size="11" fill="#9a3412">R_1 x</text>
+
+  <!-- R_2 x at angle 60 deg -->
+  <line x1="160" y1="240" x2="205" y2="162" stroke="#fce7f3" stroke-width="2.5" marker-end="url(#rp-arr)"/>
+  <text x="207" y="155" font-size="11" fill="#9d174d">R_2 x</text>
+
+  <!-- R_3 x at angle 90 deg -->
+  <line x1="160" y1="240" x2="160" y2="150" stroke="#ddd6fe" stroke-width="2.5" marker-end="url(#rp-arr)"/>
+  <text x="115" y="145" font-size="11" fill="#5b21b6">R_3 x</text>
+
+  <!-- arc indicating rotation -->
+  <path d="M 220 240 A 60 60 0 0 1 195 187" stroke="#dc2626" stroke-width="1.5" fill="none" stroke-dasharray="3,2"/>
+  <text x="232" y="207" font-size="10" fill="#dc2626" font-style="italic">θ 角度</text>
+
+  <!-- formula box -->
+  <rect x="40" y="375" width="270" height="80" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1"/>
+  <text x="175" y="396" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#1f2937">
+    R_m = [cos mθ  -sin mθ]
+  </text>
+  <text x="175" y="412" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#1f2937">
+              [sin mθ   cos mθ]
+  </text>
+  <text x="175" y="435" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    第 m 个位置 = 旋转 m·θ 角度
+  </text>
+
+  <!-- ============== MIDDLE: 群论性质 ============== -->
+  <text x="450" y="65" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="600">
+    ② 群论关键性质
+  </text>
+
+  <rect x="340" y="95" width="220" height="280" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+
+  <text x="450" y="125" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13" fill="#991b1b" font-weight="700">
+    R_m^T R_n = R_{n-m}
+  </text>
+
+  <text x="450" y="155" text-anchor="middle" font-size="11" fill="#991b1b">
+    旋转群的合成律
+  </text>
+
+  <line x1="360" y1="175" x2="540" y2="175" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="450" y="200" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">应用到 attention:</text>
+
+  <text x="450" y="228" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#991b1b">
+    ⟨R_m q, R_n k⟩
+  </text>
+
+  <text x="450" y="255" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#991b1b">
+    = q^T R_m^T R_n k
+  </text>
+
+  <text x="450" y="282" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#991b1b">
+    = q^T R_{n-m} k
+  </text>
+
+  <line x1="360" y1="300" x2="540" y2="300" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="450" y="325" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">
+    位置 m, n 神奇消失
+  </text>
+
+  <text x="450" y="345" text-anchor="middle" font-size="11" fill="#dc2626">
+    只剩相对距离 n-m
+  </text>
+
+  <text x="450" y="365" text-anchor="middle" font-size="10" fill="#991b1b" font-style="italic">
+    数学结构保证,不需要学
+  </text>
+
+  <!-- ============== RIGHT: 多频率拆分 ============== -->
+  <text x="740" y="65" text-anchor="middle" font-size="13" fill="#5b21b6" font-weight="600">
+    ③ 多频率拆分(d/2 个平面)
+  </text>
+
+  <!-- High frequency (fast rotation) -->
+  <text x="600" y="105" font-size="11" fill="#1f2937" font-weight="600">高频(快旋转):</text>
+  <g>
+    <circle cx="700" cy="125" r="20" fill="none" stroke="#ddd6fe" stroke-width="2"/>
+    <line x1="700" y1="125" x2="720" y2="125" stroke="#7c3aed" stroke-width="2" marker-end="url(#rp-arr)"/>
+    <line x1="700" y1="125" x2="685" y2="111" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#rp-arr)" opacity="0.7"/>
+    <line x1="700" y1="125" x2="680" y2="132" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#rp-arr)" opacity="0.5"/>
+  </g>
+  <text x="730" y="118" font-size="10" fill="#5b21b6">θ_1 大,快速转一圈</text>
+  <text x="730" y="135" font-size="10" fill="#5b21b6">→ 捕捉短距依赖</text>
+
+  <!-- Mid frequency -->
+  <text x="600" y="175" font-size="11" fill="#1f2937" font-weight="600">中频:</text>
+  <g>
+    <circle cx="700" cy="195" r="20" fill="none" stroke="#fce7f3" stroke-width="2"/>
+    <line x1="700" y1="195" x2="720" y2="195" stroke="#db2777" stroke-width="2" marker-end="url(#rp-arr)"/>
+    <line x1="700" y1="195" x2="715" y2="180" stroke="#db2777" stroke-width="1.5" marker-end="url(#rp-arr)" opacity="0.7"/>
+  </g>
+  <text x="730" y="188" font-size="10" fill="#9d174d">θ_i 中等</text>
+  <text x="730" y="205" font-size="10" fill="#9d174d">→ 捕捉中距</text>
+
+  <!-- Low frequency (slow rotation) -->
+  <text x="600" y="245" font-size="11" fill="#1f2937" font-weight="600">低频(慢旋转):</text>
+  <g>
+    <circle cx="700" cy="265" r="20" fill="none" stroke="#fed7aa" stroke-width="2"/>
+    <line x1="700" y1="265" x2="720" y2="265" stroke="#ea580c" stroke-width="2" marker-end="url(#rp-arr)"/>
+    <line x1="700" y1="265" x2="720" y2="263" stroke="#ea580c" stroke-width="1.5" marker-end="url(#rp-arr)" opacity="0.7"/>
+  </g>
+  <text x="730" y="258" font-size="10" fill="#9a3412">θ_{d/2} 很小</text>
+  <text x="730" y="275" font-size="10" fill="#9a3412">→ 捕捉长距依赖</text>
+
+  <!-- frequency formula -->
+  <rect x="590" y="305" width="280" height="70" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1"/>
+  <text x="730" y="328" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#1f2937">
+    θ_i = 10000^{-2(i-1)/d}
+  </text>
+  <text x="730" y="349" text-anchor="middle" font-size="10" fill="#6b7280">
+    频率公式与原版 PE 相同
+  </text>
+  <text x="730" y="367" text-anchor="middle" font-size="10" fill="#059669" font-weight="600">
+    继承长程衰减性质
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="490" x2="860" y2="490" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: RoPE vs T5/Transformer-XL ============== -->
+  <text x="450" y="515" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    RoPE vs T5 / Transformer-XL — 几何结构 vs 数值修正
+  </text>
+
+  <!-- T5/XL: 加偏置 -->
+  <rect x="60" y="535" width="370" height="100" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="557" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">T5 / Transformer-XL(加偏置)</text>
+  <g font-size="11" fill="#991b1b">
+    <text x="75" y="580">• 给 attention score 加位置偏置</text>
+    <text x="75" y="600">• T5:相对距离分桶查表(标量偏置)</text>
+    <text x="75" y="620">• XL:4 项展开 + left-shift trick</text>
+  </g>
+
+  <!-- RoPE: 几何旋转 -->
+  <rect x="470" y="535" width="370" height="100" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="655" y="557" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">RoPE(几何旋转)</text>
+  <g font-size="11" fill="#065f46">
+    <text x="485" y="580">• 把位置编码在 Q/K 本身的旋转里</text>
+    <text x="485" y="600">• 内积自然只依赖相对距离(数学保证)</text>
+    <text x="485" y="620">• 实现 ~10 行,无额外参数 / 推理开销</text>
+  </g>
+</svg>

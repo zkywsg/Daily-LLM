@@ -22,64 +22,97 @@ key_idea: "把位置信息编码进 Q/K 的旋转里而不是加在 token embedd
 
 苏剑林(Jianlin Su)2021 年 4 月发表的 *RoFormer*(RoPE = Rotary Position Embedding)给出了一个**几何上极其优雅、工程上极其简单**的方案——**把位置信息编码进 Q/K 向量的旋转角度里**。事后看,RoPE 在表达力 + 外推性 + 实现复杂度三个维度上都达到帕累托最优,后来被 LLaMA、PaLM、Mistral、Qwen 等几乎所有现代 LLM 采用,成为 2023+ 时代的事实标准。
 
-## 核心思想:把位置变成旋转
+## 核心思想
 
-RoPE 的核心想法:**让 attention 的内积 `q_m^T k_n` 天然只依赖相对位置 `m - n`**,而不需要模型从绝对位置反推。
+### 直觉:位置不该加在 token 上,该编码进 Q/K 的旋转角度里
 
-数学上要找一个函数 `f(x, m)`(把 token `x` 和位置 `m` 映射成"带位置的向量"),满足:
+理解 RoPE 真正需要先抓一件事:**原版 Transformer 的"x_i + PE_i"把语义和位置加在一起**——两个不同位置的同一个 token,embedding 完全一样只差 PE,加起来后 attention score 里语义和位置信号纠缠。[Transformer-XL](02-transformer-xl.md) 把位置从输入移到 score 里,但公式展开 4 项 + 需要 left-shift trick;T5 简化成"score 加分桶偏置"表达力略弱。苏剑林 2021 反问:**能不能让 attention 的内积 `q_m·k_n` 天然只依赖相对距离 m-n,从数学结构上保证、不需要模型反推?**
+
+数学上要找 `f(x, m)`(把 token x 和位置 m 映射成带位置的向量)满足:
 
 $$
 \langle f(q, m), f(k, n) \rangle = g(q, k, m - n)
 $$
 
-也就是说,带位置的 q 和 k 内积**只是相对距离 `m - n` 的函数**。
+苏剑林给出的解:**`f(x, m) = R_m · x`,R_m 是把 x 旋转 m·θ 角度的旋转矩阵**。因为旋转矩阵满足 `R_m^T R_n = R_{n-m}`,所以 `(R_m q)·(R_n k) = q·R_{n-m}·k` —— **内积自然只依赖相对距离**,数学保证不需要学。
 
-苏剑林给出的解是:**`f(x, m) = R_m \cdot x`,其中 `R_m` 是一个旋转矩阵**——把 x 旋转 `m·θ` 角度。具体地,在 2D 平面上:
+三件事必须同时成立才让 RoPE 在 2021 年成立:
+
+- **旋转的群论结构** — `R_m^T R_n = R_{n-m}` 保证内积只依赖 m-n,这是 RoPE 与 T5 加偏置的本质区别
+- **多频率拆分(d/2 个 2D 平面)** — 频率 `θ_i = 10000^{-2(i-1)/d}` 让不同维度旋转速度不同,自然产生长程衰减,**继承原版正余弦 PE 的核心性质**
+- **只对 Q/K 应用,V 不动** — V 承载内容信息,不该被位置污染;且 cos/sin 表预计算,推理无额外开销
+
+三件事合起来:**RoPE 在表达力 + 外推性 + 实现复杂度三个维度上达到帕累托最优** — 2023+ 几乎所有现代 LLM(LLaMA / PaLM / Mistral / Qwen / GPT-4 推测)都用 RoPE。更重要的是,RoPE 的旋转数学结构让**长上下文扩展(Position Interpolation / NTK / YaRN)**成为可能 —— LLaMA 2K 训练直接扩到 128K 推理,这在绝对 PE 上几乎做不到。从这角度,**RoPE 不只是位置编码,是长上下文 LLM 的基础设施**。
+
+![RoPE 的旋转直觉 — 把 Q/K 沿不同频率轴旋转](assets/04-rope-rotation.svg)
+*图 1:**左** 2D 平面 R_m 旋转图解 — token 向量 x 在第 m 个位置被旋转 m·θ 角度;m 越大旋转越多,**位置直接对应几何旋转角度**。**中** 群论性质 — `(R_m q)·(R_n k) = q·R_{n-m}·k`,内积自然约去绝对位置,只剩相对距离 n-m。**右** 多频率拆分 — d/2 个 2D 平面,每个用不同频率 θ_i = 10000^{-2(i-1)/d};高频(快旋转)捕捉短距、低频(慢旋转)捕捉长距,**自然产生长程衰减**。底部 callout:对比 T5 relative bias(给 score 加标量)— RoPE 是把位置编码在 Q/K 本身,几何结构 vs 数值修正。*
+
+### 机制一:旋转矩阵的群论结构 — 内积自然只依赖相对距离
+
+核心数学:在 2D 平面上,旋转矩阵
 
 $$
 R_m = \begin{pmatrix} \cos m\theta & -\sin m\theta \\ \sin m\theta & \cos m\theta \end{pmatrix}
 $$
 
-为什么这能让内积只依赖相对距离?**因为旋转矩阵满足 `R_m^T R_n = R_{n-m}`**:
+满足 **`R_m^T R_n = R_{n-m}`**(旋转群的合成律)。所以:
 
 $$
-(R_m q)^T (R_n k) = q^T R_m^T R_n k = q^T R_{n-m} k
+\langle R_m q, R_n k \rangle = q^T R_m^T R_n k = q^T R_{n-m} k
 $$
 
-这就完成了——**`q_m` 和 `k_n` 的内积自然变成了 `q` 和 `R_{n-m} k` 的内积,只依赖相对距离**。模型不需要从数据中学这件事,它是数学结构保证的。
+**位置 m 和 n 神奇地消失了,只剩 n-m**。这一性质是几何结构保证,不需要训练学。
 
-实际中 `d_head` 是几十到上百维,RoPE 把它拆成 `d/2` 个 2D 平面,每个平面用一个不同频率 `θ_i`:
+对比 Transformer-XL 的相对 PE:它把 attention score 展开成 4 项(内容-内容、内容-位置、位置-内容、位置-位置),每项加可学偏置。形式上能表达"只依赖 i-j",但需要 left-shift trick 实现 + 训练学到合适权重。**RoPE 把同一件事从"数值修正"提升到"几何结构"**,简单而严格。
+
+### 机制二:多频率拆分 — d/2 个 2D 平面 + 长程衰减
+
+实际 d_head 是几十到上百维,RoPE 把它拆成 d/2 个 2D 平面,每个平面用不同频率:
 
 $$
 \theta_i = 10000^{-2(i-1)/d}, \quad i = 1, 2, \ldots, d/2
 $$
 
-(频率公式和原版正余弦 PE 一模一样,所以"长程衰减"等性质继承下来。)
+频率公式和原版正余弦 PE 一模一样 —— **故意继承"长程衰减"性质**:
 
-每个 2D 平面单独旋转,合起来就是给整个 `q, k` 向量一个 `d`-维旋转。代码上不需要构造完整的 `d × d` 旋转矩阵——可以利用旋转的稀疏结构在 `O(d)` 时间完成:
+- **高频维度**(θ_i 大,旋转快):相对距离稍微大一点就转过 2π,**只能捕捉短距依赖**(相邻几个 token)
+- **低频维度**(θ_i 小,旋转慢):相对距离要很大才转过一圈,**捕捉长距依赖**(跨段语义)
+
+把所有维度的内积加起来,**远距离时 q·R_{n-m}·k 在不同维度上"散开"成不相关的旋转,内积期望值下降** — 自然得到"远的词关系弱"的注意力衰减,不需要显式 attention mask。
+
+每个 2D 平面单独旋转,合起来等价于给整个 q/k 向量一个 d 维旋转。代码上不需要构造 d×d 旋转矩阵,利用旋转的稀疏结构在 O(d) 时间完成:
 
 ```python
 def apply_rope(x, cos, sin):
-    """对 x ∈ R^{..., d} 应用 RoPE
-    cos, sin ∈ R^{seq_len, d}: 预先算好的 cos(mθ) 和 sin(mθ)
-    """
-    # 把 x 的最后一维拆成偶数项 x1 和奇数项 x2(两两配对成 2D)
-    x1, x2 = x[..., 0::2], x[..., 1::2]
-    # 在每个 2D 平面上旋转
+    x1, x2 = x[..., 0::2], x[..., 1::2]  # 偶数项 / 奇数项配对成 2D
     rotated = torch.stack([
         x1 * cos - x2 * sin,
         x1 * sin + x2 * cos,
     ], dim=-1)
-    return rotated.flatten(-2)  # 重新拼回 d 维
+    return rotated.flatten(-2)
 ```
 
-## RoPE 的三个性质
+### 机制三:只对 Q/K 应用 + cos/sin 预计算 — 工程零开销
 
-**1. 真正只依赖相对距离**——和 Transformer-XL/T5 的"在 score 上加偏置"不同,RoPE 把位置编码在 Q/K 本身里;`q^T R_{n-m} k` 是干净的相对距离形式,不需要 4 项展开或分桶查表。
+RoPE 的两个关键工程细节:
 
-**2. 长程衰减**——多频率 `θ_i = 10000^{-2(i-1)/d}` 的设计让相对位置较远时,`R_{n-m}` 在不同维度上"散开"成不相关的旋转,内积期望值下降。这模仿了人类注意力"远的词关系弱"的直觉,且不需要显式 attention mask。
+- **只对 Q 和 K 应用 RoPE,V 不动** — V 承载内容信息(经 attention 加权后输出),**不应该被位置污染**;如果对 V 也旋转,输出 vector 会含位置信号,污染下一层的语义
+- **cos/sin 表预计算 + buffer 缓存** — 它们只依赖位置 m 和频率 θ_i,不依赖输入。一次预计算所有 [seq_len, d] 大小的 cos/sin 表,推理时直接 lookup + 两次乘加,**完全没有额外可学参数,没有 left-shift 之类的特殊 kernel**
 
-**3. 外推可以做但需要调整**——原始 RoPE 在训练长度外性能会掉,但**比绝对 PE 好得多**。2023 年的 **Position Interpolation**(Chen et al.)和 **NTK-aware RoPE**(NeoX 团队)通过把 `θ_i` 缩放可以让训练在 2K 的 LLaMA 在 16K 上下文上正常工作。Meta 的 **YaRN**(2023)进一步把外推推到 128K。这些"长上下文扩展"方案都是建立在 RoPE 数学结构上的。
+完整 RoPE attention(LLaMA 风格)只多 ~10 行代码 vs 原版 attention,推理无额外计算开销。这是 RoPE 战胜 Transformer-XL relative PE / T5 bucket bias 等所有相对位置方案的核心工程优势 —— **比"加偏置"更简单,但比"加偏置"理论更优雅**。
+
+### 三件套协同:旋转结构 + 多频率 + 工程零开销 缺一不可
+
+RoPE 在 2021 年发表后两年内被几乎所有现代 LLM 采用,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 RoPE 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有旋转结构,没有多频率拆分(单一频率)** — 失去长程衰减性质,远距离 token 内积仍可能很大;模型在长上下文上的"近词偏好"消失,长依赖学习困难
+- **只有多频率,没有旋转(还用绝对 PE 加在输入)** — 频率公式继承自正余弦 PE,但加在输入端的纠缠问题没解决,attention 仍要从数据中"反推"相对位置
+- **只有旋转 + 多频率,没有 cos/sin 预计算和"只对 Q/K"两个工程细节** — RoPE 在 paper 上理论优雅,但每次推理重算 cos/sin 或污染 V,**工程上不会被 LLaMA 这种 production-grade 模型采用**
+
+三件套合起来才让 RoPE 同时拿到:几何严格的相对位置编码 + 自然长程衰减 + 零额外参数零额外开销。这也是为什么 2023 年的 **Position Interpolation / NTK-aware / YaRN** 等长上下文扩展方法**只能建立在 RoPE 上** — 它们都是利用 RoPE 的旋转频率结构做缩放,绝对 PE / learned PE 上没有对应的等效操作。
+
+![RoPE 后续生态 + 长上下文扩展](assets/04-rope-ecosystem.svg)
+*图 2:**左** 现代 LLM 位置编码采用对比表 — GPT-3 / BERT(learned absolute)→ T5(relative bucket bias)→ GPT-NeoX / LLaMA / PaLM / Mistral / Qwen(**RoPE**),BLOOM / MPT(ALiBi);RoPE 在 2022-2024 成为事实标准。**右** RoPE 长上下文扩展方法 — Position Interpolation(把频率缩小 L_new/L_train 倍)/ NTK-aware Scaling(高频保持低频缩放)/ YaRN(组合 + 温度调整);LLaMA 2K → 16K → 128K 的扩展全部建立在 RoPE 旋转数学上。底部 callout:**绝对 PE / learned PE 上没有对应等效扩展** — RoPE 不只是位置编码,是长上下文 LLM 的基础设施。*
 
 ## Pre-LN 和 RMSNorm:配套的现代化
 

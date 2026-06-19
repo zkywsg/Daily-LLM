@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="re-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    现代 LLM 位置编码 + RoPE 长上下文扩展
+  </text>
+
+  <!-- ============== LEFT: 现代 LLM 采用对比 ============== -->
+  <text x="225" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    现代 LLM 位置编码采用
+  </text>
+
+  <!-- table -->
+  <rect x="60" y="80" width="340" height="30" fill="#1f2937"/>
+  <text x="150" y="100" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">模型</text>
+  <text x="300" y="100" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">位置编码</text>
+
+  <!-- BERT 2018 -->
+  <rect x="60" y="110" width="340" height="26" fill="#fee2e2"/>
+  <text x="75" y="128" font-size="11" fill="#991b1b">BERT(2018)</text>
+  <text x="290" y="128" font-size="11" fill="#991b1b">learned absolute</text>
+
+  <!-- GPT-3 2020 -->
+  <rect x="60" y="136" width="340" height="26" fill="#fee2e2"/>
+  <text x="75" y="154" font-size="11" fill="#991b1b">GPT-3(2020)</text>
+  <text x="290" y="154" font-size="11" fill="#991b1b">learned absolute</text>
+
+  <!-- T5 2019 -->
+  <rect x="60" y="162" width="340" height="26" fill="#fef3c7"/>
+  <text x="75" y="180" font-size="11" fill="#92400e">T5(2019)</text>
+  <text x="290" y="180" font-size="11" fill="#92400e">relative bias(分桶)</text>
+
+  <!-- divider -->
+  <line x1="60" y1="195" x2="400" y2="195" stroke="#1f2937" stroke-width="2" stroke-dasharray="4,2"/>
+  <text x="225" y="210" text-anchor="middle" font-size="10" fill="#7c3aed" font-style="italic" font-weight="600">↓ 2022 后 RoPE 时代</text>
+
+  <!-- GPT-NeoX -->
+  <rect x="60" y="218" width="340" height="26" fill="#ecfdf5"/>
+  <text x="75" y="236" font-size="11" fill="#065f46">GPT-NeoX(2022)</text>
+  <text x="290" y="236" font-size="11" fill="#059669" font-weight="700">RoPE</text>
+
+  <!-- PaLM -->
+  <rect x="60" y="244" width="340" height="26" fill="#ecfdf5"/>
+  <text x="75" y="262" font-size="11" fill="#065f46">PaLM(2022)</text>
+  <text x="290" y="262" font-size="11" fill="#059669" font-weight="700">RoPE</text>
+
+  <!-- LLaMA -->
+  <rect x="60" y="270" width="340" height="26" fill="#ecfdf5"/>
+  <text x="75" y="288" font-size="11" fill="#065f46" font-weight="700">LLaMA / 2 / 3(2023-24)</text>
+  <text x="290" y="288" font-size="11" fill="#059669" font-weight="700">RoPE ★</text>
+
+  <!-- Mistral -->
+  <rect x="60" y="296" width="340" height="26" fill="#ecfdf5"/>
+  <text x="75" y="314" font-size="11" fill="#065f46">Mistral / Mixtral(2023)</text>
+  <text x="290" y="314" font-size="11" fill="#059669" font-weight="700">RoPE</text>
+
+  <!-- Qwen -->
+  <rect x="60" y="322" width="340" height="26" fill="#ecfdf5"/>
+  <text x="75" y="340" font-size="11" fill="#065f46">Qwen / DeepSeek(2023+)</text>
+  <text x="290" y="340" font-size="11" fill="#059669" font-weight="700">RoPE</text>
+
+  <!-- GPT-4 -->
+  <rect x="60" y="348" width="340" height="26" fill="#ecfdf5"/>
+  <text x="75" y="366" font-size="11" fill="#065f46">GPT-4 / Claude 3</text>
+  <text x="290" y="366" font-size="11" fill="#059669" font-weight="700">大概率 RoPE</text>
+
+  <!-- divider -->
+  <line x1="60" y1="382" x2="400" y2="382" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- ALiBi -->
+  <rect x="60" y="385" width="340" height="26" fill="#fef3c7"/>
+  <text x="75" y="403" font-size="11" fill="#92400e">BLOOM / MPT</text>
+  <text x="290" y="403" font-size="11" fill="#92400e">ALiBi(另一条路)</text>
+
+  <text x="225" y="430" text-anchor="middle" font-size="11" fill="#059669" font-weight="600">
+    2022-2024 RoPE 成事实标准
+  </text>
+
+  <!-- ============== RIGHT: 长上下文扩展 ============== -->
+  <text x="640" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    RoPE 长上下文扩展方法
+  </text>
+
+  <!-- LLaMA original -->
+  <rect x="450" y="85" width="380" height="50" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="640" y="107" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">LLaMA 训练长度 2K</text>
+  <text x="640" y="125" text-anchor="middle" font-size="10" fill="#92400e">原始 RoPE,θ_i = 10000^{-2i/d}</text>
+
+  <line x1="640" y1="135" x2="640" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#re-arr)"/>
+
+  <!-- Position Interpolation -->
+  <rect x="450" y="160" width="380" height="65" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="640" y="183" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">Position Interpolation(PI)2023</text>
+  <text x="465" y="201" font-size="10" fill="#1e40af">把所有频率缩小 L_new/L_train 倍</text>
+  <text x="465" y="218" font-size="10" fill="#1e40af">→ 压缩位置坐标轴,少量微调扩到 16K</text>
+
+  <line x1="640" y1="225" x2="640" y2="245" stroke="#9d174d" stroke-width="1.5" marker-end="url(#re-arr)"/>
+
+  <!-- NTK-aware -->
+  <rect x="450" y="250" width="380" height="65" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="640" y="273" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">NTK-aware Scaling 2023</text>
+  <text x="465" y="291" font-size="10" fill="#9d174d">不同频率维度用不同缩放</text>
+  <text x="465" y="308" font-size="10" fill="#9d174d">→ 高频保持,低频按比例缩放,扩到 32-64K</text>
+
+  <line x1="640" y1="315" x2="640" y2="335" stroke="#9d174d" stroke-width="1.5" marker-end="url(#re-arr)"/>
+
+  <!-- YaRN -->
+  <rect x="450" y="340" width="380" height="65" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="640" y="363" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">YaRN(Yet another RoPE extensioN)2023</text>
+  <text x="465" y="381" font-size="10" fill="#065f46">组合 PI + NTK + 温度调整</text>
+  <text x="465" y="398" font-size="10" fill="#059669" font-weight="600">→ LLaMA 2K → 128K,最强方案 ★</text>
+
+  <!-- key insight -->
+  <rect x="450" y="425" width="380" height="80" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="640" y="447" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">
+    关键洞察
+  </text>
+  <text x="465" y="470" font-size="10" fill="#991b1b">所有扩展方法都建立在 RoPE 旋转频率结构上</text>
+  <text x="465" y="488" font-size="10" fill="#dc2626" font-weight="600">绝对 PE / learned PE 上几乎没有等效操作</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="535" x2="860" y2="535" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: 历史地位 ============== -->
+  <text x="450" y="560" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    RoPE 不只是位置编码,是长上下文 LLM 的基础设施
+  </text>
+
+  <rect x="60" y="580" width="780" height="65" rx="6" fill="#1f2937" stroke="none"/>
+  <g font-size="11" fill="#fef3c7">
+    <text x="80" y="604">• 表达力 + 外推性 + 实现复杂度三个维度帕累托最优</text>
+    <text x="80" y="624">• 2022-2024 几乎所有 production LLM 采用</text>
+    <text x="500" y="604" font-weight="700" fill="#fbbf24">• 长上下文 LLM 时代的基础</text>
+    <text x="500" y="624">  (LLaMA 2K → 128K,Gemini 1M 推测均基于 RoPE 扩展)</text>
+  </g>
+</svg>
