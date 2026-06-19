@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="ft-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Subword n-gram 分解 + Hashing + 词向量合成
+  </text>
+
+  <!-- ============== LEFT: n-gram 分解 ============== -->
+  <text x="180" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    ① "where" 分解成 subword
+  </text>
+
+  <!-- Input word -->
+  <rect x="100" y="85" width="160" height="35" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="180" y="108" text-anchor="middle" font-size="13" fill="#92400e" font-weight="700">"where"</text>
+
+  <text x="180" y="138" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">加边界符 → "&lt;where&gt;"</text>
+
+  <line x1="180" y1="148" x2="180" y2="168" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ft-arr)"/>
+
+  <!-- n=3 subwords -->
+  <text x="180" y="184" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">n=3</text>
+  <g font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">
+    <rect x="60" y="190" width="55" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="87" y="206" text-anchor="middle">&lt;wh</text>
+    <rect x="120" y="190" width="55" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="147" y="206" text-anchor="middle">whe</text>
+    <rect x="180" y="190" width="55" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="207" y="206" text-anchor="middle">her</text>
+    <rect x="240" y="190" width="55" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="267" y="206" text-anchor="middle">ere</text>
+    <rect x="60" y="216" width="55" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="87" y="232" text-anchor="middle">re&gt;</text>
+  </g>
+
+  <!-- n=4 -->
+  <text x="180" y="258" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">n=4</text>
+  <g font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">
+    <rect x="60" y="264" width="65" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="92" y="280" text-anchor="middle">&lt;whe</text>
+    <rect x="130" y="264" width="65" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="162" y="280" text-anchor="middle">wher</text>
+    <rect x="200" y="264" width="65" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="232" y="280" text-anchor="middle">here</text>
+    <rect x="60" y="290" width="65" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="92" y="306" text-anchor="middle">ere&gt;</text>
+  </g>
+
+  <!-- n=5,6 -->
+  <text x="180" y="330" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">n=5,6</text>
+  <g font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">
+    <rect x="60" y="336" width="75" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="97" y="352" text-anchor="middle">&lt;wher</text>
+    <rect x="140" y="336" width="75" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="177" y="352" text-anchor="middle">where</text>
+    <rect x="220" y="336" width="75" height="22" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="257" y="352" text-anchor="middle">&lt;where</text>
+  </g>
+
+  <!-- 整词 -->
+  <text x="180" y="380" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="600">+ 整词 token</text>
+  <rect x="120" y="386" width="120" height="26" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="180" y="404" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#dc2626" font-weight="700">&lt;where&gt;</text>
+
+  <!-- 总共 -->
+  <text x="180" y="430" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="700">
+    共 13 个 subword token
+  </text>
+
+  <!-- ============== MIDDLE: Hashing ============== -->
+  <text x="450" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    ② Hashing 到 buckets
+  </text>
+
+  <!-- subword list -->
+  <text x="360" y="105" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">&lt;wh</text>
+  <text x="360" y="135" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">whe</text>
+  <text x="360" y="165" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">her</text>
+  <text x="360" y="195" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">ere</text>
+  <text x="360" y="225" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">...</text>
+
+  <!-- hash arrow -->
+  <g stroke="#7c3aed" stroke-width="1.5" fill="none">
+    <line x1="385" y1="105" x2="445" y2="105" marker-end="url(#ft-arr)"/>
+    <line x1="385" y1="135" x2="445" y2="135" marker-end="url(#ft-arr)"/>
+    <line x1="385" y1="165" x2="445" y2="165" marker-end="url(#ft-arr)"/>
+    <line x1="385" y1="195" x2="445" y2="195" marker-end="url(#ft-arr)"/>
+  </g>
+
+  <text x="415" y="93" text-anchor="middle" font-size="10" fill="#7c3aed" font-style="italic">hash()</text>
+
+  <!-- buckets -->
+  <rect x="450" y="85" width="160" height="180" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="530" y="106" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">2,000,000 buckets</text>
+
+  <g font-size="10" fill="#1e40af">
+    <rect x="465" y="118" width="130" height="20" fill="#fef3c7" stroke="#d97706" stroke-width="0.5"/>
+    <text x="530" y="132" text-anchor="middle">bucket #347291</text>
+
+    <rect x="465" y="145" width="130" height="20" fill="#fef3c7" stroke="#d97706" stroke-width="0.5"/>
+    <text x="530" y="159" text-anchor="middle">bucket #1234567</text>
+
+    <rect x="465" y="172" width="130" height="20" fill="#fef3c7" stroke="#d97706" stroke-width="0.5"/>
+    <text x="530" y="186" text-anchor="middle">bucket #82041</text>
+
+    <rect x="465" y="199" width="130" height="20" fill="#fef3c7" stroke="#d97706" stroke-width="0.5"/>
+    <text x="530" y="213" text-anchor="middle">bucket #1456789</text>
+
+    <text x="530" y="245" text-anchor="middle" font-style="italic">每 bucket 存一个 d 维向量</text>
+  </g>
+
+  <text x="530" y="290" text-anchor="middle" font-size="10" fill="#6b7280" font-style="italic">
+    冲突偶尔但实际影响 &lt; 1%
+  </text>
+
+  <!-- ============== RIGHT: 求和合成 ============== -->
+  <text x="755" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    ③ 词向量 = subword 之和
+  </text>
+
+  <!-- vectors stack -->
+  <g>
+    <rect x="660" y="85" width="190" height="22" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="665" y="100" font-size="10" fill="#9d174d">z(&lt;wh) = [0.3, -0.1, ...]</text>
+
+    <rect x="660" y="110" width="190" height="22" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="665" y="125" font-size="10" fill="#9d174d">z(whe) = [0.2, 0.4, ...]</text>
+
+    <rect x="660" y="135" width="190" height="22" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="665" y="150" font-size="10" fill="#9d174d">z(her) = [-0.1, 0.2, ...]</text>
+
+    <rect x="660" y="160" width="190" height="22" fill="#fce7f3" stroke="#db2777" stroke-width="1"/>
+    <text x="665" y="175" font-size="10" fill="#9d174d">z(ere) = [0.4, -0.2, ...]</text>
+
+    <text x="755" y="200" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="700">+ ...</text>
+
+    <line x1="665" y1="220" x2="845" y2="220" stroke="#1f2937" stroke-width="2"/>
+
+    <rect x="660" y="225" width="190" height="32" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="755" y="246" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">v(where) = Σ z_g</text>
+  </g>
+
+  <text x="755" y="295" text-anchor="middle" font-size="10" fill="#059669" font-style="italic">
+    所有 subword 向量之和
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="465" x2="860" y2="465" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: OOV demo ============== -->
+  <text x="450" y="495" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    OOV 处理 — 没见过的词也能从 subword 组合出向量
+  </text>
+
+  <g transform="translate(80, 515)">
+    <!-- known word -->
+    <rect x="0" y="0" width="240" height="80" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="120" y="22" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">"apple"(训练时已知)</text>
+    <text x="15" y="42" font-family="ui-monospace, monospace" font-size="10" fill="#065f46">subwords: &lt;ap, app, ppl, ple, le&gt;</text>
+    <text x="15" y="58" font-family="ui-monospace, monospace" font-size="10" fill="#065f46">+ &lt;apple&gt;(整词 token)</text>
+    <text x="120" y="74" text-anchor="middle" font-size="10" fill="#059669" font-weight="700">✓ 直接给出训练好的向量</text>
+
+    <!-- typo -->
+    <rect x="260" y="0" width="240" height="80" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="380" y="22" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">"applle"(typo,未见过)</text>
+    <text x="275" y="42" font-family="ui-monospace, monospace" font-size="10" fill="#92400e">subwords: &lt;ap, app, ppl, ppl, ple, le&gt;</text>
+    <text x="275" y="58" font-family="ui-monospace, monospace" font-size="10" fill="#92400e">9/11 subword 与 apple 共享</text>
+    <text x="380" y="74" text-anchor="middle" font-size="10" fill="#d97706" font-weight="700">✓ 向量与 apple 高度相似</text>
+
+    <!-- rare/OOV word -->
+    <rect x="520" y="0" width="240" height="80" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="640" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="600">"antidisestablishment..."</text>
+    <text x="535" y="40" font-family="ui-monospace, monospace" font-size="10" fill="#991b1b">subwords: anti, dis, establish, ment</text>
+    <text x="535" y="56" font-family="ui-monospace, monospace" font-size="10" fill="#991b1b">每个 subword 都在常见词中出现</text>
+    <text x="640" y="74" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">✓ 罕见词也有合理向量</text>
+  </g>
+
+  <text x="450" y="620" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="600">
+    Word2Vec 对这三种情况都只能返回 &lt;UNK&gt;
+  </text>
+</svg>

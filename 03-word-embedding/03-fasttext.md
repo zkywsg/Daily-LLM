@@ -54,71 +54,101 @@ FastText 发布后:
 - 预训练 FastText 向量(157 种语言)成为多语言 NLP 标配
 - BPE / WordPiece / SentencePiece(2016-2018)等现代 subword tokenizer 在思想上都受 FastText 启发
 
-## 核心思想:Subword n-gram
+## 核心思想
 
-### 基本机制
+### 直觉:词不该是原子单位,subword n-gram 之和才是
 
-每个词 $w$ 表示为它所有 character n-gram 的集合 $G_w$,加上特殊边界符 `<` 和 `>`(标记词首词尾):
+理解 FastText 真正需要先抓一件事:**[Word2Vec](01-word2vec.md) / [GloVe](02-glove.md) 都把词当作原子单位 — 训练时没见过的词完全没有向量(OOV),形态丰富语言里 "ev" 和 "evler" 完全不相关,罕见词训不出好向量,"apple" 和 "applle" typo 也没法识别相似性**。Bojanowski 等人 2016 反问:**为什么不把词拆成 character n-gram,词向量 = 所有 subword 向量之和?** 这样 OOV 也能从 subword 组合出来、形态变化共享 subword、罕见词的 subword 在常见词中也出现过、typo 共享大部分 subword。
+
+三件事必须同时成立才让 FastText 在 2016 年 work:
+
+- **每个词分解成 n-gram 集合(n=3-6)** — "apple" → {<ap, app, ppl, ple, le>, <apple>},短 n-gram 提供细粒度、长 n-gram 接近整词,特殊符号 `<apple>` 保留整词信号
+- **词向量 = 所有 subword 向量之和** — `v_w = Σ_g z_g`,在 Word2Vec skip-gram 框架上把相似度从词向量内积换成 subword 向量和的内积
+- **Hashing trick 控制 subword 词表爆炸** — 把 n-gram 哈希到 2M buckets 共享向量,冲突偶尔但实际影响小;训练效率与 Word2Vec 接近
+
+三件事合起来:**FastText 在罕见词上大幅超过 Word2Vec(RW 55 vs 50),在形态丰富语言上提升 5-21 个点**(阿拉伯语 +21、土耳其语 +21、捷克语 +12)。但 FastText 真正的历史地位不是这些数字,而是它**直接催生了 BPE / WordPiece / SentencePiece 现代 subword tokenizer** —— 今天 GPT-4 / Claude / LLaMA 的 tokenizer 都是 FastText 思想的延续。
+
+![Subword n-gram 分解 + 词向量合成](assets/03-fasttext-subword.svg)
+*图 1:**左** 把 "where" 拆成 n=3 到 6 的 character n-gram + 加边界符 `<>`,得到 11 个 subword + 1 个整词 token。**中** 每个 n-gram 经 hashing 映射到 2M 个 bucket 之一,共享 bucket 内的 subword 向量。**右** 词向量 = 所有 subword 向量之和(可加上整词向量)。底部 callout 强调:OOV 词如 "applle"(typo)即使没见过,subword (`app`, `ppl`, `le>`) 都见过,自然能组合出合理向量。*
+
+### 机制一:Subword n-gram 分解 — 短 + 长 + 整词三层覆盖
+
+每个词 w 表示为它的 character n-gram 集合 $G_w$,加上特殊边界符 `<` 和 `>` 标记词首词尾:
 
 ```
 "where" with n=3 to 6:
-  G_w = {<wh, whe, her, ere, re>, <whe, wher, here, ere>, <wher, where, here>, <where>, <where>}
+G_w = {<wh, whe, her, ere, re>,        # n=3
+       <whe, wher, here, ere>,         # n=4
+       <wher, where, here>,            # n=5
+       <where>,                        # n=6
+       <where>}                        # 整词 special token
 ```
 
-注意:
+为什么用 n=[3, 6] 这个范围?
 
-- 短 n-gram(n=3)提供细粒度
-- 长 n-gram(n=6)接近完整词
-- 特殊符号 `<where>`(整词)也加入,这样常见词的"整词向量"被保留
+- **太短(n=2)噪声大** — "ap" 在 "apple / apricot / cap / map" 都出现,几乎没语义区分度
+- **太长(n=8+)接近词级** — 失去 subword 的核心优势"共享形态部件"
+- **包含整词 `<where>`** — 常见词的"整词向量"被保留,不强迫所有信息从 subword 重建
 
-### 词向量公式
+边界符 `<>` 让 "her"(词内)和 `<her>`(独立词)区分 — 这避免了"her" 出现在 "where" 内部时和单独的代词 "her" 共享一个 subword 向量,造成语义污染。
 
-每个 n-gram $g$ 有自己的向量 $z_g$,词 w 的向量是:
+### 机制二:词向量 = subword 向量之和
+
+每个 n-gram g 有自己的向量 z_g,词 w 的向量是所有 subword 向量之和:
 
 $$
 v_w = \sum_{g \in G_w} z_g
 $$
 
-训练目标(基于 skip-gram):
+训练目标延续 Word2Vec skip-gram + negative sampling:
 
 $$
-\sum_{t=1}^T \sum_{c \in C_t} \log \sigma(s(w_t, w_c)) + \sum_{n \in N_{t,c}} \log \sigma(-s(w_t, n))
+\mathcal{L} = \sum_{t=1}^T \sum_{c \in C_t} \log \sigma(s(w_t, w_c)) + \sum_{n \in N_{t,c}} \log \sigma(-s(w_t, n))
 $$
 
-其中相似度函数 $s$ 用 subword vector 和:
+但相似度函数 s 把"词向量内积"换成"subword 向量和的内积":
 
 $$
 s(w, c) = \sum_{g \in G_w} z_g^T v_c
 $$
 
-### 实现细节
+这一改动看起来微小,但带来的效应巨大:
 
-**1. n-gram 范围** —— 论文默认 n ∈ [3, 6]。太短(n=2)噪声大,太长(n=8+)接近词级失去 subword 优势
+- **形态共享** — "ev"、"evler"、"evlerim"(土耳其语 "家/家们/我的家们")共享 `<ev`、`ev` 等核心 subword,向量自然相似
+- **罕见词复用常见 subword** — 罕见词 "antidisestablishmentarianism" 的 `anti`、`establish`、`ment` 等 subword 在常见词中频繁出现,subword 训练充分
+- **typo / 缩写鲁棒** — "apple" vs "applle" 共享 9/11 个 subword,向量近似
 
-**2. n-gram 哈希** —— 不可能为每个 n-gram 学一个向量(组合爆炸)。FastText 用 hashing trick:把 n-gram 哈希到 $B$ 个 bucket(论文 $B = 2 \times 10^6$),共享同一向量。冲突偶尔发生但实际影响小
+OOV 处理是这一机制的直接副产品:**测试时遇到没见过的词,只用它的 subword 组合**。这是 FastText 相对 Word2Vec / GloVe 最显眼的实用优势。
 
-**3. 训练效率** —— FastText 训练速度与 Word2Vec 接近(虽然每个词要算多个 subword 向量,但 hashing + 高效实现保持速度)
+### 机制三:Hashing Trick — 控制 subword 词表爆炸
 
-### OOV 处理
+简单算下:词表 50K,每个词约 10-15 个 subword,**理论 subword 总数可达数百万到上千万** — 直接为每个 subword 学一个向量,显存爆炸。
 
-测试时遇到没见过的词:**只用它的 subword 组合**。比如训练时没见过 "applle",但 `app`, `ppl`, `le>` 都见过,可以组合出一个合理向量。
+FastText 用 **hashing trick**:
 
-这一能力让 FastText 在 NLP 任务上对噪声(typo / 缩写 / 新词)更鲁棒。
+- 设 B 个 bucket(论文 B = 2 × 10⁶)
+- 每个 subword 经 hash 函数映射到 [0, B) 区间的某个 bucket
+- **同 bucket 内的 subword 共享同一向量**
 
-### Bag of Tricks for Text Classification
+hash 冲突(两个不相关 subword 落同一 bucket)偶尔发生,但实际影响极小 —— 因为:
+- 频繁 subword 冲突概率低(B 够大)
+- 罕见 subword 即使冲突,语义噪声也被 subword 求和稀释
+- 整体精度损失 < 1%
 
-第二篇论文(Joulin 2016)是 FastText 工具的文本分类应用,与词嵌入论文同期。核心思想:
+这一 trick 让 FastText 的训练效率与 Word2Vec 接近 —— 虽然每个词要算多个 subword 向量,但 hashing + cache-friendly 实现让 CPU 训练速度仍在每秒几万词级别。
 
-```
-sentence = "the movie was amazing"
-embedding = mean(vec("the"), vec("movie"), vec("was"), vec("amazing"))
-logits = linear(embedding)
-predicted_class = argmax(softmax(logits))
-```
+### 三件套协同:n-gram 分解 + subword 求和 + hashing 缺一不可
 
-极简架构:**词向量平均 → linear → softmax**。配 hierarchical softmax 加速。论文展示在 sentiment / tag classification 任务上**与 deep learning 模型同等精度,训练快 1000-10000×**(CPU vs GPU)。
+FastText 在 2016 年能解决 OOV / 形态 / 罕见词三大问题,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 FastText 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
 
-这一工具成为工业级文本分类标配,FastText 库下载量百万级。
+- **只有 n-gram 分解,没有 subword 求和(还用整词向量)** — 分解了但没用上,退化成 Word2Vec,所有 subword 优势都消失
+- **只有 subword 求和,没有 n-gram 多尺度(只用单一 n)** — n=3 时噪声大、n=6 时接近词级,**多尺度覆盖是 subword 能同时处理细粒度形态 + 整词语义的关键**
+- **只有 n-gram + 求和,没有 hashing trick** — subword 词表上千万,显存放不下;FastText 在工程上跑不起,无法成为开源工具
+
+三件套合起来才让 FastText 在 2016 年同时解决"OOV / 形态语言 / 罕见词"三大老问题,且训练效率与 Word2Vec 持平。这也是为什么 FastText 不只是一个新词嵌入,更是 **subword tokenization 范式的奠基** —— BPE(2016 Sennrich)/ WordPiece(Schuster 2012 但 BERT 让它普及)/ SentencePiece(Kudo 2018)全部继承"用 subword 而非整词作为基本单位"的思想,把这一范式推到 LLM 时代成为标配。
+
+![FastText vs Word2Vec — 形态语言 + 罕见词的优势](assets/03-fasttext-vs-word2vec.svg)
+*图 2:**上** 形态丰富语言上 FastText vs Word2Vec 对比柱状图 — 德语 +5.4、捷克 +11.7、俄语 +10.5、阿拉伯语 +21.1、土耳其语 +21.0,**形态越丰富优势越大**。**下** 罕见词(RW)+ 常见词(WS353)双任务对比 — RW 上 FastText 55 vs Word2Vec 50(+5),WS353 上 74 vs 70(+4),双向都赢。**右** OOV demo:`apple`(已知)/ `applle`(typo,未见过)/ `antidisestablishmentarianism`(罕见词)— FastText 都能从 subword 组合出向量,Word2Vec 只能返回 `<UNK>`。底部 callout:FastText subword 思想直接催生 BPE / WordPiece / SentencePiece,延续到 GPT-4 / Claude / LLaMA 的 tokenizer。*
 
 ## 关键代码
 
