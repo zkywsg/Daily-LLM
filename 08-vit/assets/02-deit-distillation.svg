@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="dist-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="dist-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Distillation Token 机制 + Hard vs Soft 对比
+  </text>
+
+  <!-- ============== TOP: Distillation Token data flow ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Distillation Token 数据流 — [CLS] + [Distill] 并列输出
+  </text>
+
+  <!-- Input image -->
+  <rect x="50" y="125" width="80" height="60" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="90" y="150" text-anchor="middle" font-size="11" fill="#92400e">Image</text>
+  <text x="90" y="170" text-anchor="middle" font-size="22">🐱</text>
+
+  <!-- Patchify -->
+  <rect x="160" y="140" width="80" height="30" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="200" y="160" text-anchor="middle" font-size="11" fill="#9d174d">Patchify</text>
+
+  <line x1="130" y1="155" x2="158" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#dist-arr)"/>
+
+  <!-- Tokens: [CLS] + 196 patches + [Distill] -->
+  <rect x="270" y="125" width="240" height="60" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="390" y="148" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">198 tokens 输入</text>
+  <text x="390" y="165" text-anchor="middle" font-size="10" fill="#9d174d">[CLS] + 196 patches + [Distill]</text>
+  <text x="390" y="180" text-anchor="middle" font-size="10" fill="#dc2626" font-style="italic">+2 个特殊 token,+2 pos emb</text>
+
+  <line x1="240" y1="155" x2="268" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#dist-arr)"/>
+
+  <!-- Encoder -->
+  <rect x="540" y="125" width="140" height="60" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="610" y="148" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">Transformer</text>
+  <text x="610" y="165" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">Encoder × 12</text>
+  <text x="610" y="180" text-anchor="middle" font-size="10" fill="#1e40af">d=768, h=12</text>
+
+  <line x1="510" y1="155" x2="538" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#dist-arr)"/>
+
+  <!-- Two outputs -->
+  <rect x="710" y="80" width="140" height="55" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="780" y="100" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">CLS output</text>
+  <text x="780" y="118" text-anchor="middle" font-size="10" fill="#065f46">→ head → y_cls</text>
+
+  <rect x="710" y="175" width="140" height="55" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+  <text x="780" y="195" text-anchor="middle" font-size="12" fill="#9a3412" font-weight="700">Distill output</text>
+  <text x="780" y="213" text-anchor="middle" font-size="10" fill="#9a3412">→ head_dist → y_distill</text>
+
+  <line x1="680" y1="140" x2="710" y2="108" stroke="#9d174d" stroke-width="1.5" marker-end="url(#dist-arr)"/>
+  <line x1="680" y1="170" x2="710" y2="203" stroke="#9d174d" stroke-width="1.5" marker-end="url(#dist-arr)"/>
+
+  <!-- Ground truth and Teacher -->
+  <rect x="60" y="250" width="180" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="150" y="275" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">y_true(真实标签)</text>
+
+  <rect x="60" y="305" width="180" height="55" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="150" y="325" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">CNN Teacher</text>
+  <text x="150" y="343" text-anchor="middle" font-size="10" fill="#5b21b6">RegNet-Y 16GF(冻结)</text>
+  <text x="150" y="356" text-anchor="middle" font-size="10" fill="#5b21b6">y_teacher = argmax</text>
+
+  <!-- Losses -->
+  <rect x="300" y="250" width="220" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="410" y="275" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#065f46">L_CE(y_cls, y_true)</text>
+
+  <rect x="300" y="320" width="220" height="40" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+  <text x="410" y="345" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#9a3412">L_CE(y_distill, y_teacher)</text>
+
+  <line x1="240" y1="270" x2="298" y2="270" stroke="#2563eb" stroke-width="1.5" marker-end="url(#dist-arr-blue)"/>
+  <line x1="240" y1="340" x2="298" y2="340" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#dist-arr)"/>
+  <line x1="780" y1="135" x2="780" y2="200" stroke="#9d174d" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="780" y1="235" x2="780" y2="320" stroke="#9d174d" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="710" y1="270" x2="525" y2="270" stroke="#9d174d" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <line x1="710" y1="340" x2="525" y2="340" stroke="#9d174d" stroke-width="0.8" stroke-dasharray="2,2"/>
+
+  <!-- Total loss -->
+  <rect x="560" y="285" width="280" height="40" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="700" y="310" text-anchor="middle" font-family="ui-monospace, monospace" font-size="12" fill="#fbbf24" font-weight="700">
+    L_DeiT = 0.5(L_cls + L_distill)
+  </text>
+
+  <line x1="530" y1="270" x2="555" y2="295" stroke="#9d174d" stroke-width="1" marker-end="url(#dist-arr)"/>
+  <line x1="530" y1="340" x2="555" y2="315" stroke="#9d174d" stroke-width="1" marker-end="url(#dist-arr)"/>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="395" x2="860" y2="395" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: Hard vs Soft ============== -->
+  <text x="450" y="423" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Hard vs Soft Distillation — DeiT 用 Hard,实测更好
+  </text>
+
+  <!-- Soft side -->
+  <rect x="60" y="440" width="370" height="135" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="462" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="700">Soft Distillation(经典 Hinton KD)</text>
+  <g font-size="11" fill="#991b1b">
+    <text x="75" y="487">• Teacher 输出 soft probs(整个分布)</text>
+    <text x="75" y="507">• KL divergence(student vs teacher soft)</text>
+    <text x="75" y="527">• Temperature τ 控制 softness</text>
+    <text x="75" y="552">⚠ Teacher 偶尔错时 soft 会传染 student</text>
+  </g>
+
+  <!-- Hard side (DeiT default) -->
+  <rect x="470" y="440" width="370" height="135" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="655" y="462" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">Hard Distillation(DeiT 用)★</text>
+  <g font-size="11" fill="#065f46">
+    <text x="485" y="487">• Teacher 输出 argmax(单一 hard label)</text>
+    <text x="485" y="507">• 普通 cross-entropy(student vs hard)</text>
+    <text x="485" y="527">• 实现极简,无 temperature</text>
+    <text x="485" y="552">✓ Teacher 错时 student 把它当"另一种猜测"</text>
+  </g>
+
+  <!-- bottom callout -->
+  <rect x="60" y="595" width="780" height="50" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="620" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    用 CNN(RegNet)做 teacher 比用 ViT 自己更好 — 用 CNN 的归纳偏置"补"给 ViT
+  </text>
+  <text x="450" y="638" text-anchor="middle" font-size="11" fill="#fef3c7">
+    DeiT-B with distillation 83.4% vs 无 distill 81.8% → distill 贡献 +1.6 个点
+  </text>
+</svg>
