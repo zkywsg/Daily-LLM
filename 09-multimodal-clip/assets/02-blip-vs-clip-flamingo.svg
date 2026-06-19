@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="vlm-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    VLM 演化谱系 — CLIP → BLIP → Flamingo → BLIP-2
+  </text>
+
+  <!-- ============== TOP: 4 columns comparison ============== -->
+
+  <!-- CLIP -->
+  <rect x="50" y="80" width="190" height="380" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="145" y="105" text-anchor="middle" font-size="13" fill="#92400e" font-weight="700">CLIP(2021)</text>
+  <text x="145" y="123" text-anchor="middle" font-size="10" fill="#92400e">OpenAI</text>
+
+  <line x1="65" y1="135" x2="225" y2="135" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="145" y="155" text-anchor="middle" font-size="11" fill="#92400e" font-weight="600">能力</text>
+  <g font-size="10" fill="#92400e">
+    <text x="65" y="173">✓ 图文对齐</text>
+    <text x="65" y="190">✓ Zero-shot 分类</text>
+    <text x="65" y="207">✗ 不能生成 caption</text>
+    <text x="65" y="224">✗ 不能做 VQA</text>
+  </g>
+
+  <line x1="65" y1="240" x2="225" y2="240" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="145" y="260" text-anchor="middle" font-size="11" fill="#92400e" font-weight="600">训练</text>
+  <g font-size="10" fill="#92400e">
+    <text x="65" y="278">• 400M 图文对</text>
+    <text x="65" y="295">• 从零联合训</text>
+    <text x="65" y="312">• 600 V100 × 12 天</text>
+    <text x="65" y="329">• ~$200K</text>
+  </g>
+
+  <line x1="65" y1="345" x2="225" y2="345" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="145" y="365" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">局限</text>
+  <text x="145" y="395" text-anchor="middle" font-size="10" fill="#dc2626">判别式</text>
+  <text x="145" y="412" text-anchor="middle" font-size="10" fill="#dc2626">不能生成</text>
+  <text x="145" y="438" text-anchor="middle" font-size="10" fill="#dc2626">→ BLIP 解决</text>
+
+  <!-- Arrow to BLIP -->
+  <line x1="245" y1="270" x2="280" y2="270" stroke="#7c3aed" stroke-width="3" marker-end="url(#vlm-arr)"/>
+
+  <!-- BLIP -->
+  <rect x="285" y="80" width="190" height="380" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="380" y="105" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">BLIP(2022)</text>
+  <text x="380" y="123" text-anchor="middle" font-size="10" fill="#9d174d">Salesforce</text>
+
+  <line x1="300" y1="135" x2="460" y2="135" stroke="#db2777" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="380" y="155" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">能力</text>
+  <g font-size="10" fill="#9d174d">
+    <text x="300" y="173">✓ 图文对齐(ITC)</text>
+    <text x="300" y="190">✓ 图文匹配(ITM)</text>
+    <text x="300" y="207">✓ Caption 生成(LM)</text>
+    <text x="300" y="224">✓ CapFilt 数据自举</text>
+  </g>
+
+  <line x1="300" y1="240" x2="460" y2="240" stroke="#db2777" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="380" y="260" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">训练</text>
+  <g font-size="10" fill="#9d174d">
+    <text x="300" y="278">• 14M → 130M(CapFilt)</text>
+    <text x="300" y="295">• 三任务联合训练</text>
+    <text x="300" y="312">• 16 A100 × 几天</text>
+    <text x="300" y="329">• ~$50K</text>
+  </g>
+
+  <line x1="300" y1="345" x2="460" y2="345" stroke="#db2777" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="380" y="365" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">突破</text>
+  <text x="380" y="395" text-anchor="middle" font-size="10" fill="#059669">三任务联合</text>
+  <text x="380" y="412" text-anchor="middle" font-size="10" fill="#059669">+ Synthetic data</text>
+  <text x="380" y="438" text-anchor="middle" font-size="10" fill="#dc2626">→ 还不够便宜</text>
+
+  <!-- Arrow to Flamingo -->
+  <line x1="480" y1="270" x2="515" y2="270" stroke="#7c3aed" stroke-width="3" marker-end="url(#vlm-arr)"/>
+
+  <!-- Flamingo -->
+  <rect x="520" y="80" width="170" height="380" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="605" y="105" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="700">Flamingo(2022)</text>
+  <text x="605" y="123" text-anchor="middle" font-size="10" fill="#991b1b">DeepMind</text>
+
+  <line x1="535" y1="135" x2="675" y2="135" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="605" y="155" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="600">能力</text>
+  <g font-size="10" fill="#991b1b">
+    <text x="535" y="173">✓ 冻结 LLM</text>
+    <text x="535" y="190">✓ Few-shot ICL</text>
+    <text x="535" y="207">✓ 视觉对话</text>
+    <text x="535" y="224">✓ 80B 总参数</text>
+  </g>
+
+  <line x1="535" y1="240" x2="675" y2="240" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="605" y="260" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="600">训练</text>
+  <g font-size="10" fill="#991b1b">
+    <text x="535" y="278">• 2B 网页图文对</text>
+    <text x="535" y="295">• Cross-attn 适配层</text>
+    <text x="535" y="312">• 1500 TPU × 10 天</text>
+    <text x="535" y="329" font-weight="700">• ~$1M+</text>
+  </g>
+
+  <line x1="535" y1="345" x2="675" y2="345" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="605" y="365" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">局限</text>
+  <text x="605" y="395" text-anchor="middle" font-size="10" fill="#dc2626">训练成本爆炸</text>
+  <text x="605" y="412" text-anchor="middle" font-size="10" fill="#dc2626">只有 DeepMind 玩</text>
+  <text x="605" y="438" text-anchor="middle" font-size="10" fill="#dc2626">→ BLIP-2 解决</text>
+
+  <!-- Arrow to BLIP-2 -->
+  <line x1="695" y1="270" x2="730" y2="270" stroke="#7c3aed" stroke-width="3" marker-end="url(#vlm-arr)"/>
+
+  <!-- BLIP-2 -->
+  <rect x="735" y="80" width="155" height="380" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="813" y="105" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">BLIP-2 ★</text>
+  <text x="813" y="123" text-anchor="middle" font-size="10" fill="#065f46">Salesforce 2023</text>
+
+  <line x1="750" y1="135" x2="870" y2="135" stroke="#059669" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="813" y="155" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">能力</text>
+  <g font-size="10" fill="#065f46">
+    <text x="750" y="173">✓ 冻结 ViT + LLM</text>
+    <text x="750" y="190">✓ Q-Former 桥接</text>
+    <text x="750" y="207">✓ 188M 可训练</text>
+    <text x="750" y="224">✓ 同水平 Flamingo</text>
+  </g>
+
+  <line x1="750" y1="240" x2="870" y2="240" stroke="#059669" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="813" y="260" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">训练</text>
+  <g font-size="10" fill="#065f46">
+    <text x="750" y="278">• 130M 图文对</text>
+    <text x="750" y="295">• 只训 Q-Former</text>
+    <text x="750" y="312">• 16 A100 × 9 天</text>
+    <text x="750" y="329" font-weight="700">• ~$10K(降 100×)</text>
+  </g>
+
+  <line x1="750" y1="345" x2="870" y2="345" stroke="#059669" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="813" y="365" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">突破</text>
+  <text x="813" y="395" text-anchor="middle" font-size="10" fill="#059669">"冻结大模型</text>
+  <text x="813" y="412" text-anchor="middle" font-size="10" fill="#059669">+ 轻量桥接"</text>
+  <text x="813" y="438" text-anchor="middle" font-size="10" fill="#059669" font-weight="700">→ 开源 VLM 起点</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="495" x2="860" y2="495" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: Key insight ============== -->
+  <text x="450" y="520" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    BLIP-2 的核心范式 — "冻结预训练 + 轻量适配"
+  </text>
+
+  <rect x="60" y="540" width="780" height="100" rx="6" fill="#1f2937" stroke="none"/>
+  <g font-size="11" fill="#fef3c7">
+    <text x="80" y="565">• 视觉端 ViT-G(1B 参数,❄ 冻结)</text>
+    <text x="80" y="585">• 桥接 Q-Former(188M 可训练,1.5% 总参数)</text>
+    <text x="80" y="605">• 语言端 Flan-T5 XXL(11B 参数,❄ 冻结)</text>
+  </g>
+  <g font-size="11" fill="#fbbf24" font-weight="700">
+    <text x="500" y="565">→ 训练成本降 100×</text>
+    <text x="500" y="585">→ 任何实验室能做</text>
+    <text x="500" y="605">→ 催生 2023 开源 VLM 爆发</text>
+  </g>
+  <text x="450" y="630" text-anchor="middle" font-size="11" fill="#fef3c7" font-style="italic">
+    LLaVA / MiniGPT-4 / InstructBLIP / Qwen-VL 等几十个工作站在 BLIP-2 肩膀上
+  </text>
+</svg>
