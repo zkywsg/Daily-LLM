@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Flamingo vs BLIP-2 vs LLaVA — In-Context Learning 能力来源
+  </text>
+
+  <!-- ============== TOP: 3 columns comparison ============== -->
+
+  <!-- Flamingo -->
+  <rect x="40" y="65" width="270" height="380" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+  <text x="175" y="90" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">Flamingo(DeepMind 2022)★</text>
+
+  <line x1="55" y1="100" x2="295" y2="100" stroke="#db2777" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="175" y="120" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">LLM Backbone</text>
+  <rect x="55" y="128" width="240" height="32" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="175" y="148" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">Chinchilla 70B ★(冻结)</text>
+
+  <text x="175" y="180" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">视觉接口</text>
+  <g font-size="10" fill="#9d174d">
+    <text x="55" y="200">• Perceiver Resampler(64 q tokens)</text>
+    <text x="55" y="217">• 间隔 Gated Cross-Attn</text>
+    <text x="55" y="234">• 每 7 层插入,tanh(0) 初始</text>
+  </g>
+
+  <text x="175" y="260" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">训练数据</text>
+  <rect x="55" y="268" width="240" height="32" rx="4" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+  <text x="175" y="288" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="700">M3W 交错图文 ★</text>
+
+  <text x="175" y="320" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="600">ICL 能力</text>
+  <text x="175" y="345" text-anchor="middle" font-size="12" fill="#059669" font-weight="700">✓ 强</text>
+  <text x="175" y="365" text-anchor="middle" font-size="10" fill="#059669">VQAv2 0-shot 49.2</text>
+  <text x="175" y="382" text-anchor="middle" font-size="10" fill="#059669" font-weight="700">→ 4-shot 56.3 (+7.1)</text>
+  <text x="175" y="399" text-anchor="middle" font-size="10" fill="#059669" font-weight="700">→ 32-shot 60.0 (+10.8)</text>
+
+  <text x="175" y="425" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">ICL 涌现两件齐备 ★</text>
+
+  <!-- BLIP-2 -->
+  <rect x="320" y="65" width="270" height="380" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="455" y="90" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">BLIP-2(Salesforce 2023)</text>
+
+  <line x1="335" y1="100" x2="575" y2="100" stroke="#2563eb" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="455" y="120" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">LLM Backbone</text>
+  <rect x="335" y="128" width="240" height="32" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="455" y="148" text-anchor="middle" font-size="11" fill="#1e40af">Flan-T5 XXL 11B(冻结)</text>
+
+  <text x="455" y="180" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">视觉接口</text>
+  <g font-size="10" fill="#1e40af">
+    <text x="335" y="200">• Q-Former(32 q tokens)</text>
+    <text x="335" y="217">• Linear projection</text>
+    <text x="335" y="234">• 前置拼到 LLM input</text>
+  </g>
+
+  <text x="455" y="260" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">训练数据</text>
+  <rect x="335" y="268" width="240" height="32" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="455" y="288" text-anchor="middle" font-size="11" fill="#1e40af">普通图文对(COCO + LAION)</text>
+
+  <text x="455" y="320" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="600">ICL 能力</text>
+  <text x="455" y="345" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">✗ 弱</text>
+  <text x="455" y="365" text-anchor="middle" font-size="10" fill="#dc2626">VQAv2 0-shot 65.2</text>
+  <text x="455" y="382" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 4-shot ≈ 0-shot</text>
+  <text x="455" y="399" text-anchor="middle" font-size="10" fill="#dc2626">几乎无 ICL 提升</text>
+
+  <text x="455" y="425" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">11B LLM 没到 ICL 涌现阈值</text>
+
+  <!-- LLaVA -->
+  <rect x="600" y="65" width="270" height="380" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="735" y="90" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">LLaVA(2023)</text>
+
+  <line x1="615" y1="100" x2="855" y2="100" stroke="#059669" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <text x="735" y="120" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">LLM Backbone</text>
+  <rect x="615" y="128" width="240" height="32" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="735" y="148" text-anchor="middle" font-size="11" fill="#065f46">LLaMA 7B-13B(微调)</text>
+
+  <text x="735" y="180" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">视觉接口</text>
+  <g font-size="10" fill="#065f46">
+    <text x="615" y="200">• CLIP ViT-L/14(冻结)</text>
+    <text x="615" y="217">• 单 Linear projection</text>
+    <text x="615" y="234">• 极简,~10M 可训练</text>
+  </g>
+
+  <text x="735" y="260" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">训练数据</text>
+  <rect x="615" y="268" width="240" height="32" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="735" y="288" text-anchor="middle" font-size="11" fill="#065f46">GPT-4 生成的 instruction</text>
+
+  <text x="735" y="320" text-anchor="middle" font-size="11" fill="#065f46" font-weight="600">ICL 能力</text>
+  <text x="735" y="345" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">✗ 弱</text>
+  <text x="735" y="365" text-anchor="middle" font-size="10" fill="#dc2626">主要做对话 / 单轮指令</text>
+  <text x="735" y="382" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">无 4-shot 性能</text>
+  <text x="735" y="399" text-anchor="middle" font-size="10" fill="#dc2626">7B LLM + 标准数据</text>
+
+  <text x="735" y="425" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">两件都不齐</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="475" x2="860" y2="475" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: Key insight ============== -->
+  <text x="450" y="500" text-anchor="middle" font-size="14" fill="#1f2937" font-weight="600">
+    ICL 涌现需要两件齐备 — 大 LLM(70B+)+ 交错图文数据(M3W-like)
+  </text>
+
+  <g transform="translate(60, 520)">
+    <rect x="0" y="0" width="370" height="100" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="185" y="25" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="700">规模阈值</text>
+    <g font-size="11" fill="#991b1b">
+      <text x="15" y="48">• 70B 是 LLM ICL 涌现的关键阈值</text>
+      <text x="15" y="68">• 11B Flan-T5 / 7B LLaMA 即使用</text>
+      <text x="15" y="84">  交错数据也学不到强 ICL</text>
+    </g>
+
+    <rect x="410" y="0" width="370" height="100" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="595" y="25" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">数据形态</text>
+    <g font-size="11" fill="#92400e">
+      <text x="425" y="48">• M3W "text image text image ..."</text>
+      <text x="425" y="68">• 天然 few-shot 模式让 LLM 自然</text>
+      <text x="425" y="84">  学到"看几个例子学新任务"</text>
+    </g>
+  </g>
+
+  <rect x="60" y="635" width="780" height="20" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="650" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">
+    这一发现直接影响 GPT-4V / Claude 3 / Gemini 等所有现代 multimodal LLM 的训练范式
+  </text>
+</svg>
