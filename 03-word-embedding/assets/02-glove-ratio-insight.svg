@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GloVe 核心洞察 — 共现概率比值才是语义关系的载体
+  </text>
+
+  <!-- ============== TOP: 4 探针词 × 2 中心词的概率比值表 ============== -->
+  <text x="450" y="65" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    探针词 k 在 ice 和 steam 之间的共现概率比
+  </text>
+
+  <!-- Table header -->
+  <rect x="80" y="85" width="740" height="32" fill="#1f2937"/>
+  <text x="150" y="105" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">探针词 k</text>
+  <text x="320" y="105" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">P(k | ice)</text>
+  <text x="490" y="105" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">P(k | steam)</text>
+  <text x="700" y="105" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">比值 P(k|ice)/P(k|steam)</text>
+
+  <!-- Row 1: solid -->
+  <rect x="80" y="117" width="740" height="34" fill="#ecfdf5"/>
+  <text x="150" y="139" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">solid</text>
+  <text x="320" y="139" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#065f46">1.9 × 10⁻⁴</text>
+  <text x="490" y="139" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#065f46">2.2 × 10⁻⁵</text>
+  <text x="700" y="139" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">8.9(偏 ice)</text>
+
+  <!-- Row 2: gas -->
+  <rect x="80" y="151" width="740" height="34" fill="#fee2e2"/>
+  <text x="150" y="173" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">gas</text>
+  <text x="320" y="173" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#991b1b">6.6 × 10⁻⁵</text>
+  <text x="490" y="173" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#991b1b">7.8 × 10⁻⁴</text>
+  <text x="700" y="173" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">0.085(偏 steam)</text>
+
+  <!-- Row 3: water -->
+  <rect x="80" y="185" width="740" height="34" fill="#fef3c7"/>
+  <text x="150" y="207" text-anchor="middle" font-size="12" fill="#92400e">water</text>
+  <text x="320" y="207" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#92400e">3.0 × 10⁻³</text>
+  <text x="490" y="207" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#92400e">2.2 × 10⁻³</text>
+  <text x="700" y="207" text-anchor="middle" font-size="13" fill="#92400e">1.36(都相关)</text>
+
+  <!-- Row 4: fashion -->
+  <rect x="80" y="219" width="740" height="34" fill="#f3f4f6"/>
+  <text x="150" y="241" text-anchor="middle" font-size="12" fill="#374151">fashion</text>
+  <text x="320" y="241" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#374151">1.7 × 10⁻⁵</text>
+  <text x="490" y="241" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#374151">1.8 × 10⁻⁵</text>
+  <text x="700" y="241" text-anchor="middle" font-size="13" fill="#374151">0.96(都不相关)</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="285" x2="860" y2="285" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== MIDDLE: 关键洞察图解 ============== -->
+  <text x="450" y="315" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    关键洞察 — 共现次数 vs 共现概率比值
+  </text>
+
+  <!-- 左侧:共现次数(不行) -->
+  <rect x="60" y="335" width="370" height="160" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="358" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">共现次数 X_{ik} 本身</text>
+  <g font-size="11" fill="#991b1b">
+    <text x="75" y="380">• 受词频影响巨大:"the" 几乎和所有词共现</text>
+    <text x="75" y="402">• "the/ice" 共现可能 = "solid/ice" 共现 × 100</text>
+    <text x="75" y="424">• 但语义上 "solid" 才是 ice 的特征词</text>
+    <text x="75" y="446">• LSA / HAL 直接分解 X 失败的原因</text>
+  </g>
+  <text x="245" y="478" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">
+    ✗ 词频压垮语义信号
+  </text>
+
+  <!-- 右侧:概率比值(对的) -->
+  <rect x="470" y="335" width="370" height="160" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="655" y="358" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">共现概率比值 P_{ik} / P_{jk}</text>
+  <g font-size="11" fill="#065f46">
+    <text x="485" y="380">• 自动消除词频影响(分子分母都除以 X_i)</text>
+    <text x="485" y="402">• 只保留"k 在多大程度上区分 i 和 j"</text>
+    <text x="485" y="424">• 比值远离 1 → 强区分;接近 1 → 不区分</text>
+    <text x="485" y="446">• 这才是语义关系的真正载体</text>
+  </g>
+  <text x="655" y="478" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">
+    ✓ GloVe 直接对此建模
+  </text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="525" x2="860" y2="525" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: 推导出目标函数 ============== -->
+  <text x="450" y="552" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    从"对比值建模"推导出 GloVe 目标函数
+  </text>
+
+  <rect x="100" y="567" width="700" height="40" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="588" text-anchor="middle" font-family="ui-monospace, monospace" font-size="14" fill="#fef3c7" font-weight="600">
+    F(v_i, v_j, v_k) = P_{ik}/P_{jk}   ⇒   v_i · v_j + b_i + b_j = log X_{ij}
+  </text>
+</svg>

@@ -36,68 +36,96 @@ GloVe 的工程影响立竿见影:
 
 GloVe 与 Word2Vec 不是替代关系,而是 **两条路线并存** —— 不同任务上各有优势,大量论文同时用两者做实验对比。
 
-## 核心思想:共现概率比值
+## 核心思想
 
-### 关键观察
+### 直觉:共现概率的比值,而非共现次数本身,才编码语义
 
-考虑三个词 i = "ice", j = "steam", k 是探针词。看共现概率 $P(k|i) = X_{ik}/X_i$:
+理解 GloVe 真正需要先抓一件事:**[Word2Vec](01-word2vec.md) 用局部窗口的预测任务学词向量,理论上有点绕**——它的本意是学词向量,却用"预测上下文"作辅助任务,词向量是副产品。同期 count-based 路线(LSA / HAL)直接分解共现矩阵,理论清晰但效果不如 Word2Vec。Pennington 等人 2014 反问:**count-based 路线没胜 prediction-based,不是矩阵分解本身的问题,而是分解错了对象 —— 应该分解的不是共现次数本身,而是共现概率的比值**。
 
-| 探针词 k | P(k|ice) | P(k|steam) | P(k|ice)/P(k|steam) |
-|------|------|------|------|
-| solid | 1.9e-4 | 2.2e-5 | **8.9**(高,"solid" 与 ice 关) |
-| gas | 6.6e-5 | 7.8e-4 | **0.085**(低,"gas" 与 steam 关) |
-| water | 3.0e-3 | 2.2e-3 | 1.36(中,都相关) |
-| fashion | 1.7e-5 | 1.8e-5 | 0.96(中,都不相关) |
+为什么是比值?考虑 i="ice" / j="steam" / 探针 k:
 
-**关键**:$P_{ik} / P_{jk}$ 这个比值编码了"k 在多大程度上区分 i 和 j"。GloVe 的目标:**让词向量直接拟合这个比值**。
+| 探针 k | P(k\|ice) | P(k\|steam) | 比值 P(k\|i)/P(k\|j) |
+|---|---|---|---|
+| solid | 1.9e-4 | 2.2e-5 | **8.9**(强区分,solid 偏 ice) |
+| gas | 6.6e-5 | 7.8e-4 | **0.085**(强区分,gas 偏 steam) |
+| water | 3.0e-3 | 2.2e-3 | 1.36(都相关) |
+| fashion | 1.7e-5 | 1.8e-5 | 0.96(都不相关) |
 
-### 数学模型
+比值 $P_{ik}/P_{jk}$ **天然消除了共现绝对频次的影响,只保留"区分 i 和 j 的能力"** — 这才是语义关系的载体。
 
-GloVe 假设词向量内积应等于 log 共现次数:
+三件事必须同时成立才让 GloVe 在 2014 年成立:
+
+- **目标是拟合 log 共现而非共现本身** — `v_i·v_j + b_i + b_j = log X_{ij}`,这一推导直接来自"对比值建模"的要求
+- **加权 loss `f(x)` 平衡 rare 和 common pair** — rare pair 给小权重(噪声大),common pair 上限封顶 1.0(防止主导 loss)
+- **全局共现矩阵替代局部窗口** — Word2Vec 每次只看 ±5 窗口,GloVe 一次性遍历全语料构建 V×V 共现矩阵,**全局统计 + 一次拟合**
+
+三件事合起来:GloVe 在 word similarity 任务上**全面超过 Word2Vec 5-10 点**(WS353: 75.9 vs 65.6),analogy / NER 略优。但真正让 GloVe 成为 2014-2018 NLP 标配的是 Stanford 团队**预训练向量的开源策略** — glove.6B.300d.zip 几乎是所有 NLP baseline 的默认输入。
+
+![共现概率比值 — GloVe 的核心洞察](assets/02-glove-ratio-insight.svg)
+*图 1:ice / steam 与 4 个探针词的共现概率比值表 + 直觉图解 — solid 偏 ice(比值 8.9)、gas 偏 steam(比值 0.085)、water/fashion 都中性(比值 ≈1)。**比值才是语义关系载体**,这一观察直接决定 GloVe 的目标函数形式 `v_i·v_j = log X_{ij}`。底部 callout:Word2Vec 用"预测上下文"间接学,GloVe 用"拟合比值"直接学。*
+
+### 机制一:Log 共现拟合 — `v_i·v_j + b_i + b_j = log X_{ij}`
+
+从"拟合比值"的要求出发,Pennington 等人推导出:词向量内积应该等于 log 共现次数。推导逻辑简化版:
+
+1. 想要 $F(v_i, v_j, v_k) = P_{ik}/P_{jk}$
+2. 假设 F 仅依赖向量差和探针:$F((v_i - v_j)^T v_k) = P_{ik}/P_{jk}$
+3. 取 F = exp,得到 $v_i^T v_k = \log P_{ik} = \log X_{ik} - \log X_i$
+4. 把 $-\log X_i$ 吸收为 bias,最终目标:
 
 $$
 v_i^T v_j + b_i + b_j = \log X_{ij}
 $$
 
-- $v_i, v_j$ —— 词向量
-- $b_i, b_j$ —— bias
-- $X_{ij}$ —— 词 i, j 共现次数
+- $v_i, v_j$:词向量(典型 300 维)
+- $b_i, b_j$:bias 项,吸收边际频率
+- $X_{ij}$:词 i 和 j 在全语料共现次数(用 ±10 窗口 + distance weighting 统计)
 
-### 加权 loss
+**这一目标的清晰性是 GloVe 相对 Word2Vec NEG 的理论优势** — NEG 是工程 trick,GloVe 是从假设出发的封闭推导。
 
-但直接 fit log $X_{ij}$ 有几个问题:rare co-occurrence($X_{ij}=0$)是 log(0)、common pair 主导 loss。GloVe 加一个加权函数 $f$:
+### 机制二:加权 loss — 平衡 rare 和 common pair
 
-$$
-\mathcal{L} = \sum_{i,j=1}^V f(X_{ij}) (v_i^T v_j + b_i + b_j - \log X_{ij})^2
-$$
+直接 fit `log X_{ij}` 有两个问题:rare co-occurrence(X_{ij}=0)是 log(0) 不可算;common pair(像 "the / and" 的共现频次极高)会主导 loss,稀有但语义丰富的 pair 学不动。
 
-加权函数 $f$:
+GloVe 加一个加权函数 f:
 
 $$
-f(x) = \begin{cases} (x / x_{\max})^\alpha & \text{if } x < x_{\max} \\ 1 & \text{otherwise} \end{cases}
+\mathcal{L} = \sum_{i,j=1}^V f(X_{ij}) \cdot (v_i^T v_j + b_i + b_j - \log X_{ij})^2
 $$
 
-- $x_{\max} = 100$(论文设)
-- $\alpha = 3/4$(经验值,与 Word2Vec NEG 巧合相同)
+$$
+f(x) = \begin{cases} (x / x_{\max})^\alpha & x < x_{\max} \\ 1 & x \geq x_{\max} \end{cases}
+$$
 
-直觉:rare pair 给小权重(噪声大),common pair 给上限权重(防止主导)。
+- $x_{\max} = 100$(经验封顶)
+- $\alpha = 3/4$(和 Word2Vec NEG 的 0.75 巧合相同)
 
-### 算法流程
+直觉:rare pair(X 接近 0)权重接近 0,**不学也不亏**;common pair 权重封顶 1.0,**不再无限主导 loss**。中间 pair 按 $x^{0.75}$ 缓慢上升,把训练算力集中在"既不太稀也不太密"的中频 pair —— 这些恰恰是携带最多语义信息的 pair。
 
-```
-1. 扫一遍语料,构建 word-word 共现矩阵 X_{ij}(用滑窗,通常 ±10)
-2. 初始化 v, b 为随机
-3. 用 AdaGrad 优化 weighted squared loss
-4. 训完后 v_i 就是词 i 的 GloVe 向量
-```
+### 机制三:全局共现矩阵 — 一次扫语料替代每步采样
 
-### 与 Word2Vec 的关系
+Word2Vec 每步 SGD 都要扫一个新 mini-batch 的窗口对,**整个训练扫语料若干 epoch**(典型 5-15)。GloVe 走完全不同的路线:
 
-后续研究(Levy & Goldberg 2014)发现 Word2Vec skip-gram 的 NEG 实际上隐式地做了 PMI(pointwise mutual information)矩阵分解。GloVe 显式做的是 log $X_{ij}$ 分解。两者在数学上有深刻联系,这部分解释了为何它们效果接近。
+1. **预处理一次** — 扫一遍全语料,构建 V×V 稀疏共现矩阵 $X_{ij}$,带 distance weighting(距离 d 的共现 = 1/d)
+2. **训练只看共现矩阵** — 不再回到原始语料,SGD 采样 (i, j, X_{ij}) 三元组拟合 weighted log loss
+3. **一次构建多次复用** — 共现矩阵建好后,训不同维度 / 不同超参的词向量都不用重扫语料
 
-### 共现矩阵的预处理
+这种"全局统计 + 一次拟合"的范式在 Common Crawl 840B token 规模上有显著工程优势 —— Word2Vec 在 840B 上要扫几遍才能收敛,GloVe 只需扫一次构建矩阵 + 50 轮 AdaGrad。Stanford 在 840B 上训出 300d 向量,词表 2.2M,这一规模在当时(2014)是 NLP 最大开源 embedding。
 
-GloVe 的共现矩阵不是简单计数。论文用 **distance weighting**:窗口里距离 d 的词共现权重 = 1/d。所以紧邻词共现 = 1,距离 5 词的共现 = 1/5。这让近词更重要。
+后续研究(Levy & Goldberg 2014)证明:**Word2Vec skip-gram NEG 在数学上等价于隐式分解 PMI 矩阵**;GloVe 显式做 `log X_{ij}` 分解;**两者本质都是矩阵分解**,只是 framing 不同。这部分解释了为何 GloVe 和 Word2Vec 效果接近但 GloVe 在大规模上略优 — 因为 GloVe 的全局统计利用更充分。
+
+### 三件套协同:log 共现拟合 + 加权 loss + 全局共现矩阵 缺一不可
+
+GloVe 在 2014 年能成为 Word2Vec 的强力对手,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 GloVe 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 log 共现目标,没有加权 loss** — 高频 pair("the / and" 共现 10⁶ 次)的 squared loss 主导优化,低频但语义丰富的 pair(如 "deep / learning")学不动,效果直接掉 5-10 个点
+- **只有加权 loss,没有 log 共现目标** — 拟合 $X_{ij}$ 本身而不是 $\log X_{ij}$,失去"对比值建模"的理论支撑;退化成 LSA 那类直接计数分解,效果显著差
+- **只有 log 拟合 + 加权,没有全局共现矩阵(还在用 Word2Vec 的局部窗口 SGD)** — 失去"一次扫语料 + 多次复用"的工程优势,大规模训练成本回到 Word2Vec 量级
+
+三件套合起来才让 GloVe 在 word similarity 上全面胜过 Word2Vec、在 NER 等下游略优、且在 Common Crawl 840B 这种超大语料上工程上可行。Stanford 开源的 glove.6B / 42B / 840B 三个版本直接定义了 2014-2018 NLP 标配 input。
+
+![GloVe 训练流程 + 加权函数 + vs Word2Vec](assets/02-glove-training.svg)
+*图 2:**左** GloVe 训练 pipeline — 1️⃣ 扫一遍全语料构建 V×V 共现矩阵(distance weighting)→ 2️⃣ AdaGrad 优化 weighted squared loss → 3️⃣ 输出 (embed + context_embed) / 2 作最终词向量。**右上** 加权函数 f(x) 曲线 — x < 100 时按 (x/100)^0.75 上升,x ≥ 100 封顶 1.0,直观展示"rare pair 权重 ≈0,common pair 权重封顶"。**右下** GloVe vs Word2Vec 在 WS353 / MC / RG 三个 similarity 任务上的对比柱状图 — GloVe 全面胜出 5-10 点。底部 callout:Stanford glove.6B.300d 是 2014-2018 NLP 默认输入。*
 
 ## 关键代码
 
