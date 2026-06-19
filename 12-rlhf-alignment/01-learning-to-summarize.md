@@ -25,7 +25,24 @@ key_idea: "用人工偏好比较训练 reward model + PPO 微调 LLM,摘要质�
 
 Stiennon 等人 2020 年 9 月的 *Learning to Summarize from Human Feedback* 是第一个**在标准 NLP benchmark 上系统化 RLHF + 击败监督 SOTA** 的工作。论文核心论点:**用人类偏好直接优化,可以让模型生成质量超过参考摘要本身**——这在监督学习范式下是不可能的。
 
-## 核心思想:三阶段 RLHF 流程
+## 核心思想
+
+### 直觉:用人类偏好直接优化,可以超过参考摘要本身
+
+理解 Learning to Summarize 真正需要先抓一件事:**2020 年前 NLP 文本生成的标准范式是"监督学习 + ROUGE 评估"** — 拿 (输入, 参考摘要) 对训 Seq2Seq,用 ROUGE 测词汇重合度。但这条路有结构性瓶颈 — ROUGE 和人类判断相关性差 / 监督学习只能模仿不能超越参考 / 长尾错误(事实捏造、跑题)在 NLL loss 上代价不大。Stiennon 等人 2020 反问:**为什么不直接用人类偏好作信号?让模型生成多个候选 → 人工标注哪个更好 → 训 reward model 把偏好编成标量 → RL 优化让模型自己学到"什么是好摘要"?**
+
+三件事必须同时成立才让 Learning to Summarize 在 2020 年成立:
+
+- **SFT 拉到合格区(Stage 1)** — 在参考摘要上监督微调,让模型先学会"摘要是什么形状";不做这一步直接 RL 会从乱码起步,RM 无法稳定打分
+- **Reward Model 把偏好编成标量(Stage 2)** — 64K 对人工比较 + Bradley-Terry loss `-log σ(r(y_w) - r(y_l))`;**RM 初始化为 SFT 权重 + 加 scalar head**,只学最后一层映射,数据效率高
+- **PPO + KL 惩罚优化(Stage 3)** — 优化目标 `max E[r(x,y)] - β·KL(π‖π_SFT)`;**KL 惩罚是 reward hacking 的核心防御**,没它模型会学到"骗 RM 高分的乱码"
+
+三件事合起来:**6.7B RLHF 模型在人工评测中 74% 时间被偏好胜过参考摘要,甚至超过人工写的高质量摘要(70%)**。这是 LLM 第一次在文本生成上明确"超人"。更深远的发现:**1.3B RLHF(62%)超过 6.7B SFT(41%)**,**对齐胜过 5× 参数** — 这一发现直接预告了 InstructGPT "1.3B 对齐版超过 175B 原版" 的标志结果,也定型了之后 5 年所有 RLHF 工作的三阶段流程(InstructGPT / ChatGPT / Claude / Bard / LLaMA-Chat)。
+
+![RLHF 三阶段完整流程 — SFT → RM → PPO](assets/01-l2s-rlhf-pipeline.svg)
+*图 1:Learning to Summarize 三阶段 RLHF 完整流程。**Stage 1 SFT** 在参考摘要上微调预训练 LLM,让模型先学会"摘要形状"。**Stage 2 RM** SFT 模型生成 4 候选 → 标注员两两比较(64K 对) → 用 Bradley-Terry loss `-log σ(r(y_w) - r(y_l))` 训 reward model(初始化为 SFT 权重 + scalar head)。**Stage 3 PPO** 把 RM 当 reward 函数,加 KL 惩罚 `β·KL(π‖π_SFT)` 防止策略偏离 + reward hacking;4 个模型同时常驻显存(actor / critic / RM / ref)。底部 callout:这套三阶段流程被 InstructGPT / ChatGPT / Claude / Bard / LLaMA-Chat 全部继承,定义了 2020-2023 RLHF 标准范式。*
+
+## 机制一:三阶段 RLHF 流程
 
 Stiennon 论文把 RLHF 整理成今天 RLHF 的标准三阶段:
 
@@ -63,7 +80,13 @@ $$
 
 第一项是 reward,模型想要高分;第二项是 **KL 惩罚**,防止 `\pi_\theta` 偏离 SFT 模型太远。`β` 控制偏离程度,典型 `β = 0.01–0.1`。这一项极其关键——**没有它,模型会学到"hack reward model"**,生成对 RM 评分高但实际乱码的输出。
 
-## 为什么需要 PPO?
+## 机制二:Bradley-Terry Reward Model — 把偏好编成标量
+
+(详见上面 Stage 2,关键公式 `L_RM = -log σ(r(y_w) - r(y_l))`,RM 初始化为 SFT 权重 + scalar head)
+
+## 机制三:PPO + KL 惩罚双重防 reward hacking
+
+### 为什么需要 PPO?
 
 PPO(Proximal Policy Optimization, Schulman 2017)是 OpenAI 自家的 RL 算法,在 RLHF 里被选用有具体理由:
 
@@ -74,6 +97,23 @@ PPO(Proximal Policy Optimization, Schulman 2017)是 OpenAI 自家的 RL 算法,�
 **3. 简单 + 稳定**——相比 TRPO 等更严格的策略梯度方法,PPO 实现简单、调参少、在大多数任务上稳定
 
 但 PPO 在 LLM 上仍是工程恶梦:**需要 4 个模型同时在显存里**(actor / critic / reward model / reference SFT model),训练慢、显存爆、调参困难。这是 2023 年 DPO 出来后社区集体转向 DPO 的根本原因(详见 [04-dpo.md](04-dpo.md))。
+
+## 三件套协同:SFT + RM + PPO 缺一不可
+
+Learning to Summarize 在 2020 年能定义 RLHF 标准范式,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 RLHF 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 RM + PPO,没有 SFT 拉到合格区** — 直接 RL 从随机/预训练 LM 起步,生成乱码,**RM 无法稳定打分**(都是低分),策略梯度信号几乎为零,训练崩
+- **只有 SFT + PPO,没有 RM(用 ROUGE 直接 RL)** — ROUGE 不反映真实质量,模型学到"骗 ROUGE 的输出"(关键词堆砌),反而比 SFT 还差;**人类偏好必须先编成 RM 标量,才能作 RL 的稠密 reward**
+- **只有 SFT + RM,没有 PPO + KL 惩罚** — 直接最大化 RM 分数会让模型 **reward hacking**(生成 RM 偏好但人类讨厌的输出);KL 惩罚把策略锚在 SFT 附近,**双重防御** reward hacking
+
+三件套合起来才让 RLHF 在 2020 年第一次在标准 NLP benchmark 上击败监督 SOTA。也正是因为三件的耦合 + PPO 的工程复杂度(4 模型同显存 / 训练周级 / hyperparameter 难调),后续工作沿两条路简化:
+1. **算力简化:[Constitutional AI](03-constitutional-ai.md)** 用 AI 自评省掉人工标注,把 Stage 2 数据成本砍 100×
+2. **算法简化:[DPO](04-dpo.md)** 推导出监督学习等价形式,完全去掉 PPO 和 RM 训练,工程上和 SFT 一样简单
+
+但**三阶段思想本身没被淘汰** — DPO 仍然需要 SFT 起步 + 偏好数据,只是把 RM + PPO 合并成一个 loss。Stiennon 2020 定义的范式至今(2024)仍是所有 LLM 对齐工作的基础结构。
+
+![对齐胜过规模 — RLHF 关键发现](assets/01-l2s-alignment-beats-scale.svg)
+*图 2:**上半** Reddit TL;DR 人工评测对比(% 时间被偏好 vs 参考摘要)— 监督 1.3B 35%、监督 6.7B 41%、**RLHF 1.3B 62%**(超过 6.7B SFT)、**RLHF 6.7B 74%**(甚至超过人工高质量摘要 70%)。**下半** 关键洞察 — 1.3B RLHF > 6.7B SFT 证明"对齐胜过 5× 参数",这一发现 2 年后被 InstructGPT 推到极致(1.3B 对齐版 > 175B 原版)。底部 callout:工业意义巨大 — 部署成本低 100× 的对齐小模型可以替代未对齐大模型。*
 
 ## 性能:超过参考摘要
 
