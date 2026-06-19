@@ -34,51 +34,60 @@ StyleGAN 发布后产生了 2018-2020 GAN 圈最大的文化影响:
 
 后续 **StyleGAN2**(2019)、**StyleGAN3**(2021)继续改进,StyleGAN 系列成为 GAN 时代的巅峰代表。
 
-## 核心思想:Style-Based Generator
+## 核心思想
 
-### 传统 GAN Generator vs StyleGAN
+### 直觉:把 generation 重设计为"用 style 控制 content",粒度自然分层
 
-```
-传统 GAN G:
-  z (latent) → Conv layers → image
-  问题:z 直接控制所有信息,粒度无法分离
+理解 StyleGAN 真正需要先抓一件事:**Progressive GAN 已经做到 1024×1024 高分辨率人脸,但 z 直接喂 G 让 latent 高度纠缠** — z 的一个维度同时影响姿态/发型/肤色等多个属性,无法独立控制;style mixing 不可行;latent editing 困难。Karras 等人 2018 反问:**为什么不借鉴 neural style transfer 的思路,把 generation 重构成"用 style 在每层注入控制内容"?如果每层 style 控制不同分辨率,就自然得到"粗(姿态)/ 中(发型)/ 细(肤色)"的分层控制**。
 
-StyleGAN G:
-  z → Mapping Network → w (style code)
-  w → 通过 AdaIN 在每个 Conv layer 注入 style
-  独立的 noise 输入控制 stochastic detail
-  → image
-```
+三件事必须同时成立才让 StyleGAN 在 2018 年成立:
 
-### Mapping Network: z → w
+- **Mapping Network 把 z 解纠缠成 w** — 8 层 MLP 把 Gaussian z 投射到 W 空间,让维度自然 disentangle(因为真实数据分布不是 Gaussian)
+- **AdaIN 在每层注入 style** — 每个 Conv layer 后用 AdaIN(w 控制 feature 的均值方差),style 改变外观不改变空间结构
+- **分层 style + Noise + Constant 输入** — 不同分辨率层 = 不同语义粒度;独立 noise 输入控制随机细节(头发走向 / 毛孔);G 输入是学到的常量 4×4 而非 z,所有变化通过 style 注入
 
-StyleGAN 加一个 **8 层 MLP**(mapping network)把 latent z 映射到中间 latent w:
+三件事合起来:**StyleGAN 在 FFHQ 上 FID 4.40**(vs Progressive GAN 8.04),1024×1024 人脸质量逼近真实照片。"This Person Does Not Exist" 网站 2019 年单月 100M+ 访问,把 GAN 推到主流媒体视野。后续 StyleGAN2 / 3 继续改进,成为 2018-2022 GAN 主导架构。
 
-$$
-w = f_{\text{MLP}}(z)
-$$
+![Traditional GAN vs StyleGAN — 架构根本差异](assets/04-stylegan-architecture.svg)
+*图 1:**左 传统 GAN** — z 直接喂 G,经 conv 栈生成图像。z 的每个维度同时控制多个属性(姿态 + 肤色 + 发型),latent 纠缠。**右 StyleGAN** — z 经 8 层 mapping MLP 变成 w → w 经 AdaIN 在每层注入 style → G 的输入是学到的常量 4×4 → 各层加独立 noise → 1024² 输出。关键反直觉点:**G 的输入是常量,不是 z;z 只决定 w,w 通过 AdaIN 注入每一层**。底部 callout:这一架构差异是 StyleGAN 比 Progressive GAN 质量飞跃的根本原因。*
 
-**为什么要 mapping?** 因为 z 是 Gaussian,真实数据分布(人脸)不是 Gaussian——把 z 直接喂给 G 会 force G 学一个扭曲的映射,导致 latent 纠缠。Mapping network 把 z 投射到一个"更接近数据分布形状"的空间 w,**让 w 维度自然 disentangle**。
+### 机制一:Mapping Network — 把 z 投射到解纠缠的 W 空间
 
-w 的维度通常也是 512(和 z 一样),但 W 空间的语义结构更清晰——w 的不同维度对应不同语义属性。
-
-### AdaIN(Adaptive Instance Normalization)
-
-StyleGAN 在每个 Conv layer 后用 AdaIN 注入 style:
+StyleGAN 加一个 **8 层 MLP** 把 latent z 映射到中间 latent w:
 
 $$
-\text{AdaIN}(x_i, y) = y_{s,i} \cdot \frac{x_i - \mu(x_i)}{\sigma(x_i)} + y_{b,i}
+w = f_{\text{MLP}}(z), \quad z \in \mathbb{R}^{512}, w \in \mathbb{R}^{512}
 $$
 
-- $x_i$ —— 第 i 个 feature map
-- $y_s, y_b$ —— 由 w 通过 learned affine 得到的 scale 和 bias
-- 先 normalize feature 到零均值单位方差,再用 style 的 (s, b) rescale
+**为什么需要 mapping?** 因为 z 服从 Gaussian 分布,而真实数据(人脸)的隐含分布**不是 Gaussian** — 它有"年轻人多 / 老人少"、"白人多 / 黑人少"等不均衡。把 z 直接喂 G,G 必须学一个"扭曲的映射"把 Gaussian 强制对齐到真实分布,这一扭曲让 latent 各维度耦合。
 
-AdaIN 的妙处:**style w 的每次注入,通过 (s, b) 控制 feature map 的统计量**,改变图像的整体外观(颜色、纹理),不改变空间结构。
+加 8 层 MLP 后,**z → w 这一步把扭曲吸收了** — w 空间不再要求是 Gaussian,可以自然贴合真实数据形状,让每个维度对应一个相对独立的语义属性。
 
-### Style 粒度的分层控制
+StyleGAN 论文用 **Perceptual Path Length(PPL)**指标实证 W 比 Z 更"线性":Z 空间 PPL=412.0,W 空间 PPL=228.9,**W 的解纠缠度是 Z 的两倍**。这是 W 空间能做精细 latent editing 的根本。
 
-不同 Conv layer 注入的 style 控制不同语义粒度:
+### 机制二:AdaIN — 用 style 控制每层 feature 的统计量
+
+StyleGAN 在每个 Conv layer 后用 AdaIN(Adaptive Instance Normalization)注入 w:
+
+$$
+\text{AdaIN}(x_i, w) = y_{s,i} \cdot \frac{x_i - \mu(x_i)}{\sigma(x_i)} + y_{b,i}
+$$
+
+其中 (y_s, y_b) = affine(w) 是 w 通过 learned linear 得到的 scale 和 bias。
+
+工作机制两步:
+1. **Instance Normalize** — 把 feature map 归一化到零均值单位方差,"擦掉"原本的统计信息
+2. **重新 rescale** — 用 style 的 (s, b) 重新调制,把新 style 写入
+
+**AdaIN 的妙处**:style 改变 feature 的**统计量**(均值 / 方差),等于改变图像的**整体外观**(颜色 / 纹理 / 风格)但**不改变空间结构**(图像里物体的位置 / 形状)。这就是为什么"换 style 不换姿态"成为可能。
+
+AdaIN 借自 neural style transfer(Huang 2017),但 StyleGAN 把它推到 GAN generator 里、且对每层用不同的 w 注入,这是它的关键创新。
+
+### 机制三:分层 Style + Noise + Constant 输入 — 自然得到粒度分层
+
+StyleGAN 的 G **不接收 z 作为输入**,而是从一个**学到的常量 4×4×512 tensor** 起步。所有变化通过 style w 在每层 AdaIN 注入。
+
+**不同分辨率层注入的 style 控制不同语义粒度** — 这是 StyleGAN 最具洞察力的实证发现:
 
 | Layer 分辨率 | 控制粒度 | 例子 |
 |------|------|------|
@@ -86,42 +95,22 @@ AdaIN 的妙处:**style w 的每次注入,通过 (s, b) 控制 feature map 的�
 | 16×16 - 32×32 | **中** | 发型、眼神、嘴型 |
 | 64×64 - 1024×1024 | **细** | 肤色、雀斑、毛发纹理、光线 |
 
-**Style Mixing** —— 训练时随机把 w₁(用于前 N 层)和 w₂(用于后续层)拼起来。让网络学到"不同层的 style 独立"。推理时可以做:
+**Style Mixing** — 训练时随机把 w₁(前 N 层用)和 w₂(后续层用)拼起来,让网络学到"不同层 style 独立"。推理时可以:`w_A(前 4 层:姿态) + w_B(后续层:肤色) = 人 A 姿态 + 人 B 肤色`。
 
-```
-人 A 的 w₁(粗略部分:姿态) + 人 B 的 w₂(细节:肤色)
-= 一张 A 的姿态 + B 的肤色的人脸
-```
+**Per-pixel Noise Input** — 每层额外加 noise:`x' = x + learned_scale · noise`。直觉:头发具体走向、皮肤毛孔分布、痘痘位置等"stochastic detail"应该独立于 style,从 noise 直接产生而非压缩到 z 里。这让 G 学得更精细。
 
-### Noise 输入控制 stochastic detail
+### 三件套协同:Mapping + AdaIN + 分层 style 缺一不可
 
-StyleGAN 还在每层加 **per-pixel noise input**:
+StyleGAN 在 2018 年能让 GAN 质量和可控性同时跃升,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 StyleGAN 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
 
-$$
-x' = x + \text{learned\_scale} \cdot \text{noise}
-$$
+- **只有 AdaIN + 分层 style,没有 mapping(直接用 z)** — z 是 Gaussian,直接做 AdaIN 注入仍然纠缠,style mixing 失败,latent editing 困难,**Progressive GAN 的本质问题没解决**
+- **只有 mapping + 分层,没有 AdaIN(用普通拼接 / 加法注入 w)** — w 无法稳定控制 feature 统计量,"换 style 不换姿态"做不到,粗/中/细分层失效
+- **只有 mapping + AdaIN,没有分层 style 注入(只在一层用 w)** — 失去"不同分辨率对应不同粒度"的自然性质,style mixing 不成立,latent editing 退化成 traditional GAN 水平
 
-直觉:头发的具体走向、皮肤上的毛孔分布、痘痘位置等"随机细节"应该独立于 style 控制。把这些 stochastic detail 用 noise 输入,而不是从 z 编码,让 G 学得更精细。
+三件套合起来才让 StyleGAN 在 2018 年同时拿到 SOTA 质量(FFHQ FID 4.40) + 自然可控性(W 空间 PPL 减半) + 风格组合能力(style mixing)。这一架构后被 StyleGAN2 / 3 持续打磨,**至今(2024)在人脸生成最高质量上仍是 SOTA,即使 Diffusion 在通用文生图上取代了 GAN**。
 
-### 完整 G 流程
-
-```
-z (Gaussian noise)
-  ↓ Mapping Network (8-layer MLP)
-w (style code)
-  ↓ Affine transform
-y_s, y_b for each layer
-
-Constant 4×4×512 input
-  ↓ Conv → +Noise → AdaIN(w_1)
-  ↓ Upsample → Conv → +Noise → AdaIN(w_2)
-  ↓ Upsample → Conv → +Noise → AdaIN(w_3)
-  ... (progressive grow to 1024×1024)
-  ↓ Conv → +Noise → AdaIN(w_n)
-1024×1024 image
-```
-
-注意 G 的输入是 **constant**(学到的固定 tensor),不是 z!所有变化通过 style 注入。这是 StyleGAN 与传统 GAN 的根本架构差异。
+![Style 分层控制 + Style Mixing demo](assets/04-stylegan-style-control.svg)
+*图 2:**左** StyleGAN 各层分辨率对应的语义粒度图解 — 4×4 / 8×8 控制姿态、脸型(粗);16-32 控制发型、眼神(中);64×64+ 控制肤色、纹理、光线(细)。每层一个圆圈,大小表示对应的语义粒度。**右** Style Mixing demo — 人 A 的 w 注入前 4 层(姿态)+ 人 B 的 w 注入后续层(肤色)→ 生成"A 姿态 + B 肤色"的新人脸,展示三种 mixing 配置。底部 callout:**G 输入是学到的常量 4×4 tensor,不是 z** — 所有变化通过 style 注入,这是 StyleGAN 与传统 GAN 的根本架构差异。*
 
 ## 关键代码
 
