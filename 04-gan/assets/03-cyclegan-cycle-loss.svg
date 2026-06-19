@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="cyc-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="cyc-arr-back" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="cyc-arr-red" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Cycle Consistency — X → Y → X 必须"回得来"
+  </text>
+
+  <!-- ============== TOP: X → Y → X cycle ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    上半 cycle:真马 x → 假斑马 G(x) → 重建马 F(G(x)) ≈ x
+  </text>
+
+  <!-- real x (horse) -->
+  <rect x="60" y="85" width="120" height="80" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="120" y="115" text-anchor="middle" font-size="14" fill="#92400e" font-weight="700">真马 x</text>
+  <text x="120" y="135" text-anchor="middle" font-size="22">🐴</text>
+  <text x="120" y="158" text-anchor="middle" font-size="10" fill="#92400e">(X 域)</text>
+
+  <!-- G -->
+  <rect x="220" y="105" width="80" height="40" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="260" y="123" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">G</text>
+  <text x="260" y="140" text-anchor="middle" font-size="10" fill="#9d174d">X→Y</text>
+
+  <line x1="180" y1="125" x2="218" y2="125" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cyc-arr)"/>
+
+  <!-- fake zebra G(x) -->
+  <rect x="340" y="85" width="120" height="80" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="400" y="115" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="700">假斑马 G(x)</text>
+  <text x="400" y="135" text-anchor="middle" font-size="22">🦓</text>
+  <text x="400" y="158" text-anchor="middle" font-size="10" fill="#991b1b">(看起来像 Y 域)</text>
+
+  <line x1="302" y1="125" x2="338" y2="125" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cyc-arr)"/>
+
+  <!-- F -->
+  <rect x="500" y="105" width="80" height="40" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="540" y="123" text-anchor="middle" font-size="13" fill="#5b21b6" font-weight="700">F</text>
+  <text x="540" y="140" text-anchor="middle" font-size="10" fill="#5b21b6">Y→X</text>
+
+  <line x1="462" y1="125" x2="498" y2="125" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#cyc-arr-back)"/>
+
+  <!-- reconstructed x F(G(x)) -->
+  <rect x="620" y="85" width="120" height="80" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="680" y="115" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">重建马 F(G(x))</text>
+  <text x="680" y="135" text-anchor="middle" font-size="22">🐴</text>
+  <text x="680" y="158" text-anchor="middle" font-size="10" fill="#065f46">(应 ≈ x)</text>
+
+  <line x1="582" y1="125" x2="618" y2="125" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#cyc-arr-back)"/>
+
+  <!-- cycle loss arrow -->
+  <path d="M 740 125 Q 820 125, 820 200 Q 820 240, 120 240 Q 60 240, 60 165" stroke="#dc2626" stroke-width="2" fill="none" marker-end="url(#cyc-arr-red)" stroke-dasharray="5,3"/>
+  <text x="450" y="232" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">||F(G(x)) − x||₁ ≈ 0   (cycle loss)</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="275" x2="860" y2="275" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== MIDDLE: Y → X → Y cycle ============== -->
+  <text x="450" y="305" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    下半 cycle(对称):真斑马 y → 假马 F(y) → 重建斑马 G(F(y)) ≈ y
+  </text>
+
+  <!-- real y (zebra) -->
+  <rect x="60" y="330" width="120" height="80" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="120" y="360" text-anchor="middle" font-size="14" fill="#92400e" font-weight="700">真斑马 y</text>
+  <text x="120" y="380" text-anchor="middle" font-size="22">🦓</text>
+  <text x="120" y="403" text-anchor="middle" font-size="10" fill="#92400e">(Y 域)</text>
+
+  <!-- F -->
+  <rect x="220" y="350" width="80" height="40" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="260" y="368" text-anchor="middle" font-size="13" fill="#5b21b6" font-weight="700">F</text>
+  <text x="260" y="385" text-anchor="middle" font-size="10" fill="#5b21b6">Y→X</text>
+
+  <line x1="180" y1="370" x2="218" y2="370" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#cyc-arr-back)"/>
+
+  <!-- fake horse F(y) -->
+  <rect x="340" y="330" width="120" height="80" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="400" y="360" text-anchor="middle" font-size="13" fill="#991b1b" font-weight="700">假马 F(y)</text>
+  <text x="400" y="380" text-anchor="middle" font-size="22">🐴</text>
+  <text x="400" y="403" text-anchor="middle" font-size="10" fill="#991b1b">(看起来像 X 域)</text>
+
+  <line x1="302" y1="370" x2="338" y2="370" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#cyc-arr-back)"/>
+
+  <!-- G -->
+  <rect x="500" y="350" width="80" height="40" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="540" y="368" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">G</text>
+  <text x="540" y="385" text-anchor="middle" font-size="10" fill="#9d174d">X→Y</text>
+
+  <line x1="462" y1="370" x2="498" y2="370" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cyc-arr)"/>
+
+  <!-- reconstructed y G(F(y)) -->
+  <rect x="620" y="330" width="120" height="80" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="680" y="360" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">重建斑马 G(F(y))</text>
+  <text x="680" y="380" text-anchor="middle" font-size="22">🦓</text>
+  <text x="680" y="403" text-anchor="middle" font-size="10" fill="#065f46">(应 ≈ y)</text>
+
+  <line x1="582" y1="370" x2="618" y2="370" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cyc-arr)"/>
+
+  <!-- cycle loss arrow -->
+  <path d="M 740 370 Q 820 370, 820 445 Q 820 485, 120 485 Q 60 485, 60 410" stroke="#dc2626" stroke-width="2" fill="none" marker-end="url(#cyc-arr-red)" stroke-dasharray="5,3"/>
+  <text x="450" y="477" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">||G(F(y)) − y||₁ ≈ 0   (cycle loss)</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="510" x2="860" y2="510" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: 无 cycle vs 有 cycle ============== -->
+  <text x="450" y="535" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    没有 cycle loss 会模式塌缩 — 加上 cycle loss 才保留个体信息
+  </text>
+
+  <!-- 没有 cycle -->
+  <rect x="60" y="555" width="370" height="90" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="577" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">✗ 无 cycle loss(只对抗 loss)</text>
+  <g font-size="11" fill="#991b1b">
+    <text x="75" y="600">• 任何马 → 同一只"标准斑马"</text>
+    <text x="75" y="620">• G 学到"骗 D"的最易输出</text>
+    <text x="75" y="640">• 失去 X 的姿态 / 背景 / 光照</text>
+  </g>
+
+  <!-- 有 cycle -->
+  <rect x="470" y="555" width="370" height="90" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="655" y="577" text-anchor="middle" font-size="12" fill="#065f46" font-weight="600">✓ 加 cycle loss</text>
+  <g font-size="11" fill="#065f46">
+    <text x="485" y="600">• G 必须保留 x 的内容(F 要能恢复)</text>
+    <text x="485" y="620">• 每只马变成对应姿态的斑马</text>
+    <text x="485" y="640">• 内容保留 + style 转换两者兼得</text>
+  </g>
+</svg>

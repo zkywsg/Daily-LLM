@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="pl-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="pl-arr-d" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    CycleGAN 完整训练 pipeline — 4 网络 + 4 loss
+  </text>
+
+  <!-- ============== TOP: 4 networks data flow ============== -->
+  <text x="450" y="62" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    数据流 — 双向 G/F + 双向 D
+  </text>
+
+  <!-- X domain inputs -->
+  <rect x="50" y="90" width="90" height="40" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="95" y="108" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">真马 x</text>
+  <text x="95" y="123" text-anchor="middle" font-size="10" fill="#92400e">X 域</text>
+
+  <rect x="50" y="280" width="90" height="40" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="95" y="298" text-anchor="middle" font-size="12" fill="#92400e" font-weight="600">真斑马 y</text>
+  <text x="95" y="313" text-anchor="middle" font-size="10" fill="#92400e">Y 域</text>
+
+  <!-- G and F generators -->
+  <rect x="200" y="90" width="80" height="40" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="240" y="108" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">G</text>
+  <text x="240" y="123" text-anchor="middle" font-size="10" fill="#9d174d">X→Y</text>
+
+  <rect x="200" y="280" width="80" height="40" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="240" y="298" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">F</text>
+  <text x="240" y="313" text-anchor="middle" font-size="10" fill="#5b21b6">Y→X</text>
+
+  <line x1="140" y1="110" x2="198" y2="110" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pl-arr)"/>
+  <line x1="140" y1="300" x2="198" y2="300" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pl-arr)"/>
+
+  <!-- fake outputs -->
+  <rect x="330" y="90" width="100" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="380" y="108" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">假斑马 G(x)</text>
+  <text x="380" y="123" text-anchor="middle" font-size="10" fill="#991b1b">↓ 同时喂 D_Y / F</text>
+
+  <rect x="330" y="280" width="100" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="380" y="298" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="600">假马 F(y)</text>
+  <text x="380" y="313" text-anchor="middle" font-size="10" fill="#991b1b">↓ 同时喂 D_X / G</text>
+
+  <line x1="282" y1="110" x2="328" y2="110" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pl-arr)"/>
+  <line x1="282" y1="300" x2="328" y2="300" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pl-arr)"/>
+
+  <!-- F and G reverse -->
+  <rect x="490" y="90" width="80" height="40" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="530" y="108" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">F</text>
+  <text x="530" y="123" text-anchor="middle" font-size="10" fill="#5b21b6">Y→X</text>
+
+  <rect x="490" y="280" width="80" height="40" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="530" y="298" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">G</text>
+  <text x="530" y="313" text-anchor="middle" font-size="10" fill="#9d174d">X→Y</text>
+
+  <line x1="432" y1="110" x2="488" y2="110" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pl-arr)"/>
+  <line x1="432" y1="300" x2="488" y2="300" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pl-arr)"/>
+
+  <!-- reconstructed -->
+  <rect x="620" y="90" width="120" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="680" y="108" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">重建 F(G(x))</text>
+  <text x="680" y="123" text-anchor="middle" font-size="10" fill="#065f46">应 ≈ x</text>
+
+  <rect x="620" y="280" width="120" height="40" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="680" y="298" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">重建 G(F(y))</text>
+  <text x="680" y="313" text-anchor="middle" font-size="10" fill="#065f46">应 ≈ y</text>
+
+  <line x1="572" y1="110" x2="618" y2="110" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pl-arr)"/>
+  <line x1="572" y1="300" x2="618" y2="300" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pl-arr)"/>
+
+  <!-- Discriminators in middle -->
+  <rect x="330" y="180" width="100" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="380" y="198" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">D_Y(PatchGAN)</text>
+  <text x="380" y="213" text-anchor="middle" font-size="10" fill="#1e40af">判别 Y 域真假</text>
+
+  <line x1="380" y1="130" x2="380" y2="178" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#pl-arr-d)"/>
+
+  <rect x="330" y="230" width="100" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="380" y="248" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">D_X(PatchGAN)</text>
+  <text x="380" y="263" text-anchor="middle" font-size="10" fill="#1e40af">判别 X 域真假</text>
+
+  <line x1="380" y1="280" x2="380" y2="270" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+  <!-- cycle loss arrows (red dashed) -->
+  <path d="M 740 110 Q 800 110, 800 155 Q 800 200, 95 200 Q 50 200, 50 130" stroke="#dc2626" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#pl-arr-d)"/>
+  <text x="450" y="148" text-anchor="middle" font-size="10" fill="#dc2626" font-style="italic">cycle: F(G(x)) ≈ x</text>
+
+  <path d="M 740 300 Q 800 300, 800 360 Q 800 405, 95 405 Q 50 405, 50 320" stroke="#dc2626" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#pl-arr-d)"/>
+  <text x="450" y="395" text-anchor="middle" font-size="10" fill="#dc2626" font-style="italic">cycle: G(F(y)) ≈ y</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="430" x2="860" y2="430" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: 4 losses summary ============== -->
+  <text x="450" y="455" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    4 个 loss 信号同时优化
+  </text>
+
+  <g transform="translate(60, 475)">
+    <!-- Loss 1 -->
+    <rect x="0" y="0" width="190" height="80" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="95" y="22" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">① GAN loss(D_Y)</text>
+    <text x="10" y="44" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">让 G(x) 骗 D_Y</text>
+    <text x="10" y="60" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">让 G(x) 看起来像</text>
+    <text x="10" y="74" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">真斑马</text>
+
+    <!-- Loss 2 -->
+    <rect x="200" y="0" width="190" height="80" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="295" y="22" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">② GAN loss(D_X)</text>
+    <text x="210" y="44" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">让 F(y) 骗 D_X</text>
+    <text x="210" y="60" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">让 F(y) 看起来像</text>
+    <text x="210" y="74" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">真马</text>
+
+    <!-- Loss 3 -->
+    <rect x="400" y="0" width="190" height="80" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="495" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">③ Cycle loss(λ=10)★</text>
+    <text x="410" y="44" font-family="ui-monospace, monospace" font-size="9" fill="#991b1b">||F(G(x)) − x||₁ +</text>
+    <text x="410" y="60" font-family="ui-monospace, monospace" font-size="9" fill="#991b1b">||G(F(y)) − y||₁</text>
+    <text x="410" y="74" font-family="ui-monospace, monospace" font-size="9" fill="#dc2626">解决 mode collapse</text>
+
+    <!-- Loss 4 -->
+    <rect x="600" y="0" width="190" height="80" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">④ Identity loss(λ=5)</text>
+    <text x="610" y="44" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">||G(y) − y||₁ +</text>
+    <text x="610" y="60" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">||F(x) − x||₁</text>
+    <text x="610" y="74" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">保留背景色</text>
+  </g>
+
+  <!-- bottom callout -->
+  <rect x="60" y="582" width="780" height="60" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="605" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    工程稳定剂三件套 — PatchGAN(70×70 局部判别)+ LSGAN MSE loss + ResNet G(9 res blocks)
+  </text>
+  <text x="450" y="628" text-anchor="middle" font-size="11" fill="#fef3c7">
+    让 4 网络同时训能跑通 — Adam lr=2e-4 / β₁=0.5,200 epochs,V100 约 5-7 天
+  </text>
+</svg>

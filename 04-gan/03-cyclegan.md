@@ -35,72 +35,82 @@ CycleGAN 发布后立即引爆社区:
 
 CycleGAN 不是 GAN 训练技术上的突破,而是**应用层的爆发**——它把 GAN 从"实验室生成 MNIST"推到"普通人能玩的艺术工具"。
 
-## 核心思想:Cycle Consistency
+## 核心思想
 
-### 双向 mapping + 一致性约束
+### 直觉:用 X → Y → X 的"回得来"约束,绕过配对数据
 
-CycleGAN 有 **两个 generator + 两个 discriminator**:
+理解 CycleGAN 真正需要先抓一件事:**pix2pix(2017)证明 conditional GAN 能学 X→Y,但需要严格配对(x_i, y_i)训练数据 — 而真实世界很多翻译任务根本拿不到配对**。马变斑马没有"同一姿态"的成对照、莫奈画风没有对应真实照、夏冬同地同角度的照片极难收集。如果只用单边 GAN(G: X→Y),会**模式塌缩** — G 学到任何 X 都映射到一个"最骗 D"的 Y,失去 X 的内容。Zhu 等人 2017 反问:**为什么不加一个 F: Y→X,然后要求 F(G(x)) ≈ x?如果"回得来",说明 G 保留了 X 的内容**。
+
+三件事必须同时成立才让 CycleGAN 在 2017 年成立:
+
+- **双向 G + 双向 D**(G: X→Y、F: Y→X、D_Y、D_X)— 没有反向 mapping 就没法形成 cycle
+- **Cycle consistency L1 loss** — `||F(G(x)) - x||₁` 强迫 G 保留内容信息,这是绕过配对数据的真正核心
+- **PatchGAN + LSGAN + ResNet G** — 工程稳定剂三件套,让"4 个网络同时训"在实际工程中能跑通
+
+三件事合起来:CycleGAN 把"无配对图像翻译"从概念变成可工程化的方法。**马↔斑马、夏↔冬、莫奈↔照片** 等 demo 引爆 2017-2018 AI 圈,把 GAN 从"实验室生成 MNIST"推到"普通人能玩的艺术工具"。这一思想后被 StarGAN(多域)/ UNIT / MUNIT / 机器翻译 back-translation 等延续。
+
+![Cycle Consistency 核心思想](assets/03-cyclegan-cycle-loss.svg)
+*图 1:**上半** X → Y → X 循环 — 真马 x 经 G 变成假斑马 G(x),F 把这个假斑马变回 F(G(x)),要求 ≈ 原 x(L1 loss)。**下半** Y → X → Y 循环对称。**中央 callout** 强调:如果 F 能从 G(x) 恢复原 x,说明 G(x) 保留了 x 的内容信息(姿态/背景/光照)— 这是绕过配对数据的核心。底部对比:没有 cycle loss 时 G 模式塌缩成"任何马都变成同一只标准斑马";加上 cycle loss 后 G 保留个体特征。*
+
+### 机制一:双向 G + 双向 D — 形成 cycle 的结构前提
+
+CycleGAN 同时维护 **两个 generator + 两个 discriminator**:
 
 - $G: X \to Y$(把马变斑马)
 - $F: Y \to X$(把斑马变回马)
-- $D_Y$:判别 Y 域真假
-- $D_X$:判别 X 域真假
+- $D_Y$:判别图像是否真 Y 域
+- $D_X$:判别图像是否真 X 域
 
-### Cycle Consistency Loss
+对抗 loss 是两个标准 GAN loss 之和(LSGAN 形式):
 
-核心约束:**X → Y → X 应该恢复原 X**:
+$$
+\mathcal{L}_{\text{GAN}} = \mathcal{L}_{\text{GAN}}(G, D_Y, X, Y) + \mathcal{L}_{\text{GAN}}(F, D_X, Y, X)
+$$
+
+对抗 loss 本身只保证"G(x) 看起来像 Y 域、F(y) 看起来像 X 域",**不保证内容保留** — 这就是为什么需要机制二的 cycle loss 配合。单独跑对抗 loss,G 会模式塌缩。
+
+### 机制二:Cycle Consistency L1 Loss — 强迫保留内容
+
+CycleGAN 的核心创新一行公式:
 
 $$
 \mathcal{L}_{\text{cyc}}(G, F) = \mathbb{E}_{x \sim X}[\|F(G(x)) - x\|_1] + \mathbb{E}_{y \sim Y}[\|G(F(y)) - y\|_1]
 $$
 
-直觉:如果 G 把马 x 变成斑马 G(x),F 把这个斑马变回去,应该还是原来的马 x。这一约束**强迫 G 保留 X 的内容信息**,而不只是生成任意一个合理的 Y。
+直觉:**如果 G 把马变成斑马,F 把斑马变回去,应该还是原来那只马**(同样的姿态、同样的草地、同样的光照)。这一约束以"内容必须可恢复"的方式,**强迫 G 在改变 style/texture 的同时保留 X 的全部 content**。
 
-### 完整 loss
-
-$$
-\mathcal{L}(G, F, D_X, D_Y) = \mathcal{L}_{\text{GAN}}(G, D_Y, X, Y) + \mathcal{L}_{\text{GAN}}(F, D_X, Y, X) + \lambda \mathcal{L}_{\text{cyc}}(G, F)
-$$
-
-- $\mathcal{L}_{\text{GAN}}$ —— 标准 GAN 对抗 loss(让 G/F 生成的样本被 D 判为真)
-- $\mathcal{L}_{\text{cyc}}$ —— cycle consistency loss
-- $\lambda$ —— 平衡系数,通常 10
-
-### 训练
-
-```
-for each batch (x, y) (x 来自 X 域,y 来自 Y 域,无配对):
-    # 1. 训练 G (X→Y) 和 F (Y→X)
-    fake_y = G(x)
-    cycle_x = F(fake_y)
-    fake_x = F(y)
-    cycle_y = G(fake_x)
-
-    # cycle loss
-    cyc_loss = ||cycle_x - x||₁ + ||cycle_y - y||₁
-    # adversarial loss
-    g_loss = BCE(D_Y(fake_y), 1) + BCE(D_X(fake_x), 1) + λ * cyc_loss
-    更新 G, F
-
-    # 2. 训练 D_X, D_Y
-    更新 D_Y 区分 y 和 fake_y
-    更新 D_X 区分 x 和 fake_x
-```
-
-### Identity Loss(可选,提升效果)
-
-论文还加了一个 identity loss:
+总 loss 加权组合:
 
 $$
-\mathcal{L}_{\text{idt}}(G, F) = \mathbb{E}_{y \sim Y}[\|G(y) - y\|_1] + \mathbb{E}_{x \sim X}[\|F(x) - x\|_1]
+\mathcal{L} = \mathcal{L}_{\text{GAN}} + \lambda \cdot \mathcal{L}_{\text{cyc}}, \quad \lambda = 10
 $$
 
-直觉:如果输入已经是目标域(把"斑马"输入到 G: 马→斑马),应该输出原样。这一约束保留颜色 / 纹理信息,防止 G 给所有马都加上斑马纹但同时改变背景色等无关属性。
+为什么用 **L1 而非 L2**?L1 给出 sharper 重建(L2 倾向平均化),对图像内容保留更友好。这是借鉴 pix2pix 的经验。
 
-### 架构
+**Identity Loss**(可选,论文实际用):额外加 `||G(y) - y||₁ + ||F(x) - x||₁`,要求"输入已经是目标域时输出原样"。防止 G 在马→斑马时同时改变背景色,保留风格。
 
-- **Generator**:U-Net-like(早期版本)或 ResNet-based(论文最终版,9 个 residual blocks)
-- **Discriminator**:PatchGAN(70×70 局部判别,而不是整图判别),减少参数 + 加快训练
+### 机制三:PatchGAN + LSGAN + ResNet G — 让 4 网络同时训能跑通
+
+CycleGAN 同时训 4 个网络(G/F/D_X/D_Y),工程复杂度高,需要一组稳定剂:
+
+- **PatchGAN Discriminator** — 不是整图判别,而是 70×70 局部判别。D 只判断"每个 patch 看起来像不像真",输出一个 patch grid 而非单个 scalar。**减少 D 参数 + 加快训练 + 提升纹理细节**
+- **LSGAN loss** — 用 MSE 替代原 GAN 的 BCE 作对抗 loss。BCE 在 D 强 G 弱时梯度饱和,LSGAN 用 squared loss 让梯度永远有意义。这是 2017 年 GAN 稳定化的常见 trick
+- **ResNet Generator** — G 用 ResNet-based(9 个 residual blocks),不用 DCGAN 的纯 deconv。residual 让生成器学到"在输入上叠加修改"而不是"从零重建",对图像翻译这类"局部修改"任务更适合
+
+四个网络的训练用一个共享 Adam optimizer 训 G + F、两个独立 optimizer 训 D_X / D_Y,lr=2e-4 / β₁=0.5(DCGAN 经验)。训练 200 epochs,单卡 V100 约 5-7 天。
+
+### 三件套协同:双向 G/D + cycle loss + 工程稳定剂 缺一不可
+
+CycleGAN 在 2017 年能引爆 GAN 应用层,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 CycleGAN 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有双向 G/D,没有 cycle loss** — 退化成"两个独立的单边 GAN",G 模式塌缩(所有马 → 一只标准斑马),失去内容保留能力,完全失败
+- **只有 cycle loss + 单边 G(X→Y)** — 没有 F: Y→X,F(G(x)) 无定义,cycle 公式无法成立,核心 loss 项空缺
+- **只有双向 G/D + cycle loss,没有工程稳定剂** — 4 个网络用原 GAN BCE + 整图 D + 纯 deconv G,训练崩(BCE 梯度饱和、整图 D 参数爆、deconv G 学不到 identity-like 修改),即使理论成立也跑不出 paper 里的效果
+
+三件套合起来才让 CycleGAN 成为"无配对图像翻译"第一个可工程复现的方法。也正是因为三件套的耦合,后续 CycleGAN 变体的演化方向都是"在保留这三件的前提下扩展功能"—— StarGAN 用一个 G 处理多域,UNIT/MUNIT 加入 shared latent,CUT 用 contrastive loss 替代 cycle loss 等。
+
+![CycleGAN 完整训练 pipeline](assets/03-cyclegan-pipeline.svg)
+*图 2:CycleGAN 4 网络 + 4 loss 完整训练图。**上半** 数据流:马 x → G → 假斑马 → F → 重建马 / 真斑马 y → F → 假马 → G → 重建斑马。**下半** 4 个 loss 信号:① D_Y adversarial(让 G(x) 骗 D_Y)② D_X adversarial(让 F(y) 骗 D_X)③ cycle loss F(G(x))≈x + G(F(y))≈y ④ identity loss G(y)≈y + F(x)≈x。底部三栏对比:**无 cycle loss**(mode collapse,所有马变同一斑马)/ **加 cycle loss**(保留个体)/ **加 cycle + identity**(还保留背景色) — 每加一项 loss 解决一类失效模式。*
 
 ## 关键代码
 
