@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="al-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    ALBERT 三机制 — Embedding 因式分解 × 跨层共享 × SOP
+  </text>
+
+  <!-- ============== 机制一: Embedding 因式分解 ============== -->
+  <text x="150" y="60" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">
+    机制一:Embedding 因式分解
+  </text>
+
+  <rect x="40" y="78" width="220" height="240" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+
+  <!-- BERT 原版 -->
+  <text x="150" y="100" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="600">BERT 原版</text>
+  <rect x="70" y="110" width="160" height="50" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="150" y="128" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#991b1b">V × H</text>
+  <text x="150" y="143" text-anchor="middle" font-size="9" fill="#991b1b">= 30K × 1024</text>
+  <text x="150" y="156" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">= 30M 参数</text>
+
+  <!-- arrow -->
+  <line x1="150" y1="170" x2="150" y2="190" stroke="#9d174d" stroke-width="2" marker-end="url(#al-arr)"/>
+  <text x="150" y="185" text-anchor="middle" font-size="9" fill="#9d174d">拆成两步</text>
+
+  <!-- ALBERT 因式分解 -->
+  <text x="150" y="205" text-anchor="middle" font-size="10" fill="#059669" font-weight="600">ALBERT</text>
+  <rect x="70" y="215" width="75" height="40" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="107" y="231" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">V × E</text>
+  <text x="107" y="245" text-anchor="middle" font-size="8" fill="#065f46">30K×128</text>
+
+  <text x="150" y="237" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">+</text>
+
+  <rect x="155" y="215" width="75" height="40" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="192" y="231" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">E × H</text>
+  <text x="192" y="245" text-anchor="middle" font-size="8" fill="#065f46">128×1024</text>
+
+  <text x="150" y="275" text-anchor="middle" font-size="10" fill="#059669" font-weight="700">= 4M 参数 ★</text>
+  <text x="150" y="293" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">少 83%</text>
+  <text x="150" y="310" text-anchor="middle" font-size="9" fill="#9d174d" font-style="italic">词汇维 ≠ hidden 维</text>
+
+  <!-- ============== 机制二: 跨层共享 ============== -->
+  <text x="450" y="60" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">
+    机制二:跨层参数共享
+  </text>
+
+  <rect x="290" y="78" width="320" height="240" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+
+  <!-- BERT: 24 独立层 -->
+  <text x="370" y="100" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="600">BERT(24 独立)</text>
+  <g transform="translate(310, 110)">
+    <rect x="0" y="0" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="0" y="20" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="0" y="40" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="0" y="60" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="0" y="80" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="24" y="0" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="24" y="20" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="24" y="40" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="24" y="60" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="24" y="80" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="48" y="0" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="48" y="20" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="48" y="40" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="48" y="60" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="48" y="80" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="72" y="0" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="72" y="20" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="72" y="40" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="72" y="60" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="72" y="80" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="96" y="0" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="96" y="20" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="96" y="40" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+    <rect x="96" y="60" width="22" height="18" fill="#fee2e2" stroke="#dc2626"/>
+  </g>
+
+  <text x="370" y="225" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">24 × 12M = 288M</text>
+
+  <!-- arrow -->
+  <line x1="437" y1="195" x2="465" y2="195" stroke="#7c3aed" stroke-width="3" marker-end="url(#al-arr)"/>
+  <text x="450" y="183" text-anchor="middle" font-size="9" fill="#7c3aed">共享</text>
+
+  <!-- ALBERT: 1 共享层 重复 24 次 -->
+  <text x="540" y="100" text-anchor="middle" font-size="10" fill="#059669" font-weight="600">ALBERT(1 共享)</text>
+  <g transform="translate(495, 110)">
+    <rect x="20" y="35" width="40" height="30" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="40" y="55" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">×24</text>
+
+    <!-- circular arrow -->
+    <path d="M 75 50 A 18 18 0 1 1 75 49" stroke="#059669" stroke-width="1.5" fill="none" marker-end="url(#al-arr)"/>
+    <text x="103" y="40" text-anchor="middle" font-size="8" fill="#059669">重复</text>
+    <text x="103" y="51" text-anchor="middle" font-size="8" fill="#059669">用 24</text>
+    <text x="103" y="62" text-anchor="middle" font-size="8" fill="#059669">次</text>
+  </g>
+
+  <text x="540" y="225" text-anchor="middle" font-size="10" fill="#059669" font-weight="700">1 × 12M = 12M ★</text>
+  <text x="540" y="247" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">少 24×</text>
+
+  <text x="450" y="275" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="600">⚠ FLOPs 不变 — 只省显存</text>
+  <text x="450" y="295" text-anchor="middle" font-size="9" fill="#9d174d" font-style="italic">forward 仍走 24 层</text>
+  <text x="450" y="310" text-anchor="middle" font-size="9" fill="#dc2626">这是不如 DistilBERT 受欢迎的原因</text>
+
+  <!-- ============== 机制三: NSP → SOP ============== -->
+  <text x="750" y="60" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">
+    机制三:NSP → SOP
+  </text>
+
+  <rect x="640" y="78" width="220" height="240" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+
+  <!-- BERT NSP -->
+  <text x="750" y="100" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="600">BERT NSP</text>
+  <rect x="660" y="110" width="180" height="55" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="670" y="128" font-size="9" fill="#991b1b">正:A → B(同文档)</text>
+  <text x="670" y="142" font-size="9" fill="#991b1b">负:A → Random(随机)</text>
+  <text x="750" y="160" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">主题差异 → 浅信号</text>
+
+  <line x1="750" y1="175" x2="750" y2="195" stroke="#9d174d" stroke-width="2" marker-end="url(#al-arr)"/>
+
+  <!-- ALBERT SOP -->
+  <text x="750" y="210" text-anchor="middle" font-size="10" fill="#059669" font-weight="600">ALBERT SOP</text>
+  <rect x="660" y="220" width="180" height="55" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="670" y="238" font-size="9" fill="#065f46">正:A → B(同文档)</text>
+  <text x="670" y="252" font-size="9" fill="#065f46" font-weight="700">负:B → A(调换!)</text>
+  <text x="750" y="270" text-anchor="middle" font-size="9" fill="#059669" font-weight="700">主题相同 → hard negative</text>
+
+  <text x="750" y="293" text-anchor="middle" font-size="10" fill="#5b21b6" font-weight="700">SQuAD +0.6 / RACE +1.0</text>
+  <text x="750" y="310" text-anchor="middle" font-size="9" fill="#9d174d" font-style="italic">→ 启发 SimCSE / E5</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="345" x2="860" y2="345" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: 三件套缺一 -->
+  <text x="450" y="370" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三件套缺一,18× 压缩都达不到
+  </text>
+
+  <g transform="translate(40, 390)">
+    <rect x="0" y="0" width="265" height="140" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="132" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 因式分解</text>
+    <text x="15" y="48" font-size="10" fill="#991b1b">attention/FFN 共享后</text>
+    <text x="15" y="68" font-size="10" fill="#991b1b">embedding 30M 仍占大头</text>
+    <text x="15" y="88" font-size="10" fill="#991b1b">尤其 xxlarge H=4096 时</text>
+    <text x="15" y="108" font-size="10" fill="#991b1b">embedding 爆膨胀到 122M</text>
+    <text x="132" y="132" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 18M 目标失败</text>
+
+    <rect x="285" y="0" width="265" height="140" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="417" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 跨层共享</text>
+    <text x="300" y="48" font-size="10" fill="#991b1b">embedding 压到 4M</text>
+    <text x="300" y="68" font-size="10" fill="#991b1b">但 24 层独立仍占 288M</text>
+    <text x="300" y="88" font-size="10" fill="#991b1b">总参数 ~300M</text>
+    <text x="300" y="108" font-size="10" fill="#991b1b">几乎没压缩</text>
+    <text x="417" y="132" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 压缩不到位</text>
+
+    <rect x="570" y="0" width="250" height="140" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 SOP(用 NSP)</text>
+    <text x="585" y="48" font-size="10" fill="#991b1b">参数压下来了但预训</text>
+    <text x="585" y="68" font-size="10" fill="#991b1b">练 ceiling 被简单任务压</text>
+    <text x="585" y="88" font-size="10" fill="#991b1b">xxlarge 反超 BERT 困难</text>
+    <text x="695" y="132" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 性能不能反超</text>
+  </g>
+</svg>

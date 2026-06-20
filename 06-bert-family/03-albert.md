@@ -35,7 +35,29 @@ ALBERT 把这两个想法做出来,产生了几个"超级压缩"的模型:
 
 但 ALBERT 也有代价——**参数共享降低参数量但不降推理时间**(每层仍要算同样的 forward),实际部署上 ALBERT 没有 [DistilBERT](04-distilbert.md) 那么受欢迎。
 
-## 改动 1:Embedding 因式分解
+## 核心思想:Embedding 因式分解 + 跨层共享 + SOP
+
+### 直觉
+
+[BERT-large](01-bert.md) 334M 参数里有**大量冗余**,Lan 等人盯上了三处具体的浪费:
+
+1. **Token embedding 维度等于 hidden size 是浪费** —— Token 只承载词汇信息(30K 词表 128 维就够),hidden state 承载上下文相关表征(需要 768+ 维),强制两者维度相等让 embedding 矩阵爆膨胀
+2. **24 层之间参数独立是冗余** —— 论文怀疑深层 Transformer 不同层学的是"相似变换的不同尺度",共享一组应该也能 work
+3. **NSP 太简单** —— [RoBERTa](02-roberta.md) 已经证明 NSP 用主题信号区分,学不到深表征,占算力学不到东西
+
+ALBERT 的洞察:**这三个浪费可以分别精确切除,加起来让 BERT-large 从 334M 压到 18M(少 18×)**——而且 ALBERT-xxlarge(235M)反而击败 BERT-large(334M)。
+
+但三个改动必须**同时**做才能 work——只切一个收益打折:
+
+1. **Embedding 因式分解(V×E + E×H)** —— 把 30K×1024 拆成 30K×128 + 128×1024
+2. **跨层参数共享** —— 24 层只存 1 份权重,forward 重复用 24 次
+3. **NSP → SOP** —— 同对句子调换顺序作负例,任务从"主题分类"变成"语义连贯性"
+
+→ 三机制串起来,模型显存占用降 18×,见图 1 三个机制的具体作用。
+
+![ALBERT 三机制 — Embedding 因式分解 × 跨层共享 × SOP](assets/03-albert-three-mechanisms.svg)
+
+## 机制一:Embedding 因式分解
 
 [BERT](01-bert.md) 的 input embedding 矩阵是 `V × H`,其中 `V = vocab_size = 30K`,`H = hidden_size`(BERT-base 768,BERT-large 1024)。这一矩阵参数量:
 
@@ -63,7 +85,7 @@ $$
 
 因式分解的合理性来自一个语言学观察:**token embedding 的"信息容量"由 vocab_size 决定,不应该随 hidden_size 线性增长**。当模型变大(H 从 768 推到 4096),token embedding 不需要变大——它们仍然只是"30K 个词的查表"。强制让 V × H 同步增长是浪费。
 
-## 改动 2:跨层参数共享
+## 机制二:跨层参数共享
 
 [BERT-large](01-bert.md) 有 24 层,每层独立的参数:`24 × (4 × H² + 8 × H²) = 24 × 12 H²`(attention + FFN 估算)。这是模型参数的大头(BERT-large 总参数的 ~75%)。
 
@@ -109,7 +131,7 @@ ALBERT 论文里也比较了几个共享策略(Table 7):
 
 观察:**只共享 FFN 几乎不损性能,全部共享损 0.4 分**——说明 FFN 的参数冗余度比 attention 还高,可以完全共享而几乎不掉点。
 
-## 改动 3:NSP → SOP
+## 机制三:NSP → SOP
 
 [BERT 原版](01-bert.md) 的 NSP(Next Sentence Prediction)被 [RoBERTa](02-roberta.md) 证明几乎无用——negative sample 是从不同文档随机选的句子,模型用浅层主题信号就能区分,学不到深表征。
 
@@ -131,6 +153,20 @@ SOP 的消融(Table 5):
 SOP 比 NSP 涨 0.6–1.0 分,**证明任务设计本身有真实信号**——不只是"任务有没有"的问题,而是"任务难度合不合适"的问题。
 
 SOP 这一思想后来被广泛借鉴:**对比学习里"正负样本要语义相近但有差异"** 是 ALBERT 的精神延续。今天的 Sentence-BERT、SimCSE 等检索模型也用类似策略构造 hard negative。
+
+## 三件套协同 — 18× 参数压缩 + 性能不掉甚至反超
+
+> **因式分解砍 embedding + 共享砍 24 层 + SOP 让 cap 不被简单任务压低** —— 三者缺一,ALBERT 都达不到"18M 参数接近 BERT-large"或"235M xxlarge 反超 BERT-large"。
+
+- 只有 **因式分解**:embedding 从 30M 压到 4M(-26M),但 attention + FFN 仍占 BERT-large 总参数 75% 不动 → 总参数 300M+,压缩不到位
+- 只有 **共享**:attention + FFN 从 288M 压到 12M(-276M),但 embedding 仍 30M → 共享后总参数 ~42M,xxlarge 推 H=4096 时 embedding 又爆膨胀
+- 只有 **SOP**:不动架构,只换预训练任务 → 涨 0.6-1.0 分,完全达不到"18× 压缩"目标
+
+三件套首次组合 → ALBERT-large 18M(BERT-large 334M)+ ALBERT-xxlarge 235M 反超 BERT-large 334M — 见图 2 BERT vs ALBERT 各档对比。
+
+![ALBERT vs BERT — 三件套协同的参数效率](assets/03-albert-vs-bert.svg)
+
+> ⚠ **重要权衡**:跨层参数共享只省**显存和文件大小**,不省 FLOPs(forward 仍走 24 层)。这是 ALBERT 部署上不如 [DistilBERT](04-distilbert.md) 受欢迎的根本原因。
 
 ## 性能与权衡
 

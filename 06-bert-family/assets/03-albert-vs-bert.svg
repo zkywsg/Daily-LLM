@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="av-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    ALBERT vs BERT — 三件套协同的参数效率
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    论文 Table 2 — 参数 vs SQuAD F1,ALBERT-xxlarge 反超 BERT-large
+  </text>
+
+  <!-- ============== TOP: param vs SQuAD scatter / bars ============== -->
+  <!-- 参数 bar chart -->
+  <g transform="translate(60, 80)">
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">参数量(M)</text>
+
+    <!-- BERT-base -->
+    <text x="0" y="50" font-size="10" fill="#1f2937">BERT-base</text>
+    <rect x="120" y="38" width="108" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="233" y="49" font-size="10" fill="#dc2626">108M</text>
+
+    <!-- BERT-large -->
+    <text x="0" y="74" font-size="10" fill="#1f2937">BERT-large</text>
+    <rect x="120" y="62" width="334" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="460" y="73" font-size="10" fill="#dc2626">334M</text>
+
+    <!-- ALBERT-base -->
+    <text x="0" y="98" font-size="10" fill="#1f2937">ALBERT-base</text>
+    <rect x="120" y="86" width="12" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="138" y="97" font-size="10" fill="#059669" font-weight="700">12M ★ 9× ↓</text>
+
+    <!-- ALBERT-large -->
+    <text x="0" y="122" font-size="10" fill="#1f2937">ALBERT-large</text>
+    <rect x="120" y="110" width="18" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="144" y="121" font-size="10" fill="#059669" font-weight="700">18M ★★ 18× ↓(vs BERT-large)</text>
+
+    <!-- ALBERT-xxlarge -->
+    <text x="0" y="146" font-size="10" fill="#1f2937">ALBERT-xxlarge</text>
+    <rect x="120" y="134" width="235" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="361" y="145" font-size="10" fill="#059669" font-weight="700">235M(比 BERT-large 还少 30%)</text>
+  </g>
+
+  <!-- SQuAD F1 -->
+  <g transform="translate(60, 250)">
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">SQuAD 1.1 F1</text>
+
+    <text x="0" y="50" font-size="10" fill="#1f2937">BERT-base</text>
+    <rect x="120" y="38" width="402" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="528" y="49" font-size="10" fill="#dc2626">90.4</text>
+
+    <text x="0" y="74" font-size="10" fill="#1f2937">BERT-large</text>
+    <rect x="120" y="62" width="410" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="535" y="73" font-size="10" fill="#dc2626">92.2</text>
+
+    <text x="0" y="98" font-size="10" fill="#1f2937">ALBERT-base(12M)</text>
+    <rect x="120" y="86" width="397" height="14" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="525" y="97" font-size="10" fill="#92400e">89.3(略低,可接受)</text>
+
+    <text x="0" y="122" font-size="10" fill="#1f2937">ALBERT-large(18M)</text>
+    <rect x="120" y="110" width="404" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="530" y="121" font-size="10" fill="#059669" font-weight="700">90.9(超 BERT-base!)</text>
+
+    <text x="0" y="146" font-size="10" fill="#1f2937" font-weight="700">ALBERT-xxlarge(235M)</text>
+    <rect x="120" y="134" width="418" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="546" y="145" font-size="10" fill="#059669" font-weight="700">94.1 ★★ 反超 BERT-large(92.2)</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="425" x2="860" y2="425" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: trade-off + insights -->
+  <text x="450" y="450" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    ALBERT 的取舍 — 参数效率 ≠ 推理效率
+  </text>
+
+  <g transform="translate(40, 470)">
+    <rect x="0" y="0" width="395" height="135" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="197" y="22" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">★ ALBERT 优势</text>
+    <text x="15" y="48" font-size="10" fill="#065f46">• 显存占用 18× 降低(1.2GB → 70MB)</text>
+    <text x="15" y="68" font-size="10" fill="#065f46">• 文件大小 18× 降(适合移动 / IoT)</text>
+    <text x="15" y="88" font-size="10" fill="#065f46">• xxlarge 反超 BERT-large(参数效率)</text>
+    <text x="15" y="108" font-size="10" fill="#065f46">• SOP 启发后续对比学习 hard negative</text>
+
+    <rect x="415" y="0" width="405" height="135" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="617" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">⚠ ALBERT 局限</text>
+    <text x="430" y="48" font-size="10" fill="#991b1b">• 共享只省参数,不省 FLOPs</text>
+    <text x="430" y="68" font-size="10" fill="#991b1b">• 推理时间和 BERT 一样(走 24 层)</text>
+    <text x="430" y="88" font-size="10" fill="#991b1b">• 训练反而更慢(xxlarge H=4096)</text>
+    <text x="430" y="108" font-size="10" fill="#dc2626" font-weight="700">→ 工业部署不如 DistilBERT(层数减半)</text>
+  </g>
+
+  <rect x="60" y="620" width="780" height="35" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="643" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">
+    "参数效率 ≠ 推理效率" — ALBERT 的认知贡献,直接定义 MoE 时代"总参 vs 激活参"区分
+  </text>
+</svg>
