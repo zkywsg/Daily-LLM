@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="tf-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Toolformer 自监督流水线 — 采样 × 过滤 × 微调
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    完全无人工标注 — LLM 自己造训练数据,perplexity 当裁判
+  </text>
+
+  <!-- INPUT corpus -->
+  <rect x="60" y="80" width="200" height="60" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="160" y="103" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Pretraining 语料</text>
+  <text x="160" y="120" text-anchor="middle" font-size="10" fill="#92400e" font-style="italic">"1969 年人类首次登月"</text>
+  <text x="160" y="133" text-anchor="middle" font-size="9" fill="#92400e">… 百万级文本 …</text>
+
+  <line x1="260" y1="110" x2="295" y2="110" stroke="#9d174d" stroke-width="2" marker-end="url(#tf-arr)"/>
+
+  <!-- STEP 1: SAMPLE -->
+  <rect x="295" y="80" width="240" height="60" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="415" y="100" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">① LM 自采样候选</text>
+  <text x="415" y="118" text-anchor="middle" font-size="10" fill="#9d174d">≤20 few-shot 例子 prompt LLM</text>
+  <text x="415" y="132" text-anchor="middle" font-size="9" fill="#dc2626">"该不该在这插?插什么?"</text>
+
+  <line x1="535" y1="110" x2="570" y2="110" stroke="#9d174d" stroke-width="2" marker-end="url(#tf-arr)"/>
+
+  <!-- STEP 2: EXECUTE -->
+  <rect x="570" y="80" width="260" height="60" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="700" y="100" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">② 真的调工具</text>
+  <text x="700" y="118" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">QA / Calc / Search / MT / Calendar</text>
+  <text x="700" y="132" text-anchor="middle" font-size="9" fill="#1e40af">每个候选拿到真实返回 r_i</text>
+
+  <!-- candidate examples -->
+  <rect x="60" y="170" width="780" height="105" rx="6" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="80" y="190" font-size="11" fill="#1f2937" font-weight="700">候选样例(LM 自采样后,工具执行)</text>
+
+  <rect x="80" y="200" width="370" height="65" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="95" y="219" font-size="10" fill="#065f46" font-weight="700">候选 A(好)</text>
+  <text x="95" y="237" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">[QA("when did humans land on moon?")]</text>
+  <text x="95" y="250" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">→ "1969"</text>
+  <text x="95" y="262" font-size="9" fill="#059669" font-style="italic">插入位置贴近原句,返回值相关</text>
+
+  <rect x="470" y="200" width="370" height="65" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="485" y="219" font-size="10" fill="#991b1b" font-weight="700">候选 B(差)</text>
+  <text x="485" y="237" font-family="ui-monospace, monospace" font-size="9" fill="#991b1b">[Calc("1 + 1")] → "2"</text>
+  <text x="485" y="250" font-family="ui-monospace, monospace" font-size="9" fill="#991b1b">插在"1969 年人类首次登月"中间</text>
+  <text x="485" y="262" font-size="9" fill="#dc2626" font-style="italic">无关调用 — 无用装饰</text>
+
+  <!-- arrow down to filter -->
+  <line x1="450" y1="275" x2="450" y2="305" stroke="#9d174d" stroke-width="2" marker-end="url(#tf-arr)"/>
+
+  <!-- STEP 3: FILTER -->
+  <rect x="60" y="308" width="780" height="180" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+  <text x="450" y="330" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">③ Perplexity 过滤 — loss 差当筛子</text>
+
+  <text x="450" y="355" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#92400e">
+    保留条件:L_no_call - L_with_call &gt; τ
+  </text>
+
+  <!-- 候选 A 计算 -->
+  <rect x="80" y="370" width="370" height="105" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="265" y="390" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">候选 A — 保留 ✓</text>
+  <text x="95" y="412" font-family="ui-monospace, monospace" font-size="10" fill="#065f46">L_no_call("1969 年...")  = 3.2</text>
+  <text x="95" y="430" font-family="ui-monospace, monospace" font-size="10" fill="#065f46">L_with_call("[QA→1969] 1969 年...") = 1.1</text>
+  <text x="95" y="450" font-family="ui-monospace, monospace" font-size="10" fill="#059669" font-weight="700">差 = 2.1 &gt; τ(0.5) → KEEP</text>
+  <text x="95" y="465" font-size="9" fill="#059669" font-style="italic">→ 调用真的帮助预测后续 token</text>
+
+  <!-- 候选 B 计算 -->
+  <rect x="470" y="370" width="370" height="105" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="655" y="390" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">候选 B — 丢弃 ✗</text>
+  <text x="485" y="412" font-family="ui-monospace, monospace" font-size="10" fill="#991b1b">L_no_call = 3.2</text>
+  <text x="485" y="430" font-family="ui-monospace, monospace" font-size="10" fill="#991b1b">L_with_call("[Calc→2]") = 3.3</text>
+  <text x="485" y="450" font-family="ui-monospace, monospace" font-size="10" fill="#dc2626" font-weight="700">差 = -0.1 &lt; τ → DROP</text>
+  <text x="485" y="465" font-size="9" fill="#dc2626" font-style="italic">→ 调用无关,反而干扰预测</text>
+
+  <line x1="450" y1="488" x2="450" y2="515" stroke="#9d174d" stroke-width="2" marker-end="url(#tf-arr)"/>
+
+  <!-- STEP 4: FINETUNE -->
+  <rect x="60" y="518" width="780" height="80" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="542" text-anchor="middle" font-size="12" fill="#fbbf24" font-weight="700">④ 微调 — 把 tool use 内化进参数</text>
+  <text x="450" y="565" text-anchor="middle" font-size="10" fill="#fef3c7">保留的(text + API call)样本混回 pretraining 语料 → 继续训 LM</text>
+  <text x="450" y="582" text-anchor="middle" font-size="10" fill="#fbbf24" font-style="italic">推理时 LM 在合适位置自动输出 [Tool(args)] token,framework 检测后执行工具</text>
+
+  <!-- BOTTOM: 三机制对应 -->
+  <text x="450" y="624" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">
+    三机制 → 完整 self-supervised pipeline
+  </text>
+
+  <g transform="translate(60, 640)">
+    <text x="0" y="20" font-size="10" fill="#9d174d" font-weight="700">机制一</text>
+    <text x="60" y="20" font-size="10" fill="#1f2937">LM 自采样候选(无人工)</text>
+    <text x="300" y="20" font-size="10" fill="#92400e" font-weight="700">机制二</text>
+    <text x="360" y="20" font-size="10" fill="#1f2937">Perplexity 过滤(无人评估)</text>
+    <text x="630" y="20" font-size="10" fill="#fbbf24" font-weight="700" fill="#1f2937">机制三</text>
+    <text x="690" y="20" font-size="10" fill="#1f2937">微调内化(写进参数)</text>
+  </g>
+</svg>

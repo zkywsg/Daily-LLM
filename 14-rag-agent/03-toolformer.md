@@ -28,6 +28,22 @@ Schick 等人(Meta AI,2023 年 2 月)的 Toolformer 给出一个完全不同的�
 
 ## 核心思想:Self-Supervised Tool Learning
 
+### 直觉
+
+[ReAct](02-react.md) 的 tool use 完全靠 prompt,在 GPT-3.5+ 上 work,但小模型(7B)能力不够;且每加一个新工具都要改 prompt。Schick 等人的洞察反过来——**不用 prompt 教,让 LLM 自监督学**。
+
+关键问题是:**没有人工标注,怎么判断一个 tool call 是"有用的"?**Toolformer 给出极其优雅的答案:**看插入它之后,后续 token 的 perplexity 是否真的下降**。如果调 `[QA("when did humans land on moon?")] → 1969` 后,后面"1969 年人类首次登月"这句话变得更易预测,那这个调用就 useful;反之就是无用装饰。这一标准完全不依赖人工——LLM 自己当裁判。
+
+但要把这一直觉变成可训练的 pipeline,三个机制缺一不可:
+
+1. **LM 自采样候选** —— 让 LLM 用 few-shot 自己生成 "在哪里插什么调用",而不是人工标位置
+2. **Perplexity 过滤** —— 用 loss 差当筛子,只留下真正帮助预测的 tool call
+3. **微调内化** —— 把过滤后的数据混回 pretraining 语料微调,让 tool use 成为参数能力
+
+→ 三机制串成完整 self-supervised pipeline,见图 1 的四步全景。
+
+![Toolformer 自监督流水线 — 采样 × 过滤 × 微调](assets/03-toolformer-pipeline.svg)
+
 Toolformer 的训练 pipeline 三步走:
 
 ### Step 1: 采样候选 API 调用位置
@@ -48,9 +64,15 @@ Output: 法国总统是[QA("Who is the president of France?")] 马克龙。
 
 让 LLM 自己生成候选,而不是人工标注——这是 Toolformer 的"自监督"核心。
 
+## 机制一:LM 自采样候选 — 用 few-shot 让 LLM 当标注员
+
+上面的 Step 1 就是机制一的具体实现:LLM 看到 ≤20 个手写例子后,自己决定"该不该在这里插调用、插什么调用"。整个语料百万级,人工标不动;但 LLM 自己 prompt 自己,几乎零成本生成海量候选。
+
 ### Step 2: 执行 API 调用
 
 把每个候选 API call $c_i$ 真的发送给对应工具,得到返回结果 $r_i$。例如 `[QA("When did humans first land on the moon?")] → 1969`。
+
+## 机制二:Perplexity 过滤 — 用 loss 差当筛子
 
 ### Step 3: 过滤——只保留"有用"的调用
 
@@ -64,6 +86,8 @@ Output: 法国总统是[QA("Who is the president of France?")] 马克龙。
 如果 $L_i^{-} - L_i^{+} > \tau$,保留这条;否则丢弃。
 
 直观理解:**API 调用必须真的帮模型预测后续 token,不然就是"无用的装饰"**。这一 filter 让训练数据自然只保留高质量调用。
+
+## 机制三:微调内化 — 把 tool use 写进参数
 
 ### Step 4: 在过滤后数据上微调
 
@@ -80,6 +104,18 @@ Toolformer 集成 5 个工具:
 - **Calendar** —— 返回当前日期
 
 每个工具只用 ≤20 个手写例子 prompt 模型生成候选,完全 zero-human-labeling。
+
+## 三件套协同 — 6.7B 反超 175B
+
+> **LM 自采样大量低成本候选 + Perplexity 过滤掉无用装饰 + 微调内化为参数能力** —— 三者首次组合,让 Toolformer 6.7B 在数学 / QA 上反超 GPT-3 175B(参数少 25×)。
+
+- 只有 **自采样**:候选海量但质量参差,大部分是无用调用 → 微调后模型学到"乱调工具",分数更差
+- 只有 **Perplexity 过滤**:没有"自采样"提供大批候选,只能筛人工标注的小数据集 → 失去自监督优势,回到 SFT 路线
+- 只有 **微调**:没有过滤,把无用调用喂进去 → 工具能力没学到,但流畅性反而下降
+
+三件套首次组合 → ASDiv 数学从 7.5 → 40.4(5×),Toolformer 6.7B 超过 GPT-3 175B —— 见图 2 的对比。
+
+![Toolformer 6.7B vs GPT-3 175B — 工具能力压缩进参数](assets/03-toolformer-vs-gpt3.svg)
 
 ## 关键代码
 
