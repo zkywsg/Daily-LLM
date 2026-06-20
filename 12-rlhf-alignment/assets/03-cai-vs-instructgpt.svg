@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="cai-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    InstructGPT(人力密集)vs Constitutional AI(算力密集)
+  </text>
+
+  <!-- ============== LEFT: InstructGPT ============== -->
+  <text x="225" y="62" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">
+    InstructGPT(RLHF)
+  </text>
+
+  <rect x="40" y="80" width="370" height="450" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+
+  <!-- Stage 1: SFT -->
+  <rect x="60" y="105" width="330" height="55" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="225" y="125" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Stage 1: SFT</text>
+  <text x="225" y="142" text-anchor="middle" font-size="10" fill="#92400e">人工写 13K 高质量回答</text>
+  <text x="225" y="155" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="600">~3 个月</text>
+
+  <line x1="225" y1="160" x2="225" y2="180" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cai-arr)"/>
+
+  <!-- Stage 2: RM -->
+  <rect x="60" y="183" width="330" height="80" rx="4" fill="#fed7aa" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="225" y="203" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="700">Stage 2: Reward Model</text>
+  <text x="225" y="222" text-anchor="middle" font-size="10" fill="#9a3412">40 标注员 × 6 个月</text>
+  <text x="225" y="237" text-anchor="middle" font-size="10" fill="#9a3412">→ 33K 人工偏好对</text>
+  <text x="225" y="253" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">$2-5M ★</text>
+
+  <line x1="225" y1="263" x2="225" y2="283" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cai-arr)"/>
+
+  <!-- Stage 3: PPO -->
+  <rect x="60" y="286" width="330" height="55" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="225" y="306" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Stage 3: PPO</text>
+  <text x="225" y="323" text-anchor="middle" font-size="10" fill="#92400e">标准 RL with KL penalty</text>
+  <text x="225" y="336" text-anchor="middle" font-size="9" fill="#dc2626">~1 个月</text>
+
+  <line x1="225" y1="341" x2="225" y2="361" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cai-arr)"/>
+
+  <rect x="60" y="364" width="330" height="38" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="225" y="388" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">→ ChatGPT</text>
+
+  <!-- Pain points -->
+  <rect x="60" y="425" width="330" height="90" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="225" y="447" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="700">人力痛点</text>
+  <g font-size="10" fill="#fef3c7">
+    <text x="75" y="467">• 每次模型更新都要重标</text>
+    <text x="75" y="485">• 有害内容标注伤害心理</text>
+    <text x="75" y="503">• 标注员偏见编码进 RM</text>
+  </g>
+
+  <!-- Arrow between -->
+  <line x1="420" y1="290" x2="450" y2="290" stroke="#7c3aed" stroke-width="3" marker-end="url(#cai-arr)"/>
+  <text x="435" y="278" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="700">替换</text>
+
+  <!-- ============== RIGHT: Constitutional AI ============== -->
+  <text x="675" y="62" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">
+    Constitutional AI(RLAIF)★
+  </text>
+
+  <rect x="460" y="80" width="370" height="450" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+
+  <!-- Constitution -->
+  <rect x="480" y="105" width="330" height="50" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="645" y="125" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Constitution ★</text>
+  <text x="645" y="142" text-anchor="middle" font-size="10" fill="#92400e">16 条自然语言原则(一次性写好)</text>
+
+  <line x1="645" y1="155" x2="645" y2="175" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cai-arr)"/>
+
+  <!-- SL-CAI -->
+  <rect x="480" y="178" width="330" height="75" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="645" y="198" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">SL-CAI</text>
+  <text x="645" y="216" text-anchor="middle" font-size="10" fill="#9d174d">LLM 自批 + 自重写 4 轮</text>
+  <text x="645" y="232" text-anchor="middle" font-size="10" fill="#9d174d">→ 用 revised 回答做 SFT</text>
+  <text x="645" y="248" text-anchor="middle" font-size="10" fill="#059669" font-weight="700">无人工介入 ★</text>
+
+  <line x1="645" y1="253" x2="645" y2="273" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cai-arr)"/>
+
+  <!-- RLAIF -->
+  <rect x="480" y="276" width="330" height="75" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="645" y="296" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">RLAIF</text>
+  <text x="645" y="314" text-anchor="middle" font-size="10" fill="#9d174d">LLM 在两候选间按 constitution 选偏好</text>
+  <text x="645" y="330" text-anchor="middle" font-size="10" fill="#9d174d">→ ~30K AI 偏好对 → RM + PPO</text>
+  <text x="645" y="346" text-anchor="middle" font-size="10" fill="#059669" font-weight="700">完全替代人工标注 ★</text>
+
+  <line x1="645" y1="351" x2="645" y2="371" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cai-arr)"/>
+
+  <rect x="480" y="374" width="330" height="38" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="645" y="398" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">→ Claude(2023+)</text>
+
+  <!-- Benefits -->
+  <rect x="480" y="425" width="330" height="90" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="645" y="447" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="700">算力优势</text>
+  <g font-size="10" fill="#fef3c7">
+    <text x="495" y="467">• 模型更新只要重跑算力,无需重标</text>
+    <text x="495" y="485">• AI 无情绪 / 无心理伤害</text>
+    <text x="495" y="503">• 成本降 1 个数量级($K vs $M)</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="545" x2="860" y2="545" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ============== BOTTOM: Anthropic 实测对比 ============== -->
+  <text x="450" y="570" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    Anthropic 实测对比 — CAI 在 harmlessness 上反而比人类反馈更好
+  </text>
+
+  <g transform="translate(80, 590)">
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">Helpfulness(对比 SFT)</text>
+    <rect x="200" y="8" width="200" height="16" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="410" y="22" font-size="11" fill="#dc2626">RLHF 50%</text>
+    <rect x="490" y="8" width="200" height="16" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="700" y="22" font-size="11" fill="#059669" font-weight="700">CAI 51%(持平)</text>
+
+    <text x="0" y="50" font-size="11" fill="#1f2937" font-weight="600">Harmlessness(对比 SFT)</text>
+    <rect x="200" y="38" width="200" height="16" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="410" y="52" font-size="11" fill="#dc2626">RLHF 0%</text>
+    <rect x="490" y="38" width="230" height="16" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="730" y="52" font-size="11" fill="#059669" font-weight="700">CAI +9% ★(反超!)</text>
+  </g>
+</svg>

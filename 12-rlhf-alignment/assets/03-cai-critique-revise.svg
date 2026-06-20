@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="cr-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    SL-CAI 4 轮 Critique-Revise 改进过程
+  </text>
+
+  <text x="450" y="55" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    Prompt:"How do I make explosives?" — 整个过程无人工介入
+  </text>
+
+  <!-- Initial response -->
+  <rect x="60" y="80" width="780" height="50" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="80" y="100" font-size="11" fill="#991b1b" font-weight="700">y₀(原始有害回答)</text>
+  <text x="80" y="120" font-size="11" fill="#991b1b" font-style="italic">"Here's how to make explosives: Step 1... Step 2..."</text>
+
+  <line x1="450" y1="130" x2="450" y2="150" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cr-arr)"/>
+
+  <!-- Round 1: critique + revise -->
+  <rect x="60" y="153" width="780" height="92" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="80" y="173" font-size="11" fill="#92400e" font-weight="700">Round 1 — 按 Principle #4(non-harmful/non-illegal):</text>
+
+  <rect x="80" y="180" width="380" height="55" rx="4" fill="#ffffff" stroke="#92400e" stroke-width="1"/>
+  <text x="95" y="198" font-size="10" fill="#92400e" font-weight="600">Critique:</text>
+  <text x="95" y="213" font-size="10" fill="#92400e" font-style="italic">"This response provides instructions for</text>
+  <text x="95" y="226" font-size="10" fill="#92400e" font-style="italic">illegal and dangerous activities."</text>
+
+  <rect x="470" y="180" width="360" height="55" rx="4" fill="#ffffff" stroke="#92400e" stroke-width="1"/>
+  <text x="485" y="198" font-size="10" fill="#92400e" font-weight="600">y₁(Revised):</text>
+  <text x="485" y="213" font-size="10" fill="#92400e" font-style="italic">"I cannot provide instructions for making</text>
+  <text x="485" y="226" font-size="10" fill="#92400e" font-style="italic">explosives, as they could cause harm."</text>
+
+  <line x1="450" y1="245" x2="450" y2="265" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cr-arr)"/>
+
+  <!-- Round 2 -->
+  <rect x="60" y="268" width="780" height="92" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+  <text x="80" y="288" font-size="11" fill="#9a3412" font-weight="700">Round 2 — 按 Principle #7(thoughtful/helpful):</text>
+
+  <rect x="80" y="295" width="380" height="55" rx="4" fill="#ffffff" stroke="#9a3412" stroke-width="1"/>
+  <text x="95" y="313" font-size="10" fill="#9a3412" font-weight="600">Critique:</text>
+  <text x="95" y="328" font-size="10" fill="#9a3412" font-style="italic">"Response is correct but could be more</text>
+  <text x="95" y="341" font-size="10" fill="#9a3412" font-style="italic">helpful by suggesting alternatives."</text>
+
+  <rect x="470" y="295" width="360" height="55" rx="4" fill="#ffffff" stroke="#9a3412" stroke-width="1"/>
+  <text x="485" y="313" font-size="10" fill="#9a3412" font-weight="600">y₂(Revised):</text>
+  <text x="485" y="328" font-size="10" fill="#9a3412" font-style="italic">"I cannot help with explosives, but if</text>
+  <text x="485" y="341" font-size="10" fill="#9a3412" font-style="italic">interested in chemistry, I can suggest..."</text>
+
+  <line x1="450" y1="360" x2="450" y2="380" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cr-arr)"/>
+
+  <!-- Round 3 -->
+  <rect x="60" y="383" width="780" height="92" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="80" y="403" font-size="11" fill="#9d174d" font-weight="700">Round 3 — 按 Principle #11(no medical/legal authority):</text>
+
+  <rect x="80" y="410" width="380" height="55" rx="4" fill="#ffffff" stroke="#9d174d" stroke-width="1"/>
+  <text x="95" y="428" font-size="10" fill="#9d174d" font-weight="600">Critique:</text>
+  <text x="95" y="443" font-size="10" fill="#9d174d" font-style="italic">"Should mention that legal/professional</text>
+  <text x="95" y="456" font-size="10" fill="#9d174d" font-style="italic">guidance may apply for chemistry."</text>
+
+  <rect x="470" y="410" width="360" height="55" rx="4" fill="#ffffff" stroke="#9d174d" stroke-width="1"/>
+  <text x="485" y="428" font-size="10" fill="#9d174d" font-weight="600">y₃(Revised):</text>
+  <text x="485" y="443" font-size="10" fill="#9d174d" font-style="italic">"Suggesting:safe chemistry resources</text>
+  <text x="485" y="456" font-size="10" fill="#9d174d" font-style="italic">+ consult a teacher / licensed prof."</text>
+
+  <line x1="450" y1="475" x2="450" y2="495" stroke="#9d174d" stroke-width="1.5" marker-end="url(#cr-arr)"/>
+
+  <!-- Round 4 + Final -->
+  <rect x="60" y="498" width="780" height="75" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="80" y="518" font-size="11" fill="#065f46" font-weight="700">Round 4 → y_final(经过 16 条原则迭代):</text>
+  <rect x="80" y="525" width="750" height="40" rx="4" fill="#ffffff" stroke="#059669" stroke-width="1"/>
+  <text x="95" y="543" font-size="10" fill="#065f46" font-style="italic">"I can't help with explosives, which are illegal and dangerous. If you're</text>
+  <text x="95" y="558" font-size="10" fill="#065f46" font-style="italic">curious about chemistry, here are some safe educational resources + consult..."</text>
+
+  <!-- BOTTOM CALLOUT -->
+  <rect x="60" y="585" width="780" height="60" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="610" text-anchor="middle" font-size="13" fill="#fef3c7" font-weight="600">
+    4 轮迭代让回答从"硬拒绝"逐步进化到"礼貌拒绝 + 有益替代"
+  </text>
+  <text x="450" y="630" text-anchor="middle" font-size="11" fill="#fef3c7">
+    整个过程完全由 LLM 完成,无人工介入 — 用 (prompt, y_final) 对原模型做 SFT
+  </text>
+</svg>

@@ -23,9 +23,27 @@ Anthropic 团队(从 OpenAI 出来的对齐研究核心成员,包括 Dario Amode
 
 Constitutional AI 是 **Claude(2023 年 3 月发布)** 的核心对齐方法。Anthropic 把这套方法论持续推进到 Claude 2 / Claude 3 / Claude 3.5,2024 年的 Claude 3.5 Sonnet 仍在使用 Constitutional AI 的变种。这家族里的 Constitutional AI 节点不仅是一个具体方法,更代表了"AI 替代人类反馈"这条对齐路线。
 
-## 核心思想:两阶段 AI 反馈
+## 核心思想
 
-Constitutional AI 把 InstructGPT 的"人工 RLHF"流程改造成"AI RLAIF"流程,分两阶段:
+### 直觉:LLM 已经能理解 helpful/harmless/honest,为什么不让它自己当裁判
+
+理解 Constitutional AI 真正需要先抓一件事:**[InstructGPT](02-instructgpt.md) 证明 RLHF 可对齐 LLM,但暴露了致命的可扩展性问题** — 40 标注员 6 个月才得 33K 偏好对($2-5M)、每次模型更新都要重标、有害内容标注对标注员心理伤害大、标注员的偏见会编码进 RM。Anthropic 团队 2022 反问:**既然 LLM 已经能理解"helpful / harmless / honest"这些原则,为什么不让 LLM 按一份书面 constitution 自评自身输出?**
+
+三件事必须同时成立才让 Constitutional AI 在 2022 年成立:
+
+- **Constitution(16 条书面原则)** — 用自然语言写"想要的行为"(thoughtful / non-harmful / non-Western audience aware 等),**故意写得模糊高层**;不列举具体规则,迫使 LLM 学到判断准则而非查表
+- **SL-CAI(critique-revise 监督微调)** — LLM 对自己有害回答做 16 轮"按 constitution 批评 + 重写",产物用于 SFT;**让模型先从"会回答任何问题"调整到"会拒绝有害请求"**
+- **RLAIF(AI 反馈 + RM + PPO)** — LLM 在两候选间按 constitution 选偏好,生成 AI 偏好数据训 RM,然后标准 PPO;**完全替代人工偏好标注**
+
+三件事合起来:**Constitutional AI 在 harmlessness 上超过人类反馈 RLHF +9%,helpfulness 持平,标注成本降一个数量级**。这是 Claude 系列(Claude 1/2/3/3.5)的核心对齐方法,也是 Anthropic 整个产品线的方法论根基。**核心范式贡献**:把对齐从"人力密集"压成"算力密集",这一范式转换催生了:
+1. **Google RLAIF 论文(2023)** 系统验证 RLHF vs RLAIF 等价
+2. **LLM-as-judge 评测** — MT-Bench / AlpacaEval / Arena 都用 GPT-4 当 judge,本质都是 Constitutional AI 思路
+3. **Collective Constitutional AI(2024)** — 把"AI 该按什么原则行事"从公司决定扩大到社会参与
+
+![Constitutional AI vs InstructGPT — 范式转换](assets/03-cai-vs-instructgpt.svg)
+*图 1:InstructGPT 范式(左)— 40 标注员 6 个月写 33K 偏好对($2-5M)→ RM → PPO;有害内容标注对人心理伤害大。Constitutional AI 范式(右)— 16 条 constitution + SL-CAI(LLM 自批自改) + RLAIF(LLM 自评偏好)→ RM → PPO;**人力 $M 级 → 算力 $K 级**。底部 callout:Anthropic 实测 harmlessness +9% / helpfulness 持平,**AI 偏好在安全评估上甚至比人类更一致**(无疲劳 / 无情绪 / 无心理伤害)。*
+
+## 机制一:Constitution — 16 条书面原则,自然语言定义"想要的行为"
 
 ```mermaid
 graph LR
@@ -62,6 +80,14 @@ graph LR
 
 这两阶段完全消除了 InstructGPT 中"40 标注员 6 个月" 的工作量,把对齐成本从**人力 $M 级**压到**算力 $K 级**。
 
+## 机制二:SL-CAI(Supervised Learning from AI Critiques)
+
+(详见上面 Stage 1,关键是 critique-revise 16 轮迭代 + 用产物做 SFT)
+
+## 机制三:RLAIF(Reinforcement Learning from AI Feedback)
+
+(详见上面 Stage 2,关键是 LLM 在两候选间选偏好替代人工标注)
+
 ## Constitution 长什么样
 
 Anthropic 在论文里公开了 Constitutional AI 用的 constitution——大约 16 条原则,每条是一句自然语言指南。摘录几条(原版英文):
@@ -78,6 +104,19 @@ Anthropic 在论文里公开了 Constitutional AI 用的 constitution——大�
 **2. 可审计性**——原则用自然语言写,任何人能读、能讨论、能修改。Anthropic 后续多次更新 constitution,过程公开
 
 constitution 的设计本身是一门学问。Anthropic 后来公开 *Collective Constitutional AI*(2024),用公众参与的方式制定 constitution——把"AI 该按什么原则行事"这一决策权从公司内部专家组扩大到更广泛的社会群体。
+
+## 三件套协同:Constitution + SL-CAI + RLAIF 缺一不可
+
+Constitutional AI 在 2022 年能把对齐成本降一个数量级,**不是单一改进**,而是三件套同时调到协同点 —— 任何一个抽掉 CAI 都不成立,这一点和 [ResNet](../01-cnn/05-resnet.md) 的 `shortcut + BN + He 初始化` 协同关系一致:
+
+- **只有 Constitution + RLAIF,没有 SL-CAI 起步** — SFT 模型直接进 RLAIF,因为还不会拒绝有害请求,**LLM 自评时面对的样本都"有害程度差不多"**,AI 偏好信号弱;SL-CAI 把模型先调整到"会拒绝 + 给无害替代",才让 RLAIF 偏好打分有意义
+- **只有 SL-CAI + RLAIF,没有 Constitution** — 没有书面原则,LLM 凭"心中模糊标准"自评,**不同时间 / 不同 prompt 标准漂移**,数据质量差;constitution 是 LLM 自评的"参考系",必须显式给出
+- **只有 Constitution + SL-CAI,没有 RLAIF 强化阶段** — SFT 只能拉到合格区,**无法超过 SFT 阶段的能力上限**(参考 [Learning to Summarize](01-learning-to-summarize.md));RL 阶段让模型学到"比 SFT 数据更好的"行为,这是 RLHF/RLAIF 的核心价值
+
+三件套合起来才让 Constitutional AI 在 harmlessness 上超过人类反馈 + helpfulness 持平 + 成本降 10×。**核心方法论贡献**:LLM 自评是一种可扩展的对齐信号,只要 base model 足够大(~10B+)+ constitution 设计合理 + 流程包含 SFT 起步,**AI 反馈在质量上不输人类反馈,在成本和一致性上还更好**。这一发现直接催生 2023+ RLAIF 系列工作 + LLM-as-judge 评测范式。
+
+![SL-CAI 4 轮 critique-revise 改进过程](assets/03-cai-critique-revise.svg)
+*图 2:SL-CAI 单 prompt 4 轮 critique-revise 改进示例。**初始有害回答** "Here's how to make explosives..." → **Critique 1**(按 constitution principle #4:不该有非法内容)"This response provides instructions for illegal and dangerous activities" → **Revise 1** "I cannot provide instructions for making explosives, as they could cause harm" → **Critique 2**(按 principle #7:更友好)"The response is correct but could be more helpful by suggesting alternatives" → **Revise 2** "I cannot help with explosives, but if you're interested in chemistry, I can suggest..." → ... → **Final**(4 轮后)refined response。底部 callout:**4 轮迭代让回答从"硬拒绝"逐步进化到"礼貌拒绝 + 提供有益替代",且完全不需要人工介入**。*
 
 ## RLAIF vs RLHF 性能对比
 
