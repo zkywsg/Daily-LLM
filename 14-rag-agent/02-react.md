@@ -27,7 +27,23 @@ Yao 等人(普林斯顿 + Google,2022 年 10 月)的 ReAct 论文给出答案:**
 
 这一框架看起来简单,但它把 **CoT 从"封闭推理"升级为"开放循环"**,启动了整个 agent 范式。论文发表后 6 个月,LangChain 把 ReAct 实现成 framework,2023 年初 AutoGPT 把这条思路推到极致——今天所有"AI agent"产品都建立在 ReAct 之上。
 
-## 核心思想:Thought-Action-Observation 循环
+## 核心思想:Thought-Action-Observation 闭环
+
+### 直觉
+
+人解决多跳问题(比如"特斯拉 2023 营收除以苹果同年营收"),不会脑内一气呵成——而是**先想"该查什么" → 去查 → 看到结果再想下一步**。中间任何一步出错,后续推理都会基于错的事实跑偏。
+
+LLM 在 ReAct 之前正好走了两条极端:**CoT 闭门造车**(全程脑内推理,容易幻觉)和 **Act-only**(给一个工具调用就直接出答案,不知何时停)。Yao 等人的洞察:**把推理和行动交错(synergize)**——每步先 Thought 决定要查什么,再 Action 调工具,再用 Observation 修正下一步 Thought,形成"思 → 做 → 观 → 思"的开放循环。
+
+但这一闭环要 work,三个角色缺一不可:
+
+1. **Thought** —— 必须显式写出"为什么要查这个 / 这一步要做什么",否则 LLM 不知道工具调用的目的
+2. **Action** —— 必须能调真正的外部工具(搜索 / 计算 / API),否则模型还是只能依赖参数化知识
+3. **Observation** —— 工具结果必须回喂给 LLM 作为新上下文,否则 Action 白调了
+
+→ 三者交错形成闭环 + few-shot prompt 模仿 trace 模式,LLM 就学会自主 agent 行为,见图 1 一个真实多跳问题的完整 trace。
+
+![ReAct 闭环 — Thought × Action × Observation](assets/02-react-loop.svg)
 
 ReAct 的核心模式可以用一个 trace 直观展示:
 
@@ -56,6 +72,50 @@ Final Answer: 绿色,氢原子激发(❌ 实际是氧原子)
 ```
 
 CoT 有可能瞎编(hallucination),ReAct 因为每一步都基于实际查到的信息,**幻觉显著下降**。
+
+## 机制一:Thought — 让推理目的显式化
+
+Thought 是 ReAct 闭环的"大脑"。每步开头 LLM 必须显式写出"为什么要做这一步":
+
+```
+Thought 2: 主要是绿色。现在我需要查绿色极光是怎么形成的
+```
+
+没有 Thought 的"Act-only"模式里,LLM 直接给 Action,不解释目的——结果就是 token 一旦多了,LLM 不知道自己在干什么,经常重复或跑偏。Thought 把"目的"显式落到上下文里,后续步骤可以 ground 在前面的推理上。
+
+## 机制二:Action — 让 LLM 接入真实世界
+
+Action 是 ReAct 闭环的"手"。LLM 不再仅靠参数化知识,而是调真正的外部工具:
+
+```
+Action 1: Search[Aurora Borealis]
+Action 2: Search[Aurora green color cause]
+Action 3: Finish[绿色,由氧原子被太阳风带电粒子激发]
+```
+
+工具集很简单:`Search[entity]` 查 Wikipedia, `Lookup[keyword]` 在当前页面找, `Calculator[expr]` 算数, `Finish[answer]` 终止。**关键不是工具复杂,而是 LLM 可以根据 Thought 决定调哪个工具,以及参数怎么填**。
+
+## 机制三:Observation — 让结果回喂闭环
+
+Observation 是 ReAct 闭环的"眼"。每次 Action 的结果直接拼回 prompt 作为新上下文:
+
+```
+Observation 1: Aurora Borealis(北极光)是天空中绿色 / 红色为主的极光现象...
+```
+
+下一轮 Thought 看到 Observation 1 后,**才能 ground 出"主要是绿色,下一步查绿色形成原因"**。Observation 让闭环真正闭合——少了它,Action 调完也不知道结果,等于白调。
+
+## 三件套协同 — 1 + 1 + 1 > 3
+
+> **Thought 提供推理目的 + Action 接入外部信息 + Observation 关闭反馈环** —— 三者交错,LLM 自主完成多跳任务,幻觉显著下降。
+
+- 只有 **Thought**(= CoT):全程脑内推理,无外部信息接入 → HotpotQA 30.6,容易瞎编氧原子说成氢原子
+- 只有 **Action**(= Act-only):能查工具,但没显式推理目的 → HotpotQA 25.7,LLM 不知何时停或下一步查啥
+- 只有 **Observation**:没人决定调什么也没人解释为什么 → 闭环没"驱动力",根本启动不了
+
+三件套首次组合 → HotpotQA EM 35.1(超 CoT)+ ALFWorld 71%(超 IL 基线 2×)—— 见图 2 的范式对比。
+
+![ReAct vs CoT vs Act-only — 三件套协同的实证](assets/02-react-vs-cot-act.svg)
 
 ### 三种 prompting 范式对比
 

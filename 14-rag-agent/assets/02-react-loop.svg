@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="rc-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="rc-arr-loop" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    ReAct 闭环 — Thought × Action × Observation
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    任务:Aurora Borealis 通常什么颜色?这种颜色是由什么粒子的什么过程产生的?
+  </text>
+
+  <!-- INPUT -->
+  <rect x="350" y="75" width="200" height="35" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="450" y="98" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Question(多跳)</text>
+
+  <line x1="450" y1="110" x2="450" y2="135" stroke="#9d174d" stroke-width="1.5" marker-end="url(#rc-arr)"/>
+
+  <!-- ROUND 1 -->
+  <rect x="60" y="138" width="780" height="120" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="100" y="158" font-size="11" fill="#92400e" font-weight="700">Round 1</text>
+
+  <rect x="80" y="165" width="240" height="80" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="95" y="184" font-size="11" fill="#9d174d" font-weight="700">Thought 1(机制一:推理)</text>
+  <text x="95" y="204" font-size="10" fill="#9d174d" font-style="italic">"我需要先查 Aurora Borealis</text>
+  <text x="95" y="219" font-size="10" fill="#9d174d" font-style="italic">的颜色"</text>
+  <text x="95" y="238" font-size="9" fill="#dc2626">→ 显式写出"为什么查"</text>
+
+  <line x1="320" y1="205" x2="345" y2="205" stroke="#9d174d" stroke-width="1.5" marker-end="url(#rc-arr)"/>
+
+  <rect x="345" y="165" width="240" height="80" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="360" y="184" font-size="11" fill="#1e40af" font-weight="700">Action 1(机制二:工具)</text>
+  <text x="360" y="204" font-family="ui-monospace, monospace" font-size="10" fill="#1e40af">Search[Aurora Borealis]</text>
+  <text x="360" y="225" font-size="9" fill="#1e40af">→ 调真实 Wikipedia API</text>
+
+  <line x1="585" y1="205" x2="610" y2="205" stroke="#9d174d" stroke-width="1.5" marker-end="url(#rc-arr)"/>
+
+  <rect x="610" y="165" width="220" height="80" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="623" y="184" font-size="11" fill="#065f46" font-weight="700">Observation 1(机制三)</text>
+  <text x="623" y="203" font-size="10" fill="#065f46" font-style="italic">"...天空中绿色 / 红色</text>
+  <text x="623" y="218" font-size="10" fill="#065f46" font-style="italic">为主的极光现象..."</text>
+  <text x="623" y="238" font-size="9" fill="#059669">→ 结果回喂作为新上下文</text>
+
+  <!-- Loop arrow back -->
+  <path d="M 720 248 Q 450 285, 200 248" stroke="#7c3aed" stroke-width="2" fill="none" marker-end="url(#rc-arr-loop)"/>
+  <text x="450" y="280" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="700">↺ 闭环反馈:用 Obs 1 决定 Thought 2</text>
+
+  <!-- ROUND 2 -->
+  <rect x="60" y="298" width="780" height="120" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="100" y="318" font-size="11" fill="#9a3412" font-weight="700">Round 2</text>
+
+  <rect x="80" y="325" width="240" height="80" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="95" y="344" font-size="11" fill="#9d174d" font-weight="700">Thought 2(ground 在 Obs 1)</text>
+  <text x="95" y="364" font-size="10" fill="#9d174d" font-style="italic">"主要是绿色。现在查绿色</text>
+  <text x="95" y="379" font-size="10" fill="#9d174d" font-style="italic">极光是怎么形成的"</text>
+  <text x="95" y="398" font-size="9" fill="#dc2626">→ 基于上一轮事实推理</text>
+
+  <line x1="320" y1="365" x2="345" y2="365" stroke="#9d174d" stroke-width="1.5" marker-end="url(#rc-arr)"/>
+
+  <rect x="345" y="325" width="240" height="80" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="360" y="344" font-size="11" fill="#1e40af" font-weight="700">Action 2</text>
+  <text x="360" y="364" font-family="ui-monospace, monospace" font-size="10" fill="#1e40af">Search[Aurora green</text>
+  <text x="360" y="378" font-family="ui-monospace, monospace" font-size="10" fill="#1e40af">color cause]</text>
+  <text x="360" y="398" font-size="9" fill="#1e40af">→ 第二次查询</text>
+
+  <line x1="585" y1="365" x2="610" y2="365" stroke="#9d174d" stroke-width="1.5" marker-end="url(#rc-arr)"/>
+
+  <rect x="610" y="325" width="220" height="80" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="623" y="344" font-size="11" fill="#065f46" font-weight="700">Observation 2</text>
+  <text x="623" y="363" font-size="10" fill="#065f46" font-style="italic">"绿色极光由氧原子在</text>
+  <text x="623" y="378" font-size="10" fill="#065f46" font-style="italic">100-300 km 高空被太阳</text>
+  <text x="623" y="393" font-size="10" fill="#065f46" font-style="italic">风带电粒子激发后..."</text>
+
+  <path d="M 720 408 Q 450 445, 200 408" stroke="#7c3aed" stroke-width="2" fill="none" marker-end="url(#rc-arr-loop)"/>
+  <text x="450" y="440" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="700">↺ 闭环反馈:用 Obs 2 决定下一步</text>
+
+  <!-- ROUND 3 (Finish) -->
+  <rect x="60" y="458" width="780" height="80" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="100" y="478" font-size="11" fill="#065f46" font-weight="700">Round 3 — Finish</text>
+
+  <rect x="80" y="485" width="370" height="45" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="95" y="502" font-size="11" fill="#9d174d" font-weight="700">Thought 3</text>
+  <text x="95" y="520" font-size="10" fill="#9d174d" font-style="italic">"已有答案 — 绿色 + 氧原子激发"</text>
+
+  <line x1="450" y1="507" x2="475" y2="507" stroke="#9d174d" stroke-width="1.5" marker-end="url(#rc-arr)"/>
+
+  <rect x="475" y="485" width="345" height="45" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="490" y="502" font-size="11" fill="#1e40af" font-weight="700">Action 3 — Finish</text>
+  <text x="490" y="520" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">Finish[绿色,氧原子被太阳风激发]</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="555" x2="860" y2="555" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM CALLOUT -->
+  <text x="450" y="578" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三个角色的分工
+  </text>
+
+  <g transform="translate(40, 595)">
+    <rect x="0" y="0" width="265" height="90" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="132" y="22" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Thought = 大脑</text>
+    <text x="15" y="42" font-size="10" fill="#9d174d">• 决定"下一步做什么"</text>
+    <text x="15" y="58" font-size="10" fill="#9d174d">• ground 在前面 Observation</text>
+    <text x="132" y="80" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 防止 LLM 跑偏</text>
+
+    <rect x="285" y="0" width="265" height="90" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="417" y="22" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Action = 手</text>
+    <text x="300" y="42" font-size="10" fill="#1e40af">• 调外部工具(Search/Calc)</text>
+    <text x="300" y="58" font-size="10" fill="#1e40af">• 接入实时 / 真实信息</text>
+    <text x="417" y="80" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 突破参数化知识</text>
+
+    <rect x="570" y="0" width="250" height="90" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">Observation = 眼</text>
+    <text x="585" y="42" font-size="10" fill="#065f46">• 工具结果回喂 prompt</text>
+    <text x="585" y="58" font-size="10" fill="#065f46">• 关闭"思 → 做 → 观"环</text>
+    <text x="695" y="80" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 让闭环真正闭合</text>
+  </g>
+</svg>
