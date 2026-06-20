@@ -54,6 +54,22 @@ Self-Consistency 的论文意义不只在数字提升——它**第一次系统�
 
 ## 核心思想:Marginalize over Reasoning Paths
 
+### 直觉
+
+[CoT](01-cot.md) 单次推理像一条独木桥——任何一步错就全错。一次贪婪解码遇到模糊路径就可能走错,而温度采样又引入随机性。
+
+Wang 等人的洞察非常朴素:**正确答案通常有多条独立路径通向它,错误答案则往往是"一次性错误"**——同一个农场算奶的题,可以"每只 4×7=28,7 只共 28×7=196",也可以"7×4=28/天,7 天×28=196",但算错的人通常错在不同地方,得到不同的错答。如果让 LLM 跑 N 条独立 CoT,**正确答案会被多条路径"投票"出来**,错误被淹没。
+
+但这一直觉要 work,三个机制必须同时到位:
+
+1. **Temperature 采样** —— 路径必须真的多样,T=0 全是同一条路径,投票无意义
+2. **Answer Normalization** —— "196"、"196 升"、"the answer is 196" 必须归到同一答案,否则投票分裂
+3. **Marginalize over r** —— 多数投票本质是把"推理过程 r"当中间变量积分掉,只保留答案 y
+
+→ 三机制串成 inference-time pipeline,GSM8K 单次 56.5% → N=40 投票 74.4%,**完全免费、无需重训**,见图 1 完整流程。
+
+![Self-Consistency 投票流程 — 温度采样 × 归一化 × 投票](assets/02-sc-marginalize.svg)
+
 Self-Consistency 的数学解释非常优雅。CoT 单次采样实质是:
 
 $$
@@ -104,7 +120,7 @@ graph LR
 
 **关键 insight**:**正确答案有"多条路径"通向它,错误答案通常是"一次性错误"**。如果一个答案在多条独立推理路径下都被得到,它正确的可能性更高。这一直觉在数学 / 逻辑题上特别有效——正确解通常有几种等价表达方式。
 
-## 采样配置
+## 机制一:Temperature 采样 — 路径多样性的源头
 
 Self-Consistency 的关键超参:
 
@@ -124,7 +140,7 @@ Self-Consistency 的关键超参:
 
 **Top-k / Top-p** —— 采样时通常同时启用 `top_p=0.95` 防止极端 token,保证路径合理。
 
-## 几个工程细节
+## 机制二:Answer Normalization — 让不同表达对齐
 
 **1. 答案提取要鲁棒** —— 不同推理路径可能用不同表达方式给出同一答案(`196`, `196 升`, `the answer is 196`, `196 liters`),需要正则化:
 
@@ -135,6 +151,8 @@ def normalize(answer):
     return nums[-1] if nums else None  # 最后一个数字通常是答案
 ```
 
+## 机制三:Marginalize over r — 多数投票
+
 **2. 投票方式** —— 论文用简单多数投票,但有几个变体:
 
 - **Weighted majority** —— 用模型对推理路径的 confidence 加权(log prob)
@@ -143,6 +161,18 @@ def normalize(answer):
 **3. 异常处理** —— 有些采样路径完全失败(无法提取答案),要从投票里过滤掉
 
 **4. 早停** —— 实际生产可以"流式采样",前几次答案如果高度一致(比如 4/5 都一样)可以提前停,不必跑满 N 次
+
+## 三件套协同 — 第一次系统化 test-time compute scaling
+
+> **Temperature 采样提供多样性 + Normalization 让答案对齐 + 多数投票 marginalize 掉推理过程** —— 三者首次组合,GSM8K 56.5% → 74.4%(N=40),完全免费、无需重训。
+
+- 只有 **Temperature**:T=0.7 跑 N 次有路径,但答案"196" / "196 升" 各算各的 → 投票分裂,准确率不升反降
+- 只有 **Normalization**:T=0 全是同一条贪婪路径,归一化后投票就是 1 个答案 N 票 → 跟 CoT 单次完全一样
+- 只有 **多数投票**:没有 diversity 也没有归一化 → 投票机制空转,等于 N×CoT 但答案还是一个
+
+三件套协同打开了 test-time compute scaling 这条新轴(N → 准确率 对数线性),直接影响后续 [o1](03-o1.md) / R1 把 "采样多条推理路径" 内化进训练 —— 见图 2 scaling 曲线与 benchmark 对比。
+
+![Self-Consistency — Test-time compute 第一条 scaling 曲线](assets/02-sc-scaling.svg)
 
 ## 与其他 reasoning prompt 技术的关系
 

@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="sc-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Self-Consistency 投票流程 — 温度采样 × 归一化 × 投票
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    Q:7 只羊每只每天产 4 升奶,一周产多少升? — 正确答案 196
+  </text>
+
+  <!-- input question -->
+  <rect x="340" y="78" width="220" height="40" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="450" y="103" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">Question x</text>
+
+  <!-- fan to N CoT paths -->
+  <line x1="450" y1="118" x2="120" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+  <line x1="450" y1="118" x2="285" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+  <line x1="450" y1="118" x2="450" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+  <line x1="450" y1="118" x2="615" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+  <line x1="450" y1="118" x2="780" y2="155" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+
+  <text x="450" y="145" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">★ 机制一:Temperature 采样 N=5 条独立 CoT 路径(T=0.7)</text>
+
+  <!-- 5 CoT paths -->
+  <g>
+    <!-- Path 1 correct -->
+    <rect x="40" y="160" width="160" height="90" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="120" y="178" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">路径 1 ✓</text>
+    <text x="50" y="196" font-size="9" fill="#065f46">"每只 4×7=28 升/周,</text>
+    <text x="50" y="210" font-size="9" fill="#065f46">7 只共 28×7=196 升"</text>
+    <text x="50" y="232" font-size="10" fill="#059669" font-weight="700">→ "196 升"</text>
+
+    <!-- Path 2 correct -->
+    <rect x="205" y="160" width="160" height="90" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="285" y="178" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">路径 2 ✓</text>
+    <text x="215" y="196" font-size="9" fill="#065f46">"7×4=28/天,</text>
+    <text x="215" y="210" font-size="9" fill="#065f46">7 天×28=196"</text>
+    <text x="215" y="232" font-size="10" fill="#059669" font-weight="700">→ "the answer is 196"</text>
+
+    <!-- Path 3 correct -->
+    <rect x="370" y="160" width="160" height="90" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="450" y="178" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">路径 3 ✓</text>
+    <text x="380" y="196" font-size="9" fill="#065f46">"总共 7×4×7</text>
+    <text x="380" y="210" font-size="9" fill="#065f46">= 196 升"</text>
+    <text x="380" y="232" font-size="10" fill="#059669" font-weight="700">→ "196"</text>
+
+    <!-- Path 4 correct -->
+    <rect x="535" y="160" width="160" height="90" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="615" y="178" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">路径 4 ✓</text>
+    <text x="545" y="196" font-size="9" fill="#065f46">"一只一周 28 升,</text>
+    <text x="545" y="210" font-size="9" fill="#065f46">7 只 28×7=196"</text>
+    <text x="545" y="232" font-size="10" fill="#059669" font-weight="700">→ "196 liters"</text>
+
+    <!-- Path 5 wrong -->
+    <rect x="700" y="160" width="160" height="90" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="780" y="178" text-anchor="middle" font-size="10" fill="#991b1b" font-weight="700">路径 5 ✗</text>
+    <text x="710" y="196" font-size="9" fill="#991b1b">"4×7 错算成 24,</text>
+    <text x="710" y="210" font-size="9" fill="#991b1b">7 只共 24×7=168"</text>
+    <text x="710" y="232" font-size="10" fill="#dc2626" font-weight="700">→ "168"</text>
+  </g>
+
+  <line x1="120" y1="250" x2="120" y2="280" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+  <line x1="285" y1="250" x2="285" y2="280" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+  <line x1="450" y1="250" x2="450" y2="280" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+  <line x1="615" y1="250" x2="615" y2="280" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+  <line x1="780" y1="250" x2="780" y2="280" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sc-arr)"/>
+
+  <!-- NORMALIZE band -->
+  <rect x="40" y="283" width="820" height="60" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="450" y="303" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">★ 机制二:Answer Normalization — 不同表达对齐到同一答案</text>
+
+  <text x="120" y="332" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#059669" font-weight="700">196</text>
+  <text x="285" y="332" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#059669" font-weight="700">196</text>
+  <text x="450" y="332" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#059669" font-weight="700">196</text>
+  <text x="615" y="332" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#059669" font-weight="700">196</text>
+  <text x="780" y="332" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#dc2626" font-weight="700">168</text>
+
+  <line x1="450" y1="343" x2="450" y2="370" stroke="#9d174d" stroke-width="2" marker-end="url(#sc-arr)"/>
+
+  <!-- VOTE band -->
+  <rect x="40" y="373" width="820" height="120" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="450" y="393" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">★ 机制三:Marginalize over r — 多数投票</text>
+
+  <!-- Vote bars -->
+  <text x="80" y="425" font-size="10" fill="#1f2937" font-weight="600">196 票:</text>
+  <rect x="160" y="415" width="320" height="18" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="490" y="429" font-size="11" fill="#059669" font-weight="700">4/5(80%)★ 当选</text>
+
+  <text x="80" y="455" font-size="10" fill="#1f2937" font-weight="600">168 票:</text>
+  <rect x="160" y="445" width="80" height="18" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="250" y="459" font-size="11" fill="#dc2626">1/5(20%)</text>
+
+  <text x="450" y="483" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">
+    ŷ = argmax_y Σ_r P(y, r | x) — 把推理过程 r 当中间变量积分掉
+  </text>
+
+  <line x1="450" y1="493" x2="450" y2="515" stroke="#9d174d" stroke-width="2" marker-end="url(#sc-arr)"/>
+
+  <!-- FINAL -->
+  <rect x="290" y="518" width="320" height="50" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="540" text-anchor="middle" font-size="13" fill="#fbbf24" font-weight="700">最终答案:196 ✓</text>
+  <text x="450" y="557" text-anchor="middle" font-size="10" fill="#fef3c7">错误路径被多数淹没</text>
+
+  <!-- BOTTOM banner -->
+  <rect x="60" y="595" width="780" height="40" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="620" text-anchor="middle" font-size="12" fill="#fef3c7" font-weight="600">
+    GSM8K:CoT 单次 56.5% → Self-Consistency N=40 投票 74.4%(+17.9 分,免训练)
+  </text>
+</svg>
