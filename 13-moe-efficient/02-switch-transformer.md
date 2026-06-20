@@ -32,7 +32,23 @@ GShard(Lepikhin 2020,Google)第一次把 MoE 用在 Transformer(600B 参数翻�
 
 Fedus 等人(Google Brain,2021 年 1 月)的 Switch Transformer 给出工程上的"终极简化"——**top-1 gating + 一系列稳定性 trick**,把 MoE 从研究 demo 推到 1.6T 参数生产模型。
 
-## 核心思想:Top-1 Gating
+## 核心思想:Top-1 Gating + 工程稳定性
+
+### 直觉
+
+[Shazeer 2017](01-sparsely-gated-moe.md) 已经证明稀疏 MoE 在 LSTM 上 work,但搬到 Transformer 时代撞上三堵墙——**top-K 路由复杂、训练塌缩频繁、低精度下不稳**。Fedus 想的事其实很简单:**如果 expert 数量够多(N=2048),一个 token 真的不需要 4 个 expert——top-1 就够了**。
+
+但 top-1 是把双刃剑:简化了路由,却让每个 expert 的"接客数"波动更大,稍有不均就有 expert 撑爆。要让 top-1 真的能在 1024+ TPU 上跑通 1.57T 参数,必须三件套同时上:
+
+1. **Top-1 Gating** —— 把 Shazeer K=4 砍到 K=1,路由和通信减半
+2. **f·P Load Balancing** —— 用更简洁的均衡 loss,鼓励 token 与概率同步均衡
+3. **稳定性兜底(capacity factor + selective precision)** —— 撑爆就 drop,router 用 fp32 防 NaN
+
+→ 三机制协同,把 MoE 从研究 demo 推到 1.6T 生产模型,见图 1 与 Shazeer top-K 的对比。
+
+![Top-1 vs Top-K — Switch 的极简化路由](assets/02-switch-top1-vs-topk.svg)
+
+## 机制一:Top-1 Gating —— 每 token 只走一个 expert
 
 Switch Transformer 的核心简化:**每 token 只去一个 expert**(top-1)。
 
@@ -58,6 +74,8 @@ Top-1 的优势:
 - **all-to-all 通信减半** —— K 倍 token 量减到 1 倍
 - **实现简单** —— 不用 weighted sum,直接 routing
 
+## 机制二:f·P Load Balancing Loss —— 均衡的几何形式
+
 ### Load Balancing Loss(优化版)
 
 Switch Transformer 用一个更简洁的 load balancing loss:
@@ -71,6 +89,8 @@ $$
 - $\alpha = 0.01$ —— 权重系数
 
 直观理解:如果某 expert 又被选中多($f_i$ 大)又拿到高概率($P_i$ 大),loss 就大,鼓励均衡。
+
+## 机制三:稳定性兜底 — Capacity Factor + Selective Precision
 
 ### Capacity Factor
 
@@ -92,6 +112,18 @@ MoE 训练经常因为 softmax + log 计算精度问题不稳定。Switch Transf
 ### Differentiable Load Balancing
 
 Switch Transformer 还设计了 differentiable expert assignment:即使 top-1 routing 是离散的,也能反向传梯度——通过把"被选中的 expert 的 gate 权重"乘到输出上,梯度可以经过 gate 反传到 $W_g$。
+
+## 三件套协同 — 把 MoE 推上 trillion 规模
+
+> **Top-1 简化路由 + f·P 维持均衡 + 稳定性兜底防 NaN/撑爆** —— 三者缺一,Switch 都跑不到 1.57T。
+
+- 只有 **Top-1**:省了路由,但没 load balancing → expert 立刻塌缩,大部分参数空转
+- 只有 **f·P loss**:训练时分布均衡,但没有 capacity 兜底 → 推理时某 batch 偏向一个 expert,撑爆直接 OOM
+- 只有 **selective precision + capacity**:训练稳定不挂,但 top-K 还是 4 → 通信量 4× → 1024 TPU 上跑不动 trillion 模型
+
+三件套首次组合 → 1.57T 总参 / 11B 激活 / T5-XXL 4× 提速到同质量 — 见图 2 的扩参与提速曲线。
+
+![Switch 把 MoE 推上 trillion — 参数与提速](assets/02-switch-trillion-scaling.svg)
 
 ## 关键代码
 

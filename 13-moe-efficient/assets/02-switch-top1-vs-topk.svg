@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="sw-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="sw-arr-active" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="sw-arr-dim" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d1d5db"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Switch 极简化 — Top-1 路由 vs Shazeer Top-K
+  </text>
+
+  <!-- LEFT: Shazeer top-K=4 -->
+  <text x="225" y="60" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">
+    Shazeer 2017 — Top-K(K=4)
+  </text>
+
+  <rect x="40" y="78" width="370" height="380" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+
+  <!-- token -->
+  <rect x="190" y="100" width="70" height="40" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="225" y="125" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">token x</text>
+
+  <line x1="225" y1="140" x2="225" y2="160" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- gate -->
+  <rect x="155" y="163" width="140" height="35" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="225" y="185" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Softmax + Top-4</text>
+
+  <!-- 4 expert fan-out -->
+  <line x1="225" y1="198" x2="105" y2="240" stroke="#059669" stroke-width="2" marker-end="url(#sw-arr-active)"/>
+  <line x1="225" y1="198" x2="180" y2="240" stroke="#059669" stroke-width="2" marker-end="url(#sw-arr-active)"/>
+  <line x1="225" y1="198" x2="255" y2="240" stroke="#059669" stroke-width="2" marker-end="url(#sw-arr-active)"/>
+  <line x1="225" y1="198" x2="345" y2="240" stroke="#059669" stroke-width="2" marker-end="url(#sw-arr-active)"/>
+
+  <!-- 4 experts (all active) -->
+  <rect x="60" y="245" width="80" height="40" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="100" y="263" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">E₁₂</text>
+  <text x="100" y="278" text-anchor="middle" font-size="9" fill="#065f46">w=0.42</text>
+
+  <rect x="145" y="245" width="80" height="40" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="185" y="263" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">E₄₇</text>
+  <text x="185" y="278" text-anchor="middle" font-size="9" fill="#065f46">w=0.31</text>
+
+  <rect x="230" y="245" width="80" height="40" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="270" y="263" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">E₈₉₃</text>
+  <text x="270" y="278" text-anchor="middle" font-size="9" fill="#065f46">w=0.15</text>
+
+  <rect x="315" y="245" width="80" height="40" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="355" y="263" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">E₁₅₀₂</text>
+  <text x="355" y="278" text-anchor="middle" font-size="9" fill="#065f46">w=0.12</text>
+
+  <!-- aggregate -->
+  <line x1="100" y1="285" x2="225" y2="320" stroke="#059669" stroke-width="2"/>
+  <line x1="185" y1="285" x2="225" y2="320" stroke="#059669" stroke-width="2"/>
+  <line x1="270" y1="285" x2="225" y2="320" stroke="#059669" stroke-width="2"/>
+  <line x1="355" y1="285" x2="225" y2="320" stroke="#059669" stroke-width="2" marker-end="url(#sw-arr-active)"/>
+
+  <rect x="135" y="325" width="180" height="35" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="225" y="346" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#fbbf24">y = Σ w_k · E_k(x)</text>
+
+  <!-- cost callout -->
+  <rect x="60" y="380" width="335" height="65" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="227" y="402" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="700">代价(K=4)</text>
+  <text x="75" y="422" font-size="10" fill="#fef3c7">• 4 个 expert 都要计算 → 算力 4×</text>
+  <text x="75" y="438" font-size="10" fill="#fef3c7">• all-to-all 通信 4× → 1024 设备跑不动</text>
+
+  <!-- ARROW between -->
+  <line x1="420" y1="220" x2="470" y2="220" stroke="#7c3aed" stroke-width="3" marker-end="url(#sw-arr)"/>
+  <text x="445" y="208" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="700">简化</text>
+  <text x="445" y="240" text-anchor="middle" font-size="10" fill="#7c3aed">K=4 → K=1</text>
+
+  <!-- RIGHT: Switch top-1 -->
+  <text x="675" y="60" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">
+    Switch 2021 — Top-1 ★
+  </text>
+
+  <rect x="490" y="78" width="370" height="380" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+
+  <!-- token -->
+  <rect x="640" y="100" width="70" height="40" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="675" y="125" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">token x</text>
+
+  <line x1="675" y1="140" x2="675" y2="160" stroke="#9d174d" stroke-width="1.5" marker-end="url(#sw-arr)"/>
+
+  <!-- gate -->
+  <rect x="605" y="163" width="140" height="35" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="675" y="178" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Softmax + ArgMax</text>
+  <text x="675" y="192" text-anchor="middle" font-size="9" fill="#9d174d">(fp32 router)</text>
+
+  <!-- top-1 selection -->
+  <line x1="675" y1="198" x2="675" y2="240" stroke="#059669" stroke-width="3" marker-end="url(#sw-arr-active)"/>
+  <line x1="675" y1="198" x2="540" y2="240" stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+  <line x1="675" y1="198" x2="600" y2="240" stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+  <line x1="675" y1="198" x2="755" y2="240" stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+  <line x1="675" y1="198" x2="815" y2="240" stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+
+  <!-- only 1 expert active -->
+  <rect x="510" y="245" width="65" height="40" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="542" y="263" text-anchor="middle" font-size="10" fill="#9ca3af">E₁₂</text>
+  <text x="542" y="278" text-anchor="middle" font-size="8" fill="#9ca3af">跳过</text>
+
+  <rect x="582" y="245" width="65" height="40" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="615" y="263" text-anchor="middle" font-size="10" fill="#9ca3af">E₄₇</text>
+  <text x="615" y="278" text-anchor="middle" font-size="8" fill="#9ca3af">跳过</text>
+
+  <rect x="654" y="237" width="65" height="55" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="3"/>
+  <text x="686" y="258" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">E₈₉₃ ★</text>
+  <text x="686" y="273" text-anchor="middle" font-size="9" fill="#065f46" font-weight="700">w=0.62</text>
+  <text x="686" y="287" text-anchor="middle" font-size="8" fill="#059669" font-weight="600">唯一激活</text>
+
+  <rect x="726" y="245" width="65" height="40" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="758" y="263" text-anchor="middle" font-size="10" fill="#9ca3af">E₁₅₀₂</text>
+  <text x="758" y="278" text-anchor="middle" font-size="8" fill="#9ca3af">跳过</text>
+
+  <rect x="798" y="245" width="55" height="40" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="824" y="263" text-anchor="middle" font-size="10" fill="#9ca3af">…</text>
+
+  <!-- direct output -->
+  <line x1="686" y1="292" x2="675" y2="320" stroke="#059669" stroke-width="2.5" marker-end="url(#sw-arr-active)"/>
+
+  <rect x="585" y="325" width="180" height="35" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="675" y="346" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#fbbf24">y = w · E_i*(x)</text>
+
+  <!-- benefit callout -->
+  <rect x="510" y="380" width="335" height="65" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="678" y="402" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="700">优势(K=1)</text>
+  <text x="525" y="422" font-size="10" fill="#fef3c7">• 算力 / 通信 / 实现复杂度全减 4×</text>
+  <text x="525" y="438" font-size="10" fill="#fef3c7">• 配合 capacity factor 兜底,撑爆就 drop</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="475" x2="860" y2="475" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: three pillars -->
+  <text x="450" y="500" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三机制如何协同 — 让 top-1 真的能跑 trillion
+  </text>
+
+  <g transform="translate(40, 520)">
+    <rect x="0" y="0" width="265" height="120" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="132" y="22" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">机制一:Top-1 Gating</text>
+    <text x="15" y="48" font-size="10" fill="#9d174d">• 每 token 只走一个 expert</text>
+    <text x="15" y="68" font-size="10" fill="#9d174d">• 路由 / 通信 / 算力全 ÷4</text>
+    <text x="132" y="100" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 极简化</text>
+
+    <rect x="285" y="0" width="265" height="120" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="417" y="22" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">机制二:f·P Load Loss</text>
+    <text x="300" y="48" font-family="ui-monospace, monospace" font-size="10" fill="#92400e">L = α · N · Σ f_i · P_i</text>
+    <text x="300" y="68" font-size="10" fill="#92400e">f=token 分布, P=概率分布</text>
+    <text x="417" y="100" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 几何均衡</text>
+
+    <rect x="570" y="0" width="250" height="120" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">机制三:稳定性兜底</text>
+    <text x="585" y="48" font-size="10" fill="#1e40af">• Capacity 撑爆就 drop token</text>
+    <text x="585" y="68" font-size="10" fill="#1e40af">• Router 用 fp32 防 NaN</text>
+    <text x="695" y="100" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 1024 TPU 稳跑</text>
+  </g>
+</svg>
