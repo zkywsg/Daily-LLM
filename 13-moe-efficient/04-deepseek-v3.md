@@ -27,9 +27,25 @@ DeepSeek 团队在 V2 之后用 6 个月时间集成了过去几年 MoE 研究�
 
 DeepSeek-V3 不是单一创新,而是 **MoE 集大成者**——集成 fine-grained experts、shared experts、aux-loss-free balancing、MTP、FP8 训练、MLA attention 等十余项工程优化,每一项都把质量推一小步,合起来让开源首次超过闭源旗舰。
 
-## 核心思想:Fine-Grained MoE + Aux-Free Balancing
+## 核心思想:Fine-Grained MoE + Aux-Free Balancing + FP8 系统
 
-V3 的工程创新太多,选最关键的几个讲。
+### 直觉
+
+[Mixtral](03-mixtral.md) 已经证明开源 MoE 可行,但和 GPT-4 还差一档。DeepSeek 团队的洞察反常识——**不是再发明一项颠覆性新技术,而是把过去几年的 MoE 工程经验全部叠起来**:架构上把 expert 切到极细(8 → 256)、训练上把 aux loss 换成无干扰的 bias、系统上把精度压到 FP8。每一项推 1-3% 质量或省 30-50% 成本,十几项合起来追平 GPT-4o / Claude-3.5,而总成本只要 $5.6M。
+
+但要让"叠出来"真的 work,有三个必须同时跨过的坎:
+
+1. **架构能不能从粗变细?** —— Mixtral 8 expert 太粗,256 expert + shared expert 才有专精度,但路由组合空间从 C(8,2)=28 变成 C(256,8)~10¹³
+2. **训练能不能稳?** —— aux loss 会和主任务 loss 打架;V3 用 learnable bias 替代,完全无干扰
+3. **算力能不能扛?** —— 训 671B 模型,BF16 路线要 $100M;V3 走全 FP8 把成本压到 $5.6M
+
+→ 三机制协同,让开源首次追平闭源旗舰,见图 1 的 V3 架构全景。
+
+![DeepSeek-V3 架构 — Fine-Grained + Shared + Aux-Free](assets/04-v3-architecture.svg)
+
+V3 的工程创新太多,核心可归为三个机制(其余 MLA/MTP/Shared experts 是辅助):
+
+## 机制一:Fine-Grained Experts + Shared Expert
 
 ### 1. Fine-Grained Experts(细粒度专家)
 
@@ -59,6 +75,8 @@ Output = SharedExpert(x) + Σ_{i ∈ top-8} G(x)_i · RoutedExpert_i(x)
 
 直觉:每个 token 都有通用基础能力(语法、常识),不需要每次都从 256 个 expert 里选一个负责通用能力。Shared expert 承担通用,routed expert 负责特化,这样 routed expert 可以更专精。
 
+## 机制二:Auxiliary-Loss-Free Load Balancing
+
 ### 3. Auxiliary-Loss-Free Load Balancing
 
 传统 MoE(Switch / Mixtral)用 auxiliary loss 强制 expert 负载均衡。但 aux loss 会**与主任务 loss 冲突**——为了 balance,gate 不能完全自由选最优 expert。
@@ -72,6 +90,8 @@ $$
 训练时监控每 expert 的 load(被选中频率)。如果某 expert 过载,把它的 $b_i$ 调小(让它更少被选);如果欠载,调大。这个 bias 调整 **不参与梯度**,只是在线动态平衡。
 
 效果:**主任务 loss 不被 aux loss 干扰,但 expert 仍然均衡**。这是 V3 比 Mixtral 训练更稳定的关键。
+
+## 机制三:训练系统三件套 — MLA + MTP + FP8
 
 ### 4. MLA(Multi-head Latent Attention)
 
@@ -100,6 +120,18 @@ MTP 还能用作**推理加速**——预测下两个 token,如果第二个对�
 V3 是第一个公开宣称"全流程 FP8 训练"的开源大模型。GEMM 算子用 FP8,LayerNorm / activations 用 BF16。FP8 比 BF16 快 ~2×、省 ~50% 显存,但精度更敏感——V3 通过 fine-grained quantization scaling 解决精度问题。
 
 FP8 训练让 V3 在 2048 块 H800 上用 2.79M GPU-hours 训完(GPT-4 估算 100M+ GPU-hours)。**训练效率提升 10×+** 是 V3 总成本仅 $5.6M 的关键。
+
+## 三件套协同 — 让开源首次追平闭源旗舰
+
+> **Fine-Grained 提质量上限 + Aux-Free 让训练无干扰 + FP8 把成本压到 1/20** —— 三者缺一,V3 都达不到 "开源持平 GPT-4 / $5.6M 训完" 的双指标。
+
+- 只有 **Fine-Grained Experts**:质量上去了,但 aux loss 仍在干扰 + BF16 训练贵 → 成本 $50M+,失去"低成本"优势,只是又一个比 Mixtral 大的模型
+- 只有 **Aux-Free Balancing**:训练稳了,但 expert 还是 Mixtral 风格 8 个粗粒度 → 质量天花板就在 Mixtral 那里,追不上 GPT-4
+- 只有 **FP8 系统**:成本压下来了,但架构和训练都用老方案 → 训出来还是 Mixtral 质量,只是更便宜
+
+三件套首次组合 → 671B 总参 / 37B 激活 / MATH 90.2 反超 Claude-3.5 / 训练成本 $5.6M(GPT-4 的 1/20)—— 见图 2 的成本-质量对比。
+
+![DeepSeek-V3 — 开源首次成本质量双反超闭源](assets/04-v3-cost-vs-quality.svg)
 
 ## 关键代码
 

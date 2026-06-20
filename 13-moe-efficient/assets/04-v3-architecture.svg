@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="v3-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="v3-arr-active" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="v3-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    DeepSeek-V3 架构 — Fine-Grained Experts + Shared Expert + Aux-Free
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    256 routed experts + 1 shared expert + top-8 路由 + learnable bias 替代 aux loss
+  </text>
+
+  <!-- input -->
+  <rect x="395" y="80" width="110" height="40" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="450" y="105" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">token x</text>
+
+  <!-- fork to gate and shared -->
+  <line x1="450" y1="120" x2="450" y2="145" stroke="#9d174d" stroke-width="1.5"/>
+  <line x1="450" y1="145" x2="200" y2="170" stroke="#9d174d" stroke-width="1.5" marker-end="url(#v3-arr)"/>
+  <line x1="450" y1="145" x2="700" y2="170" stroke="#2563eb" stroke-width="2" marker-end="url(#v3-arr-blue)"/>
+
+  <!-- LEFT: ROUTING -->
+  <rect x="100" y="173" width="200" height="55" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="200" y="195" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Sigmoid Router</text>
+  <text x="200" y="212" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">score = sig(x·W_g) + b_i</text>
+  <text x="200" y="223" text-anchor="middle" font-size="9" fill="#dc2626">★ b_i = aux-free bias</text>
+
+  <line x1="200" y1="228" x2="200" y2="248" stroke="#9d174d" stroke-width="1.5" marker-end="url(#v3-arr)"/>
+
+  <rect x="100" y="251" width="200" height="35" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="200" y="273" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Top-8 选择(K=8/N=256)</text>
+
+  <!-- fan out to 8 of 256 -->
+  <line x1="200" y1="286" x2="60" y2="320" stroke="#059669" stroke-width="1.5" marker-end="url(#v3-arr-active)"/>
+  <line x1="200" y1="286" x2="125" y2="320" stroke="#059669" stroke-width="1.5" marker-end="url(#v3-arr-active)"/>
+  <line x1="200" y1="286" x2="190" y2="320" stroke="#059669" stroke-width="1.5" marker-end="url(#v3-arr-active)"/>
+  <line x1="200" y1="286" x2="255" y2="320" stroke="#059669" stroke-width="1.5" marker-end="url(#v3-arr-active)"/>
+  <line x1="200" y1="286" x2="320" y2="320" stroke="#059669" stroke-width="1.5" marker-end="url(#v3-arr-active)"/>
+
+  <!-- 256 routed experts row -->
+  <text x="200" y="310" text-anchor="middle" font-size="10" fill="#1f2937" font-weight="600">256 Routed Experts(小 FFN,top-8 激活)</text>
+
+  <g>
+    <rect x="40" y="325" width="40" height="40" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="60" y="343" text-anchor="middle" font-size="9" fill="#065f46" font-weight="700">E₁ ★</text>
+    <text x="60" y="357" text-anchor="middle" font-size="8" fill="#065f46">激活</text>
+
+    <rect x="85" y="325" width="40" height="40" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="2,2"/>
+    <text x="105" y="345" text-anchor="middle" font-size="9" fill="#9ca3af">E₂</text>
+
+    <rect x="130" y="325" width="40" height="40" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="150" y="343" text-anchor="middle" font-size="9" fill="#065f46" font-weight="700">E₁₂ ★</text>
+    <text x="150" y="357" text-anchor="middle" font-size="8" fill="#065f46">激活</text>
+
+    <rect x="175" y="325" width="40" height="40" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="2,2"/>
+    <text x="195" y="345" text-anchor="middle" font-size="9" fill="#9ca3af">E₂₃</text>
+
+    <rect x="220" y="325" width="40" height="40" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="240" y="343" text-anchor="middle" font-size="9" fill="#065f46" font-weight="700">E₄₇ ★</text>
+    <text x="240" y="357" text-anchor="middle" font-size="8" fill="#065f46">激活</text>
+
+    <rect x="265" y="325" width="40" height="40" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1" stroke-dasharray="2,2"/>
+    <text x="285" y="345" text-anchor="middle" font-size="9" fill="#9ca3af">E₈₉</text>
+
+    <rect x="310" y="325" width="40" height="40" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="330" y="343" text-anchor="middle" font-size="9" fill="#065f46" font-weight="700">E₁₂₈ ★</text>
+    <text x="330" y="357" text-anchor="middle" font-size="8" fill="#065f46">激活</text>
+  </g>
+
+  <text x="200" y="385" text-anchor="middle" font-size="9" fill="#6b7280" font-style="italic">… 共 256 个 small experts,只 8 个激活,其余精确 0 …</text>
+
+  <!-- Aggregate routed -->
+  <line x1="60" y1="365" x2="200" y2="410" stroke="#059669" stroke-width="1.5"/>
+  <line x1="150" y1="365" x2="200" y2="410" stroke="#059669" stroke-width="1.5"/>
+  <line x1="240" y1="365" x2="200" y2="410" stroke="#059669" stroke-width="1.5"/>
+  <line x1="330" y1="365" x2="200" y2="410" stroke="#059669" stroke-width="1.5" marker-end="url(#v3-arr-active)"/>
+
+  <rect x="100" y="413" width="200" height="35" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="200" y="430" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">Routed Output</text>
+  <text x="200" y="443" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#065f46">Σ w_i · E_i(x)</text>
+
+  <!-- RIGHT: SHARED EXPERT -->
+  <rect x="600" y="173" width="200" height="55" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="700" y="195" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Shared Expert ★</text>
+  <text x="700" y="212" text-anchor="middle" font-size="10" fill="#1e40af">所有 token 都走</text>
+  <text x="700" y="223" text-anchor="middle" font-size="9" fill="#1e40af">学通用基础能力</text>
+
+  <line x1="700" y1="228" x2="700" y2="380" stroke="#2563eb" stroke-width="2"/>
+
+  <text x="730" y="305" font-size="10" fill="#1e40af" font-weight="600">直接通过</text>
+  <text x="730" y="320" font-size="10" fill="#1e40af" font-weight="600">(无路由)</text>
+
+  <rect x="600" y="383" width="200" height="65" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="700" y="403" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="700">Shared Output</text>
+  <text x="700" y="420" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">SharedExpert(x)</text>
+  <text x="700" y="436" text-anchor="middle" font-size="9" fill="#059669">让 routed 更专精</text>
+
+  <!-- aggregate -->
+  <line x1="200" y1="448" x2="450" y2="490" stroke="#059669" stroke-width="2" marker-end="url(#v3-arr-active)"/>
+  <line x1="700" y1="448" x2="450" y2="490" stroke="#2563eb" stroke-width="2" marker-end="url(#v3-arr-blue)"/>
+
+  <rect x="280" y="493" width="340" height="50" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="513" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#fbbf24" font-weight="700">y = Shared(x) + Σ_{i∈top8} w_i · E_i(x)</text>
+  <text x="450" y="532" text-anchor="middle" font-size="10" fill="#fef3c7">671B 总参 / 37B 激活(~5.5% 稀疏度)</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="565" x2="860" y2="565" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: aux-free bias illustration + scale comparison -->
+  <g transform="translate(40, 585)">
+    <rect x="0" y="0" width="395" height="85" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="197" y="20" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">★ Aux-Free Balancing 核心机制</text>
+    <text x="15" y="42" font-size="10" fill="#92400e">• 训练时监控每 expert 的 load(被选中频率)</text>
+    <text x="15" y="58" font-size="10" fill="#92400e">• 过载 → b_i 调小;欠载 → b_i 调大</text>
+    <text x="15" y="74" font-size="10" fill="#dc2626" font-weight="700">• bias 不参与梯度 → 主任务 loss 不被干扰</text>
+
+    <rect x="415" y="0" width="405" height="85" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="617" y="20" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">★ vs Mixtral 的对比</text>
+    <text x="430" y="42" font-size="10" fill="#9d174d">Mixtral: 8 experts × top-2 → C(8,2) = 28 组合</text>
+    <text x="430" y="58" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">V3: 256 experts × top-8 → C(256,8) ≈ 4×10¹³ 组合</text>
+    <text x="430" y="74" font-size="10" fill="#dc2626" font-weight="700">→ 专精度 + 组合空间双重提升</text>
+  </g>
+</svg>
