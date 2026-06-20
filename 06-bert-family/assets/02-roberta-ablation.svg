@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="ra-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    RoBERTa 五项改动消融 — 哪一项贡献最大?
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    论文 Table 4:逐项叠加,SQuAD F1 / MNLI 累计变化
+  </text>
+
+  <!-- SQuAD F1 staircase -->
+  <text x="80" y="90" font-size="12" fill="#1f2937" font-weight="600">SQuAD F1(累计)</text>
+
+  <g transform="translate(40, 100)">
+    <!-- baseline -->
+    <text x="0" y="30" font-size="10" fill="#1f2937">BERT-large baseline</text>
+    <rect x="200" y="20" width="364" height="16" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="572" y="33" font-size="10" fill="#dc2626">90.9</text>
+
+    <!-- +dynamic mask -->
+    <text x="0" y="60" font-size="10" fill="#1f2937">+ 动态 masking</text>
+    <rect x="200" y="50" width="365" height="16" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="573" y="63" font-size="10" fill="#9a3412">91.2(+0.3)</text>
+
+    <!-- +去 NSP -->
+    <text x="0" y="90" font-size="10" fill="#1f2937">+ 去 NSP + 单序列</text>
+    <rect x="200" y="80" width="366" height="16" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="574" y="93" font-size="10" fill="#9a3412">91.4(+0.2)</text>
+
+    <!-- +大 batch -->
+    <text x="0" y="120" font-size="10" fill="#1f2937">+ 大 batch (8K)</text>
+    <rect x="200" y="110" width="366" height="16" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="574" y="123" font-size="10" fill="#9a3412">91.5(+0.1)</text>
+
+    <!-- +更多数据 -->
+    <text x="0" y="150" font-size="10" fill="#1f2937" font-weight="700">+ 10× 数据 + 4× 训练步</text>
+    <rect x="200" y="140" width="378" height="16" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="586" y="153" font-size="11" fill="#059669" font-weight="700">94.6 ★(+3.1!)</text>
+
+    <!-- annotation -->
+    <text x="586" y="180" font-size="10" fill="#dc2626" font-weight="700">单这一项贡献最大</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="305" x2="860" y2="305" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- attribution rings -->
+  <text x="450" y="335" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    每项贡献的"扇形归属"(SQuAD 总涨幅 3.7 分)
+  </text>
+
+  <g transform="translate(150, 360)">
+    <!-- Pie-like horizontal stacked bar -->
+    <rect x="0" y="20" width="33" height="40" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="16" y="80" text-anchor="middle" font-size="10" fill="#9a3412" font-weight="700">8%</text>
+    <text x="16" y="95" text-anchor="middle" font-size="9" fill="#9a3412">动态</text>
+    <text x="16" y="108" text-anchor="middle" font-size="9" fill="#9a3412">mask</text>
+
+    <rect x="33" y="20" width="22" height="40" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="44" y="80" text-anchor="middle" font-size="10" fill="#9a3412" font-weight="700">5%</text>
+    <text x="44" y="95" text-anchor="middle" font-size="9" fill="#9a3412">去</text>
+    <text x="44" y="108" text-anchor="middle" font-size="9" fill="#9a3412">NSP</text>
+
+    <rect x="55" y="20" width="11" height="40" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="60" y="80" text-anchor="middle" font-size="10" fill="#9a3412" font-weight="700">3%</text>
+    <text x="60" y="95" text-anchor="middle" font-size="9" fill="#9a3412">大</text>
+    <text x="60" y="108" text-anchor="middle" font-size="9" fill="#9a3412">batch</text>
+
+    <rect x="66" y="20" width="334" height="40" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="233" y="46" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">84% ★</text>
+    <text x="233" y="80" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">10× 数据 + 4× 训练步</text>
+    <text x="233" y="95" text-anchor="middle" font-size="10" fill="#059669">(机制一:核心驱动力)</text>
+
+    <rect x="400" y="20" width="60" height="40" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="430" y="46" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">架构</text>
+    <text x="430" y="80" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">0% 改动</text>
+  </g>
+
+  <!-- BOTTOM banner -->
+  <text x="450" y="510" text-anchor="middle" font-size="12" fill="#dc2626" font-weight="700">
+    方法论冲击:NLP 2018 - 2019 大量"BERT 改进"论文,涨幅其实多来自 recipe,不是架构
+  </text>
+
+  <rect x="60" y="535" width="780" height="50" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="450" y="560" text-anchor="middle" font-size="12" fill="#fbbf24" font-weight="700">
+    RoBERTa 确立的研究规范
+  </text>
+  <text x="450" y="578" text-anchor="middle" font-size="11" fill="#fef3c7">
+    "做架构改动之前,先确认 baseline 充分训练" → 直接影响 Chinchilla / LLaMA 时代
+  </text>
+</svg>

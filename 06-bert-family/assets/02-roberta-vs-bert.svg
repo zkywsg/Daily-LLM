@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="rv-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    BERT vs RoBERTa — 同架构,recipe 决定一切
+  </text>
+
+  <!-- LEFT: BERT -->
+  <text x="225" y="60" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">
+    BERT-large(under-trained)
+  </text>
+
+  <rect x="40" y="78" width="370" height="280" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+
+  <text x="225" y="100" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">架构 24 层 / 340M(完全相同)</text>
+
+  <g transform="translate(60, 115)">
+    <text x="0" y="20" font-size="10" fill="#1f2937" font-weight="600">数据:</text>
+    <rect x="100" y="8" width="50" height="14" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="160" y="20" font-size="10" fill="#92400e">16 GB</text>
+
+    <text x="0" y="48" font-size="10" fill="#1f2937" font-weight="600">训练 token:</text>
+    <rect x="100" y="36" width="20" height="14" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="130" y="48" font-size="10" fill="#92400e">130 B</text>
+
+    <text x="0" y="76" font-size="10" fill="#1f2937" font-weight="600">Batch:</text>
+    <rect x="100" y="64" width="15" height="14" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="125" y="76" font-size="10" fill="#92400e">256 序列</text>
+
+    <text x="0" y="104" font-size="10" fill="#1f2937" font-weight="600">NSP 任务:</text>
+    <rect x="100" y="92" width="40" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="148" y="104" font-size="10" fill="#dc2626" font-weight="700">有(占算力)</text>
+
+    <text x="0" y="132" font-size="10" fill="#1f2937" font-weight="600">Masking:</text>
+    <text x="100" y="132" font-size="10" fill="#92400e">静态(一次性预处理)</text>
+
+    <text x="0" y="160" font-size="10" fill="#1f2937" font-weight="600">Tokenizer:</text>
+    <text x="100" y="160" font-size="10" fill="#92400e">WordPiece 30K</text>
+
+    <text x="0" y="188" font-size="10" fill="#1f2937" font-weight="600">输入:</text>
+    <text x="100" y="188" font-size="10" fill="#92400e">句对(浪费 50% 上下文)</text>
+  </g>
+
+  <!-- result -->
+  <rect x="60" y="318" width="330" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="225" y="339" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="700">GLUE 平均 82.1 / SQuAD F1 90.9</text>
+
+  <!-- ARROW between -->
+  <line x1="420" y1="210" x2="470" y2="210" stroke="#7c3aed" stroke-width="3" marker-end="url(#rv-arr)"/>
+  <text x="445" y="198" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="700">3 机制</text>
+  <text x="445" y="225" text-anchor="middle" font-size="9" fill="#7c3aed">recipe</text>
+
+  <!-- RIGHT: RoBERTa -->
+  <text x="675" y="60" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">
+    RoBERTa-large(充分训练)★
+  </text>
+
+  <rect x="490" y="78" width="370" height="280" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+
+  <text x="675" y="100" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">架构 24 层 / 355M(完全相同)</text>
+
+  <g transform="translate(510, 115)">
+    <text x="0" y="20" font-size="10" fill="#1f2937" font-weight="600">数据:</text>
+    <rect x="100" y="8" width="220" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="170" y="20" font-size="10" fill="#059669" font-weight="700">160 GB(10×)</text>
+
+    <text x="0" y="48" font-size="10" fill="#1f2937" font-weight="600">训练 token:</text>
+    <rect x="100" y="36" width="220" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="170" y="48" font-size="10" fill="#059669" font-weight="700">2000 B(15×)★</text>
+
+    <text x="0" y="76" font-size="10" fill="#1f2937" font-weight="600">Batch:</text>
+    <rect x="100" y="64" width="220" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="170" y="76" font-size="10" fill="#059669" font-weight="700">8K 序列(32×)</text>
+
+    <text x="0" y="104" font-size="10" fill="#1f2937" font-weight="600">NSP 任务:</text>
+    <rect x="100" y="92" width="40" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="145" y="104" font-size="10" fill="#059669" font-weight="700">去掉(解放算力)</text>
+
+    <text x="0" y="132" font-size="10" fill="#1f2937" font-weight="600">Masking:</text>
+    <text x="100" y="132" font-size="10" fill="#059669">动态(每次重选)</text>
+
+    <text x="0" y="160" font-size="10" fill="#1f2937" font-weight="600">Tokenizer:</text>
+    <text x="100" y="160" font-size="10" fill="#059669">byte-level BPE 50K</text>
+
+    <text x="0" y="188" font-size="10" fill="#1f2937" font-weight="600">输入:</text>
+    <text x="100" y="188" font-size="10" fill="#059669">单序列(完整 512 token)</text>
+  </g>
+
+  <!-- result -->
+  <rect x="510" y="318" width="330" height="32" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="675" y="339" text-anchor="middle" font-size="11" fill="#059669" font-weight="700">GLUE 87+ / SQuAD F1 94.6 ★(+3.7)</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="380" x2="860" y2="380" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: 三件套缺一 -->
+  <text x="450" y="405" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三件套缺一,RoBERTa 都退回 BERT
+  </text>
+
+  <g transform="translate(40, 425)">
+    <rect x="0" y="0" width="265" height="155" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="132" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 10× 数据 + 4× 步</text>
+    <text x="15" y="48" font-size="10" fill="#991b1b">NSP 还在但数据 / 步没加</text>
+    <text x="15" y="68" font-size="10" fill="#991b1b">↓</text>
+    <text x="15" y="88" font-size="10" fill="#991b1b">仍 under-trained</text>
+    <text x="15" y="108" font-size="10" fill="#991b1b">涨幅 < 1 分(83%)</text>
+    <text x="132" y="138" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">★ 主力机制,失之全损</text>
+
+    <rect x="285" y="0" width="265" height="155" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="417" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 去 NSP</text>
+    <text x="300" y="48" font-size="10" fill="#991b1b">NSP 占 50% 数据预算</text>
+    <text x="300" y="68" font-size="10" fill="#991b1b">学的是主题相似度</text>
+    <text x="300" y="88" font-size="10" fill="#991b1b">↓</text>
+    <text x="300" y="108" font-size="10" fill="#991b1b">深表征 ceiling 被压低</text>
+    <text x="417" y="138" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">即便多训也涨不到 94.6</text>
+
+    <rect x="570" y="0" width="250" height="155" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 工程优化</text>
+    <text x="585" y="48" font-size="10" fill="#991b1b">静态 mask / 小 batch /</text>
+    <text x="585" y="68" font-size="10" fill="#991b1b">WordPiece 30K</text>
+    <text x="585" y="88" font-size="10" fill="#991b1b">↓</text>
+    <text x="585" y="108" font-size="10" fill="#991b1b">大 batch 训不稳</text>
+    <text x="695" y="138" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">8K 跑出来训练发散</text>
+  </g>
+
+  <rect x="60" y="600" width="780" height="40" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="625" text-anchor="middle" font-size="12" fill="#fef3c7" font-weight="600">
+    三件套协同 → BERT 改进领域 NSP 被淘汰 / RoBERTa 替代 BERT 成新 baseline / 影响 Chinchilla 时代
+  </text>
+</svg>

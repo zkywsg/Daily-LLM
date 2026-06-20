@@ -26,6 +26,26 @@ key_idea: "去掉 NSP + 动态 masking + 大 batch + 10× 数据 + 更长训练,
 
 RoBERTa 的方法论也成为后续所有大模型工作的范例:**做架构改动之前,先确认 baseline 是充分训练的**。这一原则在 [Chinchilla](../07-gpt-scaling/04-scaling-laws.md) 修正 Kaplan 时再次体现——很多"加规模没用"的结论其实是因为 baseline 训练不足。
 
+## 核心思想:Robustly Optimized BERT
+
+### 直觉
+
+2018 - 2019 年学界一窝蜂改 BERT 架构(XLNet、SpanBERT、MASS、ELECTRA...),每篇都报告自己更好。但 Facebook AI 的 Liu 等人复现后发现:**许多"BERT 改进"其实不是架构胜出,是训练 recipe 胜出**——Devlin 2018 受限于算力,BERT 原版严重 under-trained。
+
+RoBERTa 的洞察反常识到几乎反潮流:**架构一行都不改,只把训练 recipe 调对**——5 件事下去,GLUE 平均涨 5+ 分,超过所有同期"BERT 改进"工作。这一论点的方法论价值在于把"架构创新 vs 训练充分"两个变量第一次解开,确立"做架构改动之前先确认 baseline 是充分训练的"研究规范。
+
+但要让这 5 件事 work 且贡献可量化,可以归为三个互相独立的机制:
+
+1. **10× 数据 + 4× 训练步** —— 真正起决定作用的(论文消融:单这一项涨 3 分)
+2. **去掉 NSP + 单序列输入** —— 把负累去掉,让 512 token 上下文完整连续
+3. **动态 masking + 大 batch + byte-level BPE** —— 训练 recipe 工程优化
+
+→ 三机制串成"同架构,recipe 调对" 完整方案,见图 1 五项改动的独立消融。
+
+![RoBERTa 五项改动消融 — 哪一项贡献最大](assets/02-roberta-ablation.svg)
+
+## 机制一:10× 数据 + 4× 训练步 — 真正起决定作用的
+
 ## 五个改动的具体贡献
 
 RoBERTa 论文最大的工程价值是**系统化消融**——逐个评估这五个改动的独立贡献,而不是把它们打包卖。论文 Table 4 给出关键数据:
@@ -42,7 +62,13 @@ RoBERTa 论文最大的工程价值是**系统化消融**——逐个评估这�
 
 这一发现的方法论意义:NLP 研究在 2018–2019 一窝蜂改架构,但很多"架构改进"的真实增益来源其实是配套使用的"更好训练 recipe"。RoBERTa 把这件事说穿后,2020 之后的研究开始更严肃地汇报 compute-matched comparison(同算力对比),这一规范持续到 [Chinchilla](../07-gpt-scaling/04-scaling-laws.md) 时代。
 
-## 动态 Masking
+## 机制二:去掉 NSP + 单序列输入
+
+(详细辩论见下方"去掉 NSP 的辩论"小节)
+
+## 机制三:动态 Masking + 大 Batch + Byte-level BPE
+
+### 动态 Masking
 
 [BERT](01-bert.md) 的 masking 是**静态**的——在数据预处理阶段,每个训练样本被 mask 一次,固定下来后整个训练过程都用这同样的 mask 版本。如果一个句子被训练 40 次(40 epoch),模型看到的是**同一组 mask 位置**重复 40 次。
 
@@ -52,7 +78,7 @@ RoBERTa 改成**动态 masking**——每次喂给模型一个样本时**重新�
 
 这一改进后来被所有 MLM 模型沿用。ALBERT / ELECTRA / DeBERTa 等都用动态 masking。
 
-## 去掉 NSP 的辩论
+### 去掉 NSP 的辩论
 
 NSP(Next Sentence Prediction)是 [BERT](01-bert.md) 的第二个预训练任务——判断句子 B 是不是紧跟在句子 A 后面。Devlin 团队设计 NSP 是希望它帮助句子级别的下游任务(NLI、QA)。
 
@@ -76,7 +102,7 @@ RoBERTa 直接去掉 NSP,所有训练都用单一连续序列(从同一文档采
 
 但 ALBERT 给出了一个"修正方案"——SOP(Sentence Order Prediction):同样是二分类任务,但 negative sample 是**调换顺序的同一对句子**(不是随机句子)。这迫使模型学到真正的句间连贯性,而不是主题相似度。详见 [03-albert.md](03-albert.md)。
 
-## 大 Batch + 大数据
+### 大 Batch + 大数据
 
 RoBERTa 的第三个关键改动是**显著增加 batch size 和数据规模**。BERT 原版用 256 序列的 batch,RoBERTa 推到 8K——大 32×。
 
@@ -97,6 +123,18 @@ RoBERTa 的第三个关键改动是**显著增加 batch size 和数据规模**�
 | **总计** | **160 GB** |
 
 CC-News(英文 CommonCrawl 子集)和 OpenWebText(EleutherAI 复现 OpenAI WebText)是关键贡献——它们提供了"高质量 web 文本",比单纯 BookCorpus + Wiki 多样得多。这一数据组合后来被多个工作沿用,包括 GPT-NeoX、BLOOM 等开源 LLM。
+
+## 三件套协同 — 同架构,recipe 调对就涨 5+ 分
+
+> **10× 数据 + 4× 训练步(主力)+ 去 NSP 解放上下文 + 工程优化稳大 batch** —— 三者协同 → 架构 0 改动,GLUE 平均 +5+ 分。
+
+- 只有 **10× 数据 + 4× 步**:NSP 还在,占 50% 算力学浅层信号 → 训得多但 ceiling 被压低,涨幅打 6 折
+- 只有 **去 NSP**:数据 / 步数没加,模型仍 under-trained → 涨幅 < 1 分,远不足以 explain 5 分
+- 只有 **工程优化**:数据 / 任务都没改 → byte-BPE / 动态 mask / 大 batch 共贡献 ~1 分,撑不起 RoBERTa
+
+三件套协同 → SQuAD F1 94.6(BERT 90.9)/ MNLI 89.4(BERT 86.6),架构 0 改动 — 见图 2 BERT vs RoBERTa 训练资源与结果对比。
+
+![BERT vs RoBERTa — 同架构,recipe 决定一切](assets/02-roberta-vs-bert.svg)
 
 ## 训练细节
 
