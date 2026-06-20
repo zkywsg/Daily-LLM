@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="lv-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    LeNet vs MLP — 三件套协同的参数效率
+  </text>
+
+  <!-- LEFT: MLP -->
+  <text x="225" y="60" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">
+    朴素 MLP(无三件套)
+  </text>
+
+  <rect x="40" y="78" width="370" height="240" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+
+  <rect x="60" y="98" width="330" height="40" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="225" y="123" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">Input 32×32 → flatten 到 1024 维</text>
+
+  <line x1="225" y1="138" x2="225" y2="158" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lv-arr)"/>
+
+  <rect x="60" y="161" width="330" height="55" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="225" y="180" text-anchor="middle" font-size="10" fill="#991b1b" font-weight="700">FC 1024 → 1024</text>
+  <text x="225" y="200" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#dc2626" font-weight="700">~1,049,600 参数 ★</text>
+
+  <line x1="225" y1="216" x2="225" y2="236" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lv-arr)"/>
+
+  <rect x="60" y="239" width="330" height="30" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="225" y="259" text-anchor="middle" font-size="10" fill="#065f46">Output 10 类</text>
+
+  <text x="225" y="293" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="600">二维结构信息丢光,参数爆炸</text>
+  <text x="225" y="308" text-anchor="middle" font-size="9" fill="#dc2626">MNIST 错误率 ~3%(已经很难训)</text>
+
+  <!-- ARROW between -->
+  <line x1="420" y1="195" x2="470" y2="195" stroke="#7c3aed" stroke-width="3" marker-end="url(#lv-arr)"/>
+  <text x="445" y="183" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="700">三件套</text>
+
+  <!-- RIGHT: LeNet -->
+  <text x="675" y="60" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">
+    LeNet-5(三件套协同)★
+  </text>
+
+  <rect x="490" y="78" width="370" height="240" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+
+  <rect x="510" y="92" width="330" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="675" y="113" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">Input 32×32(保留二维结构)</text>
+
+  <line x1="675" y1="124" x2="675" y2="140" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lv-arr)"/>
+
+  <rect x="510" y="143" width="330" height="32" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="675" y="164" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">机制一 Conv ×3 (~50K 参数)</text>
+
+  <line x1="675" y1="175" x2="675" y2="191" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lv-arr)"/>
+
+  <rect x="510" y="194" width="330" height="32" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="675" y="215" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="700">机制二 AvgPool ×2 (0 参数)</text>
+
+  <line x1="675" y1="226" x2="675" y2="242" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lv-arr)"/>
+
+  <rect x="510" y="245" width="330" height="32" rx="4" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="675" y="266" text-anchor="middle" font-size="10" fill="#5b21b6" font-weight="700">机制三 FC + 反传 (~10K 参数)</text>
+
+  <text x="675" y="295" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#059669" font-weight="700">~60K 参数 ★ 少 17×</text>
+  <text x="675" y="310" text-anchor="middle" font-size="9" fill="#059669">MNIST 错误率 0.95%</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="345" x2="860" y2="345" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: 三件套缺一 -->
+  <text x="450" y="370" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三件套缺一,CNN 都不成立
+  </text>
+
+  <g transform="translate(40, 390)">
+    <rect x="0" y="0" width="265" height="135" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="132" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">只有 Conv,无 Pool</text>
+    <text x="15" y="48" font-size="10" fill="#991b1b">每层只看 5×5 局部</text>
+    <text x="15" y="66" font-size="10" fill="#991b1b">感受野不放大</text>
+    <text x="15" y="84" font-size="10" fill="#991b1b">深层 neuron 仍只见小窗</text>
+    <text x="132" y="115" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 学不到 high-level</text>
+
+    <rect x="285" y="0" width="265" height="135" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="417" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">只有 Pool,无 Conv</text>
+    <text x="300" y="48" font-size="10" fill="#991b1b">没特征图,池化谁?</text>
+    <text x="300" y="66" font-size="10" fill="#991b1b">在原始像素上 pool</text>
+    <text x="300" y="84" font-size="10" fill="#991b1b">= 下采样输入图</text>
+    <text x="417" y="115" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 信息纯损失</text>
+
+    <rect x="570" y="0" width="250" height="135" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">只有 FC + 反传</text>
+    <text x="585" y="48" font-size="10" fill="#991b1b">= MLP,参数爆炸</text>
+    <text x="585" y="66" font-size="10" fill="#991b1b">二维结构丢光</text>
+    <text x="585" y="84" font-size="10" fill="#991b1b">需要海量数据从零学</text>
+    <text x="695" y="115" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ MNIST 都难训</text>
+  </g>
+
+  <rect x="60" y="555" width="780" height="40" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="580" text-anchor="middle" font-size="12" fill="#fef3c7" font-weight="600">
+    三件套首次组合 → 定义 "卷积神经网络" 这个词,后续 20 年视觉 CNN 范式起点
+  </text>
+</svg>
