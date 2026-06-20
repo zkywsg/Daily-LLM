@@ -36,32 +36,31 @@ HuggingFace 团队 2019 年 10 月发表 *DistilBERT, a distilled version of BER
 
 HuggingFace Transformers 库里 DistilBERT 的下载量长期是所有 BERT 系列里最高的——简单、轻量、易部署。
 
-## 核心思想:三损失蒸馏
+## 核心思想:三损失蒸馏 + 层数减半 + 隔层初始化
+
+### 直觉
+
+[BERT-base](01-bert.md) 110M 在 CPU 推理 100ms+、移动端基本不可行。直接训一个小 BERT 从零开始,效果会差很多(数据 + 算力相同,容量小学到的少)。
+
+Hinton 2015 的洞察:**让小 student 模仿大 teacher 的"软分布"**——teacher 的 softmax 输出包含类别间的相对关系(情感分类时"正面 0.8 / 负面 0.15 / 中性 0.05"),这些"软信息"对小模型学习极其有用,远比硬标签 ground truth 信息量大。
+
+但要把 BERT 真正压成可工业部署的版本,**只蒸馏 logit 还不够**。HuggingFace 团队加了两个工程关键:
+
+1. **三损失联合训练** —— KL 蒸馏 + MLM 原任务 + 隐状态 cosine 对齐
+2. **层数减半(12→6)** —— 真省 FLOPs(不像 [ALBERT](03-albert.md) 共享不省 FLOPs)
+3. **隔层初始化** —— 用 BERT 第 1,3,5,7,9,11 层权重初始化 student,收敛快得多
+
+→ 三机制串起来,DistilBERT 比 BERT-base 参数 -40% / 速度 +60% / 性能保留 97%,见图 1 三损失训练全景。
+
+![DistilBERT 三损失训练 — KL × MLM × Cosine](assets/04-distilbert-three-losses.svg)
+
+## 机制一:三损失联合训练
 
 DistilBERT 的核心是**三损失联合训练**:
 
 $$
 \mathcal{L} = \alpha \cdot \mathcal{L}_{\text{distill}} + \beta \cdot \mathcal{L}_{\text{MLM}} + \gamma \cdot \mathcal{L}_{\text{cos}}
 $$
-
-```mermaid
-graph LR
-    teacher["BERT teacher<br/>(12 层, 110M, 冻结)"]:::input --> t_logits["soft labels<br/>p_T(x)"]:::compute
-    teacher --> t_hidden["teacher hidden<br/>states"]:::compute
-    student["DistilBERT student<br/>(6 层, 66M)"]:::compute --> s_logits["student logits<br/>p_S(x)"]:::compute
-    student --> s_hidden["student hidden"]:::compute
-    t_logits --> kl["L_distill<br/>KL(p_T ‖ p_S)"]:::output
-    s_logits --> kl
-    student --> mlm["L_MLM<br/>(原始 MLM 任务)"]:::output
-    t_hidden --> cos["L_cos<br/>cosine 相似度"]:::output
-    s_hidden --> cos
-
-    classDef input fill:#fef3c7,stroke:#d97706,color:#92400e;
-    classDef compute fill:#fce7f3,stroke:#db2777,color:#9d174d;
-    classDef output fill:#ecfdf5,stroke:#059669,color:#065f46;
-```
-
-*图 1:DistilBERT 三损失联合训练 — 蒸馏 loss(soft label KL)+ MLM loss(原始任务)+ cosine loss(隐状态对齐)。Teacher 冻结只 forward,Student 学 teacher 的预测分布 + 隐状态结构 + 原始 MLM 信号。*
 
 **Loss 1: Distillation loss(蒸馏损失)**——student 模仿 teacher 的预测分布:
 
@@ -95,7 +94,7 @@ $$
 
 DistilBERT 的论文超参:`α = 0.5, β = 0.2, γ = 0.1`(蒸馏权重最大,符合直觉)。
 
-## 架构:层数减半 + 初始化继承
+## 机制二 + 机制三:层数减半 + 隔层初始化
 
 DistilBERT 的架构和 [BERT-base](01-bert.md) 一致,但**层数从 12 减到 6**:
 
@@ -117,6 +116,18 @@ DistilBERT 的架构和 [BERT-base](01-bert.md) 一致,但**层数从 12 减到 
 - 减 hidden size:推理时间近平方减小但效果损失更大(因为 attention 的表达力被压缩)
 
 层数减半是 6 层 BERT 在 latency 和 quality 之间的最佳平衡。后续 TinyBERT、MobileBERT 等更小的模型探索过减 hidden size,但工业上 DistilBERT 这个"6 层 768 维"配置最受欢迎。
+
+## 三件套协同 — 真正的工业部署 sweet spot
+
+> **三损失把 teacher 知识完整传过去 + 层数减半真省 FLOPs + 隔层初始化让训练快得起来** —— 三者协同 → DistilBERT 保留 97% 性能、参数 -40%、速度 +60%,成为工业 BERT 部署默认。
+
+- 只有 **三损失蒸馏**:架构和 BERT 一样大,蒸馏后还是 110M 参数 → 没解决部署问题,只是再训一遍 BERT
+- 只有 **层数减半**:从零训 6 层 BERT,没 teacher 软标签信号 → 效果损失大,GLUE 保留只 85% 左右
+- 只有 **隔层初始化**:不蒸馏只用初始化的 6 层 → 等于 truncated BERT 继续训 MLM,失去蒸馏的核心收益
+
+三件套首次组合 → DistilBERT vs BERT-base vs ALBERT 完整对比见图 2:**DistilBERT 是少数真正"参数 + 速度 + 性能"三维都改善的方案**。
+
+![DistilBERT vs BERT vs ALBERT — 工业部署三维对比](assets/04-distilbert-vs-bert-tradeoff.svg)
 
 ## 性能 vs 速度
 
