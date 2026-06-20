@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="afv-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Adapter vs Full FT — N 任务的存储与性能对比
+  </text>
+
+  <!-- LEFT: Full FT -->
+  <text x="225" y="60" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">
+    Full Fine-Tuning(N=9 任务)
+  </text>
+
+  <rect x="40" y="78" width="370" height="240" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+
+  <text x="225" y="100" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">每任务一份 BERT-large 完整 checkpoint</text>
+
+  <!-- 9 copies of BERT -->
+  <g transform="translate(60, 115)">
+    <rect x="0" y="0" width="100" height="50" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="50" y="20" text-anchor="middle" font-size="9" fill="#991b1b" font-weight="700">MNLI</text>
+    <text x="50" y="35" text-anchor="middle" font-size="8" fill="#991b1b">BERT 1.3GB</text>
+
+    <rect x="110" y="0" width="100" height="50" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="160" y="20" text-anchor="middle" font-size="9" fill="#991b1b" font-weight="700">QQP</text>
+    <text x="160" y="35" text-anchor="middle" font-size="8" fill="#991b1b">BERT 1.3GB</text>
+
+    <rect x="220" y="0" width="100" height="50" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="270" y="20" text-anchor="middle" font-size="9" fill="#991b1b" font-weight="700">QNLI</text>
+    <text x="270" y="35" text-anchor="middle" font-size="8" fill="#991b1b">BERT 1.3GB</text>
+
+    <rect x="0" y="60" width="100" height="50" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="50" y="80" text-anchor="middle" font-size="9" fill="#991b1b" font-weight="700">SST-2</text>
+    <text x="50" y="95" text-anchor="middle" font-size="8" fill="#991b1b">BERT 1.3GB</text>
+
+    <rect x="110" y="60" width="100" height="50" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="160" y="80" text-anchor="middle" font-size="9" fill="#991b1b" font-weight="700">CoLA</text>
+    <text x="160" y="95" text-anchor="middle" font-size="8" fill="#991b1b">BERT 1.3GB</text>
+
+    <rect x="220" y="60" width="100" height="50" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="270" y="80" text-anchor="middle" font-size="9" fill="#991b1b" font-weight="700">STS-B</text>
+    <text x="270" y="95" text-anchor="middle" font-size="8" fill="#991b1b">BERT 1.3GB</text>
+
+    <rect x="0" y="120" width="320" height="35" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="160" y="142" text-anchor="middle" font-size="9" fill="#991b1b" font-style="italic">… 3 more tasks(MRPC/RTE/WNLI)…</text>
+  </g>
+
+  <rect x="60" y="285" width="330" height="22" rx="3" fill="#1f2937"/>
+  <text x="225" y="301" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="700">总存储:9 × 1.3GB = 12 GB</text>
+
+  <!-- ARROW between -->
+  <line x1="420" y1="200" x2="470" y2="200" stroke="#7c3aed" stroke-width="3" marker-end="url(#afv-arr)"/>
+  <text x="445" y="190" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="700">PEFT</text>
+  <text x="445" y="215" text-anchor="middle" font-size="9" fill="#7c3aed">3 机制</text>
+
+  <!-- RIGHT: Adapter -->
+  <text x="675" y="60" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">
+    Adapter(N=9 任务)★
+  </text>
+
+  <rect x="490" y="78" width="370" height="240" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+
+  <text x="675" y="100" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">1 份 BERT base 共享 + 9 个 small adapter</text>
+
+  <!-- 1 shared base -->
+  <rect x="510" y="115" width="330" height="50" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="675" y="138" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">❄ BERT-large 共享 base</text>
+  <text x="675" y="155" text-anchor="middle" font-size="10" fill="#1e40af">1.3 GB(冻结,9 任务复用)</text>
+
+  <!-- 9 adapters -->
+  <g transform="translate(510, 180)">
+    <rect x="0" y="0" width="35" height="30" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="17" y="14" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">MNLI</text>
+    <text x="17" y="25" text-anchor="middle" font-size="8" fill="#9d174d">8MB</text>
+
+    <rect x="37" y="0" width="35" height="30" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="55" y="14" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">QQP</text>
+    <text x="55" y="25" text-anchor="middle" font-size="8" fill="#9d174d">8MB</text>
+
+    <rect x="74" y="0" width="35" height="30" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="92" y="14" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">QNLI</text>
+    <text x="92" y="25" text-anchor="middle" font-size="8" fill="#9d174d">8MB</text>
+
+    <rect x="111" y="0" width="35" height="30" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="128" y="14" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">SST</text>
+    <text x="128" y="25" text-anchor="middle" font-size="8" fill="#9d174d">8MB</text>
+
+    <rect x="148" y="0" width="35" height="30" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="165" y="14" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">CoLA</text>
+    <text x="165" y="25" text-anchor="middle" font-size="8" fill="#9d174d">8MB</text>
+
+    <rect x="185" y="0" width="35" height="30" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="202" y="14" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">STS</text>
+    <text x="202" y="25" text-anchor="middle" font-size="8" fill="#9d174d">8MB</text>
+
+    <rect x="222" y="0" width="35" height="30" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="240" y="14" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">MRPC</text>
+    <text x="240" y="25" text-anchor="middle" font-size="8" fill="#9d174d">8MB</text>
+
+    <rect x="259" y="0" width="35" height="30" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="276" y="14" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">RTE</text>
+    <text x="276" y="25" text-anchor="middle" font-size="8" fill="#9d174d">8MB</text>
+
+    <rect x="296" y="0" width="35" height="30" rx="3" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+    <text x="313" y="14" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">WNLI</text>
+    <text x="313" y="25" text-anchor="middle" font-size="8" fill="#9d174d">8MB</text>
+  </g>
+
+  <text x="675" y="232" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">⚙ 9 × adapter 各 8MB = 72MB</text>
+
+  <text x="675" y="255" text-anchor="middle" font-size="9" fill="#059669">每任务只多 0.9M 参数(0.36% of BERT)</text>
+
+  <rect x="510" y="270" width="330" height="22" rx="3" fill="#1f2937"/>
+  <text x="675" y="286" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="700">总存储:1.3 + 0.07 = 1.4 GB ★ 9× 节省</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="345" x2="860" y2="345" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: 三件套缺一 -->
+  <text x="450" y="370" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三件套缺一,Adapter 都不成立
+  </text>
+
+  <g transform="translate(40, 390)">
+    <rect x="0" y="0" width="265" height="140" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="132" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 Bottleneck</text>
+    <text x="15" y="48" font-size="10" fill="#991b1b">满秩 adapter:768 → 768</text>
+    <text x="15" y="68" font-size="10" fill="#991b1b">参数 = 0.6M / 层</text>
+    <text x="15" y="88" font-size="10" fill="#991b1b">12 层 = 7M / 任务</text>
+    <text x="132" y="125" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 压缩失败</text>
+
+    <rect x="285" y="0" width="265" height="140" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="417" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 Residual + 零初始化</text>
+    <text x="300" y="48" font-size="10" fill="#991b1b">adapter 随机扰动 base</text>
+    <text x="300" y="68" font-size="10" fill="#991b1b">训练初期表征崩</text>
+    <text x="300" y="88" font-size="10" fill="#991b1b">数据少时尤其严重</text>
+    <text x="417" y="125" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 训练发散</text>
+
+    <rect x="570" y="0" width="250" height="140" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 冻结 base</text>
+    <text x="585" y="48" font-size="10" fill="#991b1b">base 也更新</text>
+    <text x="585" y="68" font-size="10" fill="#991b1b">每任务存全部 340M</text>
+    <text x="585" y="88" font-size="10" fill="#991b1b">退化为 full FT</text>
+    <text x="695" y="125" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 失去 PEFT 意义</text>
+  </g>
+
+  <rect x="60" y="555" width="780" height="40" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="580" text-anchor="middle" font-size="11" fill="#fef3c7" font-weight="600">
+    GLUE Avg:Full FT 83.7 / Adapter 82.5(保留 96.6%)/ RTE / CoLA 等小数据任务 adapter 反超
+  </text>
+</svg>

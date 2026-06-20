@@ -32,6 +32,24 @@ Houlsby 等人(Google,2019 年 2 月)的论文把这一思路完整移植到 NLP
 
 ## 核心思想:Bottleneck Adapter
 
+### 直觉
+
+[BERT](../06-bert-family/01-bert.md) 全参微调每个任务存一份 340M(1.3GB),9 任务 12GB,36 任务直接爆;微调时 340M 全更新成本高;还可能灾难性遗忘 base 学到的通用知识。
+
+Houlsby 等人的洞察:**base 模型已经把通用语言知识学好了,新任务只需要"小修小补"——根本不用动 base**。让 base 完全冻结,在每层插入一个 small bottleneck 模块,只训这些小模块——既保留 base 知识不遗忘,又让每任务的"专属参数"压到 1% 以下,N 任务只多 N × 1% 而不是 N × 100%。
+
+但要让 adapter 真正 work,**三个设计点缺一不可**:
+
+1. **Bottleneck 结构** —— down(d → r) + 非线性 + up(r → d),r << d 把参数压到极致
+2. **Residual + 零初始化** —— W_up 初始化为 0,训练开始时 adapter 几乎不影响 base,平滑过渡不 disrupt 预训练表示
+3. **冻结 base + 只训 adapter** —— BERT 原参数完全冻结,梯度只流过 adapter + LayerNorm + 任务 head
+
+→ 三机制串起来,Houlsby 2019 只训 3.6% 参数达到全参微调 96.1% 性能,确立 PEFT 起源范式 — 见图 1 adapter 在 Transformer block 中的插入位置。
+
+![Adapter 插入 Transformer block — Down × ReLU × Up + Residual](assets/01-adapter-architecture.svg)
+
+## 机制一:Bottleneck 结构 + 插入位置
+
 在每层 Transformer block 里加入 adapter 模块。BERT 每层有两个位置:**attention 后** 和 **FFN 后**。
 
 ### Adapter 结构
@@ -57,6 +75,8 @@ output
 $$
 h = x + W_{\text{up}}(\sigma(W_{\text{down}} \cdot x))
 $$
+
+## 机制二:Residual + 零初始化
 
 **关键设计点 1:Residual 初始化为 0**
 
@@ -85,7 +105,21 @@ Layer N:
    ↓ output to Layer N+1
 ```
 
-训练时:**所有 BERT 原参数冻结,只有 Adapter₁、Adapter₂、LayerNorm 参数、最后的任务 head 参与更新**。
+## 机制三:冻结 base + 只训 adapter
+
+训练时:**所有 BERT 原参数冻结,只有 Adapter₁、Adapter₂、LayerNorm 参数、最后的任务 head 参与更新**。这是 PEFT 的核心范式——3% 参数承担全部任务特化,base 99% 参数保留通用知识。
+
+## 三件套协同 — PEFT 范式起源
+
+> **Bottleneck 把参数压到 1% + 零初始化 + Residual 让训练稳定 + 冻结 base 让 N 任务共享一份 base** —— 三者协同 → 9 任务总存储 12GB → 1.4GB,性能保留 96%。
+
+- 只有 **Bottleneck**:adapter 设计好了但 base 也训 → 退回全参微调,丢了存储和遗忘的好处
+- 只有 **零初始化 Residual**:没 bottleneck 用满秩 adapter → 参数等同 FFN(36M / 层),压缩失败
+- 只有 **冻结 base**:adapter 无残差或非零初始化 → 训练初期 adapter 随机扰动 base 表征 → 训练崩
+
+三件套首次组合,**确立"冻结 base + 训小模块"的 PEFT 范式**,直接催生后续 Prefix Tuning / LoRA / QLoRA 整条路线 — 见图 2 与 Full FT 的对比。
+
+![Adapter vs Full FT — N 任务的存储与性能对比](assets/01-adapter-vs-full-ft.svg)
 
 ### 后续 Adapter 变体
 

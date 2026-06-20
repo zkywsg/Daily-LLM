@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="ad-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Adapter 插入 Transformer block — Down × ReLU × Up + Residual
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    每层 Transformer 加 2 个 adapter(attention 后 + FFN 后),base 完全冻结
+  </text>
+
+  <!-- LEFT: Transformer block with adapters injected -->
+  <text x="250" y="85" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">
+    Transformer Layer with Adapters
+  </text>
+
+  <rect x="140" y="100" width="220" height="420" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.5"/>
+
+  <!-- Input arrow -->
+  <line x1="250" y1="105" x2="250" y2="125" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+
+  <!-- Multi-Head Attention -->
+  <rect x="170" y="128" width="160" height="40" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="250" y="146" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Multi-Head Attention</text>
+  <text x="250" y="160" text-anchor="middle" font-size="9" fill="#1e40af">❄ 冻结</text>
+
+  <!-- + skip -->
+  <line x1="250" y1="168" x2="250" y2="183" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+  <circle cx="250" cy="190" r="8" fill="#fff" stroke="#9d174d" stroke-width="1.5"/>
+  <text x="250" y="194" text-anchor="middle" font-size="10" fill="#9d174d">+</text>
+
+  <!-- LayerNorm -->
+  <line x1="250" y1="198" x2="250" y2="213" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+  <rect x="170" y="215" width="160" height="22" rx="3" fill="#e5e7eb" stroke="#6b7280"/>
+  <text x="250" y="231" text-anchor="middle" font-size="10" fill="#374151">LayerNorm  ⚙ 训</text>
+
+  <!-- ADAPTER 1 -->
+  <line x1="250" y1="237" x2="250" y2="252" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+  <rect x="160" y="255" width="180" height="42" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+  <text x="250" y="273" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">★ Adapter₁</text>
+  <text x="250" y="289" text-anchor="middle" font-size="9" fill="#9d174d">⚙ 训(d=768 → r=64 → 768)</text>
+
+  <!-- FFN -->
+  <line x1="250" y1="297" x2="250" y2="312" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+  <rect x="170" y="315" width="160" height="40" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="250" y="333" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">FFN</text>
+  <text x="250" y="347" text-anchor="middle" font-size="9" fill="#1e40af">❄ 冻结</text>
+
+  <line x1="250" y1="355" x2="250" y2="370" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+  <circle cx="250" cy="377" r="8" fill="#fff" stroke="#9d174d" stroke-width="1.5"/>
+  <text x="250" y="381" text-anchor="middle" font-size="10" fill="#9d174d">+</text>
+
+  <line x1="250" y1="385" x2="250" y2="400" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+  <rect x="170" y="402" width="160" height="22" rx="3" fill="#e5e7eb" stroke="#6b7280"/>
+  <text x="250" y="418" text-anchor="middle" font-size="10" fill="#374151">LayerNorm  ⚙ 训</text>
+
+  <!-- ADAPTER 2 -->
+  <line x1="250" y1="424" x2="250" y2="439" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+  <rect x="160" y="442" width="180" height="42" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+  <text x="250" y="460" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">★ Adapter₂</text>
+  <text x="250" y="476" text-anchor="middle" font-size="9" fill="#9d174d">⚙ 训(d=768 → r=64 → 768)</text>
+
+  <line x1="250" y1="484" x2="250" y2="510" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+
+  <!-- RIGHT: Adapter internal structure -->
+  <text x="650" y="85" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">
+    Adapter 内部结构(展开)
+  </text>
+
+  <rect x="440" y="100" width="420" height="320" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+
+  <!-- input -->
+  <rect x="610" y="120" width="80" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="650" y="141" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">x(d=768)</text>
+
+  <!-- branch: residual line down -->
+  <line x1="650" y1="152" x2="650" y2="170" stroke="#9d174d" stroke-width="1.5"/>
+  <line x1="650" y1="170" x2="800" y2="170" stroke="#9d174d" stroke-width="1.5"/>
+  <line x1="800" y1="170" x2="800" y2="370" stroke="#9d174d" stroke-width="1.5"/>
+  <text x="810" y="270" font-size="10" fill="#9d174d" font-weight="700">Residual</text>
+
+  <!-- main path down -->
+  <line x1="650" y1="170" x2="650" y2="185" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+
+  <!-- Down -->
+  <rect x="550" y="190" width="200" height="40" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="650" y="208" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Down: Linear(768 → 64)</text>
+  <text x="650" y="222" text-anchor="middle" font-size="9" fill="#1e40af">压到 bottleneck r=64</text>
+
+  <line x1="650" y1="230" x2="650" y2="245" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+
+  <!-- ReLU -->
+  <rect x="600" y="248" width="100" height="30" rx="4" fill="#fed7aa" stroke="#ea580c" stroke-width="2"/>
+  <text x="650" y="268" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="700">GELU / ReLU</text>
+
+  <line x1="650" y1="278" x2="650" y2="293" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+
+  <!-- Up -->
+  <rect x="550" y="296" width="200" height="40" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="650" y="314" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">Up: Linear(64 → 768)</text>
+  <text x="650" y="328" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">★ 初始化为 0(关键)</text>
+
+  <line x1="650" y1="336" x2="650" y2="360" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+
+  <!-- + -->
+  <circle cx="650" cy="370" r="10" fill="#fff" stroke="#9d174d" stroke-width="2"/>
+  <text x="650" y="374" text-anchor="middle" font-size="11" fill="#9d174d">+</text>
+
+  <line x1="650" y1="380" x2="650" y2="395" stroke="#9d174d" stroke-width="1.5" marker-end="url(#ad-arr)"/>
+
+  <rect x="600" y="398" width="100" height="22" rx="3" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="650" y="414" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">h ≈ x(初始)</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="540" x2="860" y2="540" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: three mechanisms summary -->
+  <text x="450" y="565" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三机制对应到结构
+  </text>
+
+  <g transform="translate(40, 580)">
+    <text x="0" y="20" font-size="10" fill="#1f2937">
+      <tspan fill="#9d174d" font-weight="700">机制一</tspan> Bottleneck:768→64→768,r=64 让参数压到 0.36%
+    </text>
+    <text x="0" y="40" font-size="10" fill="#1f2937">
+      <tspan fill="#dc2626" font-weight="700">机制二</tspan> Residual + 零初始化:W_up=0 让训练开始 h≈x,平滑过渡不 disrupt 预训练
+    </text>
+    <text x="0" y="60" font-size="10" fill="#1f2937">
+      <tspan fill="#2563eb" font-weight="700">机制三</tspan> 冻结 base(❄ 部分):梯度只流过 adapter + LayerNorm + 任务 head(⚙ 部分)
+    </text>
+  </g>
+</svg>
