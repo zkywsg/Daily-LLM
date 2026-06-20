@@ -30,7 +30,29 @@ Google 团队 2018 年 10 月发表 *BERT: Pre-training of Deep Bidirectional Tr
 
 这一选择把 NLP 推进了一大步。BERT-base 仅 110M 参数,在 GLUE 11 个任务上拿了 SOTA(平均提升 4.5 分);BERT-large(340M)再涨 2 分。在 SQuAD 1.1 上 BERT-large 的 F1 是 93.2,**首次超过人类基准 91.2**。这一波结果直接定义了 2018–2020 的 NLP 研究范式:**所有任务从 BERT 起步**。
 
-## 核心思想:Masked Language Modeling
+## 核心思想:Bidirectional Encoder + MLM
+
+### 直觉
+
+[GPT-1](../07-gpt-scaling/01-gpt1.md) 走自回归路线,预测第 t 个 token 时只能看 1..t-1——对句子分类 / QA / NER 这种"理解任务"等于**自缚一手**。Devlin 的洞察:理解任务需要**双向**上下文,而 Transformer encoder 的 self-attention 天生就支持(没有 causal mask 时每个位置直接看到所有位置)。
+
+但**单纯让 encoder 做语言建模会"作弊"**——预测 token t 时模型直接从 attention 里看到 token t 自己,loss = 0,什么也学不到。BERT 的解法是借鉴 Cloze test(完形填空):**随机遮 15% 的 token,让模型用剩下 85% 的双向上下文重建**——既保持了双向,又避免信息泄露。
+
+这一直觉要 work,三个机制必须同时到位:
+
+1. **Encoder + 双向 self-attention** —— 没有 causal mask,每个位置都看全文
+2. **MLM 任务 + 80/10/10 mask trick** —— 既让模型必须用上下文重建,又避免预训练-微调 mismatch
+3. **`[CLS] / [SEP] /` Segment 统一输入接口** —— 一套预训练支持所有 GLUE 任务(单句 / 句对 / span 提取)
+
+→ 三机制首次组合,GLUE 11 任务全面 SOTA、SQuAD 1.1 超过人类基准。整体见图 1 的双向架构 + MLM 示意。
+
+![BERT 双向 Encoder + MLM — 与 GPT 单向对比](assets/01-bert-bidirectional.svg)
+
+### 机制一:Encoder + 双向 self-attention
+
+BERT 用的就是标准 Transformer encoder block(自注意力 + FFN + LayerNorm),**关键是去掉 GPT 的 causal mask**。每个位置的 attention 可以直接 query 所有位置——这是双向的来源。
+
+### 机制二:Masked Language Modeling(MLM)
 
 BERT 的关键创新是**预训练任务的设计**——不是架构层面的(BERT 用的就是标准 Transformer encoder),而是损失层面的:
 
@@ -71,7 +93,7 @@ $$
 \mathcal{L}_{\text{BERT}} = \mathcal{L}_{\text{MLM}} + \mathcal{L}_{\text{NSP}}
 $$
 
-## 输入表示
+## 机制三:`[CLS]/[SEP]/Segment` 统一输入接口
 
 BERT 的输入格式(图 2 in paper):
 
@@ -93,6 +115,18 @@ BERT 的输入格式(图 2 in paper):
 - **`[PAD]`** —— 填充 token(用于 batch 等长)
 
 `[CLS]` 这个设计是 BERT 的一个工程亮点——它把"句子级表征"这个任务**显式编码进序列**,模型在预训练时就学到了"如何把整个句子的信息聚合到 `[CLS]` 位置"。这让下游分类任务的接口极其简洁(无脑接 head),也催生了 Sentence-BERT 等用 `[CLS]` 做语义匹配的工作。
+
+## 三件套协同 — 缺一不可
+
+> **双向 encoder 给"看全文"的能力 + MLM 让"看全文"不退化成作弊 + 统一输入接口让一次预训练覆盖所有 GLUE 任务** —— 三者缺一,BERT 都不成立。
+
+- 只有 **双向 encoder**:做自回归 LM 模型直接作弊看 t 自己 → loss=0,什么也学不到
+- 只有 **MLM**:不是双向 encoder(比如套到 decoder 上)→ 退化成单向预测,和 GPT 没区别
+- 只有 **统一输入接口**:没有双向 + MLM 预训练,`[CLS]` 位置就是个普通 token,downstream head 不接 ground
+
+三件套首次组合 → GLUE 11 任务平均 +7.0 / SQuAD F1 93.2 超过人类 91.2 — 见图 2 三机制对应的下游任务全景。
+
+![BERT 三机制 → 一套预训练通吃 GLUE](assets/01-bert-three-pillars.svg)
 
 ## Encoder-only vs Decoder-only:架构选择
 
