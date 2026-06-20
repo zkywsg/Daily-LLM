@@ -35,6 +35,22 @@ ReAct 框架本身处理不了——LLM 不知道"研究"具体指什么、不�
 
 ## 核心思想:Goal → Plan → Loop
 
+### 直觉
+
+[ReAct](02-react.md) 解决了"给具体问题,LLM 多步答"的循环,但**前提是人已经把问题想清楚了**。给一个模糊高级目标——"研究电动汽车市场写 1000 字报告"——ReAct 直接懵:LLM 不知道"研究"具体指什么,也不会自己拆成"先 search → 再分析 → 再写作 → 再保存"这种长 trajectory。
+
+Toran Bruce Richards 的洞察:**人接到模糊目标也是先在脑子里拆任务、做、看效果、再调整**。所以 AutoGPT 在 ReAct 外面再包一层——LLM 自己分解、自己执行、自己反思、自己重排,完全无人干预。
+
+但要把 ReAct 从"单步会话"升级到"小时级自主跑",三个机制必须叠加:
+
+1. **Task Decomposition** —— LLM 把高级目标自动拆成子任务队列(否则 ReAct 没"问题"可循环)
+2. **Tool Loop + Persistent Memory** —— ReAct 风格循环 + 把历史存 vector DB(否则几十步就 token 爆)
+3. **Self-Critique + Replan** —— 每 N 步反思 task queue 是否合理(否则 LLM 容易卡死或走偏)
+
+→ 三机制叠在 ReAct 之上,见图 1 完整 Goal → Plan → Loop → Critique → Done 流程。
+
+![AutoGPT 自主 agent 循环 — Decompose × Loop × Critique](assets/04-autogpt-loop.svg)
+
 AutoGPT 与 ReAct 的关键区别在两点:**自动任务分解** + **无限循环执行**。
 
 ### 整体架构
@@ -59,6 +75,8 @@ LLM 把目标分解为子任务列表(task queue)
 
 ### 关键组件
 
+## 机制一:Task Decomposition — 给 ReAct 喂"问题"
+
 **1. Task Decomposition**
 
 LLM 接到目标后用类似 prompt:
@@ -82,6 +100,8 @@ Output JSON: {"tasks": ["task 1", "task 2", ...]}
 ]}
 ```
 
+## 机制二:Tool Loop + Persistent Memory — 长 trajectory 不爆 token
+
 **2. Tool Loop(类 ReAct,但更长)**
 
 对每个子任务执行 ReAct 风格 thought-action-observation,但允许嵌套子任务、回溯、任务重排。
@@ -89,6 +109,8 @@ Output JSON: {"tasks": ["task 1", "task 2", ...]}
 **3. Memory**
 
 ReAct 一次会话所有上下文都在 prompt 里,token 很快爆。AutoGPT 引入 **persistent memory**——把执行历史存到 vector DB(Pinecone / Chroma),需要时检索相关记忆喂回 prompt。这一组件让 agent 能跑几小时 / 上千步。
+
+## 机制三:Self-Critique + Replan — 防止卡死或走偏
 
 **4. Self-Critique**
 
@@ -105,6 +127,18 @@ AutoGPT 默认带的工具:
 - `delegate_task` —— 起一个 sub-agent 处理某子任务
 
 可以通过 plugin 加新工具(Wolfram Alpha, Twitter API, ...)。
+
+## 三件套协同 — 让 ReAct 跑成几小时自主任务
+
+> **Decompose 给 ReAct 喂"具体问题" + Memory + Loop 让 trajectory 不爆 token + Critique 防 LLM 卡死走偏** —— 三者首次组合,让 LLM 第一次能拿"模糊高级目标"无人干预跑到最终交付。
+
+- 只有 **Task Decomposition**:子任务列出来了,但没循环 / 没 memory → 一个任务跑完就停,无法多步衔接
+- 只有 **Tool Loop + Memory**:能长跑,但没分解 → 给个模糊目标 LLM 直接懵,不知道循环里循什么
+- 只有 **Self-Critique**:能反思,但没分解也没记忆 → 反思的对象不存在,等于空转
+
+三件套首次叠在 ReAct 之上 → GAIA 30%(单步 ReAct 15%)/ SWE-agent 12.5%(单步 ReAct 1.7%)—— 见图 2 的范式与基准对比。
+
+![AutoGPT vs ReAct — 自主 agent 的三件套加成](assets/04-autogpt-vs-react.svg)
 
 ## 关键代码
 

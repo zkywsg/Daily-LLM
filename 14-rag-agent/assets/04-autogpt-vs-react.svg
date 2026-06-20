@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="av-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    AutoGPT vs ReAct — 自主 agent 的三件套加成
+  </text>
+
+  <!-- ============== TOP: side-by-side comparison ============== -->
+  <!-- LEFT: ReAct -->
+  <text x="225" y="60" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">
+    ReAct(单步会话)
+  </text>
+
+  <rect x="40" y="78" width="370" height="200" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+
+  <rect x="60" y="100" width="330" height="38" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="225" y="124" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">人给具体问题</text>
+
+  <line x1="225" y1="138" x2="225" y2="158" stroke="#9d174d" stroke-width="1.5" marker-end="url(#av-arr)"/>
+
+  <rect x="60" y="161" width="330" height="65" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="225" y="180" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">Thought → Act → Obs</text>
+  <text x="225" y="197" text-anchor="middle" font-size="9" fill="#9d174d">几十步循环</text>
+  <text x="225" y="213" text-anchor="middle" font-size="9" fill="#9d174d">全历史塞 prompt</text>
+
+  <line x1="225" y1="226" x2="225" y2="246" stroke="#9d174d" stroke-width="1.5" marker-end="url(#av-arr)"/>
+
+  <rect x="60" y="249" width="330" height="22" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="225" y="266" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">单个答案</text>
+
+  <!-- ARROW between -->
+  <line x1="420" y1="175" x2="470" y2="175" stroke="#7c3aed" stroke-width="3" marker-end="url(#av-arr)"/>
+  <text x="445" y="163" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="700">+ 3 机制</text>
+  <text x="445" y="195" text-anchor="middle" font-size="9" fill="#7c3aed">Decompose</text>
+  <text x="445" y="208" text-anchor="middle" font-size="9" fill="#7c3aed">+ Memory</text>
+  <text x="445" y="221" text-anchor="middle" font-size="9" fill="#7c3aed">+ Critique</text>
+
+  <!-- RIGHT: AutoGPT -->
+  <text x="675" y="60" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">
+    AutoGPT(自主 agent)★
+  </text>
+
+  <rect x="490" y="78" width="370" height="200" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+
+  <rect x="510" y="92" width="330" height="32" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="675" y="113" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">人给模糊高级目标</text>
+
+  <line x1="675" y1="124" x2="675" y2="142" stroke="#9d174d" stroke-width="1.5" marker-end="url(#av-arr)"/>
+
+  <rect x="510" y="145" width="330" height="32" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="675" y="166" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">① Decompose → task queue</text>
+
+  <line x1="675" y1="177" x2="675" y2="195" stroke="#9d174d" stroke-width="1.5" marker-end="url(#av-arr)"/>
+
+  <rect x="510" y="198" width="330" height="32" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="675" y="219" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="700">② ReAct Loop + Vector DB Memory</text>
+
+  <line x1="675" y1="230" x2="675" y2="244" stroke="#9d174d" stroke-width="1.5" marker-end="url(#av-arr)"/>
+
+  <rect x="510" y="247" width="330" height="22" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="675" y="263" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">③ Critique + 完整交付</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="305" x2="860" y2="305" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- MIDDLE: benchmark bars -->
+  <text x="450" y="330" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    长任务 agent benchmark — AutoGPT-style 普遍胜过 ReAct
+  </text>
+
+  <g transform="translate(60, 350)">
+    <!-- GAIA -->
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">GAIA(通用助手)</text>
+    <rect x="170" y="8" width="60" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="237" y="19" font-size="10" fill="#dc2626">ReAct 15%</text>
+    <rect x="170" y="28" width="120" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="297" y="39" font-size="10" fill="#059669" font-weight="700">AutoGPT 30% ★ 2×</text>
+    <rect x="170" y="48" width="368" height="14" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+    <text x="545" y="59" font-size="10" fill="#92400e">Human 92%(差距大)</text>
+  </g>
+
+  <g transform="translate(60, 425)">
+    <!-- SWE-bench -->
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">SWE-bench(代码修复)</text>
+    <rect x="170" y="8" width="7" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="184" y="19" font-size="10" fill="#dc2626">ReAct 1.7%</text>
+    <rect x="170" y="28" width="50" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="227" y="39" font-size="10" fill="#059669" font-weight="700">SWE-agent 12.5% ★ 7×</text>
+  </g>
+
+  <g transform="translate(60, 480)">
+    <!-- WebArena -->
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">WebArena(网页操作)</text>
+    <rect x="170" y="8" width="56" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="233" y="19" font-size="10" fill="#dc2626">ReAct 14%</text>
+    <rect x="170" y="28" width="88" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="265" y="39" font-size="10" fill="#059669" font-weight="700">AutoGPT 22% ★</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="540" x2="860" y2="540" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: 三件套缺一 -->
+  <text x="450" y="565" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">
+    三件套缺一,AutoGPT 都不成立
+  </text>
+
+  <g transform="translate(40, 580)">
+    <rect x="0" y="0" width="265" height="70" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="132" y="20" text-anchor="middle" font-size="10" fill="#991b1b" font-weight="700">缺 Decompose</text>
+    <text x="15" y="40" font-size="9" fill="#991b1b">模糊目标 LLM 直接懵</text>
+    <text x="132" y="60" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 退化回 ReAct</text>
+
+    <rect x="285" y="0" width="265" height="70" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="417" y="20" text-anchor="middle" font-size="10" fill="#991b1b" font-weight="700">缺 Memory</text>
+    <text x="300" y="40" font-size="9" fill="#991b1b">几十步就 token 爆 → OOM</text>
+    <text x="417" y="60" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 跑不到几小时</text>
+
+    <rect x="570" y="0" width="250" height="70" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="695" y="20" text-anchor="middle" font-size="10" fill="#991b1b" font-weight="700">缺 Critique</text>
+    <text x="585" y="40" font-size="9" fill="#991b1b">LLM 卡死 / queue 越加越乱</text>
+    <text x="695" y="60" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 烧光 budget</text>
+  </g>
+</svg>

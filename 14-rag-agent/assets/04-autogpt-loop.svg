@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 720"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="ag-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+    <marker id="ag-arr-loop" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    AutoGPT 自主 agent 循环 — Decompose × Loop × Critique
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    Goal:"研究电动汽车市场,找出 2024 年三大趋势,写 1000 字报告并保存为 markdown"
+  </text>
+
+  <!-- HIGH-LEVEL GOAL -->
+  <rect x="290" y="78" width="320" height="45" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="450" y="98" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">高级目标(模糊)</text>
+  <text x="450" y="115" text-anchor="middle" font-size="10" fill="#92400e" font-style="italic">"研究 EV 市场 + 写报告 + 保存"</text>
+
+  <line x1="450" y1="123" x2="450" y2="148" stroke="#9d174d" stroke-width="2" marker-end="url(#ag-arr)"/>
+
+  <!-- STEP 1: DECOMPOSE -->
+  <rect x="60" y="151" width="780" height="100" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="100" y="172" font-size="11" fill="#9d174d" font-weight="700">① 机制一:Task Decomposition</text>
+  <text x="350" y="172" font-size="10" fill="#9d174d" font-style="italic">— LLM 把目标拆成具体子任务,喂给 ReAct 循环</text>
+
+  <rect x="80" y="180" width="155" height="60" rx="4" fill="#ffffff" stroke="#9d174d" stroke-width="1"/>
+  <text x="157" y="198" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">Task 1</text>
+  <text x="157" y="215" text-anchor="middle" font-size="9" fill="#9d174d">search EV reports</text>
+  <text x="157" y="228" text-anchor="middle" font-size="9" fill="#9d174d">2024</text>
+
+  <rect x="245" y="180" width="155" height="60" rx="4" fill="#ffffff" stroke="#9d174d" stroke-width="1"/>
+  <text x="322" y="198" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">Task 2</text>
+  <text x="322" y="215" text-anchor="middle" font-size="9" fill="#9d174d">identify top 3</text>
+  <text x="322" y="228" text-anchor="middle" font-size="9" fill="#9d174d">trends</text>
+
+  <rect x="410" y="180" width="155" height="60" rx="4" fill="#ffffff" stroke="#9d174d" stroke-width="1"/>
+  <text x="487" y="198" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">Task 3</text>
+  <text x="487" y="215" text-anchor="middle" font-size="9" fill="#9d174d">analyze growth</text>
+  <text x="487" y="228" text-anchor="middle" font-size="9" fill="#9d174d">data</text>
+
+  <rect x="575" y="180" width="115" height="60" rx="4" fill="#ffffff" stroke="#9d174d" stroke-width="1"/>
+  <text x="632" y="198" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">Task 4</text>
+  <text x="632" y="215" text-anchor="middle" font-size="9" fill="#9d174d">draft 1000-</text>
+  <text x="632" y="228" text-anchor="middle" font-size="9" fill="#9d174d">word report</text>
+
+  <rect x="700" y="180" width="125" height="60" rx="4" fill="#ffffff" stroke="#9d174d" stroke-width="1"/>
+  <text x="762" y="198" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">Task 5</text>
+  <text x="762" y="215" text-anchor="middle" font-size="9" fill="#9d174d">save .md file</text>
+
+  <line x1="450" y1="251" x2="450" y2="278" stroke="#9d174d" stroke-width="2" marker-end="url(#ag-arr)"/>
+
+  <!-- STEP 2: TOOL LOOP + MEMORY -->
+  <rect x="60" y="281" width="780" height="200" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="100" y="302" font-size="11" fill="#1e40af" font-weight="700">② 机制二:Tool Loop + Persistent Memory</text>
+  <text x="350" y="302" font-size="10" fill="#1e40af" font-style="italic">— 类 ReAct 循环 + vector DB 存历史,长 trajectory 不爆 token</text>
+
+  <!-- ReAct mini-loop -->
+  <rect x="80" y="315" width="160" height="50" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="1.5"/>
+  <text x="160" y="335" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">Thought</text>
+  <text x="160" y="352" text-anchor="middle" font-size="9" fill="#9d174d">"该 search EV 2024"</text>
+
+  <line x1="240" y1="340" x2="260" y2="340" stroke="#9d174d" stroke-width="1" marker-end="url(#ag-arr)"/>
+
+  <rect x="260" y="315" width="160" height="50" rx="4" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="340" y="335" text-anchor="middle" font-size="10" fill="#5b21b6" font-weight="700">Action</text>
+  <text x="340" y="352" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#5b21b6">web_search(...)</text>
+
+  <line x1="420" y1="340" x2="440" y2="340" stroke="#9d174d" stroke-width="1" marker-end="url(#ag-arr)"/>
+
+  <rect x="440" y="315" width="160" height="50" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="520" y="335" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">Observation</text>
+  <text x="520" y="352" text-anchor="middle" font-size="9" fill="#065f46">"IEA EV Outlook..."</text>
+
+  <line x1="600" y1="340" x2="620" y2="340" stroke="#9d174d" stroke-width="1" marker-end="url(#ag-arr)"/>
+
+  <rect x="620" y="315" width="200" height="50" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="720" y="335" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">Vector DB(memory)</text>
+  <text x="720" y="352" text-anchor="middle" font-size="9" fill="#92400e">存 task ↔ obs → 长期记忆</text>
+
+  <!-- Loop back -->
+  <path d="M 720 365 Q 450 405, 160 365" stroke="#7c3aed" stroke-width="2" fill="none" marker-end="url(#ag-arr-loop)"/>
+  <text x="450" y="395" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="700">↺ 下一轮:从 memory 检索相关历史 + 进入下个 Task</text>
+
+  <!-- Memory advantage callout -->
+  <rect x="80" y="415" width="740" height="50" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="435" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="700">★ ReAct 全历史在 prompt(O(N²) token)  vs  AutoGPT 检索相关 top-K(O(N))</text>
+  <text x="450" y="455" text-anchor="middle" font-size="10" fill="#fef3c7" font-style="italic">→ 让 agent 能跑几小时 / 上千步,而不是几十步就 OOM</text>
+
+  <line x1="450" y1="481" x2="450" y2="508" stroke="#9d174d" stroke-width="2" marker-end="url(#ag-arr)"/>
+
+  <!-- STEP 3: CRITIQUE -->
+  <rect x="60" y="511" width="780" height="135" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+  <text x="100" y="532" font-size="11" fill="#92400e" font-weight="700">③ 机制三:Self-Critique + Replan</text>
+  <text x="350" y="532" font-size="10" fill="#92400e" font-style="italic">— 每 N 步反思,调整 task queue</text>
+
+  <rect x="80" y="545" width="370" height="90" rx="4" fill="#ffffff" stroke="#92400e" stroke-width="1.5"/>
+  <text x="95" y="565" font-size="10" fill="#92400e" font-weight="700">LLM 自评 prompt:</text>
+  <text x="95" y="583" font-size="9" fill="#92400e" font-style="italic">"Recent memory: ... Remaining tasks: ...</text>
+  <text x="95" y="597" font-size="9" fill="#92400e" font-style="italic">Are remaining tasks still relevant?</text>
+  <text x="95" y="611" font-size="9" fill="#92400e" font-style="italic">Add/remove tasks if needed."</text>
+  <text x="95" y="628" font-size="9" fill="#dc2626" font-weight="700">→ 输出 JSON 新 task queue</text>
+
+  <rect x="470" y="545" width="350" height="90" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="485" y="565" font-size="10" fill="#991b1b" font-weight="700">没有 critique 会怎样:</text>
+  <text x="485" y="583" font-size="9" fill="#991b1b">• LLM 在 Task 2 循环失败 10 轮</text>
+  <text x="485" y="599" font-size="9" fill="#991b1b">• Task queue 不断加新子任务</text>
+  <text x="485" y="615" font-size="9" fill="#991b1b">• 越加越乱 → 卡死或烧光 budget</text>
+  <text x="485" y="630" font-size="9" fill="#dc2626" font-weight="700">→ 必须周期性重审 + 重排</text>
+
+  <!-- BOTTOM banner -->
+  <rect x="60" y="666" width="780" height="40" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="450" y="691" text-anchor="middle" font-size="12" fill="#fef3c7" font-weight="600">
+    三机制叠在 ReAct 之上 → LLM 第一次能拿模糊高级目标无人干预跑到最终交付
+  </text>
+</svg>
