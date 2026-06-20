@@ -24,6 +24,24 @@ Shazeer 等人(Google Brain,2017 年 1 月)的论文给出第一个**真正 work
 
 ## 核心思想:Sparsely-Gated MoE
 
+### 直觉
+
+人脑约 860 亿神经元,但任何瞬间真正放电的只有极小一部分——视觉皮层不会因为你在听音乐而被激活。**dense 网络偏偏强迫每个参数对每个 token 都参与计算,这等于让"听觉神经元"也去识别图像**——参数规模和算力被强行绑死。
+
+Shazeer 2017 的洞察:**让每 token 只调用最相关的 K 个 expert**,其余 N-K 个完全跳过(精确 0)。参数可以堆到 137B,但每 token 实际算力只走 1.5B——参数与算力解耦,首次打破 dense 模型的扩参锁死。
+
+但这一直觉要落地,有三个必须同时解决的坑:
+
+1. **Gating 怎么做才既稀疏又可微?** —— 硬 top-K 不可导,soft gating 又退化成 dense
+2. **怎么防止 gating 塌缩(只用少数几个 expert)?** —— 没有显式约束,网络偏好少数 expert,其余永远学不到东西
+3. **2048 个 expert 怎么塞进多 GPU 还能跑得动?** —— expert 分布带来 all-to-all 通信,工程上是大难题
+
+→ 论文用三个机制 一一对应解决,见图 1 路由示意。
+
+![Sparsely-Gated MoE 路由示意](assets/01-moe-routing.svg)
+
+## 机制一:Top-K Sparse Gating —— 让稀疏可微
+
 整体架构(LSTM-MoE 堆叠):
 
 ```
@@ -63,7 +81,7 @@ $$
 
 由于 $G(x)$ 只有 K 个非零分量,实际只计算 K 个 $E_i(x)$——其余 N-K 个 expert 完全跳过。
 
-### Auxiliary Loss(论文核心创新)
+## 机制二:Auxiliary Loss —— 防 expert 塌缩
 
 不加约束时 gating 会塌缩——少数 expert 被大量选中,其余闲置。论文设计两个 auxiliary loss:
 
@@ -83,7 +101,7 @@ $$
 
 总 loss = task loss + importance + load。这两个 auxiliary loss 成为后来所有 MoE 工作的标配。
 
-### Expert Parallelism
+## 机制三:Expert Parallelism —— 让算力真正省下来
 
 工程实现的关键:**N=2048 个 expert 分布在多个 GPU 上**。Shazeer 2017 用 128 块 K40 GPU,每 GPU 装 16 个 expert。
 
@@ -95,6 +113,18 @@ $$
 4. 反向 all-to-all:把输出送回原 GPU
 
 这是 MoE 训练最大的工程难点——all-to-all 是密集通信,网络带宽和延迟是瓶颈。Shazeer 团队花了大量工程把它跑通。
+
+## 三件套协同 — 缺一不可
+
+> **Top-K Gating 让稀疏可微 + Auxiliary Loss 让 expert 均衡 + Expert Parallelism 让算力真省**——三者缺一,稀疏 MoE 就会退化回 dense 或塌缩成单 expert。
+
+- 只有 **Top-K Gating**:gating 训着训着就塌缩到少数 expert,其余 N-K 个永远学不到——稀疏度高但模型容量浪费
+- 只有 **Auxiliary Loss**:没有 top-K 截断,gating 是 soft 的,所有 expert 都要算——回到 dense 网络,稀疏失效
+- 只有 **Expert Parallelism**:工程能跑通,但缺 sparse gating 还是 dense 算力;缺 aux loss 还是塌缩——参数堆上去也没用
+
+三者首次组合,让 137B 参数模型用 LSTM-Big 1/3 算力跑赢——见图 2 参数/算力解耦的对比。
+
+![参数与算力解耦 — MoE vs Dense](assets/01-moe-scale-vs-compute.svg)
 
 ## 关键代码
 
