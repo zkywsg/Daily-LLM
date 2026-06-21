@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link } from "react-router";
 import remarkGfm from "remark-gfm";
@@ -9,16 +10,44 @@ import "highlight.js/styles/github.css";
 import { MermaidBlock } from "./MermaidBlock";
 import { resolveMarkdownLink, resolveRepoPath } from "../../lib/markdownPaths";
 
-// 家族目录下的静态资源(图片)在构建期收集,markdown 里的相对 src 据此解析
+// 家族目录下的静态资源(图片)。eager:false 让每张图片在构建期成为独立 chunk URL,
+// 主 bundle 不预加载全部 134 张 SVG;每个节点页只触发自己用到的 2 张。
 const assetUrls = import.meta.glob("../../../../[0-9][0-9]-*/assets/*", {
   query: "?url",
   import: "default",
-  eager: true,
-}) as Record<string, string>;
+  eager: false,
+}) as Record<string, () => Promise<string>>;
 
-function assetUrlFor(src: string, sourcePath: string): string | null {
+const resolvedAssetCache = new Map<string, string>();
+
+function assetKeyFor(src: string, sourcePath: string): string | null {
   const repoPath = resolveRepoPath(src, sourcePath);
-  return assetUrls[`../../../../${repoPath}`] ?? null;
+  const key = `../../../../${repoPath}`;
+  return key in assetUrls ? key : null;
+}
+
+interface LazyImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+  assetKey: string | null;
+  fallbackSrc: string;
+}
+
+function LazyImg({ assetKey, fallbackSrc, alt, ...props }: LazyImgProps) {
+  const [resolved, setResolved] = useState<string | null>(
+    assetKey ? resolvedAssetCache.get(assetKey) ?? null : null
+  );
+  useEffect(() => {
+    if (!assetKey || resolved) return;
+    let cancelled = false;
+    assetUrls[assetKey]().then((url) => {
+      if (cancelled) return;
+      resolvedAssetCache.set(assetKey, url);
+      setResolved(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [assetKey, resolved]);
+  return <img src={resolved ?? fallbackSrc} alt={alt} {...props} />;
 }
 
 interface MarkdownRendererProps {
@@ -101,10 +130,11 @@ export function MarkdownRenderer({ markdown, sourcePath }: MarkdownRendererProps
           },
           img({ src, alt, ...props }) {
             const original = typeof src === "string" ? src : "";
-            const resolved =
-              sourcePath && original && !/^(https?:)?\/\//.test(original)
-                ? assetUrlFor(original, sourcePath)
-                : null;
+            const isRelative =
+              !!sourcePath && !!original && !/^(https?:)?\/\//.test(original);
+            const key = isRelative
+              ? assetKeyFor(original, sourcePath!)
+              : null;
             // 把 alt 作为 figcaption 显示 —— 但跳过两类情况:
             //   1. alt 空(占位图)
             //   2. alt 以 "图 N" 开头(老式样本通常紧跟一个 *图 N: ...* 的 em 段落作详注,避免重复)
@@ -112,8 +142,9 @@ export function MarkdownRenderer({ markdown, sourcePath }: MarkdownRendererProps
               !!alt && alt.trim().length > 0 && !/^图\s*\d+/.test(alt.trim());
             return (
               <figure className="markdownFigure">
-                <img
-                  src={resolved ?? original}
+                <LazyImg
+                  assetKey={key}
+                  fallbackSrc={original}
                   alt={alt}
                   style={{ maxWidth: "100%" }}
                   {...props}
