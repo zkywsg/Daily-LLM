@@ -1,12 +1,22 @@
-# Daily-LLM 时间线可视化网页
+# Daily-LLM 网页
 
-这个目录是 Daily-LLM 的独立前端网页。第一版首页就是横向时间线：上方浏览深度学习与大模型的演进节点，下方阅读当前年份的背景、突破、解决的问题和后续瓶颈。
+Daily-LLM 知识库的独立前端,把 15 个家族 / 67 个节点的演化整理为可浏览的可视化页面。
+
+## 路由结构
+
+- `/` — 主页,两种浏览模式可切换
+  - **按时间**:全部节点放在密度感知的横向时间线上(密集年份拉宽、空白年份压缩),hover 显示节点摘要,点击进入节点详情
+  - **按家族**:15 个家族卡片网格,每张卡片显示节点数和年份范围
+- `/families/:familyId` — 家族页,展示该家族子时间线,每个节点配 mini-arch 缩略图
+- `/families/:familyId/:nodeSlug` — 节点页,渲染 markdown 正文;ResNet 已有交互式金标本页(`components/node/golden/resnet/`),其余节点走通用 markdown 渲染
 
 ## 技术栈
 
-- Vite
-- React
-- TypeScript
+- Vite + React + TypeScript
+- React Router(SPA 路由)
+- react-markdown + remark-gfm + remark-math + rehype-katex(数学公式)+ rehype-highlight(代码高亮)
+- Mermaid(`.md` 内 ```mermaid 块按需懒加载)
+- Framer Motion(过渡动效)
 - Vitest + React Testing Library
 
 ## 本地运行
@@ -17,7 +27,7 @@ npm install
 npm run dev
 ```
 
-默认访问地址为 Vite 输出的本地 URL，通常是 `http://localhost:5173/` 或 `http://127.0.0.1:5173/`。
+默认 `http://localhost:5173/`。
 
 ## 构建
 
@@ -26,7 +36,7 @@ cd web
 npm run build
 ```
 
-构建产物会生成在 `web/dist/`，该目录不进入 Git。
+产物在 `web/dist/`(不进入 Git)。
 
 ## 测试
 
@@ -35,25 +45,24 @@ cd web
 npm test
 ```
 
-当前测试覆盖：
+## 内容数据
 
-- 时间线数据是否包含 1948、2012–2025 的核心节点
-- 主要节点是否保留关联模块链接
-- 默认节点、点击切换、URL hash 同步
-- 当前时间线节点的 `aria-current` 状态
-
-## 内容维护
-
-时间线数据位于：
+节点元数据由仓库根的脚本生成,落到:
 
 ```text
-web/src/data/timeline.ts
+web/src/data/families.json
 ```
 
-每个节点包含年份、标题、阶段、旧瓶颈、发生了什么、解决了什么、新问题、关键工作和关联模块。更新网页内容时，应同步检查 `../timeline/README.md` 是否需要补充或调整，避免网页和知识库主时间线脱节。
+每个节点带 frontmatter 字段(name / year / family / order / paper / authors / key_idea / path)。
+markdown 正文从仓库根的家族目录(`01-cnn/05-resnet.md` 等)在构建期通过 `import.meta.glob` 懒加载;
+家族目录下的 `assets/*.svg` 同样通过 glob 解析,markdown 里写相对路径(如 `assets/05-resnet-residual.svg`)即可。
 
-## 后续方向
+更新内容时:
 
-- 继续补足每年关键工作的细节和模块链接。
-- 增加按阶段筛选、搜索和站内章节路由。
-- 等页面内容稳定后，再接入公网部署。
+1. 直接编辑仓库根的节点 markdown
+2. 跑生成脚本同步 `families.json`(若新增节点或改了 frontmatter)
+3. dev server HMR 自动刷新
+
+## 金标本路径
+
+新加交互式金标本节点在 `components/node/golden/index.ts` 注册即可,路由层会优先用金标本组件代替通用 markdown 渲染。

@@ -21,9 +21,12 @@ describe("FamilyPage", () => {
     expect(screen.getAllByText(/ResNet/).length).toBeGreaterThan(0);
   });
 
-  it("shows '待补充' for empty family (03-word-embedding)", () => {
+  it("renders sub-timeline for word-embedding family", () => {
+    // 全 15 家族已无空家族;之前的"待补充"分支保留在组件里作为兜底,
+    // 但当前数据下无家族能触发,所以这里改为验证 word-embedding 正常渲染
     renderFamily("03-word-embedding");
-    expect(screen.getAllByText(/待补充/).length).toBeGreaterThan(0);
+    expect(screen.getByText("子时间线")).toBeInTheDocument();
+    expect(screen.getAllByText(/Word2Vec/).length).toBeGreaterThan(0);
   });
 
   it("redirects to 404 for unknown family", () => {

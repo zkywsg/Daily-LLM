@@ -11,6 +11,12 @@ const data = familiesJson as unknown as FamiliesData;
 
 type Mode = "time" | "family";
 
+// 从数据推导年份范围和节点总数,避免硬编码漂移
+const allYears = data.families.flatMap((f) => f.nodes.map((n) => n.year));
+const minYear = allYears.length > 0 ? Math.min(...allYears) : 0;
+const maxYear = allYears.length > 0 ? Math.max(...allYears) : 0;
+const totalNodes = data.families.reduce((sum, f) => sum + f.nodes.length, 0);
+
 export function HomePage() {
   const [mode, setMode] = useState<Mode>("time");
 
@@ -19,7 +25,7 @@ export function HomePage() {
       <div className={styles.header}>
         <h1 className={styles.title}>深度学习与大模型演化路径</h1>
         <p className={styles.subtitle}>
-          深度学习与大模型 · 1998–2025 · {data.families.length} 家族
+          {minYear}–{maxYear} · {data.families.length} 家族 · {totalNodes} 节点
         </p>
         <div className={styles.toggle}>
           <button

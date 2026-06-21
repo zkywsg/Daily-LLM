@@ -89,7 +89,23 @@
   margin: var(--space-4) 0;
 }
 
-/* 图注样式(由 MarkdownRenderer 给 p 加 figureCaption 类) */
+/* MarkdownRenderer 把每张图片包成 <figure class="markdownFigure"> */
+.body :global(figure.markdownFigure) {
+  margin: var(--space-6) 0;
+  text-align: center;
+}
+.body :global(figure.markdownFigure img) {
+  margin: 0 auto;
+  display: inline-block;
+}
+.body :global(figure.markdownFigure figcaption) {
+  margin-top: var(--space-2);
+  color: var(--ink-muted);
+  font-size: var(--fs-sm);
+  font-style: italic;
+}
+
+/* 老式图注样式(由 MarkdownRenderer 给 p 加 figureCaption 类) */
 .body :global(p.figureCaption) {
   text-align: center;
   color: var(--ink-muted);
@@ -98,4 +114,14 @@
 }
 .body :global(p.figureCaption em) {
   font-style: italic;
+}
+
+/* img + em 同段时 MarkdownRenderer 拆 p,em 直接跟在 figure 后面 —— 给它老式 caption 样式 */
+.body :global(figure.markdownFigure + em) {
+  display: block;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  margin: calc(-1 * var(--space-4)) 0 var(--space-6);
 }

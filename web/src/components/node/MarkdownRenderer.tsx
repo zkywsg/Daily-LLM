@@ -34,18 +34,23 @@ export function MarkdownRenderer({ markdown, sourcePath }: MarkdownRendererProps
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeHighlight, rehypeKatex]}
         components={{
-          p({ children, ...props }) {
-            // 一段里只有单一 em 节点 → figure caption(`*图 N: ...*` 这种写法)
-            const arr = Array.isArray(children) ? children : [children];
-            const meaningful = arr.filter(
-              (c) => !(typeof c === "string" && /^\s*$/.test(c))
-            );
+          p({ node, children, ...props }) {
+            // 用 hast node 的子节点 tagName(不是 React element 的 type,
+            // 后者经过 components 映射后是函数而非 "img"/"em" 字符串)
+            const childTags = (
+              (node as { children?: Array<{ type: string; tagName?: string }> })
+                ?.children ?? []
+            )
+              .filter((c) => c.type === "element")
+              .map((c) => c.tagName);
+            // 段内含 img → 拆 p。原因:img handler 把 img 改写成 <figure>,
+            // 而 <figure> 不允许出现在 <p> 里;HTML 解析器会自动关 p,造成 em caption 孤立
+            if (childTags.includes("img")) {
+              return <>{children}</>;
+            }
+            // 单一 em 节点 → figure caption(`*图 N: ...*` 老式写法,独立成段时)
             const isCaption =
-              meaningful.length === 1 &&
-              typeof meaningful[0] === "object" &&
-              meaningful[0] !== null &&
-              "type" in (meaningful[0] as Record<string, unknown>) &&
-              (meaningful[0] as { type: unknown }).type === "em";
+              childTags.length === 1 && childTags[0] === "em";
             return (
               <p className={isCaption ? "figureCaption" : undefined} {...props}>
                 {children}
@@ -100,13 +105,21 @@ export function MarkdownRenderer({ markdown, sourcePath }: MarkdownRendererProps
               sourcePath && original && !/^(https?:)?\/\//.test(original)
                 ? assetUrlFor(original, sourcePath)
                 : null;
+            // 把 alt 作为 figcaption 显示 —— 但跳过两类情况:
+            //   1. alt 空(占位图)
+            //   2. alt 以 "图 N" 开头(老式样本通常紧跟一个 *图 N: ...* 的 em 段落作详注,避免重复)
+            const showCaption =
+              !!alt && alt.trim().length > 0 && !/^图\s*\d+/.test(alt.trim());
             return (
-              <img
-                src={resolved ?? original}
-                alt={alt}
-                style={{ maxWidth: "100%" }}
-                {...props}
-              />
+              <figure className="markdownFigure">
+                <img
+                  src={resolved ?? original}
+                  alt={alt}
+                  style={{ maxWidth: "100%" }}
+                  {...props}
+                />
+                {showCaption && <figcaption>{alt}</figcaption>}
+              </figure>
             );
           },
         }}
