@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="pf-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Prefix Tuning — 每层 K/V 前拼 prefix + MLP 重参数化
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    Base 完全冻结,只训 prefix encoder(~0.1% 参数)
+  </text>
+
+  <!-- LEFT: Per-layer attention with prefix injection -->
+  <text x="250" y="85" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">
+    机制一:Per-layer K/V 前拼 prefix
+  </text>
+
+  <rect x="40" y="100" width="420" height="380" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+
+  <!-- Input tokens row -->
+  <text x="60" y="125" font-size="10" fill="#1f2937" font-weight="600">Input tokens(n=4):</text>
+  <g transform="translate(170, 110)">
+    <rect x="0" y="0" width="35" height="22" rx="3" fill="#fef3c7" stroke="#d97706"/>
+    <text x="17" y="15" text-anchor="middle" font-size="9" fill="#92400e">x₁</text>
+    <rect x="37" y="0" width="35" height="22" rx="3" fill="#fef3c7" stroke="#d97706"/>
+    <text x="54" y="15" text-anchor="middle" font-size="9" fill="#92400e">x₂</text>
+    <rect x="74" y="0" width="35" height="22" rx="3" fill="#fef3c7" stroke="#d97706"/>
+    <text x="91" y="15" text-anchor="middle" font-size="9" fill="#92400e">x₃</text>
+    <rect x="111" y="0" width="35" height="22" rx="3" fill="#fef3c7" stroke="#d97706"/>
+    <text x="128" y="15" text-anchor="middle" font-size="9" fill="#92400e">x₄</text>
+  </g>
+
+  <!-- Q computation - Q 不变 -->
+  <text x="60" y="170" font-size="10" fill="#1f2937" font-weight="600">Q:</text>
+  <rect x="120" y="155" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="130" y="170" text-anchor="middle" font-size="8" fill="#1e40af">q₁</text>
+  <rect x="142" y="155" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="152" y="170" text-anchor="middle" font-size="8" fill="#1e40af">q₂</text>
+  <rect x="164" y="155" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="174" y="170" text-anchor="middle" font-size="8" fill="#1e40af">q₃</text>
+  <rect x="186" y="155" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="196" y="170" text-anchor="middle" font-size="8" fill="#1e40af">q₄</text>
+  <text x="220" y="170" font-size="9" fill="#1e40af" font-style="italic">(不变)</text>
+
+  <!-- K with prefix -->
+  <text x="60" y="220" font-size="10" fill="#1f2937" font-weight="600">K:</text>
+  <rect x="90" y="205" width="22" height="22" rx="2" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="101" y="220" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">p₁ᴷ</text>
+  <rect x="114" y="205" width="22" height="22" rx="2" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="125" y="220" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">p₂ᴷ</text>
+  <rect x="138" y="205" width="22" height="22" rx="2" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="149" y="220" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">p₃ᴷ</text>
+
+  <!-- divider -->
+  <line x1="165" y1="200" x2="165" y2="234" stroke="#9d174d" stroke-width="2" stroke-dasharray="2,2"/>
+  <text x="167" y="200" font-size="8" fill="#9d174d">|</text>
+
+  <rect x="170" y="205" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="180" y="220" text-anchor="middle" font-size="8" fill="#1e40af">k₁</text>
+  <rect x="192" y="205" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="202" y="220" text-anchor="middle" font-size="8" fill="#1e40af">k₂</text>
+  <rect x="214" y="205" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="224" y="220" text-anchor="middle" font-size="8" fill="#1e40af">k₃</text>
+  <rect x="236" y="205" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="246" y="220" text-anchor="middle" font-size="8" fill="#1e40af">k₄</text>
+
+  <text x="60" y="247" font-size="9" fill="#9d174d" font-weight="700">prefix m=3</text>
+
+  <!-- V with prefix -->
+  <text x="60" y="280" font-size="10" fill="#1f2937" font-weight="600">V:</text>
+  <rect x="90" y="265" width="22" height="22" rx="2" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="101" y="280" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">p₁ⱽ</text>
+  <rect x="114" y="265" width="22" height="22" rx="2" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="125" y="280" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">p₂ⱽ</text>
+  <rect x="138" y="265" width="22" height="22" rx="2" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+  <text x="149" y="280" text-anchor="middle" font-size="8" fill="#9d174d" font-weight="700">p₃ⱽ</text>
+
+  <line x1="165" y1="260" x2="165" y2="294" stroke="#9d174d" stroke-width="2" stroke-dasharray="2,2"/>
+
+  <rect x="170" y="265" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="180" y="280" text-anchor="middle" font-size="8" fill="#1e40af">v₁</text>
+  <rect x="192" y="265" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="202" y="280" text-anchor="middle" font-size="8" fill="#1e40af">v₂</text>
+  <rect x="214" y="265" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="224" y="280" text-anchor="middle" font-size="8" fill="#1e40af">v₃</text>
+  <rect x="236" y="265" width="20" height="22" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="246" y="280" text-anchor="middle" font-size="8" fill="#1e40af">v₄</text>
+
+  <!-- attention compute -->
+  <line x1="250" y1="320" x2="250" y2="340" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pf-arr)"/>
+
+  <rect x="80" y="345" width="340" height="55" rx="6" fill="#1f2937" stroke="none"/>
+  <text x="250" y="365" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#fbbf24">attn(q_i, K, V) = softmax(q_i K^T / √d) · V</text>
+  <text x="250" y="383" text-anchor="middle" font-size="10" fill="#fef3c7">K, V 共 (m + n) 个位置;Q 仍 n 个</text>
+  <text x="250" y="395" text-anchor="middle" font-size="9" fill="#fbbf24">prefix 作"持续在场的上下文"</text>
+
+  <!-- 每层都有 -->
+  <rect x="80" y="415" width="340" height="55" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="250" y="435" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">★ 每层(L=12)都加 prefix</text>
+  <text x="250" y="453" text-anchor="middle" font-size="10" fill="#92400e">只在 input 加(= Prompt Tuning)→ 小模型上失效</text>
+  <text x="250" y="465" text-anchor="middle" font-size="9" fill="#dc2626">layer-wise 是 Prefix Tuning 的关键</text>
+
+  <!-- RIGHT: MLP reparametrization -->
+  <text x="690" y="85" text-anchor="middle" font-size="12" fill="#1f2937" font-weight="600">
+    机制二:MLP 重参数化(训练时)
+  </text>
+
+  <rect x="500" y="100" width="380" height="380" rx="6" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+
+  <!-- P_small -->
+  <rect x="600" y="125" width="180" height="50" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="690" y="146" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">P_small(可训练)</text>
+  <text x="690" y="162" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#92400e">m × d_small(50 × 512)</text>
+
+  <line x1="690" y1="175" x2="690" y2="195" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pf-arr)"/>
+
+  <!-- MLP -->
+  <rect x="540" y="198" width="300" height="80" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="690" y="218" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">MLP(可训练)</text>
+  <text x="690" y="236" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">Linear(d_small → d_small)</text>
+  <text x="690" y="250" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">Tanh</text>
+  <text x="690" y="264" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" fill="#1e40af">Linear(d_small → L × 2 × d)</text>
+
+  <line x1="690" y1="278" x2="690" y2="298" stroke="#9d174d" stroke-width="1.5" marker-end="url(#pf-arr)"/>
+
+  <!-- Expanded prefix for all layers -->
+  <rect x="540" y="300" width="300" height="80" rx="4" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+  <text x="690" y="320" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">P(展开到所有层)</text>
+  <text x="690" y="338" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" fill="#9d174d">L × 2 × m × d</text>
+  <text x="690" y="355" text-anchor="middle" font-size="9" fill="#9d174d">layer 0 K/V, layer 1 K/V, ...</text>
+  <text x="690" y="370" text-anchor="middle" font-size="9" fill="#059669">推理时可缓存(只算一次)</text>
+
+  <!-- params -->
+  <rect x="540" y="395" width="300" height="65" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="690" y="415" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="700">参数账</text>
+  <text x="540" y="433" font-size="10" fill="#fef3c7">P_small + MLP ≈ 240K(GPT-2 large 0.07%)</text>
+  <text x="540" y="450" font-size="10" fill="#fbbf24">★ 直接学 P 不稳,MLP 让其训得稳</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="500" x2="860" y2="500" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: callout on Q -->
+  <text x="450" y="525" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    为什么只加 K/V 不加 Q?
+  </text>
+
+  <g transform="translate(60, 545)">
+    <rect x="0" y="0" width="780" height="115" rx="6" fill="#1f2937" stroke="none"/>
+    <text x="20" y="22" font-size="11" fill="#fbbf24" font-weight="700">★ Prefix 加在 K/V 维度 = "持续在场的额外上下文"</text>
+    <text x="20" y="42" font-size="10" fill="#fef3c7">• 每个 input token q_i 都能 attend 到 prefix(K),从 prefix(V)拿到信息</text>
+    <text x="20" y="60" font-size="10" fill="#fef3c7">• Q 不变 → base 模型对"输入是什么"的判断完全保留</text>
+    <text x="20" y="80" font-size="10" fill="#fef3c7">• 如果改 Q,相当于让 prefix 也"提问",会扰动 base 行为</text>
+    <text x="20" y="102" font-size="10" fill="#fbbf24" font-weight="700">→ 这一非对称设计是 Prefix Tuning 不动 base 行为的关键</text>
+  </g>
+</svg>

@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="pv-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Prefix Tuning vs Adapter — 同 0.1% 参数下的较量
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    GPT-2 medium / E2E NLG(table-to-text)/ Li &amp; Liang 2021 Table
+  </text>
+
+  <!-- ============== TOP: performance bars ============== -->
+  <g transform="translate(60, 80)">
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">E2E NLG BLEU</text>
+
+    <text x="0" y="48" font-size="10" fill="#1f2937">Full FT(100%)</text>
+    <rect x="180" y="38" width="341" height="14" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="528" y="49" font-size="10" fill="#9a3412">68.2</text>
+
+    <text x="0" y="68" font-size="10" fill="#1f2937">Adapter(0.1%)</text>
+    <rect x="180" y="58" width="338" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="525" y="69" font-size="10" fill="#dc2626">67.7</text>
+
+    <text x="0" y="88" font-size="10" fill="#1f2937">Adapter(3%)</text>
+    <rect x="180" y="78" width="342" height="14" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="528" y="89" font-size="10" fill="#9a3412">68.4</text>
+
+    <text x="0" y="108" font-size="10" fill="#1f2937" font-weight="700">Prefix Tuning(0.1%)</text>
+    <rect x="180" y="98" width="351" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="538" y="109" font-size="10" fill="#059669" font-weight="700">70.3 ★ 反超 Full FT</text>
+  </g>
+
+  <!-- WebNLG unseen (small data) -->
+  <g transform="translate(60, 220)">
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">WebNLG unseen BLEU(小数据)</text>
+
+    <text x="0" y="48" font-size="10" fill="#1f2937">Full FT</text>
+    <rect x="180" y="38" width="238" height="14" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="425" y="49" font-size="10" fill="#9a3412">47.6</text>
+
+    <text x="0" y="68" font-size="10" fill="#1f2937">Adapter(0.1%)</text>
+    <rect x="180" y="58" width="226" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="413" y="69" font-size="10" fill="#dc2626">45.2(掉)</text>
+
+    <text x="0" y="88" font-size="10" fill="#1f2937" font-weight="700">Prefix Tuning(0.1%)</text>
+    <rect x="180" y="78" width="239" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="426" y="89" font-size="10" fill="#059669" font-weight="700">47.7(接近 Full)</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="325" x2="860" y2="325" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- Why Prefix wins -->
+  <text x="450" y="350" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    为什么生成任务上 Prefix &gt; Adapter?
+  </text>
+
+  <g transform="translate(60, 370)">
+    <rect x="0" y="0" width="370" height="90" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="185" y="22" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Prefix Tuning</text>
+    <text x="15" y="44" font-size="10" fill="#9d174d">每个生成 token 都 attend 到 prefix</text>
+    <text x="15" y="62" font-size="10" fill="#9d174d">→ 全程被任务上下文引导</text>
+    <text x="185" y="82" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">★ 生成任务天然受益</text>
+
+    <rect x="410" y="0" width="370" height="90" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="595" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">Adapter</text>
+    <text x="425" y="44" font-size="10" fill="#991b1b">每层 bottleneck 处理 hidden state</text>
+    <text x="425" y="62" font-size="10" fill="#991b1b">→ 改的是表征,不是 attention 路径</text>
+    <text x="595" y="82" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">分类胜出,生成略弱</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="485" x2="860" y2="485" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: 三件套缺一 -->
+  <text x="450" y="510" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三件套缺一,Prefix Tuning 都退化
+  </text>
+
+  <g transform="translate(40, 530)">
+    <rect x="0" y="0" width="265" height="115" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="132" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 Layer-wise</text>
+    <text x="15" y="44" font-size="10" fill="#991b1b">只在 input 加 prefix</text>
+    <text x="15" y="62" font-size="10" fill="#991b1b">= Prompt Tuning</text>
+    <text x="15" y="80" font-size="10" fill="#991b1b">小模型 < 10B 效果跌</text>
+    <text x="132" y="105" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 不通用</text>
+
+    <rect x="285" y="0" width="265" height="115" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="417" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 MLP 重参数化</text>
+    <text x="300" y="44" font-size="10" fill="#991b1b">直接学 L × 2 × m × d</text>
+    <text x="300" y="62" font-size="10" fill="#991b1b">优化 landscape 复杂</text>
+    <text x="300" y="80" font-size="10" fill="#991b1b">需要 warmup + 特殊 init</text>
+    <text x="417" y="105" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 训练发散</text>
+
+    <rect x="570" y="0" width="250" height="115" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 冻结 base</text>
+    <text x="585" y="44" font-size="10" fill="#991b1b">prefix + base 都训</text>
+    <text x="585" y="62" font-size="10" fill="#991b1b">每任务存 354M+</text>
+    <text x="585" y="80" font-size="10" fill="#991b1b">退化为 Full FT</text>
+    <text x="695" y="105" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 失去 PEFT 意义</text>
+  </g>
+</svg>

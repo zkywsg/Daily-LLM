@@ -32,6 +32,24 @@ Prefix Tuning + Prompt Tuning 这一谱系的核心创新:**让 PEFT 进入"inpu
 
 ## 核心思想:Layer-wise Soft Prefix
 
+### 直觉
+
+GPT-3 的 in-context learning(ICL)启发了一个反常识的想法:**LLM 的能力都在,只需要"调对方向"**。手写 prompt 难,搜索 discrete prompt 不稳——那就直接在 embedding 空间优化,学一段"虚拟 token"持续在上下文里影响每一步生成。
+
+[Adapter](01-adapter.md) 走的是"加小模块 + 改架构"路线,Prefix Tuning 反过来——**根本不动架构,在每层 attention 的 K/V 前面拼一段可学习的 prefix embedding 就够**。这比 adapter 更接近"prompt 引导"哲学,参数也少 10×(0.1% vs 1%)。
+
+但 soft prefix 要 work,**三个机制必须同时到位**:
+
+1. **Layer-wise prefix on K/V** —— prefix 加在**每层**的 attention K/V 前(只加 input 层效果太弱),而且**只加 K/V 不加 Q**(避免改 query 影响 base 行为)
+2. **MLP 重参数化** —— 直接学全部 prefix 不稳定;学一个 small `P_small` + MLP 扩展到所有层 K/V,训练稳定
+3. **冻结 base** —— Transformer 原参数完全冻结,梯度只流过 prefix encoder
+
+→ 三机制串起来,GPT-2 medium 上 0.1% 参数(~240K)在 E2E NLG 上反超全参微调,见图 1 Prefix 在 attention 里的注入方式。
+
+![Prefix Tuning 架构 — 每层 K/V 前拼 prefix + MLP 重参数化](assets/02-prefix-architecture.svg)
+
+## 机制一:Layer-wise Prefix on K/V
+
 Prefix Tuning 在 **每层 Transformer 的 attention 输入** 前加一段可学习的 prefix。
 
 ### 结构
@@ -50,6 +68,8 @@ Prefix Tuning attention:
 ```
 
 **关键**:Prefix 直接在 K/V 维度上加,不在 Q 上加(否则相当于改 query,会影响后续 token 也产生 prefix)。这一设计让 prefix 作用类似"持续在场的额外上下文"。
+
+## 机制二:MLP 重参数化
 
 ### 参数化:不直接学 prefix,学一个 MLP
 
@@ -72,7 +92,7 @@ $$
 
 总 prefix 参数 ~ m × L × d × 2(K + V)。对 GPT-2 large(354M):m=10 → 240K 参数,**0.07%**。
 
-### 与全参微调对比
+## 机制三:冻结 base + 与 Full FT 对比
 
 | | Full FT | Prefix Tuning |
 |------|------|------|
@@ -81,6 +101,18 @@ $$
 | 训练显存 | 优化器全状态 | 只优化 prefix |
 | 多任务部署 | 每任务一份 model | 一份 base + N 个 prefix |
 | 灾难性遗忘 | 有 | 无(base 冻结) |
+
+## 三件套协同 — 0.1% 参数反超全参
+
+> **Layer-wise K/V 注入让每层都受 prefix 引导 + MLP 重参数化让小规模 prefix 训得稳 + 冻结 base 保留通用能力** —— 三者缺一,Prefix Tuning 都达不到"0.1% 反超 Full FT"。
+
+- 只有 **Layer-wise**:直接学全部层的 prefix 矩阵,优化 landscape 复杂 → 训练发散或收敛慢
+- 只有 **MLP 重参数化**:只在 input 加 prefix(= Prompt Tuning),小模型(< 10B)效果跌很多
+- 只有 **冻结 base**:没有 prefix 也没有 adapter → 没引入任何任务相关参数,无法 fine-tune
+
+三件套协同 → E2E NLG BLEU 70.3 vs Full FT 68.2,小数据 WebNLG 接近全参 — 见图 2 与 Adapter 的对比。
+
+![Prefix Tuning vs Adapter — 同 0.1% 参数下的较量](assets/02-prefix-vs-adapter.svg)
 
 ## 关键代码
 
