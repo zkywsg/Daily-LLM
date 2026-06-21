@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="lo-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    LoRA 架构 — 训练态 BA 旁路 + 推理态合并
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    ΔW = B · A,r ≪ d(典型 r=8, d=4096)
+  </text>
+
+  <!-- LEFT: TRAINING -->
+  <text x="225" y="90" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="700">
+    训练态(双路径)
+  </text>
+
+  <rect x="40" y="105" width="370" height="370" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+
+  <!-- input x -->
+  <rect x="190" y="125" width="70" height="34" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="225" y="147" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">x(d)</text>
+
+  <!-- branch: -->
+  <line x1="225" y1="159" x2="225" y2="175" stroke="#9d174d" stroke-width="1.5"/>
+  <line x1="100" y1="175" x2="350" y2="175" stroke="#9d174d" stroke-width="1.5"/>
+
+  <!-- LEFT branch: W₀ (frozen) -->
+  <line x1="100" y1="175" x2="100" y2="195" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lo-arr)"/>
+  <rect x="55" y="198" width="90" height="50" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="100" y="218" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">W₀</text>
+  <text x="100" y="234" text-anchor="middle" font-size="9" fill="#1e40af">d × d</text>
+  <text x="100" y="247" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">❄ 冻结</text>
+
+  <line x1="100" y1="248" x2="100" y2="288" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lo-arr)"/>
+  <text x="100" y="278" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="700">W₀·x</text>
+
+  <!-- RIGHT branch: A then B (trainable) -->
+  <line x1="350" y1="175" x2="350" y2="195" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lo-arr)"/>
+  <rect x="305" y="198" width="90" height="35" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="350" y="216" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">A</text>
+  <text x="350" y="228" text-anchor="middle" font-size="9" fill="#065f46">r × d(Kaiming)</text>
+
+  <line x1="350" y1="233" x2="350" y2="243" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lo-arr)"/>
+
+  <rect x="305" y="246" width="90" height="35" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="350" y="264" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">B</text>
+  <text x="350" y="276" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">d × r(★ 初始化为 0)</text>
+
+  <line x1="350" y1="281" x2="350" y2="293" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lo-arr)"/>
+  <text x="350" y="288" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">BA·x</text>
+
+  <!-- merge + -->
+  <line x1="100" y1="298" x2="225" y2="320" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lo-arr)"/>
+  <line x1="350" y1="298" x2="225" y2="320" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lo-arr)"/>
+
+  <circle cx="225" cy="328" r="10" fill="#fff" stroke="#9d174d" stroke-width="2"/>
+  <text x="225" y="332" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">+</text>
+
+  <line x1="225" y1="338" x2="225" y2="358" stroke="#9d174d" stroke-width="1.5" marker-end="url(#lo-arr)"/>
+
+  <rect x="80" y="361" width="290" height="50" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="225" y="382" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#fbbf24" font-weight="700">h = W₀·x + (α/r)·BA·x</text>
+  <text x="225" y="400" text-anchor="middle" font-size="9" fill="#fef3c7">初始 BA=0 → h = W₀·x(平滑过渡)</text>
+
+  <!-- params -->
+  <rect x="80" y="425" width="290" height="40" rx="4" fill="#fef3c7" stroke="#d97706"/>
+  <text x="225" y="442" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">参数:2dr(r=8, d=4096 → 65K)</text>
+  <text x="225" y="458" text-anchor="middle" font-size="9" fill="#92400e">vs 全参 d² = 16M,少 250×</text>
+
+  <!-- ARROW between -->
+  <line x1="420" y1="290" x2="470" y2="290" stroke="#7c3aed" stroke-width="3" marker-end="url(#lo-arr)"/>
+  <text x="445" y="280" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="700">训完</text>
+  <text x="445" y="305" text-anchor="middle" font-size="9" fill="#7c3aed">合并</text>
+
+  <!-- RIGHT: INFERENCE -->
+  <text x="675" y="90" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">
+    推理态(合并 = 零延迟)★
+  </text>
+
+  <rect x="490" y="105" width="370" height="370" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+
+  <!-- input -->
+  <rect x="640" y="135" width="70" height="34" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="675" y="157" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">x(d)</text>
+
+  <line x1="675" y1="169" x2="675" y2="190" stroke="#9d174d" stroke-width="2" marker-end="url(#lo-arr)"/>
+
+  <!-- merged weight -->
+  <rect x="555" y="195" width="240" height="100" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+  <text x="675" y="220" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">W = W₀ + (α/r)·BA</text>
+  <text x="675" y="245" text-anchor="middle" font-size="10" fill="#1e40af">d × d(单矩阵)</text>
+  <text x="675" y="265" text-anchor="middle" font-size="10" fill="#059669" font-weight="700">★ A, B 已合并,部署时消失</text>
+  <text x="675" y="283" text-anchor="middle" font-size="9" fill="#059669">单次乘法 = 跟全参一样快</text>
+
+  <line x1="675" y1="295" x2="675" y2="318" stroke="#9d174d" stroke-width="2" marker-end="url(#lo-arr)"/>
+
+  <rect x="595" y="320" width="160" height="36" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+  <text x="675" y="343" text-anchor="middle" font-family="ui-monospace, monospace" font-size="11" fill="#065f46" font-weight="700">h = W·x</text>
+
+  <!-- comparison: Adapter 不能合并 -->
+  <rect x="510" y="380" width="335" height="85" rx="4" fill="#1f2937" stroke="none"/>
+  <text x="678" y="402" text-anchor="middle" font-size="11" fill="#fbbf24" font-weight="700">★ 为什么 Adapter 不能合并?</text>
+  <text x="525" y="422" font-family="ui-monospace, monospace" font-size="10" fill="#fef3c7">Adapter: x → W_up(ReLU(W_down x))</text>
+  <text x="525" y="440" font-size="10" fill="#fef3c7">非线性 ReLU 让两个 W 不能合并到 W₀</text>
+  <text x="525" y="458" font-size="10" fill="#fbbf24" font-weight="700">LoRA: BA 是纯线性,可加进 W₀</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="495" x2="860" y2="495" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM banner: three mechanisms -->
+  <text x="450" y="520" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三机制对应到结构
+  </text>
+
+  <g transform="translate(40, 540)">
+    <rect x="0" y="0" width="265" height="135" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
+    <text x="132" y="22" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">机制一:低秩分解</text>
+    <text x="15" y="48" font-size="10" fill="#9d174d">• ΔW = BA, r=8 << d=4096</text>
+    <text x="15" y="68" font-size="10" fill="#9d174d">• 参数 2dr vs 全参 d²</text>
+    <text x="15" y="88" font-size="10" fill="#9d174d">• ΔW 内在秩低(论文实证)</text>
+    <text x="132" y="118" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 参数 250× 节省</text>
+
+    <rect x="285" y="0" width="265" height="135" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="417" y="22" text-anchor="middle" font-size="11" fill="#065f46" font-weight="700">机制二:零初始化</text>
+    <text x="300" y="48" font-size="10" fill="#065f46">• B = 0, A = Kaiming</text>
+    <text x="300" y="68" font-size="10" fill="#065f46">• 训练开始 BA = 0</text>
+    <text x="300" y="88" font-size="10" fill="#065f46">• 从冻结模型平滑过渡</text>
+    <text x="417" y="118" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 训练稳定</text>
+
+    <rect x="570" y="0" width="250" height="135" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">机制三:推理合并</text>
+    <text x="585" y="48" font-size="10" fill="#1e40af">• W = W₀ + (α/r)BA</text>
+    <text x="585" y="68" font-size="10" fill="#1e40af">• 部署时 A, B 消失</text>
+    <text x="585" y="88" font-size="10" fill="#1e40af">• 纯线性可加入 W₀</text>
+    <text x="695" y="118" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 零额外延迟</text>
+  </g>
+</svg>

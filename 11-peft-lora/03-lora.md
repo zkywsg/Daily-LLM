@@ -30,6 +30,24 @@ LoRA 发布后 6 个月,从论文 demo 变成 Hugging Face PEFT 库的旗舰功�
 
 ## 核心思想:Low-Rank Decomposition of ΔW
 
+### 直觉
+
+[Adapter](01-adapter.md) 推理延迟 +5-10%、[Prefix](02-prefix-tuning.md) 让序列变长,都改了 forward 结构,**推理时必须保留 PEFT 组件**。工业部署最看重的"零推理开销"两条路都做不到。
+
+Hu 等人的洞察是数学性的:**对一个 pretrain 好的权重 W₀,任务微调时的更新 ΔW 实际上是低秩的**——大部分 task-specific 信息可以挤进 r ≪ d 的子空间里(论文实测 r=1 都能 work,r=4-8 接近全参)。如果把 ΔW 写成 `B·A`(d×r 和 r×d),训练时只更新 B/A;**推理时把 BA 算出来加回 W₀,LoRA 部分就完全消失**——回到 W₀+ΔW 的完整权重,跟全参微调一样快。
+
+但要把"低秩 ΔW + 可合并"真正变成可用方法,**三个机制必须同时到位**:
+
+1. **ΔW = BA 低秩分解** —— r 远小于 d(典型 8-32),参数从 d² 降到 2dr,LLaMA-7B Q+V 只多 0.06% 参数
+2. **B=0 + A Kaiming 初始化** —— 训练开始 BA=0,平滑过渡;A 用 Kaiming 提供初始梯度方向
+3. **推理时合并 W₀ + BA** —— 这是 LoRA 区别于 Adapter/Prefix 的关键,零额外延迟
+
+→ 三机制串起来,LoRA 成为 PEFT 工业标准,今天 90% 开源 LLM 微调都基于它 — 见图 1 训练 / 推理两态。
+
+![LoRA 架构 — 训练态 BA 旁路 + 推理态合并](assets/03-lora-architecture.svg)
+
+## 机制一:Low-Rank Decomposition
+
 ### 假设
 
 对一个全参微调,权重更新是:
@@ -66,7 +84,7 @@ $$
 
 训练时 W₀ 冻结,只对 A, B 反传梯度。
 
-### 初始化
+## 机制二:B=0 + A Kaiming 初始化
 
 - $A$ 用 Kaiming 初始化(正态小值)
 - $B$ 初始化为 **全 0**
@@ -82,6 +100,8 @@ $$
 - **节省 250×**
 
 LLaMA-7B 的 LoRA(默认 r=8,target Q+V):**~4.2M 参数,base 6.7B 的 0.06%**。
+
+## 机制三:推理时合并(零延迟)
 
 ### α / Dropout / 推理合并
 
@@ -101,6 +121,18 @@ LoRA 实现里几个工程细节:
 - **Q+V 是性价比最高的选择**(参数最少,质量最好)
 
 后来工程实践扩展到 attention 全部 (Q,K,V,O) + FFN(W_up,W_down,W_gate),叫 **all-target LoRA**,但 base + ~1% 参数。
+
+## 三件套协同 — PEFT 工业标准
+
+> **低秩分解把参数压到 0.1% + 零初始化让训练稳定 + 推理合并实现零延迟** —— 三者首次组合,LoRA 同时满足"参数少 + 训练稳 + 推理快"三个工业刚需。
+
+- 只有 **低秩分解**:不零初始化,BA 训练开始就随机扰动 base → 训练不稳,需要复杂 warmup
+- 只有 **零初始化**:不低秩用 d×d 满秩 ΔW → 参数 = 全参,不省存储
+- 只有 **推理合并**:如果 ΔW 不是低秩(如 Adapter 非线性 down→ReLU→up),合并 = 改 base 形状,合不回去
+
+三件套协同 → LoRA 比 Adapter 参数少 10× / 推理零延迟 / 质量持平,见图 2 三方法对比。
+
+![LoRA vs Adapter vs Prefix — 工业部署三维对比](assets/03-lora-vs-others.svg)
 
 ## 关键代码
 
