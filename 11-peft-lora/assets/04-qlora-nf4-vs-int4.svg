@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="qn-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#9d174d"/>
+    </marker>
+  </defs>
+
+  <text x="450" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    NF4 vs INT4 — 为什么"为正态分布设计的 4-bit"是关键
+  </text>
+
+  <text x="450" y="52" text-anchor="middle" font-size="11" fill="#6b7280" font-style="italic">
+    神经网络权重 ~ N(0, σ),16 个 4-bit 量化值放在哪里决定精度损失
+  </text>
+
+  <!-- LEFT: INT4 (均匀) -->
+  <text x="225" y="85" text-anchor="middle" font-size="13" fill="#dc2626" font-weight="700">
+    INT4(均匀分布)
+  </text>
+
+  <rect x="40" y="100" width="370" height="210" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+
+  <!-- Distribution curve (normal) -->
+  <path d="M 60 270 Q 100 270, 130 250 Q 180 200, 225 180 Q 270 200, 320 250 Q 350 270, 390 270"
+        stroke="#1e40af" stroke-width="2" fill="none"/>
+  <text x="225" y="295" text-anchor="middle" font-size="9" fill="#1e40af" font-style="italic">权重分布(正态)</text>
+
+  <!-- 16 INT4 levels - evenly spaced -->
+  <g stroke="#dc2626" stroke-width="1.5">
+    <line x1="60" y1="265" x2="60" y2="275"/>
+    <line x1="82" y1="265" x2="82" y2="275"/>
+    <line x1="104" y1="265" x2="104" y2="275"/>
+    <line x1="126" y1="265" x2="126" y2="275"/>
+    <line x1="148" y1="265" x2="148" y2="275"/>
+    <line x1="170" y1="265" x2="170" y2="275"/>
+    <line x1="192" y1="265" x2="192" y2="275"/>
+    <line x1="214" y1="265" x2="214" y2="275"/>
+    <line x1="236" y1="265" x2="236" y2="275"/>
+    <line x1="258" y1="265" x2="258" y2="275"/>
+    <line x1="280" y1="265" x2="280" y2="275"/>
+    <line x1="302" y1="265" x2="302" y2="275"/>
+    <line x1="324" y1="265" x2="324" y2="275"/>
+    <line x1="346" y1="265" x2="346" y2="275"/>
+    <line x1="368" y1="265" x2="368" y2="275"/>
+    <line x1="390" y1="265" x2="390" y2="275"/>
+  </g>
+
+  <text x="225" y="125" text-anchor="middle" font-size="10" fill="#991b1b" font-weight="700">16 个量化点 均匀间隔</text>
+
+  <text x="100" y="155" font-size="9" fill="#dc2626">→ 尾部点浪费(权重少)</text>
+  <text x="100" y="170" font-size="9" fill="#dc2626">→ 中心点不够(权重多)</text>
+
+  <!-- annotation arrows -->
+  <line x1="225" y1="220" x2="225" y2="260" stroke="#dc2626" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="225" y="240" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">中心粒度不够</text>
+
+  <line x1="70" y1="260" x2="70" y2="278" stroke="#dc2626" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="70" y="248" text-anchor="middle" font-size="9" fill="#dc2626">尾部浪费</text>
+
+  <!-- ARROW between -->
+  <line x1="420" y1="200" x2="470" y2="200" stroke="#7c3aed" stroke-width="3" marker-end="url(#qn-arr)"/>
+  <text x="445" y="190" text-anchor="middle" font-size="11" fill="#7c3aed" font-weight="700">NF4</text>
+
+  <!-- RIGHT: NF4 -->
+  <text x="675" y="85" text-anchor="middle" font-size="13" fill="#059669" font-weight="700">
+    NF4(正态分布等分位)★
+  </text>
+
+  <rect x="490" y="100" width="370" height="210" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+
+  <!-- Distribution curve (normal) - same -->
+  <path d="M 510 270 Q 550 270, 580 250 Q 630 200, 675 180 Q 720 200, 770 250 Q 800 270, 840 270"
+        stroke="#1e40af" stroke-width="2" fill="none"/>
+  <text x="675" y="295" text-anchor="middle" font-size="9" fill="#1e40af" font-style="italic">权重分布(正态)</text>
+
+  <!-- 16 NF4 levels - quantile-spaced (dense in middle) -->
+  <g stroke="#059669" stroke-width="1.5">
+    <line x1="510" y1="265" x2="510" y2="275"/>
+    <line x1="548" y1="265" x2="548" y2="275"/>
+    <line x1="578" y1="265" x2="578" y2="275"/>
+    <line x1="600" y1="265" x2="600" y2="275"/>
+    <line x1="618" y1="265" x2="618" y2="275"/>
+    <line x1="635" y1="265" x2="635" y2="275"/>
+    <line x1="650" y1="265" x2="650" y2="275"/>
+    <line x1="664" y1="265" x2="664" y2="275"/>
+    <line x1="678" y1="265" x2="678" y2="275"/>
+    <line x1="692" y1="265" x2="692" y2="275"/>
+    <line x1="708" y1="265" x2="708" y2="275"/>
+    <line x1="724" y1="265" x2="724" y2="275"/>
+    <line x1="742" y1="265" x2="742" y2="275"/>
+    <line x1="764" y1="265" x2="764" y2="275"/>
+    <line x1="792" y1="265" x2="792" y2="275"/>
+    <line x1="840" y1="265" x2="840" y2="275"/>
+  </g>
+
+  <text x="675" y="125" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">16 个量化点 取自正态等分位</text>
+
+  <text x="550" y="155" font-size="9" fill="#059669">→ 中心密(权重多)</text>
+  <text x="550" y="170" font-size="9" fill="#059669">→ 尾部疏(权重少)</text>
+
+  <line x1="675" y1="220" x2="675" y2="260" stroke="#059669" stroke-width="1" stroke-dasharray="2,2"/>
+  <text x="675" y="240" text-anchor="middle" font-size="9" fill="#059669" font-weight="700">中心粒度刚好</text>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="335" x2="860" y2="335" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- LLaMA-7B QLoRA quality -->
+  <text x="450" y="360" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    LLaMA-7B Alpaca 微调 — 质量几乎不掉
+  </text>
+
+  <g transform="translate(60, 380)">
+    <text x="0" y="20" font-size="11" fill="#1f2937" font-weight="600">MMLU</text>
+
+    <text x="0" y="48" font-size="10" fill="#1f2937">Full FT(80GB)</text>
+    <rect x="170" y="38" width="376" height="14" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="553" y="49" font-size="10" fill="#9a3412">47.0</text>
+
+    <text x="0" y="68" font-size="10" fill="#1f2937">LoRA fp16(20GB)</text>
+    <rect x="170" y="58" width="374" height="14" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+    <text x="551" y="69" font-size="10" fill="#9a3412">46.8</text>
+
+    <text x="0" y="88" font-size="10" fill="#1f2937" font-weight="700">QLoRA NF4(5GB)</text>
+    <rect x="170" y="78" width="372" height="14" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="549" y="89" font-size="10" fill="#059669" font-weight="700">46.5 ★(显存压 16×,质量几乎不掉)</text>
+  </g>
+
+  <!-- DIVIDER -->
+  <line x1="40" y1="500" x2="860" y2="500" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- BOTTOM: 三件套缺一 -->
+  <text x="450" y="525" text-anchor="middle" font-size="13" fill="#1f2937" font-weight="600">
+    三件套缺一,LLM 微调民主化都达不到
+  </text>
+
+  <g transform="translate(40, 545)">
+    <rect x="0" y="0" width="265" height="105" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="132" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 NF4(用 INT4)</text>
+    <text x="15" y="44" font-size="10" fill="#991b1b">权重中心精度不足</text>
+    <text x="15" y="62" font-size="10" fill="#991b1b">Guanaco-65B 质量崩</text>
+    <text x="132" y="92" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 不能达到 99.3% ChatGPT</text>
+
+    <rect x="285" y="0" width="265" height="105" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="417" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 Double Quantization</text>
+    <text x="300" y="44" font-size="10" fill="#991b1b">scale factor 元数据 8KB/256块</text>
+    <text x="300" y="62" font-size="10" fill="#991b1b">base 多 3-5GB 显存</text>
+    <text x="417" y="92" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 65B 装不进 48GB</text>
+
+    <rect x="570" y="0" width="250" height="105" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="695" y="22" text-anchor="middle" font-size="11" fill="#991b1b" font-weight="700">缺 Paged Optimizer</text>
+    <text x="585" y="44" font-size="10" fill="#991b1b">AdamW 15GB 全在 GPU</text>
+    <text x="585" y="62" font-size="10" fill="#991b1b">base 33GB + opt 15GB = 48GB</text>
+    <text x="695" y="92" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 仍超单卡 A6000</text>
+  </g>
+</svg>

@@ -42,7 +42,25 @@ QLoRA 发布后:
 
 ## 核心思想:4-bit Base + LoRA + 系统优化
 
+### 直觉
+
+[LoRA](03-lora.md) 解决了"训练参数"问题,但**base 模型仍要以 fp16 加载**——LLaMA-65B 光 base 就 130GB,单卡跑不动。简单量化到 4-bit 会让权重精度大幅丢失,fine-tune 质量崩。
+
+Dettmers 等人的洞察:**神经网络权重是正态分布的,标准 INT4(均匀分布)是次优选择**——专门为正态分布设计的 4-bit 编码(NF4)能让精度损失降到几乎不可察。再配 double quantization 把"量化的元数据"也量化一遍,paged optimizer 把优化器状态分页到 CPU——三件事一起做,LLaMA-65B 微调从 150GB 显存压到 41GB,**单卡 48GB A6000 就能跑**。
+
+但三个机制必须**同时**做才能让"4-bit base + LoRA"既显存够低又质量不掉:
+
+1. **NF4(NormalFloat 4-bit)** —— 16 个量化值取自正态分布等分位点(不是均匀),比 INT4 误差小 30%
+2. **Double Quantization** —— 每 block 的 fp32 scale factor 自身再 8-bit 量化,省 ~30% 元数据显存
+3. **Paged Optimizer** —— AdamW 状态用 NVIDIA Unified Memory 分页到 CPU,把 15GB 压到 ~3GB
+
+→ 三机制串起来,Guanaco-65B(QLoRA 在单卡 A6000 上训出)达到 ChatGPT 99.3% 性能,LLM 微调民主化 — 见图 1 显存账对比。
+
+![QLoRA 显存账 — fp16 LoRA 150GB → QLoRA 41GB(LLaMA-65B)](assets/04-qlora-stack.svg)
+
 QLoRA 不是单一 trick,是几个量化 / 训练优化的组合:
+
+## 机制一:NF4(NormalFloat 4-bit)量化
 
 ### 1. NF4(NormalFloat 4-bit)量化
 
@@ -61,9 +79,13 @@ QLoRA 不是单一 trick,是几个量化 / 训练优化的组合:
 
 量化时把每 block 的 fp16 权重 normalize 到 [-1, 1],然后映射到这 16 个值之一。
 
+## 机制二:Double Quantization
+
 ### 2. Double Quantization(双重量化)
 
 NF4 量化时每 block(64 个值)需要存一个 fp32 scale factor。256 个 block 就要 256 × 32 bit = 8KB 额外开销。Double Quantization 把这些 scale factor 自身再 8-bit 量化,进一步省 ~30% 显存。
+
+## 机制三:Paged Optimizer
 
 ### 3. Paged Optimizer
 
@@ -103,6 +125,18 @@ Step 5: 推理:
 | **总计** | **~150 GB** | **~41 GB** |
 
 实测可以在单卡 48GB A6000 跑 LLaMA-65B QLoRA,batch=1。
+
+## 三件套协同 — LLM 微调民主化
+
+> **NF4 让 4-bit 精度损失可控 + DQ 把元数据再压一遍 + Paged Optimizer 把状态甩到 CPU** —— 三者首次组合,LLaMA-65B 微调从需要 2× A100-80GB(机构级)降到单卡 A6000-48GB(个人可得)。
+
+- 只有 **NF4**:base 33GB 但 optimizer 仍 15GB → 总 65GB,单卡 48GB 还是装不下
+- 只有 **Double Quantization**:不用 NF4 而用 INT4 → 精度损失大,Guanaco-65B 跑出来质量崩
+- 只有 **Paged Optimizer**:base 仍 fp16 130GB → 不管 optimizer 多省,也跑不动 65B
+
+三件套协同 → Guanaco-65B(单卡 A6000 24 小时训出)达到 ChatGPT 99.3% 性能 — 见图 2 NF4 vs INT4 量化精度对比 + 三件套缺一。
+
+![NF4 vs INT4 — 为什么"为正态分布设计的 4-bit"是关键](assets/04-qlora-nf4-vs-int4.svg)
 
 ## 关键代码
 
