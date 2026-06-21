@@ -118,37 +118,55 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
             </g>
           );
         })}
-        {allNodes.map((n) => (
-          <motion.circle
-            key={n.path}
-            cx={xScale(n.year)}
-            cy={yByNode.get(n.path)!}
-            r={NODE_RADIUS}
-            fill={familyColorVar(n.family)}
-            stroke="var(--bg-canvas)"
-            strokeWidth={2}
-            whileHover={{ scale: 1.4 }}
-            onMouseEnter={(e) => {
-              setHovered(n);
-              const target = e.currentTarget as SVGCircleElement;
-              const svgEl = target.ownerSVGElement!;
-              const rect = svgEl.getBoundingClientRect();
-              const scaleX = rect.width / width;
-              const scaleY = rect.height / height;
-              setPos({
-                x: rect.left + window.scrollX + xScale(n.year) * scaleX - 120,
-                y: rect.top + window.scrollY + yByNode.get(n.path)! * scaleY - 200,
-              });
-            }}
-            onMouseLeave={() => setHovered(null)}
-            onClick={() => {
-              const slug = n.path.split("/").pop()!.replace(/\.md$/, "");
-              navigate(`/families/${n.family}/${slug}`);
-            }}
-            style={{ cursor: "pointer" }}
-            layoutId={`node-${n.path}`}
-          />
-        ))}
+        {allNodes.map((n) => {
+          const cx = xScale(n.year);
+          const cy = yByNode.get(n.path)!;
+          return (
+            <g
+              key={n.path}
+              style={{ cursor: "pointer" }}
+              onMouseEnter={(e) => {
+                setHovered(n);
+                const target = e.currentTarget as SVGGElement;
+                const svgEl = target.ownerSVGElement!;
+                const rect = svgEl.getBoundingClientRect();
+                const scaleX = rect.width / width;
+                const scaleY = rect.height / height;
+                setPos({
+                  x: rect.left + window.scrollX + cx * scaleX - 120,
+                  y: rect.top + window.scrollY + cy * scaleY - 200,
+                });
+              }}
+              onMouseLeave={() => setHovered(null)}
+              onClick={() => {
+                const slug = n.path.split("/").pop()!.replace(/\.md$/, "");
+                navigate(`/families/${n.family}/${slug}`);
+              }}
+            >
+              <motion.circle
+                cx={cx}
+                cy={cy}
+                r={NODE_RADIUS}
+                fill={familyColorVar(n.family)}
+                stroke="var(--bg-canvas)"
+                strokeWidth={2}
+                whileHover={{ scale: 1.4 }}
+                layoutId={`node-${n.path}`}
+              />
+              {/* 常驻标签 —— 节点名跟在圆点右侧,用家族色让密集区也能看出归属 */}
+              <text
+                x={cx + NODE_RADIUS + 4}
+                y={cy + 3}
+                fontSize={10}
+                fill={familyColorVar(n.family)}
+                fontWeight={500}
+                style={{ pointerEvents: "none", userSelect: "none" }}
+              >
+                {n.name.length > 11 ? n.name.slice(0, 10) + "…" : n.name}
+              </text>
+            </g>
+          );
+        })}
       </svg>
       <AnimatePresence>
         {hovered && <NodeHoverCard node={hovered} x={pos.x} y={pos.y} />}
