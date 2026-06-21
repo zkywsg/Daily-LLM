@@ -77,7 +77,15 @@ $$
 
 这相当于在网络中建立了一条**梯度高速公路**：无论中间多少层卷积，从 loss 到任何一个 block 的梯度都有一条直通路径，不经过任何非线性。152 层之所以能稳定训练，不依赖每层都"健康"，而是因为**即使中间层的梯度衰减，梯度也能通过 shortcut 回传**。
 
-### 机制
+但 shortcut 一个机制单独成立不了——ResNet-152 能稳跑 152 层，依赖**三件事同时到位**：
+
+1. **Shortcut connection** —— `y = F(x) + x`，把恒等映射变默认解，建立梯度高速公路
+2. **BatchNorm** —— 每个 Conv 后接 BN，把内部协变量偏移控制住
+3. **He 初始化** —— $W \sim \mathcal{N}(0, 2/n)$，让深 ReLU 网络的初始前向 / 反向信号尺度可控
+
+→ 三件套首次组合，152 层从随机初始化直接稳训，Top-5 错误率 3.57% 首次低于人类基准。
+
+## 机制一:Shortcut Connection
 
 ResNet 把这条思想落地成两种 block。
 
@@ -125,7 +133,33 @@ $$
 
 $W_s$ 是 1×1 卷积权重，用于把通道数和空间分辨率对齐。除此之外的 block 内 shortcut 全部使用 identity（无参数），这是 ResNet 论文反复强调的一点——**保持 shortcut 不带参数**，参数集中在主分支。
 
-**BN 是另一关键技术**。BatchNorm 与 ResNet 是同年（2015）的工作，论文中每个 Conv 后接 BN（Conv-BN-ReLU 顺序；pre-activation 版本由 He 2016 *Identity Mappings* 引入）。没有 BN 时，152 层的内部协变量偏移会导致训练不稳定；有 BN 而没有 shortcut 时，56 层仍会出现退化。**两者结合才使大深度成为可行**——也是 ResNet 之后视觉模型默认 "Conv + BN + ReLU" 三件套的原因。
+## 机制二:BatchNorm
+
+BatchNorm 与 ResNet 是同年（2015）的工作，论文中每个 Conv 后接 BN（Conv-BN-ReLU 顺序；pre-activation 版本由 He 2016 *Identity Mappings* 引入）。没有 BN 时，152 层的内部协变量偏移会导致训练不稳定——前向传播时每层激活分布漂移，反向传播时梯度尺度失控。
+
+BN 的作用是把每个 mini-batch 的激活分布归一到均值 0 方差 1，然后用可学习的 γ/β 重新缩放。这让深层网络的每层输入分布稳定，**梯度有效作用范围拉宽**——SGD 不再容易陷入"激活饱和"或"梯度爆炸"的边缘。
+
+## 机制三:He 初始化
+
+He 初始化（Kaiming He 2015 *Delving Deep into Rectifiers*）专门为 ReLU 网络设计。Xavier 假设激活函数关于 0 对称（tanh/sigmoid），但 ReLU 把负半轴砍掉，正向传播时每层方差减半。He 把初始化方差从 $1/n$ 改成 $2/n$ 补偿:
+
+$$
+W \sim \mathcal{N}\left(0,\ \frac{2}{n_{\text{in}}}\right)
+$$
+
+这一调整看似次要，但**没有 He 初始化时 ResNet-152 在训练初期容易出现梯度爆炸**——前几个 step 的 loss 会变为 NaN。He 初始化保证了"深 ReLU 网络的初始信号尺度可控"，是 ResNet 能从第一步开始稳定训练的关键前提。
+
+## 三件套协同 — 152 层从随机初始化直接稳训
+
+> **Shortcut 建梯度高速公路 + BN 控住每层激活分布 + He 初始化让初始尺度可控** —— 三者缺一,ResNet-152 都跑不起来。
+
+- 只有 **Shortcut**:BN 没用,内部协变量偏移让深层激活分布发散 → 训练不稳;没 He 初始化,前几步 loss 直接 NaN
+- 只有 **BatchNorm**:文中已明确——"有 BN 而没 shortcut 时,56 层仍会出现退化" → 优化退化无解,深度本身仍是障碍
+- 只有 **He 初始化**:只解决前几步,后续训练里没 shortcut 没 BN,百层网络仍会陷入梯度消失 / 退化
+
+三件套首次组合,**ResNet-152 不再需要 VGG 那种"先训浅版作为种子"的接力**——从随机初始化直接训 152 层,Top-5 错误率 3.57% 首次低于人类参考 5.1%。这套范式也定义了之后 10 年深度网络的默认配置: "Conv + BN + ReLU + Skip" 几乎成为所有视觉 backbone 的标准砖。
+
+![ResNet 三件套协同 — Plain 退化曲线 + 缺一会怎样](assets/05-resnet-three-pillars.svg)
 
 ## 训练细节
 
