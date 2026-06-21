@@ -125,3 +125,52 @@
   font-style: italic;
   margin: calc(-1 * var(--space-4)) 0 var(--space-6);
 }
+
+/* —— 节点页脚部:上一篇 / 下一篇导航 —— */
+.prevNext {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-12);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border);
+}
+
+.prevNextLink {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--ink-primary);
+  text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.prevNextLink:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.prevNextRight {
+  text-align: right;
+}
+
+.prevNextDir {
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+}
+
+.prevNextName {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.prevNextYear {
+  color: var(--ink-muted);
+  font-weight: 400;
+}

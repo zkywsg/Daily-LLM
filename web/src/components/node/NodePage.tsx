@@ -82,6 +82,14 @@ export function NodePage() {
       // 剥离正文首个 H1 —— 页面 hero 已渲染节点标题,正文里的 `# Name (Year)` 会重复
       .replace(/^\s*#\s+[^\n]+\n+/, "") ?? "";
 
+  // 同家族里的前后节点(family.nodes 已按 order 升序排好)
+  const idx = family.nodes.findIndex((n) => n.path === node.path);
+  const prev = idx > 0 ? family.nodes[idx - 1] : null;
+  const next =
+    idx >= 0 && idx < family.nodes.length - 1 ? family.nodes[idx + 1] : null;
+  const slugOf = (n: typeof node) =>
+    n.path.split("/").pop()!.replace(/\.md$/, "");
+
   return (
     <div className={styles.container}>
       <Link to={`/families/${family.id}`} className={styles.back}>
@@ -103,6 +111,39 @@ export function NodePage() {
         {!markdown && !loadError && <p>加载中…</p>}
         {markdown && <MarkdownRenderer markdown={body} sourcePath={node.path} />}
       </div>
+      {(prev || next) && (
+        <nav
+          className={styles.prevNext}
+          aria-label={`${family.label} 家族内节点导航`}
+        >
+          {prev ? (
+            <Link
+              to={`/families/${family.id}/${slugOf(prev)}`}
+              className={styles.prevNextLink}
+            >
+              <span className={styles.prevNextDir}>← 上一篇</span>
+              <span className={styles.prevNextName}>
+                {prev.name} <span className={styles.prevNextYear}>({prev.year})</span>
+              </span>
+            </Link>
+          ) : (
+            <span aria-hidden="true" />
+          )}
+          {next ? (
+            <Link
+              to={`/families/${family.id}/${slugOf(next)}`}
+              className={`${styles.prevNextLink} ${styles.prevNextRight}`}
+            >
+              <span className={styles.prevNextDir}>下一篇 →</span>
+              <span className={styles.prevNextName}>
+                {next.name} <span className={styles.prevNextYear}>({next.year})</span>
+              </span>
+            </Link>
+          ) : (
+            <span aria-hidden="true" />
+          )}
+        </nav>
+      )}
     </div>
   );
 }
