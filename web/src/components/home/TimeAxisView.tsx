@@ -121,26 +121,43 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
         {allNodes.map((n) => {
           const cx = xScale(n.year);
           const cy = yByNode.get(n.path)!;
+          const goTo = () => {
+            const slug = n.path.split("/").pop()!.replace(/\.md$/, "");
+            navigate(`/families/${n.family}/${slug}`);
+          };
+          const positionCard = (target: SVGGElement) => {
+            const svgEl = target.ownerSVGElement!;
+            const rect = svgEl.getBoundingClientRect();
+            const scaleX = rect.width / width;
+            const scaleY = rect.height / height;
+            setPos({
+              x: rect.left + window.scrollX + cx * scaleX - 120,
+              y: rect.top + window.scrollY + cy * scaleY - 200,
+            });
+          };
           return (
             <g
               key={n.path}
-              style={{ cursor: "pointer" }}
+              role="link"
+              tabIndex={0}
+              aria-label={`${n.name} (${n.year}) — ${n.key_idea}`}
+              style={{ cursor: "pointer", outline: "none" }}
               onMouseEnter={(e) => {
                 setHovered(n);
-                const target = e.currentTarget as SVGGElement;
-                const svgEl = target.ownerSVGElement!;
-                const rect = svgEl.getBoundingClientRect();
-                const scaleX = rect.width / width;
-                const scaleY = rect.height / height;
-                setPos({
-                  x: rect.left + window.scrollX + cx * scaleX - 120,
-                  y: rect.top + window.scrollY + cy * scaleY - 200,
-                });
+                positionCard(e.currentTarget as SVGGElement);
               }}
               onMouseLeave={() => setHovered(null)}
-              onClick={() => {
-                const slug = n.path.split("/").pop()!.replace(/\.md$/, "");
-                navigate(`/families/${n.family}/${slug}`);
+              onFocus={(e) => {
+                setHovered(n);
+                positionCard(e.currentTarget as SVGGElement);
+              }}
+              onBlur={() => setHovered(null)}
+              onClick={goTo}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  goTo();
+                }
               }}
             >
               <motion.circle

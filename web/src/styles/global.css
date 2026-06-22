@@ -88,3 +88,9 @@ pre {
   max-width: 100%;
   height: auto;
 }
+
+/* TimeAxis SVG 节点 focus ring(键盘 Tab 时给 g 包裹的圆点加描边) */
+svg g[role="link"]:focus-visible circle {
+  stroke: var(--ink-primary);
+  stroke-width: 3;
+}
