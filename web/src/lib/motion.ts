@@ -6,11 +6,13 @@ export const duration = {
   slow: 0.4,
 } as const;
 
-export const ease = {
-  out: [0.16, 1, 0.3, 1] as const,
-  inOut: [0.65, 0, 0.35, 1] as const,
-  spring: [0.34, 1.56, 0.64, 1] as const,
-} as const;
+// framer-motion 期望 cubic bezier 是 mutable number[];
+// 用普通数组(不加 as const)避免每个调用点都要 `as unknown as number[]` 强转
+export const ease: Record<"out" | "inOut" | "spring", [number, number, number, number]> = {
+  out: [0.16, 1, 0.3, 1],
+  inOut: [0.65, 0, 0.35, 1],
+  spring: [0.34, 1.56, 0.64, 1],
+};
 
 export const fadeUp: Variants = {
   initial: { opacity: 0, y: 20 },

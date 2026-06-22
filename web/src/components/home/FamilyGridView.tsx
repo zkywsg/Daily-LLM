@@ -24,7 +24,7 @@ export function FamilyGridView({ data }: FamilyGridViewProps) {
         <motion.div
           key={f.id}
           variants={fadeUp}
-          transition={{ duration: duration.base, ease: ease.out as unknown as number[] }}
+          transition={{ duration: duration.base, ease: ease.out }}
         >
           <Link
             to={`/families/${f.id}`}

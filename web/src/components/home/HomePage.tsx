@@ -86,7 +86,7 @@ export function HomePage() {
           initial="initial"
           animate="animate"
           exit="exit"
-          transition={{ duration: duration.base, ease: ease.out as unknown as number[] }}
+          transition={{ duration: duration.base, ease: ease.out }}
         >
           {mode === "time" ? (
             <TimeAxisView data={data} />

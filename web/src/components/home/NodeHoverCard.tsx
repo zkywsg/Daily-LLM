@@ -43,7 +43,7 @@ export function NodeHoverCard({ node, x, y }: NodeHoverCardProps) {
       initial="initial"
       animate="animate"
       exit="exit"
-      transition={{ duration: duration.fast, ease: ease.out as unknown as number[] }}
+      transition={{ duration: duration.fast, ease: ease.out }}
       style={{
         position: "absolute",
         left: clamped.x,
