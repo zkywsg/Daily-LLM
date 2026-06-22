@@ -53,6 +53,17 @@
   margin: var(--space-1) 0;
 }
 
+.heroArch {
+  margin-top: var(--space-6);
+  display: flex;
+  justify-content: center;
+}
+
+.heroArch svg {
+  max-width: 100%;
+  height: auto;
+}
+
 .body {
   font-family: var(--font-serif);
   font-size: var(--fs-md);

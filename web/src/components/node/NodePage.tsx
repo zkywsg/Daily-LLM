@@ -6,6 +6,7 @@ import { familyColorVar } from "../../lib/colors";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { NodeTOC } from "./NodeTOC";
 import { goldenSamples } from "./golden";
+import { getMiniArch } from "../mini-arches/getMiniArch";
 import styles from "./NodePage.module.css";
 
 // Glob all markdown files under repo root NN-xxx/ at build time.
@@ -86,6 +87,7 @@ export function NodePage() {
   }
 
   const accent = familyColorVar(family.id);
+  const MiniArch = getMiniArch(node.path);
   const body =
     markdown
       ?.replace(/^---[\s\S]*?---\n?/, "")
@@ -113,6 +115,11 @@ export function NodePage() {
           作者: {node.authors.join(", ") || "—"}
         </div>
         <div className={styles.metaLine}>论文: {node.paper}</div>
+        {MiniArch && (
+          <div className={styles.heroArch} aria-hidden="true">
+            <MiniArch width={400} height={120} ariaLabel={`${node.name} 架构示意`} />
+          </div>
+        )}
       </div>
       <div className={styles.bodyWrap}>
         <div className={styles.body}>
