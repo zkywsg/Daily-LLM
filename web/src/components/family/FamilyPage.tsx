@@ -1,12 +1,10 @@
 import { useParams, Link, Navigate } from "react-router";
 import type { CSSProperties } from "react";
-import type { FamiliesData, FamilyId } from "../../types/family";
-import familiesJson from "../../data/families.json";
+import type { FamilyId } from "../../types/family";
+import { familiesData as data } from "../../data/loadFamilies";
 import { familyColorVar } from "../../lib/colors";
 import { getMiniArch } from "../mini-arches/getMiniArch";
 import styles from "./FamilyPage.module.css";
-
-const data = familiesJson as unknown as FamiliesData;
 
 export function FamilyPage() {
   const { familyId } = useParams<{ familyId: FamilyId }>();

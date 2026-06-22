@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
-import type { FamiliesData, NodeData } from "../../types/family";
-import familiesJson from "../../data/families.json";
+import type { NodeData } from "../../types/family";
+import { familiesData as data } from "../../data/loadFamilies";
 import { familyColorVar } from "../../lib/colors";
 import styles from "./SearchPalette.module.css";
 
-const data = familiesJson as unknown as FamiliesData;
 const allNodes: NodeData[] = data.families.flatMap((f) => f.nodes);
 
 // 朴素打分:精确 > 前缀 > 包含 > 序内字符。返回 0 = 不匹配。

@@ -1,13 +1,11 @@
 import { useParams, Link, Navigate } from "react-router";
 import { Suspense, useEffect, useState } from "react";
-import type { FamiliesData, FamilyId } from "../../types/family";
-import familiesJson from "../../data/families.json";
+import type { FamilyId } from "../../types/family";
+import { familiesData as data } from "../../data/loadFamilies";
 import { familyColorVar } from "../../lib/colors";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 import { goldenSamples } from "./golden";
 import styles from "./NodePage.module.css";
-
-const data = familiesJson as unknown as FamiliesData;
 
 // Glob all markdown files under repo root NN-xxx/ at build time.
 // NodePage.tsx is at web/src/components/node/, so repo root is 4 levels up.

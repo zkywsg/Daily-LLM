@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router";
-import type { FamiliesData } from "../../types/family";
-import familiesJson from "../../data/families.json";
+import { familiesData as data } from "../../data/loadFamilies";
 import { TimeAxisView } from "./TimeAxisView";
 import { FamilyGridView } from "./FamilyGridView";
 import { fadeIn, duration, ease } from "../../lib/motion";
 import styles from "./HomePage.module.css";
-
-const data = familiesJson as unknown as FamiliesData;
 
 type Mode = "time" | "family";
 const MODE_STORAGE_KEY = "daily-llm.homeMode";
