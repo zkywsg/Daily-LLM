@@ -20,6 +20,14 @@ export const fadeUp: Variants = {
   exit: { opacity: 0, y: -20 },
 };
 
+// 从光标位置 pop 出来:scale + fade,配合 transform-origin: top left
+// 让小卡看起来"从指针处展开",而不是滑入
+export const popScale: Variants = {
+  initial: { opacity: 0, scale: 0.6 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.7 },
+};
+
 export const fadeIn: Variants = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },

@@ -1,9 +1,8 @@
-import { useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router";
 import type { NodeData } from "../../types/family";
 import { familyColorVar } from "../../lib/colors";
-import { fadeUp, duration, ease } from "../../lib/motion";
+import { popScale, duration, ease } from "../../lib/motion";
 import { getMiniArch } from "../mini-arches/getMiniArch";
 import styles from "./NodeHoverCard.module.css";
 
@@ -13,44 +12,22 @@ interface NodeHoverCardProps {
   y: number;
 }
 
-const VIEWPORT_MARGIN = 8;
-
 export function NodeHoverCard({ node, x, y }: NodeHoverCardProps) {
   const nodeSlug = node.path.split("/").pop()!.replace(/\.md$/, "");
   const MiniArch = getMiniArch(node.path);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [clamped, setClamped] = useState({ x, y });
-
-  // 测量后把卡 clamp 进视口,避免轴左 / 顶边的节点把卡推出屏幕
-  useLayoutEffect(() => {
-    const card = cardRef.current;
-    if (!card) {
-      setClamped({ x, y });
-      return;
-    }
-    const rect = card.getBoundingClientRect();
-    const docW = document.documentElement.clientWidth + window.scrollX;
-    const docH = document.documentElement.clientHeight + window.scrollY;
-    const maxX = docW - rect.width - VIEWPORT_MARGIN;
-    const maxY = docH - rect.height - VIEWPORT_MARGIN;
-    setClamped({
-      x: Math.min(Math.max(VIEWPORT_MARGIN + window.scrollX, x), maxX),
-      y: Math.min(Math.max(VIEWPORT_MARGIN + window.scrollY, y), maxY),
-    });
-  }, [x, y, node.path]);
 
   return (
     <motion.div
-      ref={cardRef}
       className={styles.card}
-      variants={fadeUp}
+      variants={popScale}
       initial="initial"
-      animate="animate"
+      animate={{ opacity: 1, scale: 1, x, y }}
       exit="exit"
       transition={{ duration: duration.fast, ease: ease.out }}
       style={{
-        left: clamped.x,
-        top: clamped.y,
+        left: 0,
+        top: 0,
+        transformOrigin: "top left",
         borderColor: familyColorVar(node.family),
       }}
     >

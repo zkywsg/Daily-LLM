@@ -226,14 +226,22 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
             const slug = n.path.split("/").pop()!.replace(/\.md$/, "");
             navigate(`/families/${n.family}/${slug}`);
           };
-          const positionCard = (target: SVGGElement) => {
+          const positionFromMouse = (clientX: number, clientY: number) => {
+            // 卡贴着光标右下方一点点(+14, +14),从光标处 pop 出来
+            setPos({
+              x: clientX + window.scrollX + 14,
+              y: clientY + window.scrollY + 14,
+            });
+          };
+          const positionFromTarget = (target: SVGGElement) => {
+            // 键盘 focus 时没有鼠标坐标,退而求其次:用圆点中心
             const svgEl = target.ownerSVGElement!;
             const rect = svgEl.getBoundingClientRect();
             const scaleX = rect.width / width;
             const scaleY = rect.height / height;
             setPos({
-              x: rect.left + window.scrollX + cx * scaleX - 120,
-              y: rect.top + window.scrollY + cy * scaleY - 200,
+              x: rect.left + window.scrollX + cx * scaleX + 14,
+              y: rect.top + window.scrollY + cy * scaleY + 14,
             });
           };
           return (
@@ -245,12 +253,16 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
               style={{ cursor: "pointer", outline: "none" }}
               onMouseEnter={(e) => {
                 setHovered(n);
-                positionCard(e.currentTarget as SVGGElement);
+                positionFromMouse(e.clientX, e.clientY);
+              }}
+              onMouseMove={(e) => {
+                // 鼠标在节点内移动时让卡跟随,有"飘过来"的感觉
+                positionFromMouse(e.clientX, e.clientY);
               }}
               onMouseLeave={() => setHovered(null)}
               onFocus={(e) => {
                 setHovered(n);
-                positionCard(e.currentTarget as SVGGElement);
+                positionFromTarget(e.currentTarget as SVGGElement);
               }}
               onBlur={() => setHovered(null)}
               onClick={goTo}
