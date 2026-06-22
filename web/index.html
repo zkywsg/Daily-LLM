@@ -8,6 +8,23 @@
       content="Daily-LLM 深度学习与大模型演进时间线"
     />
     <title>Daily-LLM Timeline</title>
+    <script>
+      // 在 React 挂载前就应用主题,避免深色 → 浅色的闪烁
+      (function () {
+        try {
+          var stored = localStorage.getItem("daily-llm.theme");
+          var theme =
+            stored === "light" || stored === "dark"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          /* 忽略,fallback 走 CSS 默认 :root(浅色) */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

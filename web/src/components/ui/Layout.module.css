@@ -24,6 +24,12 @@
   color: var(--ink-primary);
 }
 
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 @media (min-width: 768px) {
   .header,
   .footer {
