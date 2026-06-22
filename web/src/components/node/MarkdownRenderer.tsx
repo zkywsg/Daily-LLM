@@ -5,6 +5,8 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import "katex/dist/katex.min.css";
 import "highlight.js/styles/github.css";
 import { MermaidBlock } from "./MermaidBlock";
@@ -61,7 +63,19 @@ export function MarkdownRenderer({ markdown, sourcePath }: MarkdownRendererProps
     <div className="markdown-body">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeHighlight, rehypeKatex]}
+        rehypePlugins={[
+          rehypeSlug,
+          [
+            rehypeAutolinkHeadings,
+            {
+              behavior: "append",
+              properties: { className: "headingAnchor", ariaLabel: "permalink" },
+              content: { type: "text", value: "#" },
+            },
+          ],
+          rehypeHighlight,
+          rehypeKatex,
+        ]}
         components={{
           p({ node, children, ...props }) {
             // 用 hast node 的子节点 tagName(不是 React element 的 type,

@@ -4,6 +4,7 @@ import type { FamilyId } from "../../types/family";
 import { familiesData as data } from "../../data/loadFamilies";
 import { familyColorVar } from "../../lib/colors";
 import { MarkdownRenderer } from "./MarkdownRenderer";
+import { NodeTOC } from "./NodeTOC";
 import { goldenSamples } from "./golden";
 import styles from "./NodePage.module.css";
 
@@ -113,23 +114,32 @@ export function NodePage() {
         </div>
         <div className={styles.metaLine}>论文: {node.paper}</div>
       </div>
-      <div className={styles.body}>
-        {loadError && (
-          <div className={styles.errorBox} role="alert">
-            <p style={{ color: "var(--accent-warn)", margin: 0 }}>
-              加载失败: {loadError}
-            </p>
-            <button
-              type="button"
-              className={styles.retryBtn}
-              onClick={() => setRetryNonce((n) => n + 1)}
-            >
-              重试
-            </button>
-          </div>
+      <div className={styles.bodyWrap}>
+        <div className={styles.body}>
+          {loadError && (
+            <div className={styles.errorBox} role="alert">
+              <p style={{ color: "var(--accent-warn)", margin: 0 }}>
+                加载失败: {loadError}
+              </p>
+              <button
+                type="button"
+                className={styles.retryBtn}
+                onClick={() => setRetryNonce((n) => n + 1)}
+              >
+                重试
+              </button>
+            </div>
+          )}
+          {!markdown && !loadError && <p>加载中…</p>}
+          {markdown && (
+            <MarkdownRenderer markdown={body} sourcePath={node.path} />
+          )}
+        </div>
+        {markdown && (
+          <aside className={styles.tocColumn}>
+            <NodeTOC markdown={body} />
+          </aside>
         )}
-        {!markdown && !loadError && <p>加载中…</p>}
-        {markdown && <MarkdownRenderer markdown={body} sourcePath={node.path} />}
       </div>
       {(prev || next) && (
         <nav

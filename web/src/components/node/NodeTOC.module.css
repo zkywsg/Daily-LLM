@@ -1,0 +1,55 @@
+.toc {
+  position: sticky;
+  top: var(--space-6);
+  font-size: var(--fs-sm);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--border);
+  max-height: calc(100vh - var(--space-12));
+  overflow-y: auto;
+}
+
+.tocTitle {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  margin-bottom: var(--space-3);
+}
+
+.tocList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tocItem {
+  line-height: 1.4;
+}
+
+.tocItemH3 {
+  padding-left: var(--space-3);
+  font-size: var(--fs-xs);
+}
+
+.tocLink {
+  color: var(--ink-secondary);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  margin-left: -3px;
+  padding-left: 5px;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.tocLink:hover {
+  color: var(--ink-primary);
+  text-decoration: none;
+}
+
+.tocLinkActive {
+  color: var(--ink-primary);
+  font-weight: 500;
+  border-left-color: var(--accent-link);
+}

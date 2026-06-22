@@ -10,6 +10,30 @@
   }
 }
 
+/* TOC + body 双栏:>=1100px 屏才显示侧栏,小屏纯单栏 */
+.bodyWrap {
+  display: block;
+}
+
+.tocColumn {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .container {
+    max-width: 1100px;
+  }
+  .bodyWrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: var(--space-12);
+    align-items: start;
+  }
+  .tocColumn {
+    display: block;
+  }
+}
+
 .back {
   display: inline-block;
   margin-bottom: var(--space-6);
@@ -33,6 +57,27 @@
   font-family: var(--font-serif);
   font-size: var(--fs-md);
   line-height: 1.7;
+}
+
+.body :global(h1),
+.body :global(h2),
+.body :global(h3) {
+  scroll-margin-top: var(--space-6);
+}
+
+.body :global(.headingAnchor) {
+  margin-left: var(--space-2);
+  color: var(--ink-muted);
+  opacity: 0;
+  font-weight: 400;
+  text-decoration: none;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.body :global(h1:hover .headingAnchor),
+.body :global(h2:hover .headingAnchor),
+.body :global(h3:hover .headingAnchor) {
+  opacity: 1;
 }
 
 .body :global(h1) {
