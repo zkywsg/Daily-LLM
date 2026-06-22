@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router";
-import type { FamiliesData, NodeData } from "../../types/family";
+import type { FamiliesData, FamilyId, NodeData } from "../../types/family";
 import { familyColorVar } from "../../lib/colors";
 import { NodeHoverCard } from "./NodeHoverCard";
 
@@ -20,7 +20,27 @@ const yearWeight = (count: number) =>
   count === 0 ? EMPTY_YEAR_WEIGHT : Math.sqrt(count + 0.5);
 
 export function TimeAxisView({ data }: TimeAxisViewProps) {
-  const allNodes = data.families.flatMap((f) => f.nodes);
+  // 家族多选筛选:空集 = 显示全部;有选 = 只显示选中的家族
+  const [selectedFamilies, setSelectedFamilies] = useState<Set<FamilyId>>(
+    new Set()
+  );
+  const toggleFamily = (fid: FamilyId) => {
+    setSelectedFamilies((prev) => {
+      const next = new Set(prev);
+      if (next.has(fid)) next.delete(fid);
+      else next.add(fid);
+      return next;
+    });
+  };
+  const showAll = selectedFamilies.size === 0;
+  const allNodes = useMemo(
+    () =>
+      data.families
+        .filter((f) => showAll || selectedFamilies.has(f.id))
+        .flatMap((f) => f.nodes),
+    [data, showAll, selectedFamilies]
+  );
+
   const [hovered, setHovered] = useState<NodeData | null>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
@@ -74,6 +94,71 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
 
   return (
     <div style={{ position: "relative" }}>
+      <div
+        role="group"
+        aria-label="按家族筛选"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "var(--space-2)",
+          marginBottom: "var(--space-4)",
+          justifyContent: "center",
+        }}
+      >
+        {data.families.map((f) => {
+          const active = selectedFamilies.has(f.id);
+          const color = familyColorVar(f.id);
+          return (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => toggleFamily(f.id)}
+              aria-pressed={active}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 10px",
+                fontSize: "var(--fs-sm)",
+                borderRadius: "var(--radius-full)",
+                border: `1px solid ${active ? color : "var(--border)"}`,
+                background: active ? color : "var(--bg-surface)",
+                color: active ? "var(--bg-surface)" : "var(--ink-secondary)",
+                cursor: "pointer",
+                transition: "all var(--dur-fast) var(--ease-out)",
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: active ? "var(--bg-surface)" : color,
+                }}
+              />
+              {f.label}
+            </button>
+          );
+        })}
+        {selectedFamilies.size > 0 && (
+          <button
+            type="button"
+            onClick={() => setSelectedFamilies(new Set())}
+            style={{
+              padding: "4px 10px",
+              fontSize: "var(--fs-sm)",
+              borderRadius: "var(--radius-full)",
+              border: "1px dashed var(--ink-muted)",
+              background: "transparent",
+              color: "var(--ink-muted)",
+              cursor: "pointer",
+            }}
+          >
+            清除筛选
+          </button>
+        )}
+      </div>
       <svg
         viewBox={`0 0 ${width} ${height}`}
         style={{ width: "100%", height: "auto", maxHeight: 500 }}
