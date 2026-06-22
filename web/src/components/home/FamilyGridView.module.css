@@ -24,6 +24,26 @@
   text-decoration: none;
 }
 
+.heroArch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-2)) var(--space-4);
+  padding: var(--space-3) 0;
+  background: var(--bg-canvas);
+  border-radius: var(--radius-sm);
+  min-height: 80px;
+}
+
+.heroArch svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.cardHeroLabel {
+  color: var(--ink-secondary);
+}
+
 .cardId {
   font-size: var(--fs-sm);
   color: var(--ink-muted);

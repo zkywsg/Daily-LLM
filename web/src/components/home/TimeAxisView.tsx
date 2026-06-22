@@ -92,6 +92,22 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
   // 刻度标签:只展示有节点的年份(避免空白年份挤出一堆无用刻度)
   const labelYears = [...groupedByYear.keys()].sort((a, b) => a - b);
 
+  // 每个节点的标签可用横向空间 — 取到下一个有节点年份的距离,留出 padding;
+  // 把名字截到能塞下的字符数(汉字 ≈ 10px,英数 ≈ 6.5px,这里按英数估)
+  const labelMaxChars = (year: number): number => {
+    const idx = labelYears.indexOf(year);
+    const nextYear = idx >= 0 && idx < labelYears.length - 1 ? labelYears[idx + 1] : null;
+    const thisX = xScale(year);
+    const nextX = nextYear != null ? xScale(nextYear) : width - PADDING;
+    const availPx = nextX - thisX - NODE_RADIUS - 6;
+    return Math.max(3, Math.floor(availPx / 6.5));
+  };
+  const truncLabel = (name: string, year: number): string => {
+    const max = labelMaxChars(year);
+    if (name.length <= max) return name;
+    return name.slice(0, Math.max(1, max - 1)) + "…";
+  };
+
   return (
     <div style={{ position: "relative" }}>
       <div
@@ -255,16 +271,24 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
                 whileHover={{ scale: 1.4 }}
                 layoutId={`node-${n.path}`}
               />
-              {/* 常驻标签 —— 节点名跟在圆点右侧,用家族色让密集区也能看出归属 */}
+              {/* 常驻标签 —— 节点名跟在圆点右侧,用家族色让密集区也能看出归属。
+                  paint-order stroke→fill 给文字一圈 bg-canvas halo,
+                  即使略和邻居重叠也保持可读;长度按到下一年的可用空间动态截 */}
               <text
                 x={cx + NODE_RADIUS + 4}
                 y={cy + 3}
                 fontSize={10}
                 fill={familyColorVar(n.family)}
                 fontWeight={500}
-                style={{ pointerEvents: "none", userSelect: "none" }}
+                stroke="var(--bg-canvas)"
+                strokeWidth={3}
+                style={{
+                  pointerEvents: "none",
+                  userSelect: "none",
+                  paintOrder: "stroke fill",
+                }}
               >
-                {n.name.length > 11 ? n.name.slice(0, 10) + "…" : n.name}
+                {truncLabel(n.name, n.year)}
               </text>
             </g>
           );

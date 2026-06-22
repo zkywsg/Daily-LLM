@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import type { NodeData } from "../../types/family";
 import { familyColorVar } from "../../lib/colors";
 import { fadeUp, duration, ease } from "../../lib/motion";
+import { getMiniArch } from "../mini-arches/getMiniArch";
 import styles from "./NodeHoverCard.module.css";
 
 interface NodeHoverCardProps {
@@ -16,6 +17,7 @@ const VIEWPORT_MARGIN = 8;
 
 export function NodeHoverCard({ node, x, y }: NodeHoverCardProps) {
   const nodeSlug = node.path.split("/").pop()!.replace(/\.md$/, "");
+  const MiniArch = getMiniArch(node.path);
   const cardRef = useRef<HTMLDivElement>(null);
   const [clamped, setClamped] = useState({ x, y });
 
@@ -52,6 +54,11 @@ export function NodeHoverCard({ node, x, y }: NodeHoverCardProps) {
         borderColor: familyColorVar(node.family),
       }}
     >
+      {MiniArch && (
+        <div className={styles.archThumb} aria-hidden="true">
+          <MiniArch width={260} height={70} />
+        </div>
+      )}
       <div className={styles.year}>
         {node.year} · {node.family}
       </div>

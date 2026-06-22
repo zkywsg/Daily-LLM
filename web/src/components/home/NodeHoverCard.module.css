@@ -11,6 +11,19 @@
   pointer-events: none;
 }
 
+.archThumb {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px dashed var(--border);
+}
+
+.archThumb svg {
+  max-width: 100%;
+  height: auto;
+}
+
 .year {
   font-size: var(--fs-sm);
   color: var(--ink-muted);
