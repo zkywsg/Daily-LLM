@@ -51,9 +51,13 @@ export function NodePage() {
 
   const [markdown, setMarkdown] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
     if (!node) return;
+    let cancelled = false;
+    setLoadError(null);
+    setMarkdown(null);
     const key = nodePathToModuleKey(node.path);
     const loader = markdownModules[key];
     if (!loader) {
@@ -67,9 +71,16 @@ export function NodePage() {
       return;
     }
     loader()
-      .then(setMarkdown)
-      .catch((e) => setLoadError(String(e)));
-  }, [node?.path]);
+      .then((md) => {
+        if (!cancelled) setMarkdown(md);
+      })
+      .catch((e) => {
+        if (!cancelled) setLoadError(String(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [node?.path, retryNonce]);
 
   if (!family || !node) {
     return <Navigate to="/404" replace />;
@@ -106,7 +117,18 @@ export function NodePage() {
       </div>
       <div className={styles.body}>
         {loadError && (
-          <p style={{ color: "var(--accent-warn)" }}>加载失败: {loadError}</p>
+          <div className={styles.errorBox} role="alert">
+            <p style={{ color: "var(--accent-warn)", margin: 0 }}>
+              加载失败: {loadError}
+            </p>
+            <button
+              type="button"
+              className={styles.retryBtn}
+              onClick={() => setRetryNonce((n) => n + 1)}
+            >
+              重试
+            </button>
+          </div>
         )}
         {!markdown && !loadError && <p>加载中…</p>}
         {markdown && <MarkdownRenderer markdown={body} sourcePath={node.path} />}

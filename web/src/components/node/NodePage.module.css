@@ -126,6 +126,35 @@
   margin: calc(-1 * var(--space-4)) 0 var(--space-6);
 }
 
+/* —— 加载失败 + 重试 —— */
+.errorBox {
+  padding: var(--space-4);
+  border: 1px solid var(--accent-warn);
+  border-radius: var(--radius-md);
+  background: rgba(234, 88, 12, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.retryBtn {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--accent-warn);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--accent-warn);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.retryBtn:hover {
+  background: var(--accent-warn);
+  color: var(--bg-surface);
+}
+
 /* —— 节点页脚部:上一篇 / 下一篇导航 —— */
 .prevNext {
   display: grid;

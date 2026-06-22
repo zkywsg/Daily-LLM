@@ -19,9 +19,13 @@ const maxYear = allYears.length > 0 ? Math.max(...allYears) : 0;
 const totalNodes = data.families.reduce((sum, f) => sum + f.nodes.length, 0);
 
 function readStoredMode(): Mode {
-  if (typeof window === "undefined") return "time";
-  const v = window.localStorage.getItem(MODE_STORAGE_KEY);
-  return v === "family" ? "family" : "time";
+  try {
+    const v = window.localStorage.getItem(MODE_STORAGE_KEY);
+    return v === "family" ? "family" : "time";
+  } catch {
+    // SSR / 受限环境 / 老 jsdom 没 localStorage 时回退默认
+    return "time";
+  }
 }
 
 export function HomePage() {
