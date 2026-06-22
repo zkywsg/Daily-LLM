@@ -1,0 +1,40 @@
+.card {
+  position: absolute;
+  z-index: 10;
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  min-width: 240px;
+  max-width: 320px;
+  pointer-events: none;
+}
+
+.year {
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+}
+
+.name {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  margin-top: var(--space-1);
+}
+
+.idea {
+  font-size: var(--fs-sm);
+  color: var(--ink-secondary);
+  margin: var(--space-3) 0;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  pointer-events: auto;
+}
+
+.actionLink {
+  font-size: var(--fs-sm);
+}

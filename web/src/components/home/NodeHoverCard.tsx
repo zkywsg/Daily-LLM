@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import type { NodeData } from "../../types/family";
 import { familyColorVar } from "../../lib/colors";
 import { fadeUp, duration, ease } from "../../lib/motion";
+import styles from "./NodeHoverCard.module.css";
 
 interface NodeHoverCardProps {
   node: NodeData;
@@ -39,58 +40,30 @@ export function NodeHoverCard({ node, x, y }: NodeHoverCardProps) {
   return (
     <motion.div
       ref={cardRef}
+      className={styles.card}
       variants={fadeUp}
       initial="initial"
       animate="animate"
       exit="exit"
       transition={{ duration: duration.fast, ease: ease.out }}
       style={{
-        position: "absolute",
         left: clamped.x,
         top: clamped.y,
-        zIndex: 10,
-        padding: "var(--space-4)",
-        background: "var(--bg-surface)",
-        border: `2px solid ${familyColorVar(node.family)}`,
-        borderRadius: "var(--radius-md)",
-        boxShadow: "var(--shadow-lg)",
-        minWidth: 240,
-        maxWidth: 320,
-        pointerEvents: "none",
+        borderColor: familyColorVar(node.family),
       }}
     >
-      <div style={{ fontSize: "var(--fs-sm)", color: "var(--ink-muted)" }}>
+      <div className={styles.year}>
         {node.year} · {node.family}
       </div>
-      <div
-        style={{
-          fontSize: "var(--fs-lg)",
-          fontWeight: 600,
-          marginTop: "var(--space-1)",
-        }}
-      >
-        {node.name}
-      </div>
-      <p
-        style={{
-          fontSize: "var(--fs-sm)",
-          color: "var(--ink-secondary)",
-          margin: "var(--space-3) 0",
-          lineHeight: 1.5,
-        }}
-      >
-        {node.key_idea}
-      </p>
-      <div style={{ display: "flex", gap: "var(--space-3)", pointerEvents: "auto" }}>
-        <Link
-          to={`/families/${node.family}`}
-          style={{ fontSize: "var(--fs-sm)" }}
-        >
+      <div className={styles.name}>{node.name}</div>
+      <p className={styles.idea}>{node.key_idea}</p>
+      <div className={styles.actions}>
+        <Link to={`/families/${node.family}`} className={styles.actionLink}>
           → 进入家族
         </Link>
         <Link
           to={`/families/${node.family}/${nodeSlug}`}
-          style={{ fontSize: "var(--fs-sm)" }}
+          className={styles.actionLink}
         >
           → 节点详情
         </Link>

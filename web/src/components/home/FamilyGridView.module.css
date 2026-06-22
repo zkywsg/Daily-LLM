@@ -1,0 +1,48 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-6);
+}
+
+.card {
+  display: block;
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-top-width: 4px;
+  border-radius: var(--radius-md);
+  color: var(--ink-primary);
+  text-decoration: none;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.cardId {
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+  margin-bottom: var(--space-2);
+}
+
+.cardTitle {
+  font-size: var(--fs-lg);
+  margin-bottom: var(--space-3);
+}
+
+.cardBlurb {
+  font-size: var(--fs-sm);
+  color: var(--ink-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--space-4);
+}
+
+.cardMeta {
+  font-size: var(--fs-xs);
+  color: var(--ink-muted);
+}
