@@ -4,6 +4,10 @@ import { NotFoundPage } from "./components/ui/NotFoundPage";
 import { HomePage } from "./components/home/HomePage";
 import { FamilyPage } from "./components/family/FamilyPage";
 import { NodePage } from "./components/node/NodePage";
+import {
+  FoundationsListPage,
+  FoundationPage,
+} from "./components/foundations/FoundationsPage";
 
 export function App() {
   return (
@@ -15,6 +19,11 @@ export function App() {
           <Route
             path="/families/:familyId/:nodeSlug"
             element={<NodePage />}
+          />
+          <Route path="/foundations" element={<FoundationsListPage />} />
+          <Route
+            path="/foundations/:foundationSlug"
+            element={<FoundationPage />}
           />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

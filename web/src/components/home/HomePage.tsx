@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Link } from "react-router";
 import type { FamiliesData } from "../../types/family";
 import familiesJson from "../../data/families.json";
 import { TimeAxisView } from "./TimeAxisView";
@@ -65,6 +66,17 @@ export function HomePage() {
             按家族
           </button>
         </div>
+        <Link
+          to="/foundations"
+          style={{
+            display: "inline-block",
+            marginTop: "var(--space-3)",
+            fontSize: "var(--fs-sm)",
+            color: "var(--ink-secondary)",
+          }}
+        >
+          → 基础概念(激活 / 优化器 / 归一化 / 注意力 等)
+        </Link>
       </div>
 
       <AnimatePresence mode="wait">
