@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, Navigate } from "react-router";
 import { MarkdownRenderer } from "../node/MarkdownRenderer";
+import styles from "./FoundationsPage.module.css";
 
 // 编译期收集 foundations/*/README.md 的 raw 文本(懒加载)
 const foundationModules = import.meta.glob(
@@ -54,82 +55,19 @@ export function FoundationsListPage() {
   }, []);
 
   return (
-    <div
-      style={{
-        padding: "var(--space-6) var(--space-4)",
-        maxWidth: 900,
-        margin: "0 auto",
-      }}
-    >
-      <Link
-        to="/"
-        style={{ fontSize: "var(--fs-sm)", color: "var(--ink-secondary)" }}
-      >
+    <div className={styles.container}>
+      <Link to="/" className={styles.back}>
         ← 返回主页
       </Link>
-      <h1
-        style={{
-          fontSize: "var(--fs-3xl)",
-          marginTop: "var(--space-4)",
-          marginBottom: "var(--space-2)",
-        }}
-      >
-        基础概念(Foundations)
-      </h1>
-      <p
-        style={{
-          fontSize: "var(--fs-lg)",
-          color: "var(--ink-secondary)",
-          marginBottom: "var(--space-8)",
-        }}
-      >
+      <h1 className={styles.title}>基础概念(Foundations)</h1>
+      <p className={styles.lede}>
         横切性的基础原理 — 不绑定某一家族,被多个节点引用。
       </p>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-          gap: "var(--space-4)",
-        }}
-      >
+      <div className={styles.grid}>
         {foundations.map((f) => (
-          <Link
-            key={f.slug}
-            to={`/foundations/${f.slug}`}
-            style={{
-              display: "block",
-              padding: "var(--space-4)",
-              background: "var(--bg-surface)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius-md)",
-              color: "var(--ink-primary)",
-              textDecoration: "none",
-              transition:
-                "transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "var(--shadow-md)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "";
-              e.currentTarget.style.boxShadow = "";
-            }}
-          >
-            <div
-              style={{
-                fontSize: "var(--fs-sm)",
-                color: "var(--ink-muted)",
-                marginBottom: "var(--space-2)",
-              }}
-            >
-              {f.slug}
-            </div>
-            <div
-              style={{ fontSize: "var(--fs-md)", fontWeight: 600 }}
-            >
-              {titles[f.slug] ?? f.slug}
-            </div>
+          <Link key={f.slug} to={`/foundations/${f.slug}`} className={styles.card}>
+            <div className={styles.cardSlug}>{f.slug}</div>
+            <div className={styles.cardName}>{titles[f.slug] ?? f.slug}</div>
           </Link>
         ))}
       </div>
@@ -169,63 +107,19 @@ export function FoundationPage() {
   if (!foundation) return <Navigate to="/404" replace />;
 
   return (
-    <div
-      style={{
-        padding: "var(--space-6) var(--space-4)",
-        maxWidth: 800,
-        margin: "0 auto",
-      }}
-    >
-      <Link
-        to="/foundations"
-        style={{ fontSize: "var(--fs-sm)", color: "var(--ink-secondary)" }}
-      >
+    <div className={styles.singleContainer}>
+      <Link to="/foundations" className={styles.back}>
         ← 返回基础概念
       </Link>
-      <div
-        style={{
-          fontSize: "var(--fs-sm)",
-          color: "var(--ink-muted)",
-          marginTop: "var(--space-6)",
-        }}
-      >
-        foundations / {foundation.slug}
-      </div>
-      <div
-        style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: "var(--fs-md)",
-          lineHeight: 1.7,
-          marginTop: "var(--space-4)",
-        }}
-      >
+      <div className={styles.crumb}>foundations / {foundation.slug}</div>
+      <div className={styles.body}>
         {loadError && (
-          <div
-            role="alert"
-            style={{
-              padding: "var(--space-4)",
-              border: "1px solid var(--accent-warn)",
-              borderRadius: "var(--radius-md)",
-              display: "flex",
-              gap: "var(--space-4)",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <span style={{ color: "var(--accent-warn)" }}>
-              加载失败: {loadError}
-            </span>
+          <div role="alert" className={styles.errorBox}>
+            <span className={styles.errorText}>加载失败: {loadError}</span>
             <button
               type="button"
+              className={styles.retryBtn}
               onClick={() => setRetryNonce((n) => n + 1)}
-              style={{
-                padding: "var(--space-2) var(--space-4)",
-                border: "1px solid var(--accent-warn)",
-                borderRadius: "var(--radius-md)",
-                background: "var(--bg-surface)",
-                color: "var(--accent-warn)",
-                cursor: "pointer",
-              }}
             >
               重试
             </button>

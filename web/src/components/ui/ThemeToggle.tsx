@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import styles from "./ThemeToggle.module.css";
 
 type Theme = "light" | "dark";
 const THEME_STORAGE_KEY = "daily-llm.theme";
@@ -61,25 +62,10 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
+      className={styles.toggle}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "切换到浅色主题" : "切换到深色主题"}
       title={isDark ? "切换到浅色" : "切换到深色"}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 32,
-        height: 32,
-        borderRadius: "var(--radius-md)",
-        border: "1px solid var(--border)",
-        background: "var(--bg-canvas)",
-        color: "var(--ink-secondary)",
-        cursor: "pointer",
-        fontSize: 16,
-        transition: "border-color var(--dur-fast) var(--ease-out)",
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--ink-muted)")}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
     >
       {isDark ? "☀" : "☾"}
     </button>

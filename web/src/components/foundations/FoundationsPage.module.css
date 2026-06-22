@@ -1,0 +1,114 @@
+.container {
+  padding: var(--space-6) var(--space-4);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: var(--space-12) var(--space-8);
+  }
+}
+
+.back {
+  display: inline-block;
+  font-size: var(--fs-sm);
+  color: var(--ink-secondary);
+}
+
+.title {
+  font-size: var(--fs-3xl);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.lede {
+  font-size: var(--fs-lg);
+  color: var(--ink-secondary);
+  margin-bottom: var(--space-8);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  display: block;
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--ink-primary);
+  text-decoration: none;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.cardSlug {
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+  margin-bottom: var(--space-2);
+}
+
+.cardName {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+/* —— 单页 —— */
+.singleContainer {
+  padding: var(--space-6) var(--space-4);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .singleContainer {
+    padding: var(--space-12) var(--space-8);
+  }
+}
+
+.crumb {
+  font-size: var(--fs-sm);
+  color: var(--ink-muted);
+  margin-top: var(--space-6);
+}
+
+.body {
+  font-family: var(--font-serif);
+  font-size: var(--fs-md);
+  line-height: 1.7;
+  margin-top: var(--space-4);
+}
+
+.errorBox {
+  padding: var(--space-4);
+  border: 1px solid var(--accent-warn);
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.errorText {
+  color: var(--accent-warn);
+}
+
+.retryBtn {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--accent-warn);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--accent-warn);
+  cursor: pointer;
+}

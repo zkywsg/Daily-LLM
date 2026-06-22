@@ -1,0 +1,18 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-canvas);
+  color: var(--ink-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.toggle:hover {
+  border-color: var(--ink-muted);
+}
