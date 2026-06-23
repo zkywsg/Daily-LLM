@@ -9,4 +9,5 @@ export const goldenSamples: Record<
   "05-transformer/01-transformer": lazy(
     () => import("./transformer/NodePageTransformer"),
   ),
+  "10-diffusion/01-ddpm": lazy(() => import("./ddpm/NodePageDDPM")),
 };
