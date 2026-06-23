@@ -27,10 +27,13 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) 220px;
     gap: var(--space-12);
-    align-items: start;
+    /* 不要 align-items:start —— 否则 tocColumn 高度只到 TOC 自身,
+       sticky 滚过那一小段就失效。让它跟 body 等高,sticky 才能
+       覆盖整个正文滚动范围。 */
   }
   .tocColumn {
     display: block;
+    align-self: stretch;
   }
 }
 
