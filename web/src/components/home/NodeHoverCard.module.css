@@ -1,5 +1,7 @@
 .card {
-  position: absolute;
+  /* fixed 而非 absolute —— 这样 x/y 就是 viewport 坐标(=clientX/Y),
+     不用再 +scrollX/Y、也不用减相对容器偏移,卡才真的贴着光标 */
+  position: fixed;
   z-index: 10;
   padding: var(--space-4);
   background: var(--bg-surface);

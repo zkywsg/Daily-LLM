@@ -227,21 +227,18 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
             navigate(`/families/${n.family}/${slug}`);
           };
           const positionFromMouse = (clientX: number, clientY: number) => {
-            // 卡贴着光标右下方一点点(+14, +14),从光标处 pop 出来
-            setPos({
-              x: clientX + window.scrollX + 14,
-              y: clientY + window.scrollY + 14,
-            });
+            // 卡用 position:fixed,直接 viewport 坐标(+14 让光标不压在卡上)
+            setPos({ x: clientX + 14, y: clientY + 14 });
           };
           const positionFromTarget = (target: SVGGElement) => {
-            // 键盘 focus 时没有鼠标坐标,退而求其次:用圆点中心
+            // 键盘 focus 时没有鼠标坐标,退而求其次:用圆点中心(viewport 坐标)
             const svgEl = target.ownerSVGElement!;
             const rect = svgEl.getBoundingClientRect();
             const scaleX = rect.width / width;
             const scaleY = rect.height / height;
             setPos({
-              x: rect.left + window.scrollX + cx * scaleX + 14,
-              y: rect.top + window.scrollY + cy * scaleY + 14,
+              x: rect.left + cx * scaleX + 14,
+              y: rect.top + cy * scaleY + 14,
             });
           };
           return (
@@ -295,7 +292,7 @@ export function TimeAxisView({ data }: TimeAxisViewProps) {
                 stroke="var(--bg-canvas)"
                 strokeWidth={3}
                 style={{
-                  pointerEvents: "none",
+                  /* 不再 pointer-events:none —— 让 hover 节点标题文字也能触发卡 */
                   userSelect: "none",
                   paintOrder: "stroke fill",
                 }}
