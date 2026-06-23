@@ -10,4 +10,5 @@ export const goldenSamples: Record<
     () => import("./transformer/NodePageTransformer"),
   ),
   "10-diffusion/01-ddpm": lazy(() => import("./ddpm/NodePageDDPM")),
+  "11-peft-lora/03-lora": lazy(() => import("./lora/NodePageLoRA")),
 };
