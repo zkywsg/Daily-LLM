@@ -6,6 +6,7 @@ export const goldenSamples: Record<
   LazyExoticComponent<ComponentType>
 > = {
   "01-cnn/05-resnet": lazy(() => import("./resnet/NodePageResNet")),
-  // 未来新增其他金标本：
-  // "05-transformer/01-transformer": lazy(() => import("./transformer/NodePageTransformer")),
+  "05-transformer/01-transformer": lazy(
+    () => import("./transformer/NodePageTransformer"),
+  ),
 };
