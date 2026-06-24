@@ -12,4 +12,5 @@ export const goldenSamples: Record<
   "10-diffusion/01-ddpm": lazy(() => import("./ddpm/NodePageDDPM")),
   "11-peft-lora/03-lora": lazy(() => import("./lora/NodePageLoRA")),
   "06-bert-family/01-bert": lazy(() => import("./bert/NodePageBERT")),
+  "09-multimodal-clip/01-clip": lazy(() => import("./clip/NodePageCLIP")),
 };
