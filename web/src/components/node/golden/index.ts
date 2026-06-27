@@ -15,4 +15,5 @@ export const goldenSamples: Record<
   "09-multimodal-clip/01-clip": lazy(() => import("./clip/NodePageCLIP")),
   "07-gpt-scaling/03-gpt3": lazy(() => import("./gpt3/NodePageGPT3")),
   "04-gan/01-gan": lazy(() => import("./gan/NodePageGAN")),
+  "08-vit/01-vit": lazy(() => import("./vit/NodePageViT")),
 };
