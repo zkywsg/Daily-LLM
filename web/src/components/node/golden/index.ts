@@ -18,4 +18,5 @@ export const goldenSamples: Record<
   "08-vit/01-vit": lazy(() => import("./vit/NodePageViT")),
   "15-reasoning-o1-r1/01-cot": lazy(() => import("./cot/NodePageCoT")),
   "12-rlhf-alignment/02-instructgpt": lazy(() => import("./instructgpt/NodePageInstructGPT")),
+  "14-rag-agent/01-rag": lazy(() => import("./rag/NodePageRAG")),
 };
