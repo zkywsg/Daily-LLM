@@ -16,4 +16,5 @@ export const goldenSamples: Record<
   "07-gpt-scaling/03-gpt3": lazy(() => import("./gpt3/NodePageGPT3")),
   "04-gan/01-gan": lazy(() => import("./gan/NodePageGAN")),
   "08-vit/01-vit": lazy(() => import("./vit/NodePageViT")),
+  "15-reasoning-o1-r1/01-cot": lazy(() => import("./cot/NodePageCoT")),
 };
