@@ -21,4 +21,5 @@ export const goldenSamples: Record<
   "14-rag-agent/01-rag": lazy(() => import("./rag/NodePageRAG")),
   "13-moe-efficient/03-mixtral": lazy(() => import("./mixtral/NodePageMixtral")),
   "02-rnn-lstm/02-lstm": lazy(() => import("./lstm/NodePageLSTM")),
+  "03-word-embedding/01-word2vec": lazy(() => import("./word2vec/NodePageWord2Vec")),
 };
