@@ -22,4 +22,5 @@ export const goldenSamples: Record<
   "13-moe-efficient/03-mixtral": lazy(() => import("./mixtral/NodePageMixtral")),
   "02-rnn-lstm/02-lstm": lazy(() => import("./lstm/NodePageLSTM")),
   "03-word-embedding/01-word2vec": lazy(() => import("./word2vec/NodePageWord2Vec")),
+  "01-cnn/02-alexnet": lazy(() => import("./alexnet/NodePageAlexNet")),
 };

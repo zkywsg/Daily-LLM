@@ -5,9 +5,9 @@ import { NodePage } from "./NodePage";
 
 describe("NodePage", () => {
   it("renders node meta (name + year) for known non-golden node", () => {
-    // Use AlexNet (non-golden), since 05-resnet now routes to lazy-loaded NodePageResNet
+    // Use LeNet (non-golden), since 02-alexnet now routes to lazy-loaded NodePageAlexNet
     render(
-      <MemoryRouter initialEntries={["/families/01-cnn/02-alexnet"]}>
+      <MemoryRouter initialEntries={["/families/01-cnn/01-lenet"]}>
         <Routes>
           <Route
             path="/families/:familyId/:nodeSlug"
@@ -16,8 +16,8 @@ describe("NodePage", () => {
         </Routes>
       </MemoryRouter>
     );
-    expect(screen.getByText(/AlexNet/)).toBeInTheDocument();
-    expect(screen.getByText(/2012/)).toBeInTheDocument();
+    expect(screen.getByText(/LeNet/)).toBeInTheDocument();
+    expect(screen.getByText(/1998/)).toBeInTheDocument();
   });
 
   it("redirects to 404 for unknown node", () => {
