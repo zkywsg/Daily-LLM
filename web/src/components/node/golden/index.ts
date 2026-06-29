@@ -20,4 +20,5 @@ export const goldenSamples: Record<
   "12-rlhf-alignment/02-instructgpt": lazy(() => import("./instructgpt/NodePageInstructGPT")),
   "14-rag-agent/01-rag": lazy(() => import("./rag/NodePageRAG")),
   "13-moe-efficient/03-mixtral": lazy(() => import("./mixtral/NodePageMixtral")),
+  "02-rnn-lstm/02-lstm": lazy(() => import("./lstm/NodePageLSTM")),
 };
