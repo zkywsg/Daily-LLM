@@ -56,6 +56,7 @@
 | 2022 | **Flamingo** | `09-multimodal-clip` | 冻结大 LLM(Chinchilla 70B)+ Perceiver Resampler 视觉适配 + 间隔 cross-attention 注入,8 例 in-context 学新视觉任务的少样本 VLM 范式 | [09-multimodal-clip/03-flamingo.md](09-multimodal-clip/03-flamingo.md) |
 | 2022 | **LDM / Stable Diffusion** | `10-diffusion` | 把 diffusion 从 pixel 空间移到 VAE latent 空间,推理显存降 64×,2022 年 8 月以开源方式释出 Stable Diffusion 把文生图带到消费 GPU | [10-diffusion/02-ldm.md](10-diffusion/02-ldm.md) |
 | 2022 | **Imagen / Classifier-Free Guidance** | `10-diffusion` | 用大文本编码器(T5-XXL)+ classifier-free guidance,把文本理解和可控性推到 SOTA;CFG 成为所有现代 diffusion 模型的标配 | [10-diffusion/03-imagen.md](10-diffusion/03-imagen.md) |
+| 2022 | **DiT** | `10-diffusion` | 把 diffusion U-Net 整个换成 Transformer:latent → patchify → Transformer blocks + adaLN-Zero 条件 → 解 patchify。FLOPs 越大 FID 越低单调成立,DiT-XL/2 拿到 ImageNet 256 SOTA,为 Sora/SD3 提供骨架 | [10-diffusion/05-dit.md](10-diffusion/05-dit.md) |
 | 2022 | **InstructGPT** | `12-rlhf-alignment` | 把 RLHF 三阶段从摘要单一任务推广到通用指令跟随,1.3B 对齐版超过 175B 未对齐版,直接催生 ChatGPT | [12-rlhf-alignment/02-instructgpt.md](12-rlhf-alignment/02-instructgpt.md) |
 | 2022 | **Constitutional AI** | `12-rlhf-alignment` | 用一套书面原则(constitution)让 AI 自评自身输出,生成 AI feedback 替代人类偏好标注 — 把对齐从'人力密集'压成'算力密集',是 Claude 系列的核心方法 | [12-rlhf-alignment/03-constitutional-ai.md](12-rlhf-alignment/03-constitutional-ai.md) |
 | 2022 | **ReAct** | `14-rag-agent` | 把 LLM 的推理(Thought)和行动(Action)交错进行,thought 推理下一步要查什么,action 调外部工具,observation 反馈给 LLM 继续推理;Agent 范式的起源 | [14-rag-agent/02-react.md](14-rag-agent/02-react.md) |

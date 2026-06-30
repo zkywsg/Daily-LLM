@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T05:24:25.142848+00:00",
+  "generatedAt": "2026-06-30T17:11:01.262478+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -25,7 +25,10 @@
           ],
           "key_idea": "把卷积+池化+全连接这套范式第一次系统化定义出来，在手写数字识别上跑通",
           "path": "01-cnn/01-lenet.md",
-          "assets": []
+          "assets": [
+            "01-cnn/assets/01-lenet-architecture.svg",
+            "01-cnn/assets/01-lenet-conv-vs-mlp.svg"
+          ]
         },
         {
           "name": "AlexNet",
@@ -40,7 +43,10 @@
           ],
           "key_idea": "首次在 ImageNet 大规模数据集上端到端训练深层 CNN（5 conv + 3 fc），Top-5 错误率达到 15.3%",
           "path": "01-cnn/02-alexnet.md",
-          "assets": []
+          "assets": [
+            "01-cnn/assets/02-alexnet-architecture.svg",
+            "01-cnn/assets/02-alexnet-tricks.svg"
+          ]
         },
         {
           "name": "VGG",
@@ -54,7 +60,10 @@
           ],
           "key_idea": "把网络深度做到 16/19 层、并把所有卷积统一成 3×3，证明深度本身就是性能来源",
           "path": "01-cnn/03-vgg.md",
-          "assets": []
+          "assets": [
+            "01-cnn/assets/03-vgg-architecture.svg",
+            "01-cnn/assets/03-vgg-tricks.svg"
+          ]
         },
         {
           "name": "GoogLeNet (Inception v1)",
@@ -75,7 +84,10 @@
           ],
           "key_idea": "用 1×1 卷积降维 + 多尺度并行的 Inception 模块，把参数量压到 VGG 的 1/12 同时拿下 ImageNet 冠军",
           "path": "01-cnn/04-inception.md",
-          "assets": []
+          "assets": [
+            "01-cnn/assets/04-inception-block.svg",
+            "01-cnn/assets/04-inception-overall.svg"
+          ]
         },
         {
           "name": "ResNet",
@@ -92,7 +104,8 @@
           "key_idea": "用 shortcut 让网络只学残差修正而不是从零重建映射，把 152 层稳定训练变成可能",
           "path": "01-cnn/05-resnet.md",
           "assets": [
-            "01-cnn/assets/05-resnet-residual.svg"
+            "01-cnn/assets/05-resnet-residual.svg",
+            "01-cnn/assets/05-resnet-three-pillars.svg"
           ]
         },
         {
@@ -109,7 +122,10 @@
           ],
           "key_idea": "每层都直接接收前面所有层的输出（concat 而非加法），把特征复用推到极致",
           "path": "01-cnn/06-densenet.md",
-          "assets": []
+          "assets": [
+            "01-cnn/assets/06-densenet-dense-block.svg",
+            "01-cnn/assets/06-densenet-overall.svg"
+          ]
         },
         {
           "name": "EfficientNet",
@@ -123,7 +139,10 @@
           ],
           "key_idea": "用复合缩放系数把 depth/width/resolution 三轴联合缩放公式化，得到帕累托最优的 B0–B7 模型族",
           "path": "01-cnn/07-efficientnet.md",
-          "assets": []
+          "assets": [
+            "01-cnn/assets/07-efficientnet-compound-scaling.svg",
+            "01-cnn/assets/07-efficientnet-model-family.svg"
+          ]
         },
         {
           "name": "ConvNeXt",
@@ -141,7 +160,10 @@
           ],
           "key_idea": "把 ViT 的所有现代化设计选择（大 kernel·LayerNorm·GELU·强增强）逐项搬回 ResNet，CNN 反超 ViT",
           "path": "01-cnn/08-convnext.md",
-          "assets": []
+          "assets": [
+            "01-cnn/assets/08-convnext-modernization-path.svg",
+            "01-cnn/assets/08-convnext-vs-swin-block.svg"
+          ]
         }
       ]
     },
@@ -169,7 +191,10 @@
           ],
           "key_idea": "把上一时刻的隐状态接回当前时刻输入,用一组共享权重在时间上递推,任意长度序列被压进一个固定维度向量",
           "path": "02-rnn-lstm/01-rnn.md",
-          "assets": []
+          "assets": [
+            "02-rnn-lstm/assets/01-rnn-bptt-gradient.svg",
+            "02-rnn-lstm/assets/01-rnn-unfold.svg"
+          ]
         },
         {
           "name": "LSTM",
@@ -183,7 +208,10 @@
           ],
           "key_idea": "用三道门 + 一条细胞状态高速公路绕开梯度连乘,让循环网络第一次能稳定学到 100+ 步的长依赖",
           "path": "02-rnn-lstm/02-lstm.md",
-          "assets": []
+          "assets": [
+            "02-rnn-lstm/assets/02-lstm-cell.svg",
+            "02-rnn-lstm/assets/02-lstm-vs-rnn-gradient.svg"
+          ]
         },
         {
           "name": "GRU",
@@ -199,7 +227,10 @@
           ],
           "key_idea": "把 LSTM 三道门简成两门、去掉细胞状态,参数减少 25% 而性能基本持平,成为 LSTM 的常用轻量替代",
           "path": "02-rnn-lstm/03-gru.md",
-          "assets": []
+          "assets": [
+            "02-rnn-lstm/assets/03-gru-cell.svg",
+            "02-rnn-lstm/assets/03-gru-vs-lstm.svg"
+          ]
         },
         {
           "name": "Seq2Seq",
@@ -216,7 +247,10 @@
           ],
           "key_idea": "用一个 encoder RNN 把任意长输入压成上下文向量,再用一个 decoder RNN 从这个向量生成任意长输出,统一所有序列到序列任务",
           "path": "02-rnn-lstm/04-seq2seq.md",
-          "assets": []
+          "assets": [
+            "02-rnn-lstm/assets/04-seq2seq-encoder-decoder.svg",
+            "02-rnn-lstm/assets/04-seq2seq-tricks.svg"
+          ]
         },
         {
           "name": "Bahdanau Attention",
@@ -231,7 +265,10 @@
           ],
           "key_idea": "在 Seq2Seq 上加 attention 让 decoder 每一步对 encoder 全部时刻学一个加权分布,绕开固定长度上下文向量的信息瓶颈",
           "path": "02-rnn-lstm/05-attention.md",
-          "assets": []
+          "assets": [
+            "02-rnn-lstm/assets/05-attention-additive-mechanism.svg",
+            "02-rnn-lstm/assets/05-attention-seq2seq-comparison.svg"
+          ]
         }
       ]
     },
@@ -259,7 +296,10 @@
           ],
           "key_idea": "用极简的 shallow network(skip-gram / CBOW)从大语料自监督学 300 维词向量,negative sampling 替代 softmax 让训练扩展到 100 亿词;king-man+woman=queen 线性算术成立,NLP 进入向量时代",
           "path": "03-word-embedding/01-word2vec.md",
-          "assets": []
+          "assets": [
+            "03-word-embedding/assets/01-word2vec-cbow-skipgram.svg",
+            "03-word-embedding/assets/01-word2vec-negative-sampling.svg"
+          ]
         },
         {
           "name": "GloVe",
@@ -274,7 +314,10 @@
           ],
           "key_idea": "直接对全局 word-word 共现矩阵做加权 log-bilinear 分解,而不是用局部窗口预测;count-based 路线,理论比 Word2Vec 更清晰,Stanford 团队预训练好的 GloVe 向量成开源标配",
           "path": "03-word-embedding/02-glove.md",
-          "assets": []
+          "assets": [
+            "03-word-embedding/assets/02-glove-ratio-insight.svg",
+            "03-word-embedding/assets/02-glove-training.svg"
+          ]
         },
         {
           "name": "FastText",
@@ -290,7 +333,10 @@
           ],
           "key_idea": "把词拆成 character n-gram(apple = <ap, app, ppl, ple, le>),词向量 = subword 向量之和;处理 OOV / 形态丰富语言 / 罕见词;同时附带极快的文本分类工具",
           "path": "03-word-embedding/03-fasttext.md",
-          "assets": []
+          "assets": [
+            "03-word-embedding/assets/03-fasttext-subword.svg",
+            "03-word-embedding/assets/03-fasttext-vs-word2vec.svg"
+          ]
         },
         {
           "name": "ELMo",
@@ -309,7 +355,10 @@
           ],
           "key_idea": "用双向 LSTM 预训练语言模型,每个词的向量是 LSTM 各层 hidden state 的加权和;同一个 \\\"bank\\\" 在 \\\"river bank\\\" 和 \\\"money bank\\\" 里向量不同;contextualized embedding 起源,直接催生 BERT",
           "path": "03-word-embedding/04-elmo.md",
-          "assets": []
+          "assets": [
+            "03-word-embedding/assets/04-elmo-bilm-layers.svg",
+            "03-word-embedding/assets/04-elmo-contextualized.svg"
+          ]
         }
       ]
     },
@@ -341,7 +390,10 @@
           ],
           "key_idea": "把生成问题转化为对抗博弈——G 造假,D 鉴别,minimax 训练让 G 学到真实数据分布;不显式建模 likelihood 也能生成高质量样本,开创深度生成模型新范式",
           "path": "04-gan/01-gan.md",
-          "assets": []
+          "assets": [
+            "04-gan/assets/01-gan-adversarial.svg",
+            "04-gan/assets/01-gan-failure-modes.svg"
+          ]
         },
         {
           "name": "DCGAN",
@@ -356,7 +408,10 @@
           ],
           "key_idea": "把 CNN 完整移植到 GAN——用 strided conv 替代 pooling、加 BatchNorm、Generator 用 transpose conv 上采样、去全连接层;首次给出可复现的 GAN 训练工程方案,生成 64×64 卧室 / 人脸图像",
           "path": "04-gan/02-dcgan.md",
-          "assets": []
+          "assets": [
+            "04-gan/assets/02-dcgan-architecture.svg",
+            "04-gan/assets/02-dcgan-latent-arithmetic.svg"
+          ]
         },
         {
           "name": "CycleGAN",
@@ -372,7 +427,10 @@
           ],
           "key_idea": "用 cycle consistency loss 实现无配对图像翻译——两个 G 互相 mapping(X→Y 和 Y→X),要求 F(G(x)) ≈ x;不需要成对训练数据就能做马↔斑马、夏↔冬、照片↔画风的转换",
           "path": "04-gan/03-cyclegan.md",
-          "assets": []
+          "assets": [
+            "04-gan/assets/03-cyclegan-cycle-loss.svg",
+            "04-gan/assets/03-cyclegan-pipeline.svg"
+          ]
         },
         {
           "name": "StyleGAN",
@@ -387,7 +445,10 @@
           ],
           "key_idea": "用 mapping network 把 z 投射到 W 空间,再通过 AdaIN 在每层注入 style 控制不同语义粒度(粗:姿态/形状,中:发型/眼神,细:肤色/纹理);1024×1024 超高分辨率人脸,生成质量逼近真实照片",
           "path": "04-gan/04-stylegan.md",
-          "assets": []
+          "assets": [
+            "04-gan/assets/04-stylegan-architecture.svg",
+            "04-gan/assets/04-stylegan-style-control.svg"
+          ]
         }
       ]
     },
@@ -419,7 +480,10 @@
           ],
           "key_idea": "用 self-attention 替代循环,让序列建模获得完全并行 + 全局上下文,encoder-decoder 骨架保留但内部全是 attention 和 FFN",
           "path": "05-transformer/01-transformer.md",
-          "assets": []
+          "assets": [
+            "05-transformer/assets/01-transformer-attention.svg",
+            "05-transformer/assets/01-transformer-multihead.svg"
+          ]
         },
         {
           "name": "Transformer-XL",
@@ -437,7 +501,10 @@
           ],
           "key_idea": "用段级循环把上一段隐状态作为这段的记忆 + 相对位置编码替代绝对 PE,让 Transformer 第一次跨越固定窗口处理长上下文",
           "path": "05-transformer/02-transformer-xl.md",
-          "assets": []
+          "assets": [
+            "05-transformer/assets/02-transformer-xl-recurrence.svg",
+            "05-transformer/assets/02-transformer-xl-relative-pe.svg"
+          ]
         },
         {
           "name": "Sparse Attention",
@@ -455,7 +522,10 @@
           ],
           "key_idea": "用滑窗局部 attention + 少量全局 token 把 attention 复杂度从 O(N²) 降到 O(N),让 Transformer 第一次能在 4K–16K 长上下文上跑训练和推理",
           "path": "05-transformer/03-sparse-attention.md",
-          "assets": []
+          "assets": [
+            "05-transformer/assets/03-sparse-attention-complexity.svg",
+            "05-transformer/assets/03-sparse-attention-patterns.svg"
+          ]
         },
         {
           "name": "RoPE",
@@ -472,7 +542,10 @@
           ],
           "key_idea": "把位置信息编码进 Q/K 的旋转里而不是加在 token embedding 上,attention 内积天然只依赖相对位置,长上下文外推显著更好",
           "path": "05-transformer/04-rope.md",
-          "assets": []
+          "assets": [
+            "05-transformer/assets/04-rope-ecosystem.svg",
+            "05-transformer/assets/04-rope-rotation.svg"
+          ]
         },
         {
           "name": "FlashAttention",
@@ -489,7 +562,10 @@
           ],
           "key_idea": "把 attention 从 HBM 搬到 SRAM 算,分块 + 重计算把 O(N²) 显存压成 O(N) 而结果完全等价,attention 训练/推理快 2-4× 且支持更长序列",
           "path": "05-transformer/05-flash-attention.md",
-          "assets": []
+          "assets": [
+            "05-transformer/assets/05-flash-attention-memory-hierarchy.svg",
+            "05-transformer/assets/05-flash-attention-tiling.svg"
+          ]
         }
       ]
     },
@@ -517,7 +593,10 @@
           ],
           "key_idea": "用 encoder-only Transformer + masked LM 学双向上下文表征,GLUE 11 任务全面 SOTA,把 NLP 拖进预训练时代",
           "path": "06-bert-family/01-bert.md",
-          "assets": []
+          "assets": [
+            "06-bert-family/assets/01-bert-bidirectional.svg",
+            "06-bert-family/assets/01-bert-three-pillars.svg"
+          ]
         },
         {
           "name": "RoBERTa",
@@ -536,7 +615,10 @@
           ],
           "key_idea": "去掉 NSP + 动态 masking + 大 batch + 10× 数据 + 更长训练,证明 BERT 严重训练不足,GLUE 再涨 5+ 分而架构完全不动",
           "path": "06-bert-family/02-roberta.md",
-          "assets": []
+          "assets": [
+            "06-bert-family/assets/02-roberta-ablation.svg",
+            "06-bert-family/assets/02-roberta-vs-bert.svg"
+          ]
         },
         {
           "name": "ALBERT",
@@ -554,7 +636,10 @@
           ],
           "key_idea": "用跨层参数共享 + embedding 因式分解把 BERT-large 参数从 334M 压到 18M 而效果接近,同时把 NSP 改成更难的 SOP(句子顺序预测)",
           "path": "06-bert-family/03-albert.md",
-          "assets": []
+          "assets": [
+            "06-bert-family/assets/03-albert-three-mechanisms.svg",
+            "06-bert-family/assets/03-albert-vs-bert.svg"
+          ]
         },
         {
           "name": "DistilBERT",
@@ -570,7 +655,10 @@
           ],
           "key_idea": "用知识蒸馏把 12 层 BERT teacher 压成 6 层 student,40% 参数 60% 速度保留 97% 性能,工业 BERT 部署的事实默认",
           "path": "06-bert-family/04-distilbert.md",
-          "assets": []
+          "assets": [
+            "06-bert-family/assets/04-distilbert-three-losses.svg",
+            "06-bert-family/assets/04-distilbert-vs-bert-tradeoff.svg"
+          ]
         }
       ]
     },
@@ -598,7 +686,10 @@
           ],
           "key_idea": "用 decoder-only Transformer + 无监督自回归预训练 + 任务微调,第一次系统跑通预训练范式;同年 BERT 用 encoder-only 验证了双向版本",
           "path": "07-gpt-scaling/01-gpt1.md",
-          "assets": []
+          "assets": [
+            "07-gpt-scaling/assets/01-gpt1-paradigm-shift.svg",
+            "07-gpt-scaling/assets/01-gpt1-pretrain-finetune.svg"
+          ]
         },
         {
           "name": "GPT-2",
@@ -616,7 +707,10 @@
           ],
           "key_idea": "把 GPT-1 的 117M 参数推到 1.5B + WebText 40B token,zero-shot 任务能力首次涌现,LM 第一次显示出'不微调也能做下游任务'的通用性",
           "path": "07-gpt-scaling/02-gpt2.md",
-          "assets": []
+          "assets": [
+            "07-gpt-scaling/assets/02-gpt2-scaling-emergence.svg",
+            "07-gpt-scaling/assets/02-gpt2-zero-shot-paradigm.svg"
+          ]
         },
         {
           "name": "GPT-3",
@@ -636,7 +730,10 @@
           ],
           "key_idea": "把 GPT-2 推到 175B 参数,in-context learning 涌现 — 仅靠 prompt 里 few-shot 例子就能学新任务,完全消除微调对监督数据的依赖,LLM 时代正式开启",
           "path": "07-gpt-scaling/03-gpt3.md",
-          "assets": []
+          "assets": [
+            "07-gpt-scaling/assets/03-gpt3-in-context-learning.svg",
+            "07-gpt-scaling/assets/03-gpt3-scale-evolution.svg"
+          ]
         },
         {
           "name": "Scaling Laws",
@@ -655,7 +752,10 @@
           ],
           "key_idea": "把 LM loss 随参数 N / 数据 D / 算力 C 的关系刻画成幂律;Kaplan 给出粗略最优,Chinchilla 修正最优配比是 N:D ≈ 1:20,催生 LLaMA 等高数据小模型",
           "path": "07-gpt-scaling/04-scaling-laws.md",
-          "assets": []
+          "assets": [
+            "07-gpt-scaling/assets/04-scaling-laws-chinchilla.svg",
+            "07-gpt-scaling/assets/04-scaling-laws-curves.svg"
+          ]
         },
         {
           "name": "GPT-4 / LLaMA",
@@ -674,7 +774,10 @@
           ],
           "key_idea": "GPT-4 把 LLM 推到万亿级 + 多模态闭源;LLaMA 给社区第一个工业级开源基础模型;现代 LLM 配方(Pre-RMSNorm + RoPE + GQA + SwiGLU)在两者上同时定型",
           "path": "07-gpt-scaling/05-gpt4-llama.md",
-          "assets": []
+          "assets": [
+            "07-gpt-scaling/assets/05-gpt4-llama-dual-track.svg",
+            "07-gpt-scaling/assets/05-gpt4-llama-modern-recipe.svg"
+          ]
         }
       ]
     },
@@ -706,7 +809,10 @@
           ],
           "key_idea": "把图像切成 16×16 的 patch 当 token,用纯 Transformer encoder 处理,在 JFT-300M 上预训练后击败 CNN,证明视觉归纳偏置不是必需的",
           "path": "08-vit/01-vit.md",
-          "assets": []
+          "assets": [
+            "08-vit/assets/01-vit-pipeline.svg",
+            "08-vit/assets/01-vit-vs-cnn.svg"
+          ]
         },
         {
           "name": "DeiT",
@@ -724,7 +830,10 @@
           ],
           "key_idea": "用 distillation token + 强增强 + AdamW + 蒸馏让 ViT 在 ImageNet-1K 上从零训练击败 ResNet,不再依赖 JFT-300M,把 ViT 带给学界",
           "path": "08-vit/02-deit.md",
-          "assets": []
+          "assets": [
+            "08-vit/assets/02-deit-distillation.svg",
+            "08-vit/assets/02-deit-recipe-distill.svg"
+          ]
         },
         {
           "name": "Swin Transformer",
@@ -744,7 +853,10 @@
           ],
           "key_idea": "用 shifted window attention 把复杂度从 O(N²) 降到 O(N) + 层级化下采样产出多尺度特征图,让 ViT 第一次能直接做 detection / segmentation",
           "path": "08-vit/03-swin.md",
-          "assets": []
+          "assets": [
+            "08-vit/assets/03-swin-architecture.svg",
+            "08-vit/assets/03-swin-shifted-window.svg"
+          ]
         },
         {
           "name": "DiT",
@@ -758,7 +870,10 @@
           ],
           "key_idea": "把 diffusion 模型的 U-Net backbone 替换成 ViT-style Transformer,展示更好的 scaling 性质,成为 Stable Diffusion 3 / Sora 的基座",
           "path": "08-vit/04-dit.md",
-          "assets": []
+          "assets": [
+            "08-vit/assets/04-dit-architecture.svg",
+            "08-vit/assets/04-dit-vs-unet-scaling.svg"
+          ]
         }
       ]
     },
@@ -789,7 +904,10 @@
           ],
           "key_idea": "用 4 亿对网络图文数据做对比学习,让图像和文本编码到同一向量空间,zero-shot 分类直接匹配监督 SOTA;成为后续所有多模态系统的对齐基座",
           "path": "09-multimodal-clip/01-clip.md",
-          "assets": []
+          "assets": [
+            "09-multimodal-clip/assets/01-clip-contrastive-matrix.svg",
+            "09-multimodal-clip/assets/01-clip-zero-shot.svg"
+          ]
         },
         {
           "name": "BLIP / BLIP-2",
@@ -806,7 +924,10 @@
           ],
           "key_idea": "在 CLIP 对比之上加入生成和匹配两个任务联合训练;BLIP-2 进一步用 Q-Former 桥接冻结视觉编码器和冻结 LLM,把训练成本降一个数量级",
           "path": "09-multimodal-clip/02-blip.md",
-          "assets": []
+          "assets": [
+            "09-multimodal-clip/assets/02-blip-q-former.svg",
+            "09-multimodal-clip/assets/02-blip-vs-clip-flamingo.svg"
+          ]
         },
         {
           "name": "Flamingo",
@@ -825,7 +946,10 @@
           ],
           "key_idea": "冻结大 LLM(Chinchilla 70B)+ Perceiver Resampler 视觉适配 + 间隔 cross-attention 注入,8 例 in-context 学新视觉任务的少样本 VLM 范式",
           "path": "09-multimodal-clip/03-flamingo.md",
-          "assets": []
+          "assets": [
+            "09-multimodal-clip/assets/03-flamingo-gated-attention.svg",
+            "09-multimodal-clip/assets/03-flamingo-icl-paradigm.svg"
+          ]
         },
         {
           "name": "LLaVA",
@@ -841,7 +965,10 @@
           ],
           "key_idea": "Visual instruction tuning:用 GPT-4 自动生成视觉指令数据,把 CLIP 视觉特征用单 linear projection 接到 LLaMA,把开源 VLM 范式定型在 GPT-4V 之前",
           "path": "09-multimodal-clip/04-llava.md",
-          "assets": []
+          "assets": [
+            "09-multimodal-clip/assets/04-llava-architecture.svg",
+            "09-multimodal-clip/assets/04-llava-two-stage-training.svg"
+          ]
         }
       ]
     },
@@ -868,7 +995,10 @@
           ],
           "key_idea": "把 2015 年的 diffusion 思想工程化:U-Net 预测噪声 + 简单 MSE 损失 + 1000 步去噪采样,稳定训练且质量超 GAN",
           "path": "10-diffusion/01-ddpm.md",
-          "assets": []
+          "assets": [
+            "10-diffusion/assets/01-ddpm-forward-reverse.svg",
+            "10-diffusion/assets/01-ddpm-unet-time.svg"
+          ]
         },
         {
           "name": "LDM / Stable Diffusion",
@@ -885,7 +1015,10 @@
           ],
           "key_idea": "把 diffusion 从 pixel 空间移到 VAE latent 空间,推理显存降 64×,2022 年 8 月以开源方式释出 Stable Diffusion 把文生图带到消费 GPU",
           "path": "10-diffusion/02-ldm.md",
-          "assets": []
+          "assets": [
+            "10-diffusion/assets/02-ldm-architecture.svg",
+            "10-diffusion/assets/02-ldm-cross-attention.svg"
+          ]
         },
         {
           "name": "Imagen / Classifier-Free Guidance",
@@ -904,7 +1037,10 @@
           ],
           "key_idea": "用大文本编码器(T5-XXL)+ classifier-free guidance,把文本理解和可控性推到 SOTA;CFG 成为所有现代 diffusion 模型的标配",
           "path": "10-diffusion/03-imagen.md",
-          "assets": []
+          "assets": [
+            "10-diffusion/assets/03-imagen-cfg-mechanism.svg",
+            "10-diffusion/assets/03-imagen-three-mechanisms.svg"
+          ]
         },
         {
           "name": "Flow Matching / Rectified Flow",
@@ -923,6 +1059,23 @@
           ],
           "key_idea": "把 diffusion 的 ε-prediction 推广到任意流形的'速度场学习',训练更稳 + 采样路径更直 + 数学更简洁,SD3 / Flux 默认",
           "path": "10-diffusion/04-flow-matching.md",
+          "assets": [
+            "10-diffusion/assets/04-flow-matching-adoption.svg",
+            "10-diffusion/assets/04-flow-matching-vs-ddpm.svg"
+          ]
+        },
+        {
+          "name": "DiT",
+          "year": 2022,
+          "family": "10-diffusion",
+          "order": 5,
+          "paper": "Scalable Diffusion Models with Transformers",
+          "authors": [
+            "William Peebles",
+            "Saining Xie"
+          ],
+          "key_idea": "把 diffusion U-Net 整个换成 Transformer:latent → patchify → Transformer blocks + adaLN-Zero 条件 → 解 patchify。FLOPs 越大 FID 越低单调成立,DiT-XL/2 拿到 ImageNet 256 SOTA,为 Sora/SD3 提供骨架",
+          "path": "10-diffusion/05-dit.md",
           "assets": []
         }
       ]
@@ -955,7 +1108,10 @@
           ],
           "key_idea": "在每层 Transformer 插入 small bottleneck adapter 模块(down → ReLU → up + residual),base 模型完全冻结,只训 3% 参数达到全参微调 96% 性能;PEFT 起源,后续 LoRA / Prefix Tuning 都受其启发",
           "path": "11-peft-lora/01-adapter.md",
-          "assets": []
+          "assets": [
+            "11-peft-lora/assets/01-adapter-architecture.svg",
+            "11-peft-lora/assets/01-adapter-vs-full-ft.svg"
+          ]
         },
         {
           "name": "Prefix Tuning",
@@ -989,7 +1145,10 @@
           ],
           "key_idea": "把权重更新 ΔW 分解为低秩矩阵 B·A(r 远小于 d),只训 BA 的 ~0.1% 参数;推理时 W = W₀ + BA 可合并回原权重,零额外延迟;PEFT 时代的工业标准",
           "path": "11-peft-lora/03-lora.md",
-          "assets": []
+          "assets": [
+            "11-peft-lora/assets/03-lora-architecture.svg",
+            "11-peft-lora/assets/03-lora-vs-others.svg"
+          ]
         },
         {
           "name": "QLoRA",
@@ -1005,7 +1164,10 @@
           ],
           "key_idea": "Base 模型量化到 4-bit NF4(NormalFloat)+ LoRA 微调,配 double quantization + paged optimizer;让 65B 模型能在单卡 48GB(实际 24GB 也能)GPU 上微调,LLM 微调彻底个人化",
           "path": "11-peft-lora/04-qlora.md",
-          "assets": []
+          "assets": [
+            "11-peft-lora/assets/04-qlora-nf4-vs-int4.svg",
+            "11-peft-lora/assets/04-qlora-stack.svg"
+          ]
         }
       ]
     },
@@ -1058,7 +1220,10 @@
           ],
           "key_idea": "把 RLHF 三阶段从摘要单一任务推广到通用指令跟随,1.3B 对齐版超过 175B 未对齐版,直接催生 ChatGPT",
           "path": "12-rlhf-alignment/02-instructgpt.md",
-          "assets": []
+          "assets": [
+            "12-rlhf-alignment/assets/02-instructgpt-pipeline.svg",
+            "12-rlhf-alignment/assets/02-instructgpt-rm-ppo.svg"
+          ]
         },
         {
           "name": "Constitutional AI",
@@ -1095,7 +1260,10 @@
           ],
           "key_idea": "通过数学推导把 RLHF 的 RL 目标转化成监督学习损失,跳过 reward model 和 PPO,工程上和 SFT 一样简单且效果接近,2024 开源 LLM 默认对齐方法",
           "path": "12-rlhf-alignment/04-dpo.md",
-          "assets": []
+          "assets": [
+            "12-rlhf-alignment/assets/04-dpo-loss-mechanism.svg",
+            "12-rlhf-alignment/assets/04-dpo-vs-ppo.svg"
+          ]
         }
       ]
     },
@@ -1158,7 +1326,10 @@
           ],
           "key_idea": "第一个完全开源的生产级 MoE LLM,8 个 7B expert + top-2 gating,46.7B 总参 / 13B 激活;质量超 LLaMA-2-70B 但推理速度像 13B 模型,开源社区第一次拿到可用 MoE",
           "path": "13-moe-efficient/03-mixtral.md",
-          "assets": []
+          "assets": [
+            "13-moe-efficient/assets/03-mixtral-load-balance.svg",
+            "13-moe-efficient/assets/03-mixtral-moe-layer.svg"
+          ]
         },
         {
           "name": "DeepSeek-V3",
@@ -1207,7 +1378,10 @@
           ],
           "key_idea": "把 dense retriever(DPR)和 seq2seq 生成器联合训练,把外部知识库接进 LM 输入侧;开放域 QA 不再依赖参数化知识,可以查",
           "path": "14-rag-agent/01-rag.md",
-          "assets": []
+          "assets": [
+            "14-rag-agent/assets/01-rag-pipeline.svg",
+            "14-rag-agent/assets/01-rag-vs-finetune.svg"
+          ]
         },
         {
           "name": "ReAct",
@@ -1226,7 +1400,10 @@
           ],
           "key_idea": "把 LLM 的推理(Thought)和行动(Action)交错进行,thought 推理下一步要查什么,action 调外部工具,observation 反馈给 LLM 继续推理;Agent 范式的起源",
           "path": "14-rag-agent/02-react.md",
-          "assets": []
+          "assets": [
+            "14-rag-agent/assets/02-react-loop.svg",
+            "14-rag-agent/assets/02-react-vs-cot-act.svg"
+          ]
         },
         {
           "name": "Toolformer",
@@ -1247,7 +1424,10 @@
           ],
           "key_idea": "让 LLM 在预训练语料上自监督学习何时何处插入工具调用——给候选位置加 tool call,如果调用后 perplexity 降低就保留;tool use 从 prompt 技巧内化为模型本身能力",
           "path": "14-rag-agent/03-toolformer.md",
-          "assets": []
+          "assets": [
+            "14-rag-agent/assets/03-toolformer-pipeline.svg",
+            "14-rag-agent/assets/03-toolformer-vs-gpt3.svg"
+          ]
         },
         {
           "name": "AutoGPT",
@@ -1261,7 +1441,10 @@
           ],
           "key_idea": "把 ReAct 推到极限——LLM 拿到高级目标后自己分解为子任务、规划执行步骤、循环调工具直到完成,无人干预;启动自主 agent 范式",
           "path": "14-rag-agent/04-autogpt.md",
-          "assets": []
+          "assets": [
+            "14-rag-agent/assets/04-autogpt-loop.svg",
+            "14-rag-agent/assets/04-autogpt-vs-react.svg"
+          ]
         }
       ]
     },
@@ -1294,7 +1477,10 @@
           ],
           "key_idea": "在 prompt 里给 few-shot 例子展示'问题→推理步骤→答案'格式,LLM 模仿后大数学题准确率从 17% 涨到 60%+;开启 LLM 推理能力的新研究方向",
           "path": "15-reasoning-o1-r1/01-cot.md",
-          "assets": []
+          "assets": [
+            "15-reasoning-o1-r1/assets/01-cot-emergence.svg",
+            "15-reasoning-o1-r1/assets/01-cot-prompt-comparison.svg"
+          ]
         },
         {
           "name": "Self-Consistency",
@@ -1327,7 +1513,10 @@
           ],
           "key_idea": "把长链推理作为训练目标,用 RL 让 LLM 自己学到反思/回溯/自验证;test-time compute 成为继训练算力之后的新 scaling 轴,在数学/科学/代码 benchmark 上击败 GPT-4 多倍",
           "path": "15-reasoning-o1-r1/03-o1.md",
-          "assets": []
+          "assets": [
+            "15-reasoning-o1-r1/assets/03-o1-paradigm-shift.svg",
+            "15-reasoning-o1-r1/assets/03-o1-test-time-scaling.svg"
+          ]
         },
         {
           "name": "DeepSeek-R1",
@@ -1340,7 +1529,10 @@
           ],
           "key_idea": "开源 o1 风格推理模型;先用纯 RL(GRPO)无 SFT cold start 训练 R1-Zero 验证推理行为可从 RL 中涌现,再用少量 cold-start SFT + 多阶段 RL 训练 R1 达到 o1 同级性能,推理 trace 全公开",
           "path": "15-reasoning-o1-r1/04-deepseek-r1.md",
-          "assets": []
+          "assets": [
+            "15-reasoning-o1-r1/assets/04-deepseek-r1-grpo.svg",
+            "15-reasoning-o1-r1/assets/04-deepseek-r1-pipeline.svg"
+          ]
         }
       ]
     }
