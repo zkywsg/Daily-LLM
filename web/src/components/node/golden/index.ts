@@ -26,4 +26,5 @@ export const goldenSamples: Record<
   "10-diffusion/02-ldm": lazy(() => import("./ldm/NodePageLDM")),
   "07-gpt-scaling/02-gpt2": lazy(() => import("./gpt2/NodePageGPT2")),
   "12-rlhf-alignment/04-dpo": lazy(() => import("./dpo/NodePageDPO")),
+  "02-rnn-lstm/05-attention": lazy(() => import("./bahdanau/NodePageBahdanau")),
 };
