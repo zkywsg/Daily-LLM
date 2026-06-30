@@ -24,4 +24,5 @@ export const goldenSamples: Record<
   "03-word-embedding/01-word2vec": lazy(() => import("./word2vec/NodePageWord2Vec")),
   "01-cnn/02-alexnet": lazy(() => import("./alexnet/NodePageAlexNet")),
   "10-diffusion/02-ldm": lazy(() => import("./ldm/NodePageLDM")),
+  "07-gpt-scaling/02-gpt2": lazy(() => import("./gpt2/NodePageGPT2")),
 };
