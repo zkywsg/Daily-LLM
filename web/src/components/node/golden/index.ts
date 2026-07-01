@@ -30,4 +30,5 @@ export const goldenSamples: Record<
   "10-diffusion/05-dit": lazy(() => import("./dit/NodePageDiT")),
   "07-gpt-scaling/04-scaling-laws": lazy(() => import("./scaling-laws/NodePageScalingLaws")),
   "04-gan/04-stylegan": lazy(() => import("./stylegan/NodePageStyleGAN")),
+  "03-word-embedding/04-elmo": lazy(() => import("./elmo/NodePageELMo")),
 };
