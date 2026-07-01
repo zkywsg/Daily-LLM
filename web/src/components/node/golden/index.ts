@@ -32,4 +32,5 @@ export const goldenSamples: Record<
   "04-gan/04-stylegan": lazy(() => import("./stylegan/NodePageStyleGAN")),
   "03-word-embedding/04-elmo": lazy(() => import("./elmo/NodePageELMo")),
   "07-gpt-scaling/01-gpt1": lazy(() => import("./gpt1/NodePageGPT1")),
+  "02-rnn-lstm/03-gru": lazy(() => import("./gru/NodePageGRU")),
 };
