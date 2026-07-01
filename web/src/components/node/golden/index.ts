@@ -35,4 +35,5 @@ export const goldenSamples: Record<
   "02-rnn-lstm/03-gru": lazy(() => import("./gru/NodePageGRU")),
   "02-rnn-lstm/04-seq2seq": lazy(() => import("./seq2seq/NodePageSeq2Seq")),
   "10-diffusion/03-imagen": lazy(() => import("./imagen/NodePageImagen")),
+  "09-multimodal-clip/03-flamingo": lazy(() => import("./flamingo/NodePageFlamingo")),
 };
