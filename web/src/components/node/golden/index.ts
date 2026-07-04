@@ -40,4 +40,5 @@ export const goldenSamples: Record<
   "05-transformer/04-rope": lazy(() => import("./rope/NodePageRoPE")),
   "02-rnn-lstm/01-rnn": lazy(() => import("./rnn/NodePageRNN")),
   "03-word-embedding/02-glove": lazy(() => import("./glove/NodePageGloVe")),
+  "05-transformer/03-sparse-attention": lazy(() => import("./sparse-attention/NodePageSparseAttention")),
 };
