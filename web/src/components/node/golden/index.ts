@@ -44,4 +44,5 @@ export const goldenSamples: Record<
   "03-word-embedding/03-fasttext": lazy(() => import("./fasttext/NodePageFastText")),
   "05-transformer/05-flash-attention": lazy(() => import("./flash-attention/NodePageFlashAttention")),
   "15-reasoning-o1-r1/03-o1": lazy(() => import("./o1/NodePageO1")),
+  "15-reasoning-o1-r1/04-deepseek-r1": lazy(() => import("./deepseek-r1/NodePageDeepSeekR1")),
 };
