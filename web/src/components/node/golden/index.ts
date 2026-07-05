@@ -51,4 +51,5 @@ export const goldenSamples: Record<
   "05-transformer/02-transformer-xl": lazy(() => import("./transformer-xl/NodePageTransformerXL")),
   "12-rlhf-alignment/03-constitutional-ai": lazy(() => import("./constitutional-ai/NodePageConstitutionalAI")),
   "04-gan/02-dcgan": lazy(() => import("./dcgan/NodePageDCGAN")),
+  "07-gpt-scaling/05-gpt4-llama": lazy(() => import("./gpt4-llama/NodePageGPT4LLaMA")),
 };
