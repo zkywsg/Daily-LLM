@@ -47,4 +47,8 @@ export const goldenSamples: Record<
   "15-reasoning-o1-r1/04-deepseek-r1": lazy(() => import("./deepseek-r1/NodePageDeepSeekR1")),
   "06-bert-family/02-roberta": lazy(() => import("./roberta/NodePageRoBERTa")),
   "11-peft-lora/04-qlora": lazy(() => import("./qlora/NodePageQLoRA")),
+  "06-bert-family/03-albert": lazy(() => import("./albert/NodePageALBERT")),
+  "05-transformer/02-transformer-xl": lazy(() => import("./transformer-xl/NodePageTransformerXL")),
+  "12-rlhf-alignment/03-constitutional-ai": lazy(() => import("./constitutional-ai/NodePageConstitutionalAI")),
+  "04-gan/02-dcgan": lazy(() => import("./dcgan/NodePageDCGAN")),
 };
