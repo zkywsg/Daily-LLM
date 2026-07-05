@@ -46,4 +46,5 @@ export const goldenSamples: Record<
   "15-reasoning-o1-r1/03-o1": lazy(() => import("./o1/NodePageO1")),
   "15-reasoning-o1-r1/04-deepseek-r1": lazy(() => import("./deepseek-r1/NodePageDeepSeekR1")),
   "06-bert-family/02-roberta": lazy(() => import("./roberta/NodePageRoBERTa")),
+  "11-peft-lora/04-qlora": lazy(() => import("./qlora/NodePageQLoRA")),
 };
