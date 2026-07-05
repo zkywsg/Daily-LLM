@@ -52,4 +52,8 @@ export const goldenSamples: Record<
   "12-rlhf-alignment/03-constitutional-ai": lazy(() => import("./constitutional-ai/NodePageConstitutionalAI")),
   "04-gan/02-dcgan": lazy(() => import("./dcgan/NodePageDCGAN")),
   "07-gpt-scaling/05-gpt4-llama": lazy(() => import("./gpt4-llama/NodePageGPT4LLaMA")),
+  "06-bert-family/04-distilbert": lazy(() => import("./distilbert/NodePageDistilBERT")),
+  "13-moe-efficient/02-switch-transformer": lazy(() => import("./switch-transformer/NodePageSwitchTransformer")),
+  "04-gan/03-cyclegan": lazy(() => import("./cyclegan/NodePageCycleGAN")),
+  "08-vit/02-deit": lazy(() => import("./deit/NodePageDeiT")),
 };
