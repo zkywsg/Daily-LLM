@@ -56,4 +56,5 @@ export const goldenSamples: Record<
   "13-moe-efficient/02-switch-transformer": lazy(() => import("./switch-transformer/NodePageSwitchTransformer")),
   "04-gan/03-cyclegan": lazy(() => import("./cyclegan/NodePageCycleGAN")),
   "08-vit/02-deit": lazy(() => import("./deit/NodePageDeiT")),
+  "09-multimodal-clip/02-blip": lazy(() => import("./blip/NodePageBLIP")),
 };
