@@ -57,4 +57,5 @@ export const goldenSamples: Record<
   "04-gan/03-cyclegan": lazy(() => import("./cyclegan/NodePageCycleGAN")),
   "08-vit/02-deit": lazy(() => import("./deit/NodePageDeiT")),
   "09-multimodal-clip/02-blip": lazy(() => import("./blip/NodePageBLIP")),
+  "14-rag-agent/02-react": lazy(() => import("./react/NodePageReAct")),
 };
