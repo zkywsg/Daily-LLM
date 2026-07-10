@@ -60,4 +60,5 @@ export const goldenSamples: Record<
   "14-rag-agent/02-react": lazy(() => import("./react/NodePageReAct")),
   "09-multimodal-clip/04-llava": lazy(() => import("./llava/NodePageLLaVA")),
   "14-rag-agent/03-toolformer": lazy(() => import("./toolformer/NodePageToolformer")),
+  "14-rag-agent/04-autogpt": lazy(() => import("./autogpt/NodePageAutoGPT")),
 };
