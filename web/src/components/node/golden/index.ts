@@ -61,4 +61,8 @@ export const goldenSamples: Record<
   "09-multimodal-clip/04-llava": lazy(() => import("./llava/NodePageLLaVA")),
   "14-rag-agent/03-toolformer": lazy(() => import("./toolformer/NodePageToolformer")),
   "14-rag-agent/04-autogpt": lazy(() => import("./autogpt/NodePageAutoGPT")),
+  "15-reasoning-o1-r1/02-self-consistency": lazy(() => import("./self-consistency/NodePageSelfConsistency")),
+  "12-rlhf-alignment/01-learning-to-summarize": lazy(() => import("./learning-to-summarize/NodePageLearningToSummarize")),
+  "10-diffusion/04-flow-matching": lazy(() => import("./flow-matching/NodePageFlowMatching")),
+  "13-moe-efficient/04-deepseek-v3": lazy(() => import("./deepseek-v3/NodePageDeepSeekV3")),
 };
