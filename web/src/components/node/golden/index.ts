@@ -65,4 +65,8 @@ export const goldenSamples: Record<
   "12-rlhf-alignment/01-learning-to-summarize": lazy(() => import("./learning-to-summarize/NodePageLearningToSummarize")),
   "10-diffusion/04-flow-matching": lazy(() => import("./flow-matching/NodePageFlowMatching")),
   "13-moe-efficient/04-deepseek-v3": lazy(() => import("./deepseek-v3/NodePageDeepSeekV3")),
+  "01-cnn/01-lenet": lazy(() => import("./lenet/NodePageLenet")),
+  "01-cnn/08-convnext": lazy(() => import("./convnext/NodePageConvnext")),
+  "11-peft-lora/01-adapter": lazy(() => import("./adapter/NodePageAdapter")),
+  "13-moe-efficient/01-sparsely-gated-moe": lazy(() => import("./sparsely-gated-moe/NodePageSparselyGatedMoe")),
 };
