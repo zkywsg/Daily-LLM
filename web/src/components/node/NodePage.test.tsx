@@ -1,13 +1,17 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router";
 import { NodePage } from "./NodePage";
 
+// Every real node is now a golden sample (see web/src/components/node/golden/index.ts),
+// so the non-golden fallback-rendering path is only reachable by stubbing the registry
+// empty here — this decouples the test from which nodes happen to be golden.
+vi.mock("./golden", () => ({ goldenSamples: {} }));
+
 describe("NodePage", () => {
   it("renders node meta (name + year) for known non-golden node", () => {
-    // Use Prefix Tuning (non-golden), since all of 01-cnn is now golden
     render(
-      <MemoryRouter initialEntries={["/families/11-peft-lora/02-prefix-tuning"]}>
+      <MemoryRouter initialEntries={["/families/01-cnn/03-vgg"]}>
         <Routes>
           <Route
             path="/families/:familyId/:nodeSlug"
@@ -16,7 +20,7 @@ describe("NodePage", () => {
         </Routes>
       </MemoryRouter>
     );
-    expect(screen.getByRole("heading", { name: /Prefix Tuning.*2021/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /VGG.*2014/ })).toBeInTheDocument();
   });
 
   it("redirects to 404 for unknown node", () => {

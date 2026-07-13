@@ -28,33 +28,24 @@ export function NodePage() {
   }>();
 
   const goldenKey = `${familyId}/${nodeSlug}`;
+  const isGolden = goldenKey in goldenSamples;
   const GoldenComponent = goldenSamples[goldenKey];
-
-  if (GoldenComponent) {
-    return (
-      <Suspense
-        fallback={
-          <div style={{ padding: "var(--space-16)", textAlign: "center" }}>
-            Loading golden sample…
-          </div>
-        }
-      >
-        <GoldenComponent />
-      </Suspense>
-    );
-  }
 
   const family = data.families.find((f) => f.id === familyId);
   const node = family?.nodes.find(
     (n) => n.path.split("/").pop()?.replace(/\.md$/, "") === nodeSlug
   );
 
+  // Hooks must run unconditionally on every render — React Router keeps this
+  // component mounted across prev/next navigation between a golden and a
+  // non-golden node, so an early return before these would violate the
+  // Rules of Hooks and corrupt state.
   const [markdown, setMarkdown] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
-    if (!node) return;
+    if (isGolden || !node) return;
     let cancelled = false;
     setLoadError(null);
     setMarkdown(null);
@@ -81,6 +72,20 @@ export function NodePage() {
       cancelled = true;
     };
   }, [node?.path, retryNonce]);
+
+  if (isGolden) {
+    return (
+      <Suspense
+        fallback={
+          <div style={{ padding: "var(--space-16)", textAlign: "center" }}>
+            Loading golden sample…
+          </div>
+        }
+      >
+        <GoldenComponent />
+      </Suspense>
+    );
+  }
 
   if (!family || !node) {
     return <Navigate to="/404" replace />;
