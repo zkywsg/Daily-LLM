@@ -69,4 +69,8 @@ export const goldenSamples: Record<
   "01-cnn/08-convnext": lazy(() => import("./convnext/NodePageConvnext")),
   "11-peft-lora/01-adapter": lazy(() => import("./adapter/NodePageAdapter")),
   "13-moe-efficient/01-sparsely-gated-moe": lazy(() => import("./sparsely-gated-moe/NodePageSparselyGatedMoe")),
+  "01-cnn/03-vgg": lazy(() => import("./vgg/NodePageVgg")),
+  "01-cnn/04-inception": lazy(() => import("./inception/NodePageInception")),
+  "01-cnn/06-densenet": lazy(() => import("./densenet/NodePageDensenet")),
+  "01-cnn/07-efficientnet": lazy(() => import("./efficientnet/NodePageEfficientnet")),
 };
