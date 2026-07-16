@@ -74,4 +74,5 @@ export const goldenSamples: Record<
   "01-cnn/06-densenet": lazy(() => import("./densenet/NodePageDensenet")),
   "01-cnn/07-efficientnet": lazy(() => import("./efficientnet/NodePageEfficientnet")),
   "11-peft-lora/02-prefix-tuning": lazy(() => import("./prefix-tuning/NodePagePrefixTuning")),
+  "08-vit/04-dit": lazy(() => import("./dit-vit/NodePageDiTViT")),
 };
