@@ -8,7 +8,7 @@ export interface ProseSections {
   coreInsight: string;
   /** ### 直觉 子段正文 */
   intuition: string;
-  /** ### 机制 子段正文 */
+  /** ## 机制一/机制二/机制三/三件套协同 正文合并 */
   mechanism: string;
   /** ## 训练细节 章节正文（含表格） */
   trainingDetails: string;
@@ -46,6 +46,9 @@ export function extractProse(markdown: string): ProseSections {
     "影响 / 后续 ": "aftermath",
     "影响/后续": "aftermath",
   };
+  // 机制一/二/三 + 三件套协同是独立的顶层 H2(带副标题,如"机制一:Shortcut
+  // Connection"),不在上面的精确匹配表里 —— 用正则统一并入 mechanism 段。
+  const h2MechanismTest = /^(机制一|机制二|机制三|三件套协同)/;
   const h3Map: Record<string, keyof ProseSections> = {
     "直觉": "intuition",
     "机制": "mechanism",
@@ -57,7 +60,12 @@ export function extractProse(markdown: string): ProseSections {
 
   const flush = () => {
     if (currentKey) {
-      sections[currentKey] = buffer.join("\n").trim();
+      const text = buffer.join("\n").trim();
+      if (text) {
+        sections[currentKey] = sections[currentKey]
+          ? `${sections[currentKey]}\n\n${text}`
+          : text;
+      }
     }
     buffer = [];
   };
@@ -69,7 +77,7 @@ export function extractProse(markdown: string): ProseSections {
     if (h2Match) {
       flush();
       const name = h2Match[1].trim();
-      currentKey = h2Map[name] ?? null;
+      currentKey = h2Map[name] ?? (h2MechanismTest.test(name) ? "mechanism" : null);
       continue;
     }
 

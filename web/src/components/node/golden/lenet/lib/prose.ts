@@ -8,7 +8,6 @@ export interface ProseSections {
   mechanism3: string;
   synergy: string;
   keyCode: string;
-  performance: string;
   aftermath: string;
 }
 
@@ -27,7 +26,6 @@ const H2_KEYS: Array<{ test: RegExp; key: keyof ProseSections | "_coreInsight" }
   { test: /^前作进展/, key: "previousWork" },
   { test: /^核心思想/, key: "_coreInsight" },
   { test: /^关键代码/, key: "keyCode" },
-  { test: /^性能数据/, key: "performance" },
   { test: /^影响/, key: "aftermath" },
 ];
 
@@ -44,7 +42,6 @@ export function extractProse(markdown: string): ProseSections {
     mechanism3: "",
     synergy: "",
     keyCode: "",
-    performance: "",
     aftermath: "",
   };
 

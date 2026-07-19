@@ -15,17 +15,19 @@ export interface ProseSections {
 const H2_KEYS: Array<{ test: RegExp; key: keyof ProseSections | "_coreInsight" }> = [
   { test: /^前作进展/, key: "previousWork" },
   { test: /^核心思想/, key: "_coreInsight" },
-  { test: /^机制一/, key: "mechanism1" },
-  { test: /^机制二/, key: "mechanism2" },
-  { test: /^机制三/, key: "mechanism3" },
-  { test: /^三件套协同/, key: "synergy" },
   { test: /^Pre-LN/, key: "modernization" },
   { test: /^关键代码/, key: "keyCode" },
   { test: /^影响/, key: "aftermath" },
 ];
 
+// 机制一/二/三/三件套协同在源 markdown 里是嵌套在"## 核心思想"下的 H3,
+// 不是顶层 H2(实测 grep 确认) —— 必须放进 H3_KEYS 才能被匹配到。
 const H3_KEYS: Array<{ test: RegExp; key: keyof ProseSections }> = [
   { test: /^直觉/, key: "intuition" },
+  { test: /^机制一/, key: "mechanism1" },
+  { test: /^机制二/, key: "mechanism2" },
+  { test: /^机制三/, key: "mechanism3" },
+  { test: /^三件套协同/, key: "synergy" },
 ];
 
 export function extractProse(markdown: string): ProseSections {
