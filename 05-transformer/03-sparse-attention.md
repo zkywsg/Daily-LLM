@@ -92,7 +92,7 @@ Sparse attention 在 2020 年能把 attention 复杂度从 O(N²) 降到 O(N),**
 - **只有 global + random,没有 local 滑窗** — 局部信息(动词找主语等短依赖)被严重削弱,模型在短距任务上反而比 dense 差,综合性能拖后腿
 - **只有理论(local + global + random),没有 CUDA kernel** — dense mask 实现仍是 O(N²),"稀疏"只在数学定义上稀疏,工程上不带来任何加速。Longformer 不会成为生产可用方案
 
-三件套合起来才让 sparse attention 在 2020 年同时拿到 O(N) 复杂度 + 接近 dense 表达力 + 工程可部署。这一组合直接定义了 2020-2022 长上下文的主流范式,直到 FlashAttention(2022)让 dense 在 64K 也可行才被部分取代 — 但**"结构化稀疏"思想被 Swin Transformer / Mixtral MoE / MQA/GQA 等后续工作沿用至今**。
+三件套合起来才让 sparse attention 在 2020 年同时拿到 O(N) 复杂度 + 接近 dense 表达力 + 工程可部署。这一组合直接定义了 2020-2022 长上下文的主流范式,直到 FlashAttention(2022)让 dense 在 64K 也可行才被部分取代 — 但 **"结构化稀疏"思想被 Swin Transformer / Mixtral MoE / MQA/GQA 等后续工作沿用至今**。
 
 ![Dense vs Sparse 复杂度对比 + Longformer/BigBird 性能](assets/03-sparse-attention-complexity.svg)
 *图 2:**上半** 复杂度 vs 序列长度曲线 — Dense O(N²) 在 N=4K 已 16GB,N=8K 超 A100 40GB;Sparse Transformer O(N√N)、Reformer O(N log N)、Longformer/BigBird O(N) 在 N=16K 仅几 GB。**下半** 几个长上下文 benchmark 对比 — Longformer 4K vs RoBERTa 512 在 SQuAD / HotpotQA / IMDb 上全面胜出;BigBird WGR 在 LRA / TriviaQA 上和 Longformer 持平。右侧 callout:**FlashAttention 2022 后部分淘汰** sparse attention(dense 在 64K 也可行),但 100K+ 超长上下文场景仍是 sparse + Flash 组合。*
@@ -179,7 +179,7 @@ class LongformerAttention(nn.Module):
 
 稀疏 attention 在 2020–2022 是长上下文的主流方案,但 2022 年之后被两件事部分淘汰:
 
-**1. [FlashAttention](05-flash-attention.md)(2022)**让 dense attention 在工程上变得高效——通过 IO-aware 实现,不再需要把 `N × N` 矩阵物化到 HBM。FlashAttention 把 dense attention 的实际可行上下文从 4K 推到 64K+,**让"稀疏化"在很多场景下不再必需**。LLaMA、GPT-4 等主流模型都用 dense + FlashAttention,而不是稀疏。
+**1. [FlashAttention](05-flash-attention.md)(2022)** 让 dense attention 在工程上变得高效——通过 IO-aware 实现,不再需要把 `N × N` 矩阵物化到 HBM。FlashAttention 把 dense attention 的实际可行上下文从 4K 推到 64K+,**让"稀疏化"在很多场景下不再必需**。LLaMA、GPT-4 等主流模型都用 dense + FlashAttention,而不是稀疏。
 
 **2. State Space Models** (Mamba 2023, RWKV) 给出了 O(N) 的根本不同路线——回到循环 + 卷积,但用精心设计的状态空间让信息有效传递。这是稀疏 attention 之外另一条 O(N) 思路。
 

@@ -16,7 +16,7 @@ export function LayerwisePrefixStage({ intuitionProse, mechanism1Prose }: Props)
         机制一:Layer-wise Prefix on K/V
       </h2>
       <p style={{ fontSize: "var(--fs-md)", color: "var(--ink-secondary)", marginBottom: "var(--space-8)" }}>
-        Prefix Tuning 不改架构,只在**每层** attention 的 K/V 前面拼一段可学习的
+        Prefix Tuning 不改架构,只在<strong>每层</strong> attention 的 K/V 前面拼一段可学习的
         prefix —— m = {KV_INJECTION.prefixLen} 个"虚拟 token",像一段"持续在场
         的额外上下文"贯穿整个生成过程。关键限制:只加在 K/V,不加在 Q,避免
         改变 query 本身影响后续 token 的行为。

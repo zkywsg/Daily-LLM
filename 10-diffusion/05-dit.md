@@ -83,7 +83,7 @@ DiT 论文最有价值的实证不是 SOTA 数字,而是**第一次给 diffusion
 
 在 ImageNet 256×256 class-conditional 上,四个 size 在同样 400K iter 训练后的 FID 单调下降——而且**画在 log(Gflops) - FID 平面上几乎是一条直线**。这是 diffusion 模型第一次显示这种"按算力预算可外推"的性质。
 
-更进一步,DiT-XL/2 训练到 7M iter 拿到 **FID 2.27**(ImageNet 256 class-conditional),打破了 ADM 之前的 SOTA 3.94。但论文真正强调的不是这个数,而是**"如果继续 scale up,FID 还会继续降"的清晰外推性**——这一信号直接告诉行业:**diffusion 不会卡在 1B,可以推到 10B / 100B,只要算力跟上**。
+更进一步,DiT-XL/2 训练到 7M iter 拿到 **FID 2.27**(ImageNet 256 class-conditional),打破了 ADM 之前的 SOTA 3.94。但论文真正强调的不是这个数,而是 **"如果继续 scale up,FID 还会继续降"的清晰外推性**——这一信号直接告诉行业:**diffusion 不会卡在 1B,可以推到 10B / 100B,只要算力跟上**。
 
 后续 Sora(估计参数量 3-10B)、SD3-Large(8B)、FLUX-12B 都是沿着这条 scaling 曲线往上爬的产物。如果没有 DiT 这条干净幂律,各家公司无法说服资本投入百卡万卡训百亿级 diffusion 模型。
 

@@ -85,7 +85,7 @@ $$
 
 注意 DeiT 用 **hard distillation**(teacher 输出 argmax 标签作为 hard target),不是经典 Hinton 那种 soft distillation(KL on soft probs)。论文消融显示 hard 比 soft 更好(原因:teacher 偶尔出错,soft target 会传染 student;hard target 把错变成"我猜测的另一标签")。
 
-**为什么用 CNN 作 teacher?**直觉上 ViT 是新东西,应该用 ViT 互相蒸馏。但 DeiT 团队发现:**用 CNN(RegNet-Y 16GF, 84.2% top-1)当 teacher 比用更强的 ViT 当 teacher 效果还好**。原因推测是:CNN 学到的归纳偏置(locality/平移不变性)是 ViT 不内置的,蒸馏把这些"补"给 ViT。
+**为什么用 CNN 作 teacher?** 直觉上 ViT 是新东西,应该用 ViT 互相蒸馏。但 DeiT 团队发现:**用 CNN(RegNet-Y 16GF, 84.2% top-1)当 teacher 比用更强的 ViT 当 teacher 效果还好**。原因推测是:CNN 学到的归纳偏置(locality/平移不变性)是 ViT 不内置的,蒸馏把这些"补"给 ViT。
 
 DeiT-B with distillation 在 ImageNet 上达到 **83.4%**(无 distill 的 DeiT-B 是 81.8%)——distill token 贡献 1.6 分。
 

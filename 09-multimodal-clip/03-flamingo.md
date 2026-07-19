@@ -36,7 +36,7 @@ Flamingo 没开源,但它定义的 "冻结 LLM + 视觉适配 + cross-attention 
 - **Perceiver Resampler + 间隔 gated cross-attention** — Perceiver 把可变大小视觉特征压成 64 个固定 token / gated cross-attn 在 LLM 每 7 层插一次,**tanh(0) 初始化保证训练初期完全等于原 LLM**
 - **MultiModal MassiveWeb(M3W)交错图文序列** — 43M 网页,每个是 `"text image text image text..."` 自然交错;**这种数据天然教模型"看到图后预测对应文本",in-context learning 自然涌现到多模态**
 
-三件事合起来:**Flamingo 4-shot in-context 在 16 个视觉 benchmark 上 SOTA,6 个 benchmark 上超过 fine-tuned 模型**(VQAv2 32-shot 60.0、OK-VQA 50.6)。这是 VLM 第一次展现**"通用智能"雏形** — 不微调就能做任何视觉任务。**核心方法论贡献**:展示了"大 LLM 是 in-context learning 的载体,视觉只是新增的输入模态" — 这一思想直接影响 GPT-4V / Claude 3 / Gemini 的多模态训练范式,**让所有现代 multimodal LLM 都基于"冻结大 LLM + 视觉接口"路线**。
+三件事合起来:**Flamingo 4-shot in-context 在 16 个视觉 benchmark 上 SOTA,6 个 benchmark 上超过 fine-tuned 模型**(VQAv2 32-shot 60.0、OK-VQA 50.6)。这是 VLM 第一次展现 **"通用智能"雏形** — 不微调就能做任何视觉任务。**核心方法论贡献**:展示了"大 LLM 是 in-context learning 的载体,视觉只是新增的输入模态" — 这一思想直接影响 GPT-4V / Claude 3 / Gemini 的多模态训练范式,**让所有现代 multimodal LLM 都基于"冻结大 LLM + 视觉接口"路线**。
 
 ![Flamingo vs BLIP-2 vs LLaVA — In-Context Learning 来源](assets/03-flamingo-icl-paradigm.svg)
 *图 1:三个开源 VLM 对比 — **Flamingo** 用 Chinchilla 70B(冻结)+ Perceiver Resampler + 间隔 cross-attn + M3W 交错数据 → 4-shot ICL VQAv2 56.3;**BLIP-2** 用 Flan-T5 11B(冻结)+ Q-Former + 标准图文对 → 0-shot VQAv2 65.2 但无 ICL;**LLaVA** 用 LLaMA 7B(微调)+ Linear projection + instruction tuning → 强对话但 ICL 弱。底部 callout:**70B LLM + 交错数据是 ICL 涌现的核心两件**,Flamingo 第一次在 VLM 上验证。*
@@ -78,7 +78,7 @@ graph LR
 
 视觉特征怎么进入冻结的 LLM?Flamingo 设计了两层接口:
 
-**Perceiver Resampler(可训练,200M)** —— **关键创新**。视觉编码器输出的 patch features 数量随分辨率变化(64×64 vs 16×16),视频还有时序维度。Perceiver Resampler 用一组**固定数量的可学习 query tokens(64 个)**来"采样"任意大小的视觉特征:
+**Perceiver Resampler(可训练,200M)** —— **关键创新**。视觉编码器输出的 patch features 数量随分辨率变化(64×64 vs 16×16),视频还有时序维度。Perceiver Resampler 用一组**固定数量的可学习 query tokens(64 个)** 来"采样"任意大小的视觉特征:
 
 - Query 是 64 个可学习 token
 - Key/Value 是视觉编码器的输出 patches(数量可变)

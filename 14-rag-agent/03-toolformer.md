@@ -32,7 +32,7 @@ Schick 等人(Meta AI,2023 年 2 月)的 Toolformer 给出一个完全不同的�
 
 [ReAct](02-react.md) 的 tool use 完全靠 prompt,在 GPT-3.5+ 上 work,但小模型(7B)能力不够;且每加一个新工具都要改 prompt。Schick 等人的洞察反过来——**不用 prompt 教,让 LLM 自监督学**。
 
-关键问题是:**没有人工标注,怎么判断一个 tool call 是"有用的"?**Toolformer 给出极其优雅的答案:**看插入它之后,后续 token 的 perplexity 是否真的下降**。如果调 `[QA("when did humans land on moon?")] → 1969` 后,后面"1969 年人类首次登月"这句话变得更易预测,那这个调用就 useful;反之就是无用装饰。这一标准完全不依赖人工——LLM 自己当裁判。
+关键问题是:**没有人工标注,怎么判断一个 tool call 是"有用的"?** Toolformer 给出极其优雅的答案:**看插入它之后,后续 token 的 perplexity 是否真的下降**。如果调 `[QA("when did humans land on moon?")] → 1969` 后,后面"1969 年人类首次登月"这句话变得更易预测,那这个调用就 useful;反之就是无用装饰。这一标准完全不依赖人工——LLM 自己当裁判。
 
 但要把这一直觉变成可训练的 pipeline,三个机制缺一不可:
 

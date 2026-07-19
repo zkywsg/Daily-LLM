@@ -12,7 +12,7 @@ key_idea: "用一套书面原则(constitution)让 AI 自评自身输出,生成 A
 
 [InstructGPT](02-instructgpt.md) 证明了 RLHF 是把基础 LLM 对齐到对话助手的可行路径,但暴露了一个明显的可扩展性问题——**对齐高度依赖人工标注**:
 
-- InstructGPT 用了 40 名标注员 6 个月,产出 33K 偏好对,成本 $2-5M
+- InstructGPT 用了 40 名标注员 6 个月,产出 33K 偏好对,成本 \$2-5M
 - 训练一个新版本(model update)需要重新标注,因为旧模型的偏好数据可能不再代表新模型的输出分布
 - 安全 / 有害性这类**高风险标注**对标注员心理伤害大(看大量有害内容)
 - 标注员的偏见会被编码进 reward model 进而进 LLM——这一不透明性让对齐质量难以审计
@@ -27,7 +27,7 @@ Constitutional AI 是 **Claude(2023 年 3 月发布)** 的核心对齐方法。A
 
 ### 直觉:LLM 已经能理解 helpful/harmless/honest,为什么不让它自己当裁判
 
-理解 Constitutional AI 真正需要先抓一件事:**[InstructGPT](02-instructgpt.md) 证明 RLHF 可对齐 LLM,但暴露了致命的可扩展性问题** — 40 标注员 6 个月才得 33K 偏好对($2-5M)、每次模型更新都要重标、有害内容标注对标注员心理伤害大、标注员的偏见会编码进 RM。Anthropic 团队 2022 反问:**既然 LLM 已经能理解"helpful / harmless / honest"这些原则,为什么不让 LLM 按一份书面 constitution 自评自身输出?**
+理解 Constitutional AI 真正需要先抓一件事:**[InstructGPT](02-instructgpt.md) 证明 RLHF 可对齐 LLM,但暴露了致命的可扩展性问题** — 40 标注员 6 个月才得 33K 偏好对(\$2-5M)、每次模型更新都要重标、有害内容标注对标注员心理伤害大、标注员的偏见会编码进 RM。Anthropic 团队 2022 反问:**既然 LLM 已经能理解"helpful / harmless / honest"这些原则,为什么不让 LLM 按一份书面 constitution 自评自身输出?**
 
 三件事必须同时成立才让 Constitutional AI 在 2022 年成立:
 
@@ -41,7 +41,7 @@ Constitutional AI 是 **Claude(2023 年 3 月发布)** 的核心对齐方法。A
 3. **Collective Constitutional AI(2024)** — 把"AI 该按什么原则行事"从公司决定扩大到社会参与
 
 ![Constitutional AI vs InstructGPT — 范式转换](assets/03-cai-vs-instructgpt.svg)
-*图 1:InstructGPT 范式(左)— 40 标注员 6 个月写 33K 偏好对($2-5M)→ RM → PPO;有害内容标注对人心理伤害大。Constitutional AI 范式(右)— 16 条 constitution + SL-CAI(LLM 自批自改) + RLAIF(LLM 自评偏好)→ RM → PPO;**人力 $M 级 → 算力 $K 级**。底部 callout:Anthropic 实测 harmlessness +9% / helpfulness 持平,**AI 偏好在安全评估上甚至比人类更一致**(无疲劳 / 无情绪 / 无心理伤害)。*
+*图 1:InstructGPT 范式(左)— 40 标注员 6 个月写 33K 偏好对(\$2-5M)→ RM → PPO;有害内容标注对人心理伤害大。Constitutional AI 范式(右)— 16 条 constitution + SL-CAI(LLM 自批自改) + RLAIF(LLM 自评偏好)→ RM → PPO;**人力 \$M 级 → 算力 \$K 级**。底部 callout:Anthropic 实测 harmlessness +9% / helpfulness 持平,**AI 偏好在安全评估上甚至比人类更一致**(无疲劳 / 无情绪 / 无心理伤害)。*
 
 ## 机制一:Constitution — 16 条书面原则,自然语言定义"想要的行为"
 
@@ -78,7 +78,7 @@ graph LR
 4. 收集大量 (prompt, y_A, y_B, AI_preference) 三元组训练 reward model
 5. 用 PPO + RM 微调 SL-CAI 模型,得到 RL-CAI(最终的 Constitutional AI 模型)
 
-这两阶段完全消除了 InstructGPT 中"40 标注员 6 个月" 的工作量,把对齐成本从**人力 $M 级**压到**算力 $K 级**。
+这两阶段完全消除了 InstructGPT 中"40 标注员 6 个月" 的工作量,把对齐成本从**人力 \$M 级**压到**算力 \$K 级**。
 
 ## 机制二:SL-CAI(Supervised Learning from AI Critiques)
 

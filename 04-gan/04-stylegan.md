@@ -63,7 +63,7 @@ $$
 
 加 8 层 MLP 后,**z → w 这一步把扭曲吸收了** — w 空间不再要求是 Gaussian,可以自然贴合真实数据形状,让每个维度对应一个相对独立的语义属性。
 
-StyleGAN 论文用 **Perceptual Path Length(PPL)**指标实证 W 比 Z 更"线性":Z 空间 PPL=412.0,W 空间 PPL=228.9,**W 的解纠缠度是 Z 的两倍**。这是 W 空间能做精细 latent editing 的根本。
+StyleGAN 论文用 **Perceptual Path Length(PPL)** 指标实证 W 比 Z 更"线性":Z 空间 PPL=412.0,W 空间 PPL=228.9,**W 的解纠缠度是 Z 的两倍**。这是 W 空间能做精细 latent editing 的根本。
 
 ### 机制二:AdaIN — 用 style 控制每层 feature 的统计量
 

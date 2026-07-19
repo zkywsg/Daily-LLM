@@ -39,8 +39,9 @@ export function Top1RoutingStage({ intuitionProse, mechanism1Prose }: Props) {
       >
         Shazeer 2017 用 top-K(K=4)证明稀疏 MoE 在 LSTM 上 work,但 K=4 意味着
         每个 token 要算 4 个 expert、通信量也是 4 倍。Switch Transformer 的
-        关键简化:只要 expert 数量够多(N 最高到 2048),**每 token 只路由到
-        1 个 expert 就够了**——路由计算量和 all-to-all 通信量直接减半到 1/4。
+        关键简化:只要 expert 数量够多(N 最高到 2048),
+        <strong>每 token 只路由到 1 个 expert 就够了</strong>
+        ——路由计算量和 all-to-all 通信量直接减半到 1/4。
       </p>
 
       <Top1RoutingDiagram sentenceIdx={sentenceIdx} k={k} />
