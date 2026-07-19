@@ -23,7 +23,7 @@ FAMILY_IDS = [
     "05-transformer", "06-bert-family", "07-gpt-scaling",
     "08-vit", "09-multimodal-clip", "10-diffusion",
     "11-peft-lora", "12-rlhf-alignment", "13-moe-efficient",
-    "14-rag-agent", "15-reasoning-o1-r1",
+    "14-rag-agent", "15-reasoning-o1-r1", "16-world-models",
 ]
 
 

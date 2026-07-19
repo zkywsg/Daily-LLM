@@ -15,7 +15,8 @@ export type FamilyId =
   | "12-rlhf-alignment"
   | "13-moe-efficient"
   | "14-rag-agent"
-  | "15-reasoning-o1-r1";
+  | "15-reasoning-o1-r1"
+  | "16-world-models";
 
 export interface NodeData {
   name: string;
