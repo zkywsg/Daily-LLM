@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 560"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="wm-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="wm-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="wm-arr-pink" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#db2777"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    World Models — V(压缩)→ M(预测)→ C(决策),C 在 M 的"梦境"里训练
+  </text>
+
+  <!-- observation frame -->
+  <g transform="translate(30, 70)">
+    <rect x="0" y="0" width="90" height="90" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="45" y="45" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">观测帧</text>
+    <text x="45" y="62" text-anchor="middle" font-size="9" fill="#92400e">64x64x3</text>
+    <text x="45" y="-8" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">真实环境</text>
+  </g>
+
+  <line x1="120" y1="115" x2="168" y2="115" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#wm-arr)"/>
+
+  <!-- V block -->
+  <g transform="translate(170, 55)">
+    <rect x="0" y="0" width="160" height="120" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="80" y="24" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">V — VAE</text>
+    <text x="80" y="42" text-anchor="middle" font-size="9" fill="#9d174d">视觉压缩</text>
+    <line x1="15" y1="52" x2="145" y2="52" stroke="#f472b6" stroke-dasharray="3,3"/>
+    <text x="80" y="72" text-anchor="middle" font-size="10" fill="#9d174d">encoder(conv)</text>
+    <text x="80" y="90" text-anchor="middle" font-size="9" fill="#be185d">重建损失 + KL</text>
+    <text x="80" y="108" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">→ z(32 维)</text>
+  </g>
+
+  <line x1="330" y1="115" x2="378" y2="115" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#wm-arr)"/>
+  <text x="354" y="105" text-anchor="middle" font-size="9" fill="#7c3aed" font-weight="600">z</text>
+
+  <!-- M block -->
+  <g transform="translate(380, 40)">
+    <rect x="0" y="0" width="210" height="150" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="105" y="24" text-anchor="middle" font-size="13" fill="#1e3a8a" font-weight="700">M — MDN-RNN</text>
+    <text x="105" y="42" text-anchor="middle" font-size="9" fill="#1e3a8a">时序动态预测</text>
+    <line x1="15" y1="52" x2="195" y2="52" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="105" y="70" text-anchor="middle" font-size="10" fill="#1e3a8a">LSTM(256 隐藏单元)</text>
+    <text x="105" y="88" text-anchor="middle" font-size="10" fill="#1e3a8a">+ 5 分量混合高斯</text>
+    <text x="105" y="110" text-anchor="middle" font-size="9" fill="#1d4ed8" font-weight="700">P(z_t+1 | z_t, a_t, h_t)</text>
+    <text x="105" y="128" text-anchor="middle" font-size="9" fill="#1d4ed8">= Σ π_k · N(μ_k, σ_k)</text>
+    <text x="105" y="145" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">多峰分布,非确定性预测</text>
+  </g>
+
+  <!-- action feedback into M (from C) -->
+  <path d="M 700 340 C 760 340, 760 130, 592 108" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#wm-arr-green)"/>
+  <text x="770" y="230" font-size="9" fill="#059669" font-weight="600" transform="rotate(90 770 230)">动作 a_t 反馈进 M</text>
+
+  <line x1="485" y1="190" x2="485" y2="230" stroke="#2563eb" stroke-width="2.5" marker-end="url(#wm-arr)"/>
+  <text x="530" y="212" text-anchor="middle" font-size="9" fill="#1e3a8a">h_t(记忆状态)</text>
+
+  <!-- C block -->
+  <g transform="translate(380, 235)">
+    <rect x="0" y="0" width="210" height="110" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="105" y="24" text-anchor="middle" font-size="13" fill="#065f46" font-weight="700">C — Controller</text>
+    <text x="105" y="42" text-anchor="middle" font-size="9" fill="#065f46">极小线性控制器</text>
+    <line x1="15" y1="50" x2="195" y2="50" stroke="#86efac" stroke-dasharray="3,3"/>
+    <text x="105" y="68" text-anchor="middle" font-size="10" fill="#065f46">[z_t, h_t] → a_t(线性)</text>
+    <text x="105" y="86" text-anchor="middle" font-size="10" fill="#047857" font-weight="700">CarRacing: 仅 867 参数</text>
+    <text x="105" y="102" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">CMA-ES 优化,无梯度</text>
+  </g>
+
+  <!-- z_t into C -->
+  <path d="M 330 130 C 300 250, 340 290, 378 290" fill="none" stroke="#db2777" stroke-width="2" marker-end="url(#wm-arr-pink)"/>
+  <text x="300" y="200" text-anchor="middle" font-size="9" fill="#db2777" font-weight="600">z_t</text>
+
+  <!-- C output action -->
+  <line x1="590" y1="290" x2="650" y2="290" stroke="#059669" stroke-width="2.5" marker-end="url(#wm-arr-green)"/>
+  <text x="618" y="280" text-anchor="middle" font-size="9" fill="#065f46">a_t</text>
+
+  <g transform="translate(650, 250)">
+    <rect x="0" y="0" width="90" height="80" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="45" y="30" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">动作输出</text>
+    <text x="45" y="48" text-anchor="middle" font-size="9" fill="#065f46">steer/gas/brake</text>
+    <text x="45" y="65" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="600">→ 迁移回真实环境</text>
+  </g>
+
+  <!-- dream loop annotation -->
+  <g transform="translate(30, 340)">
+    <rect x="0" y="0" width="330" height="150" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="165" y="26" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">"梦境"训练循环(C 的训练环境)</text>
+    <text x="18" y="50" font-size="10" fill="#4c1d95">1. M 自回归采样想象的 z_t+1</text>
+    <text x="18" y="70" font-size="10" fill="#4c1d95">2. C 基于 [z_t, h_t] 输出 a_t</text>
+    <text x="18" y="90" font-size="10" fill="#4c1d95">3. a_t 反馈进 M,采样下一个 z</text>
+    <text x="18" y="110" font-size="10" fill="#4c1d95">4. 循环中不接触任何真实环境帧</text>
+    <text x="18" y="132" font-size="10" fill="#dc2626" font-weight="700">CMA-ES 用虚拟 reward 更新 C</text>
+  </g>
+
+  <path d="M 360 400 C 400 400, 400 340, 400 320" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#wm-arr)"/>
+
+  <!-- bottom results strip -->
+  <line x1="30" y1="510" x2="890" y2="510" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="460" y="530" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">
+    真实环境验证:CarRacing-v0 得分 906±21(解决线 900)· VizDoom DoomTakeCover 存活远超 750 步解决线
+  </text>
+  <text x="460" y="550" text-anchor="middle" font-size="9" fill="#7c3aed">
+    V 独立训 + M 独立训 + C 完全在 M 的梦境里训 —— 三段解耦,策略首次可以脱离真实环境交互
+  </text>
+
+</svg>

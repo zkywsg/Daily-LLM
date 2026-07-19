@@ -19,4 +19,5 @@ export const FAMILY_HERO: Record<FamilyId, string> = {
   "13-moe-efficient": "13-moe-efficient/03-mixtral.md",
   "14-rag-agent": "14-rag-agent/01-rag.md",
   "15-reasoning-o1-r1": "15-reasoning-o1-r1/03-o1.md",
+  "16-world-models": "16-world-models/01-world-models.md",
 };
