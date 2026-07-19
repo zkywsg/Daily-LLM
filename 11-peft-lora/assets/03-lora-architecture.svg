@@ -124,7 +124,7 @@
   <g transform="translate(40, 540)">
     <rect x="0" y="0" width="265" height="135" rx="6" fill="#fce7f3" stroke="#db2777" stroke-width="2"/>
     <text x="132" y="22" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">机制一:低秩分解</text>
-    <text x="15" y="48" font-size="10" fill="#9d174d">• ΔW = BA, r=8 << d=4096</text>
+    <text x="15" y="48" font-size="10" fill="#9d174d">• ΔW = BA, r=8 &lt;&lt; d=4096</text>
     <text x="15" y="68" font-size="10" fill="#9d174d">• 参数 2dr vs 全参 d²</text>
     <text x="15" y="88" font-size="10" fill="#9d174d">• ΔW 内在秩低(论文实证)</text>
     <text x="132" y="118" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="700">→ 参数 250× 节省</text>

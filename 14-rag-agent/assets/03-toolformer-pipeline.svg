@@ -101,7 +101,7 @@
     <text x="60" y="20" font-size="10" fill="#1f2937">LM 自采样候选(无人工)</text>
     <text x="300" y="20" font-size="10" fill="#92400e" font-weight="700">机制二</text>
     <text x="360" y="20" font-size="10" fill="#1f2937">Perplexity 过滤(无人评估)</text>
-    <text x="630" y="20" font-size="10" fill="#fbbf24" font-weight="700" fill="#1f2937">机制三</text>
+    <text x="630" y="20" font-size="10" fill="#fbbf24" font-weight="700">机制三</text>
     <text x="690" y="20" font-size="10" fill="#1f2937">微调内化(写进参数)</text>
   </g>
 </svg>
