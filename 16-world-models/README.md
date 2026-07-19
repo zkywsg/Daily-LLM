@@ -29,7 +29,14 @@ Sora 技术报告重新定义了"世界模型"——不是给 RL 智能体用的
 
 ## 子时间线
 
-（由 scripts/generate_timeline.py 自动生成节点卡片，此处无需手写）
+| 年份 | 名字 | 关键贡献 | 之前卡在哪 |
+|------|------|---------|-----------|
+| 2018 | **World Models** | Ha & Schmidhuber——VAE(V)学视觉压缩 + MDN-RNN(M)学时序动态 + 极小线性 Controller(C)在 M 生成的"梦境"里用 CMA-ES 训练,首次证明智能体可以完全脱离真实环境、在自己学到的世界模型内部完成策略训练 | RL 智能体要么直接在原始像素上做 model-free RL(样本效率低),要么世界模型和策略网络耦合训练、难以独立评估 |
+| 2022 | **Video Diffusion Models** | Ho et al.——把 DDPM 的去噪框架从图像推广到视频:时空分解卷积(2D 空间卷积 + 1D 时间卷积)替代昂贵的全 3D 卷积,图像/视频联合训练复用大规模图像数据 | 直接把图像 DDPM 的 2D U-Net 扩展成 3D 会让计算量爆炸式增长,视频数据集规模又远小于图像数据集 |
+| 2023 | **DreamerV3** | Hafner et al.——把 latent imagination 式 model-based RL 规模化到跨领域通吃(Atari/DMC/Minecraft 等 150+ 任务),固定同一套超参数不调参就匹配甚至超过各领域 model-free SOTA | 此前 Dreamer 系列虽证明"想象里训练"可行,但每个领域往往需要针对性调超参数,跨领域泛化性差 |
+| 2024 | **Sora** | OpenAI——把 DiT 规模化到分钟级、多分辨率、多时长连贯视频,用 spacetime patches 统一表示不同长宽比/时长的时空数据,技术报告提出"video generation models as world simulators" | Video Diffusion Models 证明了视频 diffusion 可行,但受限于固定分辨率/时长训练,U-Net 架构 scaling curve 不如 Transformer 干净 |
+| 2024 | **Genie** | DeepMind——无监督地从海量无标注互联网视频里学出逐帧可控制的生成式环境,用 Latent Action Model 隐式推断出离散动作空间,不需要任何人工动作标注 | Sora 能生成逼真视频但只能被动播放,不能实时响应用户操作;DreamerV3 依赖已有明确动作空间的 RL 环境,不能直接用在无标注视频上 |
+| 2024 | **GameNGen** | Google——用条件 diffusion 模型完全替代传统游戏引擎的渲染循环,实时交互式生成可玩的 DOOM 画面,证明神经网络可以端到端承担游戏引擎的职责 | Genie 证明了无监督可学出可控制环境,但画面质量/实时帧率不是其重点;传统游戏引擎则完全是手工编写的确定性程序 |
 
 ## 依赖与延伸
 
