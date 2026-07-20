@@ -190,4 +190,4 @@ World Models 确立了"V/M/C 三段式世界模型"这一 model-based RL 的经�
 - **PlaNet**(2019)把隐空间规划和 latent dynamics 模型结合,证明了纯粹在隐空间里做 model predictive control 也能在多个连续控制任务上媲美 model-free 方法
 - **Dreamer 系列**(Dreamer → DreamerV2 → DreamerV3)延续"latent imagination"思路,把 V/M 换成更强的循环状态空间模型(RSSM),并且用梯度反传(而非进化策略)直接在想象轨迹上训练 actor-critic,大幅提升样本效率和任务规模
 
-→ 03-dreamerv3.md · 世界模型规模化到跨领域,同一套 latent imagination 框架不调参打平 150+ 任务的 model-free SOTA
+→ [03-dreamerv3.md](03-dreamerv3.md) · 世界模型规模化到跨领域,同一套 latent imagination 框架不调参打平 150+ 任务的 model-free SOTA
