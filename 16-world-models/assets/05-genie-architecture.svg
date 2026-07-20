@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 600"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="genie-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="genie-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="genie-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Genie — 视频 tokenizer → Latent Action Model(无监督推断离散动作)→ 动态模型(逐帧可玩)
+  </text>
+
+  <!-- input: unlabeled internet video -->
+  <g transform="translate(20, 70)">
+    <text x="60" y="-14" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">无标注互联网视频</text>
+    <rect x="0" y="0" width="120" height="70" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="60" y="32" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">游戏实况录像</text>
+    <text x="60" y="48" text-anchor="middle" font-size="9" fill="#92400e">不含任何动作标签</text>
+  </g>
+
+  <line x1="145" y1="105" x2="185" y2="105" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#genie-arr)"/>
+
+  <!-- video tokenizer -->
+  <g transform="translate(187, 55)">
+    <rect x="0" y="0" width="150" height="100" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="75" y="24" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">视频 tokenizer</text>
+    <text x="75" y="42" text-anchor="middle" font-size="9" fill="#9d174d">VQ-VAE 思路</text>
+    <text x="75" y="58" text-anchor="middle" font-size="9" fill="#9d174d">帧 → 离散 token</text>
+    <text x="75" y="82" text-anchor="middle" font-size="9" fill="#be185d" font-weight="600">压缩为可处理序列</text>
+  </g>
+
+  <line x1="337" y1="105" x2="377" y2="105" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#genie-arr)"/>
+
+  <!-- LAM block -->
+  <g transform="translate(379, 45)">
+    <rect x="0" y="0" width="220" height="120" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="110" y="22" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="700">Latent Action Model</text>
+    <text x="110" y="38" text-anchor="middle" font-size="9" fill="#1e3a8a">看相邻帧,推断离散 action</text>
+    <line x1="15" y1="46" x2="205" y2="46" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="110" y="64" text-anchor="middle" font-size="9" fill="#1e3a8a">目标:用推断出的 action</text>
+    <text x="110" y="80" text-anchor="middle" font-size="9" fill="#1e3a8a">重建/预测下一帧</text>
+    <text x="110" y="98" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">完全无监督,不用动作标注</text>
+    <text x="110" y="112" text-anchor="middle" font-size="8" fill="#1d4ed8">核心创新</text>
+  </g>
+
+  <line x1="601" y1="105" x2="641" y2="105" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#genie-arr)"/>
+  <text x="621" y="95" text-anchor="middle" font-size="9" fill="#2563eb" font-weight="600">latent action</text>
+
+  <!-- dynamics model -->
+  <g transform="translate(643, 45)">
+    <rect x="0" y="0" width="250" height="120" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="125" y="22" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">动态模型</text>
+    <text x="125" y="38" text-anchor="middle" font-size="9" fill="#5b21b6">自回归 / MaskGIT 风格</text>
+    <line x1="15" y1="46" x2="235" y2="46" stroke="#c4b5fd" stroke-dasharray="3,3"/>
+    <text x="125" y="64" text-anchor="middle" font-size="9" fill="#5b21b6">条件:过去帧 token + latent action</text>
+    <text x="125" y="82" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">推理时用户手动挑选 action</text>
+    <text x="125" y="100" text-anchor="middle" font-size="9" fill="#5b21b6">逐帧生成下一帧</text>
+    <text x="125" y="114" text-anchor="middle" font-size="8" fill="#7c3aed">让动作真正影响生成内容</text>
+  </g>
+
+  <!-- output loop -->
+  <line x1="768" y1="165" x2="768" y2="200" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#genie-arr)"/>
+  <g transform="translate(648, 202)">
+    <rect x="0" y="0" width="240" height="66" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="120" y="24" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">输出下一帧 → 用户逐帧"玩"</text>
+    <text x="120" y="42" text-anchor="middle" font-size="9" fill="#065f46">循环:选 action → 生成下一帧</text>
+    <text x="120" y="58" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="600">可交互的生成式环境</text>
+  </g>
+
+  <!-- feedback loop arrow: output back to dynamics model input -->
+  <path d="M 768 268 C 900 300, 900 120, 893 105" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#genie-arr-green)"/>
+  <text x="900" y="190" text-anchor="middle" font-size="8" fill="#059669" writing-mode="tb" font-weight="600">逐帧自回归循环</text>
+
+  <!-- decoupling annotation -->
+  <g transform="translate(30, 260)">
+    <rect x="0" y="0" width="410" height="120" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="205" y="26" text-anchor="middle" font-size="12" fill="#854d0e" font-weight="700">核心解耦:可控性 ≠ 动作标注</text>
+    <text x="18" y="50" font-size="10" fill="#713f12">DreamerV3:已知动作空间,依赖标注</text>
+    <text x="18" y="70" font-size="10" fill="#713f12">Genie:动作空间本身也无监督学出来</text>
+    <text x="18" y="90" font-size="10" fill="#713f12">画面变化即隐含动作信息</text>
+    <text x="18" y="108" font-size="10" fill="#dc2626" font-weight="700">离散 latent action,而非连续向量</text>
+  </g>
+
+  <!-- vs Sora annotation -->
+  <g transform="translate(470, 260)">
+    <rect x="0" y="0" width="420" height="120" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="210" y="26" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">相对 Sora 的跃迁</text>
+    <text x="18" y="50" font-size="10" fill="#4c1d95">Sora:高保真但只能被动播放</text>
+    <text x="18" y="70" font-size="10" fill="#4c1d95">Genie:逐帧可控,能"玩"</text>
+    <text x="18" y="90" font-size="10" fill="#4c1d95">代价:画质/分辨率远不及 Sora</text>
+    <text x="18" y="108" font-size="10" fill="#dc2626" font-weight="700">优先验证可控性,而非画质本身</text>
+  </g>
+
+  <path d="M 400 260 C 400 230, 430 230, 460 260" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#genie-arr)"/>
+
+  <!-- bottom summary strip -->
+  <line x1="30" y1="420" x2="890" y2="420" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="460" y="445" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">
+    约 11B 参数(量级) · 训练数据数万小时(过滤后,量级) · 离散 latent action 空间为个位到十位数(量级)
+  </text>
+  <text x="460" y="468" text-anchor="middle" font-size="9" fill="#7c3aed">
+    tokenizer 把像素变离散序列 + LAM 无监督学出可控"操作把手" + 动态模型让操作把手真正影响生成 —— 三者协同,才让"无标注视频学出可玩世界"成立
+  </text>
+
+</svg>
