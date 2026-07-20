@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 600"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="gng-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="gng-arr-orange" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706"/>
+    </marker>
+    <marker id="gng-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GameNGen — RL agent 生成数据 → 条件 diffusion 训练 → 自回归实时推理循环
+  </text>
+
+  <!-- RL agent block -->
+  <g transform="translate(20, 60)">
+    <text x="75" y="-10" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">阶段一:数据生成</text>
+    <rect x="0" y="0" width="150" height="100" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+    <text x="75" y="24" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">RL agent 玩 DOOM</text>
+    <text x="75" y="42" text-anchor="middle" font-size="9" fill="#92400e">自主探索 / 试错</text>
+    <text x="75" y="58" text-anchor="middle" font-size="9" fill="#92400e">不靠人类录屏</text>
+    <text x="75" y="80" text-anchor="middle" font-size="9" fill="#b45309" font-weight="600">画面 + 操作 配对轨迹</text>
+  </g>
+
+  <line x1="172" y1="110" x2="212" y2="110" stroke="#d97706" stroke-width="2.5" marker-end="url(#gng-arr-orange)"/>
+
+  <!-- training data -->
+  <g transform="translate(214, 70)">
+    <rect x="0" y="0" width="130" height="80" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="2" stroke-dasharray="4,3"/>
+    <text x="65" y="24" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">训练数据</text>
+    <text x="65" y="42" text-anchor="middle" font-size="9" fill="#92400e">(历史帧, 操作)</text>
+    <text x="65" y="58" text-anchor="middle" font-size="9" fill="#92400e">→ 下一帧</text>
+  </g>
+
+  <line x1="346" y1="110" x2="386" y2="110" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#gng-arr)"/>
+
+  <!-- conditional diffusion training -->
+  <g transform="translate(388, 45)">
+    <text x="115" y="-8" text-anchor="middle" font-size="10" fill="#5b21b6" font-weight="600">阶段二:训练</text>
+    <rect x="0" y="0" width="230" height="130" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="115" y="24" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">条件 diffusion 模型</text>
+    <text x="115" y="42" text-anchor="middle" font-size="9" fill="#5b21b6">条件:历史帧 + 当前操作</text>
+    <text x="115" y="58" text-anchor="middle" font-size="9" fill="#5b21b6">目标:去噪预测下一帧</text>
+    <line x1="15" y1="68" x2="215" y2="68" stroke="#c4b5fd" stroke-dasharray="3,3"/>
+    <text x="115" y="86" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">训练时对条件帧人为加噪</text>
+    <text x="115" y="102" text-anchor="middle" font-size="9" fill="#5b21b6">(噪声增强)</text>
+    <text x="115" y="118" text-anchor="middle" font-size="8" fill="#7c3aed">替代传统渲染管线的显式计算</text>
+  </g>
+
+  <line x1="620" y1="110" x2="660" y2="110" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#gng-arr)"/>
+  <text x="640" y="98" text-anchor="middle" font-size="9" fill="#7c3aed" font-weight="600">训好的去噪网络</text>
+
+  <!-- inference loop -->
+  <g transform="translate(662, 45)">
+    <text x="118" y="-8" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">阶段三:实时推理</text>
+    <rect x="0" y="0" width="238" height="130" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2.5"/>
+    <text x="119" y="24" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">自回归生成循环</text>
+    <text x="119" y="42" text-anchor="middle" font-size="9" fill="#065f46">历史帧 buffer + 玩家操作</text>
+    <text x="119" y="58" text-anchor="middle" font-size="9" fill="#065f46">→ 采样下一帧</text>
+    <line x1="15" y1="68" x2="223" y2="68" stroke="#6ee7b7" stroke-dasharray="3,3"/>
+    <text x="119" y="86" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">生成帧加噪后再入 buffer</text>
+    <text x="119" y="102" text-anchor="middle" font-size="9" fill="#065f46">防止误差累积漂移</text>
+    <text x="119" y="118" text-anchor="middle" font-size="8" fill="#059669">实时帧率,长时间不崩坏</text>
+  </g>
+
+  <!-- feedback loop: output frame back into buffer -->
+  <path d="M 781 175 C 781 220, 900 220, 900 110 C 900 80, 850 60, 810 50" fill="none"
+        stroke="#059669" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gng-arr-green)"/>
+  <text x="900" y="150" text-anchor="middle" font-size="8" fill="#059669" writing-mode="tb" font-weight="600">逐帧自回归循环</text>
+
+  <!-- output: playable screen -->
+  <g transform="translate(648, 210)">
+    <rect x="0" y="0" width="252" height="58" rx="6" fill="#f0fdf4" stroke="#059669" stroke-width="2"/>
+    <text x="126" y="24" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">玩家看到的实时画面</text>
+    <text x="126" y="42" text-anchor="middle" font-size="9" fill="#065f46">神经网络端到端承担渲染循环</text>
+  </g>
+  <line x1="781" y1="175" x2="781" y2="210" stroke="#059669" stroke-width="2" marker-end="url(#gng-arr-green)"/>
+
+  <!-- vs Genie annotation -->
+  <g transform="translate(30, 260)">
+    <rect x="0" y="0" width="410" height="120" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="205" y="26" text-anchor="middle" font-size="12" fill="#854d0e" font-weight="700">相对 Genie 的差异</text>
+    <text x="18" y="50" font-size="10" fill="#713f12">Genie:无监督视频 + 隐式动作空间</text>
+    <text x="18" y="70" font-size="10" fill="#713f12">GameNGen:RL agent 有监督配对数据</text>
+    <text x="18" y="90" font-size="10" fill="#713f12">Genie 不追求实时/长时间稳定</text>
+    <text x="18" y="108" font-size="10" fill="#dc2626" font-weight="700">GameNGen 硬指标:实时 + 不崩坏</text>
+  </g>
+
+  <!-- vs traditional engine annotation -->
+  <g transform="translate(470, 260)">
+    <rect x="0" y="0" width="420" height="120" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="210" y="26" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">相对传统游戏引擎的跃迁</text>
+    <text x="18" y="50" font-size="10" fill="#4c1d95">传统引擎:手写确定性渲染代码</text>
+    <text x="18" y="70" font-size="10" fill="#4c1d95">GameNGen:渲染循环由模型学出来</text>
+    <text x="18" y="90" font-size="10" fill="#4c1d95">代价:仅在 DOOM 这一相对简单游戏验证</text>
+    <text x="18" y="108" font-size="10" fill="#dc2626" font-weight="700">首个可工作的神经网络游戏引擎原型</text>
+  </g>
+
+  <path d="M 400 260 C 400 230, 430 230, 460 260" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#gng-arr)"/>
+
+  <!-- bottom summary strip -->
+  <line x1="30" y1="420" x2="890" y2="420" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="460" y="445" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">
+    单 TPU 上接近实时帧率(量级) · 人类盲测难以区分真实/生成片段 · 具体数字请核对原论文 arXiv:2408.14837
+  </text>
+  <text x="460" y="468" text-anchor="middle" font-size="9" fill="#7c3aed">
+    RL agent 提供规模化数据 + 条件 diffusion 提供预测下一帧的能力 + 噪声增强条件帧解决长时间稳定性 —— 三者协同,才让"神经网络游戏引擎"成立
+  </text>
+
+</svg>
