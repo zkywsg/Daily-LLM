@@ -28,6 +28,7 @@
 | 2018 | **StyleGAN** | `04-gan` | 用 mapping network 把 z 投射到 W 空间,再通过 AdaIN 在每层注入 style 控制不同语义粒度(粗:姿态/形状,中:发型/眼神,细:肤色/纹理);1024×1024 超高分辨率人脸,生成质量逼近真实照片 | [04-gan/04-stylegan.md](04-gan/04-stylegan.md) |
 | 2018 | **BERT** | `06-bert-family` | 用 encoder-only Transformer + masked LM 学双向上下文表征,GLUE 11 任务全面 SOTA,把 NLP 拖进预训练时代 | [06-bert-family/01-bert.md](06-bert-family/01-bert.md) |
 | 2018 | **GPT-1** | `07-gpt-scaling` | 用 decoder-only Transformer + 无监督自回归预训练 + 任务微调,第一次系统跑通预训练范式;同年 BERT 用 encoder-only 验证了双向版本 | [07-gpt-scaling/01-gpt1.md](07-gpt-scaling/01-gpt1.md) |
+| 2018 | **World Models** | `16-world-models` | 把智能体拆成 V(VAE 视觉压缩)+ M(MDN-RNN 时序预测)+ C(极小线性控制器)三部分,C 完全在 M 生成的'梦境'里用进化策略训练,首次证明智能体可以脱离真实环境、完全在自己学到的世界模型内部完成策略训练 | [16-world-models/01-world-models.md](16-world-models/01-world-models.md) |
 | 2019 | **EfficientNet** | `01-cnn` | 用复合缩放系数把 depth/width/resolution 三轴联合缩放公式化，得到帕累托最优的 B0–B7 模型族 | [01-cnn/07-efficientnet.md](01-cnn/07-efficientnet.md) |
 | 2019 | **Transformer-XL** | `05-transformer` | 用段级循环把上一段隐状态作为这段的记忆 + 相对位置编码替代绝对 PE,让 Transformer 第一次跨越固定窗口处理长上下文 | [05-transformer/02-transformer-xl.md](05-transformer/02-transformer-xl.md) |
 | 2019 | **RoBERTa** | `06-bert-family` | 去掉 NSP + 动态 masking + 大 batch + 10× 数据 + 更长训练,证明 BERT 严重训练不足,GLUE 再涨 5+ 分而架构完全不动 | [06-bert-family/02-roberta.md](06-bert-family/02-roberta.md) |
@@ -62,6 +63,7 @@
 | 2022 | **ReAct** | `14-rag-agent` | 把 LLM 的推理(Thought)和行动(Action)交错进行,thought 推理下一步要查什么,action 调外部工具,observation 反馈给 LLM 继续推理;Agent 范式的起源 | [14-rag-agent/02-react.md](14-rag-agent/02-react.md) |
 | 2022 | **Chain-of-Thought** | `15-reasoning-o1-r1` | 在 prompt 里给 few-shot 例子展示'问题→推理步骤→答案'格式,LLM 模仿后大数学题准确率从 17% 涨到 60%+;开启 LLM 推理能力的新研究方向 | [15-reasoning-o1-r1/01-cot.md](15-reasoning-o1-r1/01-cot.md) |
 | 2022 | **Self-Consistency** | `15-reasoning-o1-r1` | 对同 prompt 采样 N 条 CoT 推理路径,投票选最一致答案;GSM8K 60% → 75%;第一次系统化 test-time compute scaling | [15-reasoning-o1-r1/02-self-consistency.md](15-reasoning-o1-r1/02-self-consistency.md) |
+| 2022 | **Video Diffusion Models** | `16-world-models` | 把 DDPM 的去噪框架从图像推广到视频:用时空分解卷积(2D 空间卷积 + 1D 时间卷积)代替昂贵的 3D 卷积,图像/视频联合训练复用大规模图像数据,是'用 diffusion 生成视频'这条路线的起点 | [16-world-models/02-video-diffusion-models.md](16-world-models/02-video-diffusion-models.md) |
 | 2023 | **GPT-4 / LLaMA** | `07-gpt-scaling` | GPT-4 把 LLM 推到万亿级 + 多模态闭源;LLaMA 给社区第一个工业级开源基础模型;现代 LLM 配方(Pre-RMSNorm + RoPE + GQA + SwiGLU)在两者上同时定型 | [07-gpt-scaling/05-gpt4-llama.md](07-gpt-scaling/05-gpt4-llama.md) |
 | 2023 | **LLaVA** | `09-multimodal-clip` | Visual instruction tuning:用 GPT-4 自动生成视觉指令数据,把 CLIP 视觉特征用单 linear projection 接到 LLaMA,把开源 VLM 范式定型在 GPT-4V 之前 | [09-multimodal-clip/04-llava.md](09-multimodal-clip/04-llava.md) |
 | 2023 | **Flow Matching / Rectified Flow** | `10-diffusion` | 把 diffusion 的 ε-prediction 推广到任意流形的'速度场学习',训练更稳 + 采样路径更直 + 数学更简洁,SD3 / Flux 默认 | [10-diffusion/04-flow-matching.md](10-diffusion/04-flow-matching.md) |
@@ -69,7 +71,11 @@
 | 2023 | **DPO** | `12-rlhf-alignment` | 通过数学推导把 RLHF 的 RL 目标转化成监督学习损失,跳过 reward model 和 PPO,工程上和 SFT 一样简单且效果接近,2024 开源 LLM 默认对齐方法 | [12-rlhf-alignment/04-dpo.md](12-rlhf-alignment/04-dpo.md) |
 | 2023 | **Toolformer** | `14-rag-agent` | 让 LLM 在预训练语料上自监督学习何时何处插入工具调用——给候选位置加 tool call,如果调用后 perplexity 降低就保留;tool use 从 prompt 技巧内化为模型本身能力 | [14-rag-agent/03-toolformer.md](14-rag-agent/03-toolformer.md) |
 | 2023 | **AutoGPT** | `14-rag-agent` | 把 ReAct 推到极限——LLM 拿到高级目标后自己分解为子任务、规划执行步骤、循环调工具直到完成,无人干预;启动自主 agent 范式 | [14-rag-agent/04-autogpt.md](14-rag-agent/04-autogpt.md) |
+| 2023 | **DreamerV3** | `16-world-models` | 把 latent imagination 式的 model-based RL 规模化到跨领域通吃(Atari/DMC/Minecraft 等 150+ 任务),固定同一套超参数不调参就能匹配甚至超过各领域的 model-free SOTA,包括无需人类数据/课程学习拿到 Minecraft 钻石 | [16-world-models/03-dreamerv3.md](16-world-models/03-dreamerv3.md) |
 | 2024 | **Mixtral 8×7B** | `13-moe-efficient` | 第一个完全开源的生产级 MoE LLM,8 个 7B expert + top-2 gating,46.7B 总参 / 13B 激活;质量超 LLaMA-2-70B 但推理速度像 13B 模型,开源社区第一次拿到可用 MoE | [13-moe-efficient/03-mixtral.md](13-moe-efficient/03-mixtral.md) |
 | 2024 | **DeepSeek-V3** | `13-moe-efficient` | 671B 总参 / 37B 激活的开源 MoE 旗舰,集成 fine-grained experts(256 细粒度 expert)+ shared experts + aux-loss-free load balancing + MTP(Multi-Token Prediction)等十余项创新;首次让开源 MoE 追上 GPT-4 级闭源模型,也是 DeepSeek-R1 的 base | [13-moe-efficient/04-deepseek-v3.md](13-moe-efficient/04-deepseek-v3.md) |
 | 2024 | **OpenAI o1** | `15-reasoning-o1-r1` | 把长链推理作为训练目标,用 RL 让 LLM 自己学到反思/回溯/自验证;test-time compute 成为继训练算力之后的新 scaling 轴,在数学/科学/代码 benchmark 上击败 GPT-4 多倍 | [15-reasoning-o1-r1/03-o1.md](15-reasoning-o1-r1/03-o1.md) |
+| 2024 | **Sora** | `16-world-models` | 把 DiT 规模化到分钟级、多分辨率、多时长连贯视频:用 spacetime patches 统一表示不同长宽比/时长的时空数据,论文明确提出'video generation models are world simulators'的定位 | [16-world-models/04-sora.md](16-world-models/04-sora.md) |
+| 2024 | **Genie** | `16-world-models` | 无监督地从海量无标注互联网视频里学出逐帧可控制的生成式环境:隐式学习出离散的 latent action 空间,不需要任何人工动作标注,用户可以用学到的离散动作逐帧'玩'生成出来的世界 | [16-world-models/05-genie.md](16-world-models/05-genie.md) |
+| 2024 | **GameNGen** | `16-world-models` | 用条件 diffusion 模型完全替代传统游戏引擎的渲染循环,实时交互式生成可玩的 DOOM 画面,证明神经网络可以端到端承担游戏引擎的职责 | [16-world-models/06-gamengen.md](16-world-models/06-gamengen.md) |
 | 2025 | **DeepSeek-R1** | `15-reasoning-o1-r1` | 开源 o1 风格推理模型;先用纯 RL(GRPO)无 SFT cold start 训练 R1-Zero 验证推理行为可从 RL 中涌现,再用少量 cold-start SFT + 多阶段 RL 训练 R1 达到 o1 同级性能,推理 trace 全公开 | [15-reasoning-o1-r1/04-deepseek-r1.md](15-reasoning-o1-r1/04-deepseek-r1.md) |

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-30T17:11:01.262478+00:00",
+  "generatedAt": "2026-07-20T17:39:33.756445+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -1532,6 +1532,144 @@
           "assets": [
             "15-reasoning-o1-r1/assets/04-deepseek-r1-grpo.svg",
             "15-reasoning-o1-r1/assets/04-deepseek-r1-pipeline.svg"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "16-world-models",
+      "label": "世界模型 / 视频生成",
+      "blurb": "让模型学会预测\"接下来会发生什么\"——从在自己想象的世界里训练强化学习智能体,到生成分钟级连贯视频,再到把 diffusion 模型直接变成可交互的实时游戏引擎。",
+      "yearRange": [
+        2018,
+        2024
+      ],
+      "colorToken": "--family-16",
+      "nodes": [
+        {
+          "name": "World Models",
+          "year": 2018,
+          "family": "16-world-models",
+          "order": 1,
+          "paper": "World Models",
+          "authors": [
+            "David Ha",
+            "Jürgen Schmidhuber"
+          ],
+          "key_idea": "把智能体拆成 V(VAE 视觉压缩)+ M(MDN-RNN 时序预测)+ C(极小线性控制器)三部分,C 完全在 M 生成的'梦境'里用进化策略训练,首次证明智能体可以脱离真实环境、完全在自己学到的世界模型内部完成策略训练",
+          "path": "16-world-models/01-world-models.md",
+          "assets": [
+            "16-world-models/assets/01-world-models-architecture.svg"
+          ]
+        },
+        {
+          "name": "Video Diffusion Models",
+          "year": 2022,
+          "family": "16-world-models",
+          "order": 2,
+          "paper": "Video Diffusion Models",
+          "authors": [
+            "Jonathan Ho",
+            "Tim Salimans",
+            "Alexey Gritsenko",
+            "William Chan",
+            "Mohammad Norouzi",
+            "David J. Fleet"
+          ],
+          "key_idea": "把 DDPM 的去噪框架从图像推广到视频:用时空分解卷积(2D 空间卷积 + 1D 时间卷积)代替昂贵的 3D 卷积,图像/视频联合训练复用大规模图像数据,是'用 diffusion 生成视频'这条路线的起点",
+          "path": "16-world-models/02-video-diffusion-models.md",
+          "assets": [
+            "16-world-models/assets/02-video-diffusion-models-architecture.svg"
+          ]
+        },
+        {
+          "name": "DreamerV3",
+          "year": 2023,
+          "family": "16-world-models",
+          "order": 3,
+          "paper": "Mastering Diverse Domains through World Models",
+          "authors": [
+            "Danijar Hafner",
+            "Jurgis Pasukonis",
+            "Jimmy Ba",
+            "Timothy Lillicrap"
+          ],
+          "key_idea": "把 latent imagination 式的 model-based RL 规模化到跨领域通吃(Atari/DMC/Minecraft 等 150+ 任务),固定同一套超参数不调参就能匹配甚至超过各领域的 model-free SOTA,包括无需人类数据/课程学习拿到 Minecraft 钻石",
+          "path": "16-world-models/03-dreamerv3.md",
+          "assets": [
+            "16-world-models/assets/03-dreamerv3-architecture.svg"
+          ]
+        },
+        {
+          "name": "Sora",
+          "year": 2024,
+          "family": "16-world-models",
+          "order": 4,
+          "paper": "Video generation models as world simulators",
+          "authors": [
+            "OpenAI"
+          ],
+          "key_idea": "把 DiT 规模化到分钟级、多分辨率、多时长连贯视频:用 spacetime patches 统一表示不同长宽比/时长的时空数据,论文明确提出'video generation models are world simulators'的定位",
+          "path": "16-world-models/04-sora.md",
+          "assets": [
+            "16-world-models/assets/04-sora-architecture.svg"
+          ]
+        },
+        {
+          "name": "Genie",
+          "year": 2024,
+          "family": "16-world-models",
+          "order": 5,
+          "paper": "Genie: Generative Interactive Environments",
+          "authors": [
+            "Jake Bruce",
+            "Michael Dennis",
+            "Ashley Edwards",
+            "Jack Parker-Holder",
+            "Yuge Shi",
+            "Edward Hughes",
+            "Matthew Lai",
+            "Aditi Mavalankar",
+            "Richie Steigerwald",
+            "Chris Apps",
+            "Yusuf Aytar",
+            "Sarah Bechtle",
+            "Feryal Behbahani",
+            "Stephanie Chan",
+            "Nicolas Heess",
+            "Lucy Gonzalez",
+            "Simon Osindero",
+            "Sherjil Ozair",
+            "Scott Reed",
+            "Jingwei Zhang",
+            "Konrad Zolna",
+            "Jeff Clune",
+            "Nando de Freitas",
+            "Satinder Singh",
+            "Tim Rocktäschel"
+          ],
+          "key_idea": "无监督地从海量无标注互联网视频里学出逐帧可控制的生成式环境:隐式学习出离散的 latent action 空间,不需要任何人工动作标注,用户可以用学到的离散动作逐帧'玩'生成出来的世界",
+          "path": "16-world-models/05-genie.md",
+          "assets": [
+            "16-world-models/assets/05-genie-architecture.svg"
+          ]
+        },
+        {
+          "name": "GameNGen",
+          "year": 2024,
+          "family": "16-world-models",
+          "order": 6,
+          "paper": "Diffusion Models Are Real-Time Game Engines",
+          "authors": [
+            "Dani Valevski",
+            "Yaniv Leviathan",
+            "Moab Arar",
+            "Shlomi Fruchter"
+          ],
+          "key_idea": "用条件 diffusion 模型完全替代传统游戏引擎的渲染循环,实时交互式生成可玩的 DOOM 画面,证明神经网络可以端到端承担游戏引擎的职责",
+          "path": "16-world-models/06-gamengen.md",
+          "assets": [
+            "16-world-models/assets/06-gamengen-architecture.svg"
           ]
         }
       ]

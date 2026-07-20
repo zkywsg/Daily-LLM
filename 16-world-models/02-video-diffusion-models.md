@@ -32,7 +32,7 @@ Ho 等人的目标是找一个架构和训练方案,既能让 U-Net 在时间维
 
 → 两个机制协同,才能让"训得起、训得好"的视频 diffusion 第一次成立,见图 1 的时空分解模块全景。
 
-![Video Diffusion Models 架构 — 视频帧输入 → 2D 空间卷积(逐帧)→ 1D 时间卷积(逐空间位置沿时间)→ 时空分解输出](assets/02-vdm-architecture.svg)
+![Video Diffusion Models 架构 — 视频帧输入 → 2D 空间卷积(逐帧)→ 1D 时间卷积(逐空间位置沿时间)→ 时空分解输出](assets/02-video-diffusion-models-architecture.svg)
 
 ## 机制一:时空分解架构 —— 2D 空间卷积 + 1D 时间卷积
 
