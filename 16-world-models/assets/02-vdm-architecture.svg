@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 560"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="vdm-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="vdm-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="vdm-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Video Diffusion Models — 时空分解:2D 空间卷积(逐帧)+ 1D 时间卷积(逐位置沿时间)
+  </text>
+
+  <!-- input video frames -->
+  <g transform="translate(30, 70)">
+    <rect x="0" y="-8" width="140" height="16" fill="none"/>
+    <text x="70" y="-14" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">输入视频帧</text>
+    <rect x="0" y="0" width="30" height="30" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <rect x="36" y="0" width="30" height="30" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <rect x="72" y="0" width="30" height="30" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <rect x="108" y="0" width="30" height="30" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="15" y="20" text-anchor="middle" font-size="9" fill="#92400e">t1</text>
+    <text x="51" y="20" text-anchor="middle" font-size="9" fill="#92400e">t2</text>
+    <text x="87" y="20" text-anchor="middle" font-size="9" fill="#92400e">t3</text>
+    <text x="123" y="20" text-anchor="middle" font-size="9" fill="#92400e">t4</text>
+    <text x="70" y="48" text-anchor="middle" font-size="9" fill="#92400e">[B,T,C,H,W]</text>
+  </g>
+
+  <line x1="170" y1="95" x2="215" y2="95" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#vdm-arr)"/>
+
+  <!-- Spatial conv block -->
+  <g transform="translate(217, 45)">
+    <rect x="0" y="0" width="230" height="150" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="115" y="24" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">2D 空间卷积</text>
+    <text x="115" y="42" text-anchor="middle" font-size="9" fill="#9d174d">时间维折叠进 batch,逐帧独立</text>
+    <line x1="15" y1="52" x2="215" y2="52" stroke="#f472b6" stroke-dasharray="3,3"/>
+    <!-- 4 independent frame mini-blocks -->
+    <g transform="translate(20, 62)">
+      <rect x="0" y="0" width="40" height="40" rx="4" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/>
+      <rect x="50" y="0" width="40" height="40" rx="4" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/>
+      <rect x="100" y="0" width="40" height="40" rx="4" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/>
+      <rect x="150" y="0" width="40" height="40" rx="4" fill="#fbcfe8" stroke="#db2777" stroke-width="1.5"/>
+      <text x="20" y="25" text-anchor="middle" font-size="9" fill="#9d174d">conv</text>
+      <text x="70" y="25" text-anchor="middle" font-size="9" fill="#9d174d">conv</text>
+      <text x="120" y="25" text-anchor="middle" font-size="9" fill="#9d174d">conv</text>
+      <text x="170" y="25" text-anchor="middle" font-size="9" fill="#9d174d">conv</text>
+    </g>
+    <text x="115" y="134" text-anchor="middle" font-size="9" fill="#be185d" font-weight="600">帧与帧此时互不知道彼此</text>
+  </g>
+
+  <line x1="447" y1="120" x2="492" y2="120" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#vdm-arr)"/>
+
+  <!-- Temporal conv block -->
+  <g transform="translate(494, 45)">
+    <rect x="0" y="0" width="230" height="150" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="115" y="24" text-anchor="middle" font-size="13" fill="#1e3a8a" font-weight="700">1D 时间卷积</text>
+    <text x="115" y="42" text-anchor="middle" font-size="9" fill="#1e3a8a">空间位置折叠进 batch,沿时间轴</text>
+    <line x1="15" y1="52" x2="215" y2="52" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <!-- vertical strip across time per spatial location -->
+    <g transform="translate(30, 65)">
+      <rect x="0" y="0" width="18" height="70" rx="3" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="26" y="0" width="18" height="70" rx="3" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="52" y="0" width="18" height="70" rx="3" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+      <path d="M 9 5 L 9 65" stroke="#1d4ed8" stroke-width="2" marker-end="url(#vdm-arr-blue)"/>
+      <path d="M 35 5 L 35 65" stroke="#1d4ed8" stroke-width="2" marker-end="url(#vdm-arr-blue)"/>
+      <path d="M 61 5 L 61 65" stroke="#1d4ed8" stroke-width="2" marker-end="url(#vdm-arr-blue)"/>
+    </g>
+    <text x="200" y="90" text-anchor="middle" font-size="9" fill="#1e3a8a" writing-mode="vertical-rl">每个空间位置独立</text>
+    <text x="115" y="134" text-anchor="middle" font-size="9" fill="#1d4ed8" font-weight="600">这一步才真正跨帧交换信息</text>
+  </g>
+
+  <line x1="724" y1="120" x2="769" y2="120" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#vdm-arr)"/>
+
+  <g transform="translate(771, 80)">
+    <rect x="0" y="0" width="110" height="80" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="55" y="28" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">时空分解输出</text>
+    <text x="55" y="46" text-anchor="middle" font-size="9" fill="#065f46">建模时空关系</text>
+    <text x="55" y="63" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="600">远比 3D 卷积省算力</text>
+  </g>
+
+  <!-- image co-training annotation -->
+  <g transform="translate(30, 250)">
+    <rect x="0" y="0" width="410" height="120" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="205" y="26" text-anchor="middle" font-size="12" fill="#854d0e" font-weight="700">图像/视频联合训练</text>
+    <text x="18" y="50" font-size="10" fill="#713f12">静止图像 = 长度为 1 的"单帧视频"</text>
+    <text x="18" y="70" font-size="10" fill="#713f12">时间卷积路径对单帧输入退化为恒等映射</text>
+    <text x="18" y="90" font-size="10" fill="#713f12">复用远大于视频数据集的图像数据集</text>
+    <text x="18" y="108" font-size="10" fill="#dc2626" font-weight="700">解决视频标注数据稀缺的问题</text>
+  </g>
+
+  <!-- guidance annotation -->
+  <g transform="translate(470, 250)">
+    <rect x="0" y="0" width="410" height="120" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="205" y="26" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">引导技术 → 自回归扩展长度</text>
+    <text x="18" y="50" font-size="10" fill="#4c1d95">用已生成片段末尾帧当条件,继续采样</text>
+    <text x="18" y="70" font-size="10" fill="#4c1d95">reconstruction guidance 拉回与条件一致</text>
+    <text x="18" y="90" font-size="10" fill="#4c1d95">classifier-free guidance 增强样本质量</text>
+    <text x="18" y="108" font-size="10" fill="#dc2626" font-weight="700">长视频不漂移、保持连贯</text>
+  </g>
+
+  <path d="M 400 250 C 400 220, 430 220, 460 250" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#vdm-arr)"/>
+
+  <!-- bottom results strip -->
+  <line x1="30" y1="410" x2="890" y2="410" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="460" y="435" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">
+    Kinetics-600 类别条件生成 FVD 新 SOTA · 自回归条件扩展生成明显更长的连贯视频
+  </text>
+  <text x="460" y="458" text-anchor="middle" font-size="9" fill="#7c3aed">
+    时空分解降算力 + 联合训练解决数据稀缺 + 引导技术保一致性 —— 三者缺一,2022 年无法生成高质量长视频
+  </text>
+
+</svg>
