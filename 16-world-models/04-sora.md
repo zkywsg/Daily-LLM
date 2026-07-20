@@ -10,7 +10,7 @@ key_idea: "把 DiT 规模化到分钟级、多分辨率、多时长连贯视频:
 
 ## 前作进展
 
-2022 年 [Video Diffusion Models](02-video-diffusion-models.md) 证明了 diffusion 可以生成视频,但受限于两个没有解决的问题:一是训练时固定分辨率/时长——视频要么被裁剪成正方形,要么被压缩到统一的短时长窗口,模型看不到真实世界视频天然的长宽比和时长分布;二是骨干仍然是 U-Net 及其时空分解卷积变体,而 U-Net 在 diffusion 上的 scaling curve 不如 Transformer 干净可预测(呼应 [DiT](../10-diffusion/05-dit.md) 节点里"U-Net scaling 不如 Transformer 可预测"的论点)。
+2022 年 [Video Diffusion Models](02-video-diffusion-models.md) 证明了 diffusion 可以生成视频,但受限于两个没有解决的问题:一是固定长度的采样窗口——VDM 训练/采样时只能生成十几帧量级的短片段,更长的视频要靠自回归扩展外加 reconstruction guidance 拼接,模型本身并不直接支持任意时长的原生生成;此前包括 VDM 在内的多数视频生成工作,数据预处理上也普遍把视频统一裁剪/缩放成固定分辨率和长宽比,模型看不到真实世界视频天然的长宽比和时长分布。二是骨干仍然是 U-Net 及其时空分解卷积变体,而 U-Net 在 diffusion 上的 scaling curve 不如 Transformer 干净可预测(呼应 [DiT](../10-diffusion/05-dit.md) 节点里"U-Net scaling 不如 Transformer 可预测"的论点)。
 
 2022 年底的 [DiT](../10-diffusion/05-dit.md) 已经在图像 diffusion 上验证了:把 U-Net 换成 Transformer + patchify + adaLN-Zero,FLOPs 越大 FID 越低单调成立,拥有干净的 log-log scaling curve。剩下的问题是——**这套骨架能不能规模化到视频,并且直接在原生分辨率/长宽比/时长的数据上训练,而不是强行统一成固定尺寸**?OpenAI 在 2024 年 2 月发布的 Sora 技术报告《Video generation models as world simulators》给出了答案。
 
