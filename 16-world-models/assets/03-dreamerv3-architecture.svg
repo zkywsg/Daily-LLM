@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 600"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="dv3-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="dv3-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="dv3-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    DreamerV3 — 离散 RSSM 世界模型 + symlog 归一化 + actor-critic 在想象轨迹里训练
+  </text>
+
+  <!-- real env observation -->
+  <g transform="translate(30, 70)">
+    <rect x="0" y="0" width="110" height="90" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="55" y="-10" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">真实环境(Atari/DMC/Minecraft…)</text>
+    <text x="55" y="38" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">观测 + 奖励</text>
+    <text x="55" y="58" text-anchor="middle" font-size="9" fill="#92400e">跨领域尺度差异悬殊</text>
+  </g>
+
+  <line x1="140" y1="115" x2="188" y2="115" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#dv3-arr)"/>
+
+  <!-- RSSM block -->
+  <g transform="translate(190, 50)">
+    <rect x="0" y="0" width="230" height="140" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="115" y="24" text-anchor="middle" font-size="13" fill="#1e3a8a" font-weight="700">RSSM 世界模型</text>
+    <text x="115" y="42" text-anchor="middle" font-size="9" fill="#1e3a8a">循环状态空间模型</text>
+    <line x1="15" y1="50" x2="215" y2="50" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="115" y="68" text-anchor="middle" font-size="10" fill="#1e3a8a">确定性状态(GRU)</text>
+    <text x="115" y="86" text-anchor="middle" font-size="10" fill="#1e3a8a">+ 离散分类隐状态(32x32)</text>
+    <text x="115" y="106" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">离散表征,对视觉复杂度鲁棒</text>
+    <text x="115" y="124" text-anchor="middle" font-size="9" fill="#1d4ed8">straight-through 梯度</text>
+  </g>
+
+  <line x1="420" y1="120" x2="468" y2="120" stroke="#2563eb" stroke-width="2.5" marker-end="url(#dv3-arr-blue)"/>
+  <text x="444" y="110" text-anchor="middle" font-size="9" fill="#2563eb" font-weight="600">隐状态</text>
+
+  <!-- symlog block -->
+  <g transform="translate(470, 50)">
+    <rect x="0" y="0" width="180" height="140" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="90" y="24" text-anchor="middle" font-size="13" fill="#9d174d" font-weight="700">symlog 归一化</text>
+    <text x="90" y="42" text-anchor="middle" font-size="9" fill="#9d174d">跨尺度稳定训练</text>
+    <line x1="15" y1="50" x2="165" y2="50" stroke="#f472b6" stroke-dasharray="3,3"/>
+    <text x="90" y="68" text-anchor="middle" font-size="9" fill="#9d174d">sign(x)·log(|x|+1)</text>
+    <text x="90" y="86" text-anchor="middle" font-size="9" fill="#9d174d">奖励/价值 twohot 离散预测</text>
+    <text x="90" y="104" text-anchor="middle" font-size="9" fill="#9d174d">回报按百分位滑动归一化</text>
+    <text x="90" y="124" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">同一超参数应对不同量级</text>
+  </g>
+
+  <!-- imagination rollout arrow down -->
+  <line x1="305" y1="190" x2="305" y2="230" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#dv3-arr)"/>
+  <text x="305" y="212" text-anchor="middle" font-size="9" fill="#7c3aed" font-weight="600">自回归展开</text>
+
+  <!-- imagination loop -->
+  <g transform="translate(60, 235)">
+    <rect x="0" y="0" width="500" height="160" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="250" y="26" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">纯 latent imagination 训练循环(actor / critic 的训练环境)</text>
+    <text x="20" y="52" font-size="10" fill="#4c1d95">1. RSSM 先验自回归展开想象轨迹(无需渲染真实观测)</text>
+    <text x="20" y="74" font-size="10" fill="#4c1d95">2. actor 基于隐状态输出动作,critic 估计价值</text>
+    <text x="20" y="96" font-size="10" fill="#4c1d95">3. 梯度沿想象轨迹反传更新 actor / critic(TD(λ))</text>
+    <text x="20" y="118" font-size="10" fill="#4c1d95">4. 周期性把 actor 部署回真实环境采新数据,更新世界模型</text>
+    <text x="20" y="142" font-size="10" fill="#dc2626" font-weight="700">真实交互只用来更新世界模型,不用来训 actor/critic</text>
+  </g>
+
+  <!-- actor/critic boxes inside loop -->
+  <g transform="translate(90, 290)">
+    <rect x="0" y="70" width="140" height="0" fill="none"/>
+  </g>
+
+  <g transform="translate(400, 60)">
+  </g>
+
+  <!-- actor & critic small boxes to the right, connected -->
+  <g transform="translate(690, 55)">
+    <rect x="0" y="0" width="200" height="70" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="100" y="24" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">actor</text>
+    <text x="100" y="42" text-anchor="middle" font-size="9" fill="#065f46">隐状态 → 动作</text>
+    <text x="100" y="58" text-anchor="middle" font-size="9" fill="#047857">可扩展神经网络,非线性 C</text>
+  </g>
+
+  <g transform="translate(690, 140)">
+    <rect x="0" y="0" width="200" height="70" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="100" y="24" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">critic</text>
+    <text x="100" y="42" text-anchor="middle" font-size="9" fill="#065f46">隐状态 → 价值估计</text>
+    <text x="100" y="58" text-anchor="middle" font-size="9" fill="#047857">TD(λ) 目标,symlog 空间</text>
+  </g>
+
+  <path d="M 560 300 C 640 300, 640 90, 688 90" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#dv3-arr-green)"/>
+  <path d="M 560 320 C 640 320, 640 175, 688 175" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#dv3-arr-green)"/>
+
+  <!-- deploy back to real env -->
+  <path d="M 790 55 C 830 20, 200 -10, 85 55" fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#dv3-arr)"/>
+  <text x="460" y="10" text-anchor="middle" font-size="9" fill="#92400e" font-weight="600">actor 周期性部署回真实环境采新数据</text>
+
+  <!-- bottom results strip -->
+  <line x1="30" y1="470" x2="890" y2="470" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="460" y="492" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">
+    同一套固定超参数横跨 Atari / DMC / Minecraft 等 150+ 任务,匹配或超过各领域 model-free SOTA
+  </text>
+  <text x="460" y="512" text-anchor="middle" font-size="10" fill="#7c3aed" font-weight="600">
+    首次不依赖人类数据 / 课程学习,仅从探索里学会在 Minecraft 收集钻石
+  </text>
+  <text x="460" y="534" text-anchor="middle" font-size="9" fill="#7c3aed">
+    离散 RSSM 稳定跨领域视觉建模 + symlog 抹平奖励量级差异 + 纯 imagination 训练保持样本效率 —— 三者协同实现 "mastering diverse domains"
+  </text>
+
+</svg>
