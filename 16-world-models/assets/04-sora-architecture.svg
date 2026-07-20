@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 600"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="sora-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="sora-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="sora-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <text x="460" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Sora — 视频压缩 → spacetime patchify → Diffusion Transformer(文本条件)→ 解码输出
+  </text>
+
+  <!-- input video (variable resolution/duration) -->
+  <g transform="translate(20, 70)">
+    <text x="60" y="-14" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">原始视频/图像</text>
+    <rect x="0" y="0" width="120" height="70" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="60" y="32" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">原生分辨率</text>
+    <text x="60" y="48" text-anchor="middle" font-size="9" fill="#92400e">长宽比/时长可变</text>
+  </g>
+
+  <line x1="145" y1="105" x2="185" y2="105" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#sora-arr)"/>
+
+  <!-- video compression network -->
+  <g transform="translate(187, 55)">
+    <rect x="0" y="0" width="150" height="100" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="75" y="24" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">视频压缩网络</text>
+    <text x="75" y="42" text-anchor="middle" font-size="9" fill="#9d174d">压缩到低维</text>
+    <text x="75" y="58" text-anchor="middle" font-size="9" fill="#9d174d">时空 latent</text>
+    <text x="75" y="82" text-anchor="middle" font-size="9" fill="#be185d" font-weight="600">空间+时间同时降维</text>
+  </g>
+
+  <line x1="337" y1="105" x2="377" y2="105" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#sora-arr)"/>
+
+  <!-- spacetime patchify -->
+  <g transform="translate(379, 45)">
+    <rect x="0" y="0" width="200" height="120" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="100" y="22" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="700">spacetime patchify</text>
+    <text x="100" y="38" text-anchor="middle" font-size="9" fill="#1e3a8a">时空 latent 切成时空 patch</text>
+    <!-- grid of small spacetime cubes -->
+    <g transform="translate(28, 50)">
+      <rect x="0" y="0" width="24" height="24" rx="3" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="30" y="0" width="24" height="24" rx="3" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="60" y="0" width="24" height="24" rx="3" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="90" y="0" width="24" height="24" rx="3" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="120" y="0" width="24" height="24" rx="3" fill="#bfdbfe" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="15" y="30" width="24" height="24" rx="3" fill="#93c5fd" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="45" y="30" width="24" height="24" rx="3" fill="#93c5fd" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="75" y="30" width="24" height="24" rx="3" fill="#93c5fd" stroke="#2563eb" stroke-width="1.5"/>
+      <rect x="105" y="30" width="24" height="24" rx="3" fill="#93c5fd" stroke="#2563eb" stroke-width="1.5"/>
+    </g>
+    <text x="100" y="108" text-anchor="middle" font-size="9" fill="#1d4ed8" font-weight="600">patch 数随分辨率/时长自然变化</text>
+  </g>
+
+  <line x1="581" y1="105" x2="621" y2="105" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#sora-arr)"/>
+
+  <!-- DiT block -->
+  <g transform="translate(623, 45)">
+    <rect x="0" y="0" width="270" height="120" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="135" y="22" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">Diffusion Transformer(DiT)</text>
+    <text x="135" y="38" text-anchor="middle" font-size="9" fill="#5b21b6">patch 序列当 token 处理</text>
+    <line x1="15" y1="46" x2="255" y2="46" stroke="#c4b5fd" stroke-dasharray="3,3"/>
+    <text x="135" y="64" text-anchor="middle" font-size="9" fill="#5b21b6">adaLN-Zero 条件注入</text>
+    <text x="135" y="80" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="700">条件:timestep + 文本 embedding</text>
+    <text x="135" y="98" text-anchor="middle" font-size="9" fill="#5b21b6">(替代 DiT 原文的 class label)</text>
+    <text x="135" y="112" text-anchor="middle" font-size="8" fill="#7c3aed">复用 DiT 骨架的干净 scaling curve</text>
+  </g>
+
+  <!-- output -->
+  <line x1="758" y1="165" x2="758" y2="200" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#sora-arr)"/>
+  <g transform="translate(648, 202)">
+    <rect x="0" y="0" width="220" height="66" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <text x="110" y="24" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">时空 patch 解码 → 输出视频</text>
+    <text x="110" y="42" text-anchor="middle" font-size="9" fill="#065f46">分钟级 · 多分辨率 · 多长宽比</text>
+    <text x="110" y="58" text-anchor="middle" font-size="8" fill="#dc2626" font-weight="600">画面连贯,构图保持多样性</text>
+  </g>
+
+  <!-- native resolution training annotation -->
+  <g transform="translate(30, 260)">
+    <rect x="0" y="0" width="410" height="120" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="205" y="26" text-anchor="middle" font-size="12" fill="#854d0e" font-weight="700">原生分辨率/长宽比/时长训练</text>
+    <text x="18" y="50" font-size="10" fill="#713f12">不统一 resize/crop 成固定尺寸</text>
+    <text x="18" y="70" font-size="10" fill="#713f12">直接在原生尺寸视频上训练</text>
+    <text x="18" y="90" font-size="10" fill="#713f12">依赖 spacetime patches 的可变长度表示</text>
+    <text x="18" y="108" font-size="10" fill="#dc2626" font-weight="700">保留真实构图/取景的多样性</text>
+  </g>
+
+  <!-- world simulator annotation -->
+  <g transform="translate(470, 260)">
+    <rect x="0" y="0" width="420" height="120" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="210" y="26" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">"video generation models as world simulators"</text>
+    <text x="18" y="50" font-size="10" fill="#4c1d95">涌现:动态镜头下的 3D 一致性</text>
+    <text x="18" y="70" font-size="10" fill="#4c1d95">遮挡后物体持久性(object permanence)</text>
+    <text x="18" y="90" font-size="10" fill="#4c1d95">对简单动作的合理状态响应</text>
+    <text x="18" y="108" font-size="10" fill="#dc2626" font-weight="700">技术报告定性展示,非量化 benchmark</text>
+  </g>
+
+  <path d="M 400 260 C 400 230, 430 230, 460 260" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#sora-arr)"/>
+
+  <!-- bottom summary strip -->
+  <line x1="30" y1="420" x2="890" y2="420" stroke="#d6d3d1" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="460" y="445" text-anchor="middle" font-size="11" fill="#1f2937" font-weight="600">
+    最长展示约一分钟连贯视频 · 分辨率/长宽比可变 · 未公开量化 FID/FVD 对比表
+  </text>
+  <text x="460" y="468" text-anchor="middle" font-size="9" fill="#7c3aed">
+    spacetime patches 统一表示 + DiT 干净 scaling curve + 原生分辨率训练 —— 三者协同,才让分钟级高保真多样构图视频成立
+  </text>
+
+</svg>
