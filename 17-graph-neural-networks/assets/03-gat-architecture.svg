@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="gat-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <text x="490" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GAT — 自注意力系数计算 + softmax 归一化聚合 + 多头注意力,替代 GCN 固定的度数权重
+  </text>
+
+  <!-- input: node i with neighbors of varying relevance -->
+  <g transform="translate(20, 65)">
+    <rect x="0" y="0" width="150" height="150" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="75" y="-8" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">节点 i 与邻居</text>
+    <circle cx="75" cy="75" r="11" fill="#f59e0b" stroke="#92400e" stroke-width="2"/>
+    <text x="75" y="79" text-anchor="middle" font-size="8" fill="#78350f" font-weight="700">i</text>
+    <circle cx="30" cy="40" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="120" cy="35" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="130" cy="90" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="105" cy="130" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="40" cy="115" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="34" y1="45" x2="67" y2="72" stroke="#b45309" stroke-width="1.3"/>
+    <line x1="112" y1="40" x2="84" y2="70" stroke="#b45309" stroke-width="1.3"/>
+    <line x1="122" y1="88" x2="85" y2="78" stroke="#b45309" stroke-width="1.3"/>
+    <line x1="100" y1="125" x2="80" y2="84" stroke="#b45309" stroke-width="1.3"/>
+    <line x1="45" y1="112" x2="69" y2="82" stroke="#b45309" stroke-width="1.3"/>
+    <text x="75" y="145" text-anchor="middle" font-size="8.5" fill="#92400e">邻居"重要性"未知,待学习</text>
+  </g>
+
+  <line x1="170" y1="140" x2="212" y2="140" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#gat-arr)"/>
+
+  <!-- Mechanism 1: attention coefficient -->
+  <g transform="translate(215, 45)">
+    <rect x="0" y="0" width="195" height="190" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="97" y="22" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">机制一 · 自注意力系数</text>
+    <line x1="14" y1="32" x2="181" y2="32" stroke="#f472b6" stroke-dasharray="3,3"/>
+    <rect x="14" y="42" width="72" height="24" rx="5" fill="#f9a8d4" stroke="#9d174d" stroke-width="1.3"/>
+    <text x="50" y="58" text-anchor="middle" font-size="8.5" fill="#831843" font-weight="700">Wh_i</text>
+    <text x="97" y="59" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">⊕</text>
+    <rect x="109" y="42" width="72" height="24" rx="5" fill="#f9a8d4" stroke="#9d174d" stroke-width="1.3"/>
+    <text x="145" y="58" text-anchor="middle" font-size="8.5" fill="#831843" font-weight="700">Wh_j</text>
+    <text x="97" y="88" text-anchor="middle" font-size="9" fill="#9d174d">共享单层前馈网络 a</text>
+    <text x="97" y="102" text-anchor="middle" font-size="9" fill="#9d174d">+ LeakyReLU</text>
+    <rect x="47" y="115" width="100" height="26" rx="5" fill="#f472b6" stroke="#831843" stroke-width="1.5"/>
+    <text x="97" y="133" text-anchor="middle" font-size="10" fill="#fdf2f8" font-weight="700">e_ij</text>
+    <text x="97" y="160" text-anchor="middle" font-size="8" fill="#9d174d">未归一化,衡量 j 对 i 有多重要</text>
+    <text x="97" y="174" text-anchor="middle" font-size="8" fill="#9d174d">同一套参数应用在每条边上</text>
+  </g>
+
+  <line x1="410" y1="140" x2="450" y2="140" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#gat-arr)"/>
+
+  <!-- Mechanism 2: softmax normalization + weighted aggregation -->
+  <g transform="translate(453, 45)">
+    <rect x="0" y="0" width="225" height="190" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="112" y="22" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="700">机制二 · softmax 归一化聚合</text>
+    <line x1="14" y1="32" x2="211" y2="32" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="112" y="50" text-anchor="middle" font-size="9" fill="#1e3a8a" font-weight="700">邻居范围内 softmax(masked attention)</text>
+    <rect x="20" y="60" width="45" height="22" rx="4" fill="#93c5fd" stroke="#1e3a8a" stroke-width="1.2"/>
+    <text x="42" y="75" text-anchor="middle" font-size="8" fill="#1e3a8a" font-weight="700">α_i1</text>
+    <rect x="90" y="60" width="45" height="22" rx="4" fill="#60a5fa" stroke="#1e3a8a" stroke-width="1.2"/>
+    <text x="112" y="75" text-anchor="middle" font-size="8" fill="#1e3a8a" font-weight="700">α_i2</text>
+    <rect x="160" y="60" width="45" height="22" rx="4" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="1.2"/>
+    <text x="182" y="75" text-anchor="middle" font-size="8" fill="#1e3a8a" font-weight="700">α_i3</text>
+    <text x="112" y="98" text-anchor="middle" font-size="8.5" fill="#1d4ed8">深浅代表权重大小(而非度数)</text>
+    <text x="112" y="118" text-anchor="middle" font-size="9" fill="#1e3a8a" font-weight="700">Σ α_ij · W h_j</text>
+    <rect x="72" y="128" width="80" height="28" rx="6" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.5"/>
+    <text x="112" y="147" text-anchor="middle" font-size="10" fill="#eff6ff" font-weight="700">h_i'</text>
+    <text x="112" y="175" text-anchor="middle" font-size="8" fill="#1e3a8a">只需局部邻居,不用全图矩阵运算</text>
+  </g>
+
+  <line x1="681" y1="140" x2="722" y2="140" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#gat-arr)"/>
+
+  <!-- Mechanism 3: multi-head attention -->
+  <g transform="translate(725, 45)">
+    <rect x="0" y="0" width="230" height="190" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="115" y="22" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">机制三 · 多头注意力</text>
+    <line x1="14" y1="32" x2="216" y2="32" stroke="#86efac" stroke-dasharray="3,3"/>
+    <rect x="14" y="42" width="60" height="24" rx="5" fill="#bbf7d0" stroke="#065f46" stroke-width="1.3"/>
+    <text x="44" y="58" text-anchor="middle" font-size="8.5" fill="#065f46" font-weight="700">头 1</text>
+    <rect x="85" y="42" width="60" height="24" rx="5" fill="#86efac" stroke="#065f46" stroke-width="1.3"/>
+    <text x="115" y="58" text-anchor="middle" font-size="8.5" fill="#065f46" font-weight="700">头 2</text>
+    <rect x="156" y="42" width="60" height="24" rx="5" fill="#4ade80" stroke="#065f46" stroke-width="1.3"/>
+    <text x="186" y="58" text-anchor="middle" font-size="8.5" fill="#065f46" font-weight="700">头 K</text>
+    <text x="115" y="82" text-anchor="middle" font-size="8.5" fill="#047857">每个头独立的 W、a 参数</text>
+    <text x="115" y="96" text-anchor="middle" font-size="8.5" fill="#047857">学到不同的"重要性"标准</text>
+    <text x="115" y="118" text-anchor="middle" font-size="9" fill="#065f46" font-weight="700">中间层:拼接 concat</text>
+    <text x="115" y="134" text-anchor="middle" font-size="9" fill="#065f46" font-weight="700">输出层:取平均 mean</text>
+    <rect x="65" y="145" width="100" height="26" rx="6" fill="#22c55e" stroke="#065f46" stroke-width="1.5"/>
+    <text x="115" y="163" text-anchor="middle" font-size="9.5" fill="#f0fdf4" font-weight="700">提升稳定性 + 表达力</text>
+  </g>
+
+  <!-- loop back: stack layers -->
+  <path d="M 900 260 C 900 320, 500 360, 490 260" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#gat-arr)"/>
+  <text x="700" y="340" text-anchor="middle" font-size="10" fill="#5b21b6" font-weight="700">堆叠多层(每层重新算注意力) → 感受野逐层扩大,同一套注意力机制既适用于直推式也适用于归纳式图</text>
+
+  <!-- three-piece synergy note -->
+  <g transform="translate(20, 400)">
+    <rect x="0" y="0" width="940" height="200" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="470" y="26" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">三件套协同 — 缺一不可</text>
+    <text x="18" y="52" font-size="10" fill="#4c1d95">只有自注意力系数计算(机制一)没有 softmax 归一化 + 加权聚合(机制二):e_ij 可能为负、总和不为 1,不构成合理的加权平均。</text>
+    <text x="18" y="76" font-size="10" fill="#4c1d95">只有归一化聚合没有多头注意力(机制三):单一注意力机制容易学到有偏或不稳定的重要性判断,没有其他角度印证或修正。</text>
+    <text x="18" y="100" font-size="10" fill="#4c1d95">只有多头这个框架,没有前两者定义怎么算 e_ij、怎么归一化:无从谈起"注意力"这件事本身,退化成若干组随意的可学习权重。</text>
+    <text x="18" y="132" font-size="10.5" fill="#7c3aed" font-weight="700">三者组合 → 训练稳定 + 比 GCN/GraphSAGE 更灵活地判断邻居重要性,在直推式和归纳式基准上都拿到 SOTA。</text>
+    <text x="18" y="160" font-size="9.5" fill="#6d28d9">PPI(归纳式,邻居差异大)上相对 GraphSAGE 的提升尤其明显,证明收益确实来自"能根据内容动态分配权重"。</text>
+  </g>
+</svg>
