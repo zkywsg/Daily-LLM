@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="gcn-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="gcn-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <text x="490" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GCN 传播规则 — 自环 + 对称归一化 + 线性变换,堆叠 K 层扩大感受野
+  </text>
+
+  <!-- input graph -->
+  <g transform="translate(20, 70)">
+    <rect x="0" y="0" width="150" height="140" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="75" y="-8" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">输入图</text>
+    <text x="75" y="20" text-anchor="middle" font-size="10" fill="#92400e" font-weight="700">H^(0) = X(节点特征)</text>
+
+    <!-- tiny graph illustration -->
+    <circle cx="40" cy="55" r="9" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="105" cy="45" r="9" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="115" cy="95" r="9" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="55" cy="105" r="9" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="75" cy="70" r="10" fill="#f59e0b" stroke="#92400e" stroke-width="2"/>
+    <line x1="49" y1="55" x2="66" y2="68" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="96" y1="47" x2="84" y2="65" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="107" y1="92" x2="83" y2="76" stroke="#b45309" stroke-width="1.5"/>
+    <line x1="63" y1="100" x2="72" y2="79" stroke="#b45309" stroke-width="1.5"/>
+    <text x="75" y="130" text-anchor="middle" font-size="9" fill="#92400e">度数不均的不规则图</text>
+  </g>
+
+  <line x1="170" y1="140" x2="212" y2="140" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#gcn-arr)"/>
+
+  <!-- Mechanism 1: self loop -->
+  <g transform="translate(215, 55)">
+    <rect x="0" y="0" width="200" height="170" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="100" y="22" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">机制一 · 自环</text>
+    <line x1="14" y1="32" x2="186" y2="32" stroke="#f472b6" stroke-dasharray="3,3"/>
+    <text x="100" y="52" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">Ã = A + I</text>
+    <text x="100" y="74" text-anchor="middle" font-size="9" fill="#be185d">给邻接矩阵加自环</text>
+    <text x="100" y="90" text-anchor="middle" font-size="9" fill="#be185d">聚合时把"自己"也</text>
+    <text x="100" y="105" text-anchor="middle" font-size="9" fill="#be185d">算作自己的邻居</text>
+    <!-- mini illustration: node with self loop -->
+    <circle cx="100" cy="140" r="12" fill="#f9a8d4" stroke="#9d174d" stroke-width="2"/>
+    <path d="M 108 132 C 128 120, 128 152, 108 148" fill="none" stroke="#9d174d" stroke-width="1.8" marker-end="url(#gcn-arr)"/>
+    <text x="100" y="163" text-anchor="middle" font-size="8" fill="#9d174d">A 对角线原本为 0 → +I 补上</text>
+  </g>
+
+  <line x1="418" y1="140" x2="460" y2="140" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#gcn-arr)"/>
+
+  <!-- Mechanism 2: symmetric normalization -->
+  <g transform="translate(463, 55)">
+    <rect x="0" y="0" width="220" height="170" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="110" y="22" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="700">机制二 · 对称归一化</text>
+    <line x1="14" y1="32" x2="206" y2="32" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="110" y="52" text-anchor="middle" font-size="10" fill="#1e3a8a" font-weight="700">D̃^(-1/2) Ã D̃^(-1/2)</text>
+    <text x="110" y="74" text-anchor="middle" font-size="9" fill="#1d4ed8">按两端节点度数的</text>
+    <text x="110" y="89" text-anchor="middle" font-size="9" fill="#1d4ed8">几何平均缩放聚合权重</text>
+    <text x="110" y="104" text-anchor="middle" font-size="9" fill="#1d4ed8">避免高度数节点数值爆炸</text>
+    <!-- mini illustration: hub node vs leaf node -->
+    <circle cx="70" cy="145" r="16" fill="#93c5fd" stroke="#1e3a8a" stroke-width="1.8"/>
+    <text x="70" y="149" text-anchor="middle" font-size="8" fill="#1e3a8a" font-weight="700">度大</text>
+    <circle cx="150" cy="145" r="9" fill="#93c5fd" stroke="#1e3a8a" stroke-width="1.8"/>
+    <text x="150" y="148" text-anchor="middle" font-size="7" fill="#1e3a8a" font-weight="700">度小</text>
+    <line x1="86" y1="145" x2="141" y2="145" stroke="#1e3a8a" stroke-width="1.5"/>
+    <text x="113" y="137" text-anchor="middle" font-size="7" fill="#dc2626" font-weight="700">权重缩放</text>
+  </g>
+
+  <line x1="686" y1="140" x2="728" y2="140" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#gcn-arr)"/>
+
+  <!-- Mechanism 3: linear + activation -->
+  <g transform="translate(731, 55)">
+    <rect x="0" y="0" width="220" height="170" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="110" y="22" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">机制三 · 传播规则</text>
+    <line x1="14" y1="32" x2="206" y2="32" stroke="#86efac" stroke-dasharray="3,3"/>
+    <text x="110" y="54" text-anchor="middle" font-size="9.5" fill="#065f46" font-weight="700">H^(l+1) =</text>
+    <text x="110" y="70" text-anchor="middle" font-size="9" fill="#065f46" font-weight="700">σ(D̃^(-1/2)ÃD̃^(-1/2) H^(l) W^(l))</text>
+    <text x="110" y="94" text-anchor="middle" font-size="9" fill="#047857">聚合 → 线性变换 W</text>
+    <text x="110" y="109" text-anchor="middle" font-size="9" fill="#047857">→ 非线性激活 σ(如 ReLU)</text>
+    <rect x="55" y="122" width="110" height="34" rx="6" fill="#bbf7d0" stroke="#065f46" stroke-width="1.5"/>
+    <text x="110" y="143" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">→ H^(l+1)</text>
+  </g>
+
+  <!-- loop back: stack K layers -->
+  <path d="M 900 225 C 900 300, 500 340, 490 240" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#gcn-arr)"/>
+  <text x="700" y="322" text-anchor="middle" font-size="10" fill="#5b21b6" font-weight="700">堆叠 K 层 → 间接聚合到 K 阶邻域(类比 CNN 堆叠卷积层扩大感受野)</text>
+
+  <!-- three-piece synergy note -->
+  <g transform="translate(20, 380)">
+    <rect x="0" y="0" width="940" height="150" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="470" y="26" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">三件套协同 — 缺一不可</text>
+    <text x="18" y="52" font-size="10" fill="#4c1d95">只有自环(机制一)没有归一化(机制二):节点表征因度数差异逐层放大/缩小,数值不稳定,深层网络容易训练发散。</text>
+    <text x="18" y="76" font-size="10" fill="#4c1d95">只有归一化没有自环:节点聚合时看不到自己的表征,退化成纯粹的邻居平均。</text>
+    <text x="18" y="100" font-size="10" fill="#4c1d95">只有传播规则(机制三)框架、没有前两者具体定义 Ã 和 D̃:无法得到这个简洁的线性传播公式。</text>
+    <text x="18" y="128" font-size="10.5" fill="#7c3aed" font-weight="700">三者组合 → 一个线性传播规则替代昂贵的谱分解/多阶 Chebyshev 展开,数值稳定,"现代 GNN"由此起步。</text>
+  </g>
+</svg>
