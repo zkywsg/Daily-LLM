@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="sage-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <text x="490" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    GraphSAGE — 固定大小邻域采样 + 可学习聚合函数 + 拼接更新,堆叠 K 层扩大感受野
+  </text>
+
+  <!-- input graph: irregular, some nodes with many neighbors -->
+  <g transform="translate(20, 65)">
+    <rect x="0" y="0" width="150" height="150" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="75" y="-8" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">输入图(不规则)</text>
+    <circle cx="30" cy="40" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="120" cy="35" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="130" cy="90" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="105" cy="130" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="40" cy="115" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="20" cy="80" r="8" fill="#fde68a" stroke="#b45309" stroke-width="1.5"/>
+    <circle cx="75" cy="75" r="11" fill="#f59e0b" stroke="#92400e" stroke-width="2"/>
+    <line x1="34" y1="45" x2="67" y2="72" stroke="#b45309" stroke-width="1.3"/>
+    <line x1="112" y1="40" x2="84" y2="70" stroke="#b45309" stroke-width="1.3"/>
+    <line x1="122" y1="88" x2="85" y2="78" stroke="#b45309" stroke-width="1.3"/>
+    <line x1="100" y1="125" x2="80" y2="84" stroke="#b45309" stroke-width="1.3"/>
+    <line x1="45" y1="112" x2="69" y2="82" stroke="#b45309" stroke-width="1.3"/>
+    <line x1="24" y1="78" x2="66" y2="76" stroke="#b45309" stroke-width="1.3"/>
+    <text x="75" y="145" text-anchor="middle" font-size="8.5" fill="#92400e">节点度数悬殊,数量不定</text>
+  </g>
+
+  <line x1="170" y1="140" x2="212" y2="140" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#sage-arr)"/>
+
+  <!-- Mechanism 1: fixed-size neighbor sampling -->
+  <g transform="translate(215, 45)">
+    <rect x="0" y="0" width="195" height="190" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="97" y="22" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">机制一 · 邻域采样</text>
+    <line x1="14" y1="32" x2="181" y2="32" stroke="#f472b6" stroke-dasharray="3,3"/>
+    <text x="97" y="52" text-anchor="middle" font-size="10" fill="#9d174d" font-weight="700">固定大小随机采样</text>
+    <text x="97" y="68" text-anchor="middle" font-size="8.5" fill="#be185d">第一层采 25 个邻居</text>
+    <text x="97" y="82" text-anchor="middle" font-size="8.5" fill="#be185d">第二层再采 10 个二跳邻居</text>
+    <!-- mini illustration: center node, sampled highlighted vs not -->
+    <circle cx="97" cy="120" r="10" fill="#f9a8d4" stroke="#9d174d" stroke-width="2"/>
+    <circle cx="60" cy="100" r="7" fill="#f9a8d4" stroke="#9d174d" stroke-width="2"/>
+    <circle cx="135" cy="100" r="7" fill="#f9a8d4" stroke="#9d174d" stroke-width="2"/>
+    <circle cx="60" cy="145" r="7" fill="#fbcfe8" stroke="#f9a8d4" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <circle cx="135" cy="145" r="7" fill="#fbcfe8" stroke="#f9a8d4" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <circle cx="97" cy="160" r="7" fill="#fbcfe8" stroke="#f9a8d4" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <line x1="66" y1="104" x2="90" y2="115" stroke="#9d174d" stroke-width="1.6"/>
+    <line x1="129" y1="104" x2="105" y2="115" stroke="#9d174d" stroke-width="1.6"/>
+    <text x="97" y="182" text-anchor="middle" font-size="8" fill="#9d174d">深色 = 被采样,浅色虚线 = 未采样</text>
+  </g>
+
+  <line x1="410" y1="140" x2="450" y2="140" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#sage-arr)"/>
+
+  <!-- Mechanism 2: learnable aggregator -->
+  <g transform="translate(453, 45)">
+    <rect x="0" y="0" width="225" height="190" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="112" y="22" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="700">机制二 · 可学习聚合函数</text>
+    <line x1="14" y1="32" x2="211" y2="32" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="112" y="52" text-anchor="middle" font-size="9.5" fill="#1e3a8a" font-weight="700">三选一:mean / LSTM / pooling</text>
+    <rect x="14" y="65" width="60" height="24" rx="5" fill="#93c5fd" stroke="#1e3a8a" stroke-width="1.3"/>
+    <text x="44" y="81" text-anchor="middle" font-size="9" fill="#1e3a8a" font-weight="700">mean</text>
+    <rect x="82" y="65" width="60" height="24" rx="5" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="1.3"/>
+    <text x="112" y="81" text-anchor="middle" font-size="9" fill="#1e3a8a" font-weight="700">LSTM</text>
+    <rect x="150" y="65" width="60" height="24" rx="5" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="1.3"/>
+    <text x="180" y="81" text-anchor="middle" font-size="9" fill="#1e3a8a" font-weight="700">pooling</text>
+    <text x="112" y="105" text-anchor="middle" font-size="8.5" fill="#1d4ed8">参数学出来,不依赖</text>
+    <text x="112" y="119" text-anchor="middle" font-size="8.5" fill="#1d4ed8">某个特定图的固定结构</text>
+    <path d="M 30 145 L 70 135 L 60 155 Z" fill="#93c5fd" stroke="#1e3a8a" stroke-width="1.3"/>
+    <path d="M 95 150 L 135 130 L 130 165 Z" fill="#93c5fd" stroke="#1e3a8a" stroke-width="1.3"/>
+    <text x="112" y="182" text-anchor="middle" font-size="8" fill="#1e3a8a">采样邻居特征 → 汇总成一个向量</text>
+  </g>
+
+  <line x1="681" y1="140" x2="722" y2="140" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#sage-arr)"/>
+
+  <!-- Mechanism 3: concat + linear + activation -->
+  <g transform="translate(725, 45)">
+    <rect x="0" y="0" width="230" height="190" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="115" y="22" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">机制三 · 拼接更新</text>
+    <line x1="14" y1="32" x2="216" y2="32" stroke="#86efac" stroke-dasharray="3,3"/>
+    <rect x="14" y="42" width="90" height="26" rx="5" fill="#bbf7d0" stroke="#065f46" stroke-width="1.3"/>
+    <text x="59" y="59" text-anchor="middle" font-size="8.5" fill="#065f46" font-weight="700">自身 h_v^(k-1)</text>
+    <text x="113" y="60" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">⊕</text>
+    <rect x="122" y="42" width="94" height="26" rx="5" fill="#bbf7d0" stroke="#065f46" stroke-width="1.3"/>
+    <text x="169" y="59" text-anchor="middle" font-size="8.5" fill="#065f46" font-weight="700">邻居聚合消息</text>
+    <text x="115" y="90" text-anchor="middle" font-size="9" fill="#047857">→ concat(而非 GCN 式加权平均)</text>
+    <text x="115" y="106" text-anchor="middle" font-size="9" fill="#047857">→ 线性层 W^(k) + 激活 σ</text>
+    <rect x="55" y="122" width="120" height="30" rx="6" fill="#86efac" stroke="#065f46" stroke-width="1.5"/>
+    <text x="115" y="142" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">h_v^(k)</text>
+    <text x="115" y="175" text-anchor="middle" font-size="8" fill="#065f46">自身信息与邻居信息分开保留</text>
+  </g>
+
+  <!-- loop back: stack K layers -->
+  <path d="M 900 260 C 900 320, 500 360, 490 260" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-dasharray="5,3" marker-end="url(#sage-arr)"/>
+  <text x="700" y="340" text-anchor="middle" font-size="10" fill="#5b21b6" font-weight="700">堆叠 K 层(每层重新采样-聚合-拼接) → 间接聚合到 K 阶邻域,泛化到训练时未见过的新节点</text>
+
+  <!-- three-piece synergy note -->
+  <g transform="translate(20, 400)">
+    <rect x="0" y="0" width="940" height="200" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="470" y="26" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">三件套协同 — 缺一不可</text>
+    <text x="18" y="52" font-size="10" fill="#4c1d95">只有邻域采样(机制一)没有可学习聚合函数(机制二):退化成固定数量邻居的简单平均,表达力和 GCN 的固定加权平均差别不大。</text>
+    <text x="18" y="76" font-size="10" fill="#4c1d95">只有可学习聚合函数没有邻域采样:大图上度数极高的节点每次要处理全部邻居,计算量和内存扛不住。</text>
+    <text x="18" y="100" font-size="10" fill="#4c1d95">只有前两者没有逐层采样-聚合-拼接的结构(机制三):无法堆叠多层扩大感受野,也丢失了"自身信息"与"邻居信息"分开处理的能力。</text>
+    <text x="18" y="132" font-size="10.5" fill="#7c3aed" font-weight="700">三者组合 → 大图上算得动 + 聚合方式够灵活 + 能堆叠多层不丢自身信息,GraphSAGE 才能在训练时未见过的新节点上直接推理。</text>
+    <text x="18" y="160" font-size="9.5" fill="#6d28d9">工业应用:Pinterest PinSAGE 把这套框架用到数十亿节点的推荐图上,证明了归纳式 GNN 能扛住工业级规模。</text>
+  </g>
+</svg>
