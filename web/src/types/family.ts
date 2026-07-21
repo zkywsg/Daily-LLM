@@ -16,7 +16,8 @@ export type FamilyId =
   | "13-moe-efficient"
   | "14-rag-agent"
   | "15-reasoning-o1-r1"
-  | "16-world-models";
+  | "16-world-models"
+  | "17-graph-neural-networks";
 
 export interface NodeData {
   name: string;
