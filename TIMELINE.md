@@ -24,11 +24,14 @@
 | 2017 | **CycleGAN** | `04-gan` | 用 cycle consistency loss 实现无配对图像翻译——两个 G 互相 mapping(X→Y 和 Y→X),要求 F(G(x)) ≈ x;不需要成对训练数据就能做马↔斑马、夏↔冬、照片↔画风的转换 | [04-gan/03-cyclegan.md](04-gan/03-cyclegan.md) |
 | 2017 | **Transformer** | `05-transformer` | 用 self-attention 替代循环,让序列建模获得完全并行 + 全局上下文,encoder-decoder 骨架保留但内部全是 attention 和 FFN | [05-transformer/01-transformer.md](05-transformer/01-transformer.md) |
 | 2017 | **Outrageously Large Neural Networks (Sparsely-Gated MoE)** | `13-moe-efficient` | 在 LSTM 之间插入 sparsely-gated MoE 层:每 token 用 gate 选 top-K 个 expert(1370 亿参数中只激活几亿),配 auxiliary loss 防止 expert 塌缩;首次证明稀疏激活能突破 dense 模型的参数 / 算力锁死 | [13-moe-efficient/01-sparsely-gated-moe.md](13-moe-efficient/01-sparsely-gated-moe.md) |
+| 2017 | **GCN** | `17-graph-neural-networks` | 把谱图卷积(Chebyshev 多项式近似图拉普拉斯)简化到一阶邻域聚合,一层 D̃^(-1/2) Ã D̃^(-1/2) H W 传播规则定义了'现代 GNN'这个范式的起点,在引文网络半监督节点分类上大幅超过此前基于图的方法 | [17-graph-neural-networks/01-gcn.md](17-graph-neural-networks/01-gcn.md) |
+| 2017 | **GraphSAGE** | `17-graph-neural-networks` | SAmple + aggreGatE:固定大小邻域采样 + 可学习聚合函数(mean/LSTM/pooling),让 GNN 第一次能泛化到训练时没见过的节点/图(归纳式,而非 GCN 的直推式) | [17-graph-neural-networks/02-graphsage.md](17-graph-neural-networks/02-graphsage.md) |
 | 2018 | **ELMo** | `03-word-embedding` | 用双向 LSTM 预训练语言模型,每个词的向量是 LSTM 各层 hidden state 的加权和;同一个 \"bank\" 在 \"river bank\" 和 \"money bank\" 里向量不同;contextualized embedding 起源,直接催生 BERT | [03-word-embedding/04-elmo.md](03-word-embedding/04-elmo.md) |
 | 2018 | **StyleGAN** | `04-gan` | 用 mapping network 把 z 投射到 W 空间,再通过 AdaIN 在每层注入 style 控制不同语义粒度(粗:姿态/形状,中:发型/眼神,细:肤色/纹理);1024×1024 超高分辨率人脸,生成质量逼近真实照片 | [04-gan/04-stylegan.md](04-gan/04-stylegan.md) |
 | 2018 | **BERT** | `06-bert-family` | 用 encoder-only Transformer + masked LM 学双向上下文表征,GLUE 11 任务全面 SOTA,把 NLP 拖进预训练时代 | [06-bert-family/01-bert.md](06-bert-family/01-bert.md) |
 | 2018 | **GPT-1** | `07-gpt-scaling` | 用 decoder-only Transformer + 无监督自回归预训练 + 任务微调,第一次系统跑通预训练范式;同年 BERT 用 encoder-only 验证了双向版本 | [07-gpt-scaling/01-gpt1.md](07-gpt-scaling/01-gpt1.md) |
 | 2018 | **World Models** | `16-world-models` | 把智能体拆成 V(VAE 视觉压缩)+ M(MDN-RNN 时序预测)+ C(极小线性控制器)三部分,C 完全在 M 生成的'梦境'里用进化策略训练,首次证明智能体可以脱离真实环境、完全在自己学到的世界模型内部完成策略训练 | [16-world-models/01-world-models.md](16-world-models/01-world-models.md) |
+| 2018 | **GAT** | `17-graph-neural-networks` | 用可学习的 attention 权重替代 GCN 里固定的度数归一化系数,让模型隐式学会'哪个邻居更重要',不需要提前知道完整图结构做矩阵运算 | [17-graph-neural-networks/03-gat.md](17-graph-neural-networks/03-gat.md) |
 | 2019 | **EfficientNet** | `01-cnn` | 用复合缩放系数把 depth/width/resolution 三轴联合缩放公式化，得到帕累托最优的 B0–B7 模型族 | [01-cnn/07-efficientnet.md](01-cnn/07-efficientnet.md) |
 | 2019 | **Transformer-XL** | `05-transformer` | 用段级循环把上一段隐状态作为这段的记忆 + 相对位置编码替代绝对 PE,让 Transformer 第一次跨越固定窗口处理长上下文 | [05-transformer/02-transformer-xl.md](05-transformer/02-transformer-xl.md) |
 | 2019 | **RoBERTa** | `06-bert-family` | 去掉 NSP + 动态 masking + 大 batch + 10× 数据 + 更长训练,证明 BERT 严重训练不足,GLUE 再涨 5+ 分而架构完全不动 | [06-bert-family/02-roberta.md](06-bert-family/02-roberta.md) |
@@ -36,6 +39,7 @@
 | 2019 | **DistilBERT** | `06-bert-family` | 用知识蒸馏把 12 层 BERT teacher 压成 6 层 student,40% 参数 60% 速度保留 97% 性能,工业 BERT 部署的事实默认 | [06-bert-family/04-distilbert.md](06-bert-family/04-distilbert.md) |
 | 2019 | **GPT-2** | `07-gpt-scaling` | 把 GPT-1 的 117M 参数推到 1.5B + WebText 40B token,zero-shot 任务能力首次涌现,LM 第一次显示出'不微调也能做下游任务'的通用性 | [07-gpt-scaling/02-gpt2.md](07-gpt-scaling/02-gpt2.md) |
 | 2019 | **Adapter Tuning** | `11-peft-lora` | 在每层 Transformer 插入 small bottleneck adapter 模块(down → ReLU → up + residual),base 模型完全冻结,只训 3% 参数达到全参微调 96% 性能;PEFT 起源,后续 LoRA / Prefix Tuning 都受其启发 | [11-peft-lora/01-adapter.md](11-peft-lora/01-adapter.md) |
+| 2019 | **GIN** | `17-graph-neural-networks` | 用 Weisfeiler-Lehman 图同构测试给 GNN 表达力定理上界:证明 mean/max 聚合(如 GraphSAGE)不如 WL test,提出 sum 聚合 + MLP 的 GIN,理论上证明达到 WL test 同等的最大可能表达力 | [17-graph-neural-networks/04-gin.md](17-graph-neural-networks/04-gin.md) |
 | 2020 | **Sparse Attention** | `05-transformer` | 用滑窗局部 attention + 少量全局 token 把 attention 复杂度从 O(N²) 降到 O(N),让 Transformer 第一次能在 4K–16K 长上下文上跑训练和推理 | [05-transformer/03-sparse-attention.md](05-transformer/03-sparse-attention.md) |
 | 2020 | **GPT-3** | `07-gpt-scaling` | 把 GPT-2 推到 175B 参数,in-context learning 涌现 — 仅靠 prompt 里 few-shot 例子就能学新任务,完全消除微调对监督数据的依赖,LLM 时代正式开启 | [07-gpt-scaling/03-gpt3.md](07-gpt-scaling/03-gpt3.md) |
 | 2020 | **Scaling Laws** | `07-gpt-scaling` | 把 LM loss 随参数 N / 数据 D / 算力 C 的关系刻画成幂律;Kaplan 给出粗略最优,Chinchilla 修正最优配比是 N:D ≈ 1:20,催生 LLaMA 等高数据小模型 | [07-gpt-scaling/04-scaling-laws.md](07-gpt-scaling/04-scaling-laws.md) |
@@ -50,6 +54,7 @@
 | 2021 | **Prefix Tuning** | `11-peft-lora` | 在每层 attention 的 K/V 前面加一段可学习的"soft prefix" embedding,base 模型完全冻结,只训这段 prefix(~0.1% 参数);极致参数效率,1000+ task 用同一 base 共享 | [11-peft-lora/02-prefix-tuning.md](11-peft-lora/02-prefix-tuning.md) |
 | 2021 | **LoRA** | `11-peft-lora` | 把权重更新 ΔW 分解为低秩矩阵 B·A(r 远小于 d),只训 BA 的 ~0.1% 参数;推理时 W = W₀ + BA 可合并回原权重,零额外延迟;PEFT 时代的工业标准 | [11-peft-lora/03-lora.md](11-peft-lora/03-lora.md) |
 | 2021 | **Switch Transformer** | `13-moe-efficient` | 把 MoE 移植到 Transformer + 简化为 top-1 gating(每 token 只走一个 expert,代替 Shazeer top-K),配 load balancing loss 和 selective precision;首次做到 1.6T 参数模型,T5-XXL 4× 加速同质量 | [13-moe-efficient/02-switch-transformer.md](13-moe-efficient/02-switch-transformer.md) |
+| 2021 | **Graphormer** | `17-graph-neural-networks` | 把标准 Transformer 搬到图上:中心性编码 + 空间编码(最短路径距离)+ 边编码把图结构信息直接注入 attention,用全局注意力替代逐跳消息传递,OGB 大规模分子性质预测挑战赛冠军 | [17-graph-neural-networks/05-graphormer.md](17-graph-neural-networks/05-graphormer.md) |
 | 2022 | **ConvNeXt** | `01-cnn` | 把 ViT 的所有现代化设计选择（大 kernel·LayerNorm·GELU·强增强）逐项搬回 ResNet，CNN 反超 ViT | [01-cnn/08-convnext.md](01-cnn/08-convnext.md) |
 | 2022 | **FlashAttention** | `05-transformer` | 把 attention 从 HBM 搬到 SRAM 算,分块 + 重计算把 O(N²) 显存压成 O(N) 而结果完全等价,attention 训练/推理快 2-4× 且支持更长序列 | [05-transformer/05-flash-attention.md](05-transformer/05-flash-attention.md) |
 | 2022 | **DiT** | `08-vit` | 把 diffusion 模型的 U-Net backbone 替换成 ViT-style Transformer,展示更好的 scaling 性质,成为 Stable Diffusion 3 / Sora 的基座 | [08-vit/04-dit.md](08-vit/04-dit.md) |

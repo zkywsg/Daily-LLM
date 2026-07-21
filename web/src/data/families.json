@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T17:39:33.756445+00:00",
+  "generatedAt": "2026-07-21T18:11:40.037660+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -1670,6 +1670,111 @@
           "path": "16-world-models/06-gamengen.md",
           "assets": [
             "16-world-models/assets/06-gamengen-architecture.svg"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "17-graph-neural-networks",
+      "label": "图神经网络(GNN)",
+      "blurb": "把深度学习从网格(图像)和序列(文本)推广到任意图结构——节点通过边互相\"传消息\",聚合邻居信息来学习每个节点的表征。",
+      "yearRange": [
+        2017,
+        2021
+      ],
+      "colorToken": "--family-17",
+      "nodes": [
+        {
+          "name": "GCN",
+          "year": 2017,
+          "family": "17-graph-neural-networks",
+          "order": 1,
+          "paper": "Semi-Supervised Classification with Graph Convolutional Networks",
+          "authors": [
+            "Thomas N. Kipf",
+            "Max Welling"
+          ],
+          "key_idea": "把谱图卷积(Chebyshev 多项式近似图拉普拉斯)简化到一阶邻域聚合,一层 D̃^(-1/2) Ã D̃^(-1/2) H W 传播规则定义了'现代 GNN'这个范式的起点,在引文网络半监督节点分类上大幅超过此前基于图的方法",
+          "path": "17-graph-neural-networks/01-gcn.md",
+          "assets": [
+            "17-graph-neural-networks/assets/01-gcn-architecture.svg"
+          ]
+        },
+        {
+          "name": "GraphSAGE",
+          "year": 2017,
+          "family": "17-graph-neural-networks",
+          "order": 2,
+          "paper": "Inductive Representation Learning on Large Graphs",
+          "authors": [
+            "William L. Hamilton",
+            "Rex Ying",
+            "Jure Leskovec"
+          ],
+          "key_idea": "SAmple + aggreGatE:固定大小邻域采样 + 可学习聚合函数(mean/LSTM/pooling),让 GNN 第一次能泛化到训练时没见过的节点/图(归纳式,而非 GCN 的直推式)",
+          "path": "17-graph-neural-networks/02-graphsage.md",
+          "assets": [
+            "17-graph-neural-networks/assets/02-graphsage-architecture.svg"
+          ]
+        },
+        {
+          "name": "GAT",
+          "year": 2018,
+          "family": "17-graph-neural-networks",
+          "order": 3,
+          "paper": "Graph Attention Networks",
+          "authors": [
+            "Petar Veličković",
+            "Guillem Cucurull",
+            "Arantxa Casanova",
+            "Adriana Romero",
+            "Pietro Liò",
+            "Yoshua Bengio"
+          ],
+          "key_idea": "用可学习的 attention 权重替代 GCN 里固定的度数归一化系数,让模型隐式学会'哪个邻居更重要',不需要提前知道完整图结构做矩阵运算",
+          "path": "17-graph-neural-networks/03-gat.md",
+          "assets": [
+            "17-graph-neural-networks/assets/03-gat-architecture.svg"
+          ]
+        },
+        {
+          "name": "GIN",
+          "year": 2019,
+          "family": "17-graph-neural-networks",
+          "order": 4,
+          "paper": "How Powerful are Graph Neural Networks?",
+          "authors": [
+            "Keyulu Xu",
+            "Weihua Hu",
+            "Jure Leskovec",
+            "Stefanie Jegelka"
+          ],
+          "key_idea": "用 Weisfeiler-Lehman 图同构测试给 GNN 表达力定理上界:证明 mean/max 聚合(如 GraphSAGE)不如 WL test,提出 sum 聚合 + MLP 的 GIN,理论上证明达到 WL test 同等的最大可能表达力",
+          "path": "17-graph-neural-networks/04-gin.md",
+          "assets": [
+            "17-graph-neural-networks/assets/04-gin-architecture.svg"
+          ]
+        },
+        {
+          "name": "Graphormer",
+          "year": 2021,
+          "family": "17-graph-neural-networks",
+          "order": 5,
+          "paper": "Do Transformers Really Perform Bad for Graph Representation?",
+          "authors": [
+            "Chengxuan Ying",
+            "Tianle Cai",
+            "Shengjie Luo",
+            "Shuxin Zheng",
+            "Guolin Ke",
+            "Di He",
+            "Yanming Shen",
+            "Tie-Yan Liu"
+          ],
+          "key_idea": "把标准 Transformer 搬到图上:中心性编码 + 空间编码(最短路径距离)+ 边编码把图结构信息直接注入 attention,用全局注意力替代逐跳消息传递,OGB 大规模分子性质预测挑战赛冠军",
+          "path": "17-graph-neural-networks/05-graphormer.md",
+          "assets": [
+            "17-graph-neural-networks/assets/05-graphormer-architecture.svg"
           ]
         }
       ]
