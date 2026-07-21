@@ -38,5 +38,9 @@ Graphormer(2021)不再逐层做"聚合邻居"这件事——它直接把每个�
 
 ## 依赖与延伸
 
-- 前置依赖:[Transformer](../05-transformer/01-transformer.md)(Graphormer 直接复用的架构)、[ViT](../08-vit/01-vit.md)(同样是"把 Transformer 搬到新模态"的思路呼应)
-- 延伸方向:GNN 在推荐系统(如 PinSAGE,GraphSAGE 的工业化版本)、知识图谱补全、药物分子性质预测(如 Graphormer 在 OGB 分子性质预测挑战赛的应用)等场景有广泛的工业落地,这些方向本仓库暂未单独收录
+**前置(foundations):**
+- [../05-transformer/01-transformer.md](../05-transformer/01-transformer.md) —— Graphormer 直接复用的架构
+- [../08-vit/01-vit.md](../08-vit/01-vit.md) —— 同样是"把 Transformer 搬到新模态"的思路呼应
+
+**延伸方向:**
+- GNN 在推荐系统(如 PinSAGE,GraphSAGE 的工业化版本)、知识图谱补全、药物分子性质预测(如 Graphormer 在 OGB 分子性质预测挑战赛的应用)等场景有广泛的工业落地,这些方向本仓库暂未单独收录
