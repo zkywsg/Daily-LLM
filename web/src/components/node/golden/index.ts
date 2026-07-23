@@ -76,4 +76,5 @@ export const goldenSamples: Record<
   "11-peft-lora/02-prefix-tuning": lazy(() => import("./prefix-tuning/NodePagePrefixTuning")),
   "08-vit/04-dit": lazy(() => import("./dit-vit/NodePageDiTViT")),
   "17-graph-neural-networks/01-gcn": lazy(() => import("./gcn/NodePageGCN")),
+  "17-graph-neural-networks/02-graphsage": lazy(() => import("./graphsage/NodePageGraphSAGE")),
 };
