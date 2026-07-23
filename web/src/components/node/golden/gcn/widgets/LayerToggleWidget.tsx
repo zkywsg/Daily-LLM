@@ -11,6 +11,7 @@ export function LayerToggleWidget({ hops, onChange }: Props) {
           key={h}
           type="button"
           onClick={() => onChange(h)}
+          aria-pressed={hops === h}
           style={{
             padding: "4px 14px", borderRadius: "var(--radius-sm)",
             border: `1px solid ${hops === h ? "#ec4899" : "var(--border)"}`,

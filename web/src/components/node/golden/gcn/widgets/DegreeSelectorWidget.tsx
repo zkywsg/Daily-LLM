@@ -13,6 +13,7 @@ export function DegreeSelectorWidget({ selected, onSelect }: Props) {
           key={n}
           type="button"
           onClick={() => onSelect(n)}
+          aria-pressed={n === selected}
           style={{
             width: 32, height: 32, borderRadius: "var(--radius-sm)",
             border: `1px solid ${n === selected ? "#ec4899" : "var(--border)"}`,

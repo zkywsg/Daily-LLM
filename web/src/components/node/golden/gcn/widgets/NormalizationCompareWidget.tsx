@@ -35,7 +35,7 @@ export function NormalizationCompareWidget({ center }: Props) {
         const norm = normWeight(center, nb, true);
         const gx = PAD.left + idx * groupW + groupW / 2;
         const rawH = raw * maxH * 0.8;
-        const normH = norm * maxH * 3;
+        const normH = Math.min(norm * maxH * 3, maxH - 10);
         return (
           <g key={nb}>
             <rect x={gx - barW - 2} y={H - PAD.bottom - rawH} width={barW} height={rawH} fill="#9ca3af" />
