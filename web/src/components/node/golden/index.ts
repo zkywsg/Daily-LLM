@@ -77,4 +77,5 @@ export const goldenSamples: Record<
   "08-vit/04-dit": lazy(() => import("./dit-vit/NodePageDiTViT")),
   "17-graph-neural-networks/01-gcn": lazy(() => import("./gcn/NodePageGCN")),
   "17-graph-neural-networks/02-graphsage": lazy(() => import("./graphsage/NodePageGraphSAGE")),
+  "17-graph-neural-networks/03-gat": lazy(() => import("./gat/NodePageGAT")),
 };
