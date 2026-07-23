@@ -33,27 +33,29 @@ export function SpatialBiasHeatmapWidget({ withSpatial }: Props) {
         role="img"
         aria-label={withSpatial ? "6x6 attention score 热力图,已叠加最短路径空间 bias" : "6x6 attention score 热力图,纯 base QK score"}
       >
-        <div style={{ display: "flex", marginLeft: 32 }}>
-          {NODES.map((j) => (
-            <div key={j} style={{ width: cellSize, textAlign: "center", fontSize: "var(--fs-xs)", color: "var(--ink-muted)" }}>{j}</div>
-          ))}
-        </div>
-        {NODES.map((i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center" }}>
-            <div style={{ width: 32, fontSize: "var(--fs-xs)", color: "var(--ink-muted)", textAlign: "right", paddingRight: 4 }}>{i}</div>
+        <div aria-hidden="true">
+          <div style={{ display: "flex", marginLeft: 32 }}>
             {NODES.map((j) => (
-              <div
-                key={j}
-                style={{
-                  width: cellSize, height: cellSize, display: "flex", alignItems: "center", justifyContent: "center",
-                  background: colorFor(scores[i][j]), fontSize: "var(--fs-xs)", border: "1px solid var(--bg-canvas)",
-                }}
-              >
-                {scores[i][j].toFixed(1)}
-              </div>
+              <div key={j} style={{ width: cellSize, textAlign: "center", fontSize: "var(--fs-xs)", color: "var(--ink-muted)" }}>{j}</div>
             ))}
           </div>
-        ))}
+          {NODES.map((i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ width: 32, fontSize: "var(--fs-xs)", color: "var(--ink-muted)", textAlign: "right", paddingRight: 4 }}>{i}</div>
+              {NODES.map((j) => (
+                <div
+                  key={j}
+                  style={{
+                    width: cellSize, height: cellSize, display: "flex", alignItems: "center", justifyContent: "center",
+                    background: colorFor(scores[i][j]), fontSize: "var(--fs-xs)", border: "1px solid var(--bg-canvas)",
+                  }}
+                >
+                  {scores[i][j].toFixed(1)}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
       <p style={{ fontSize: "var(--fs-xs)", color: "var(--ink-muted)", marginTop: "var(--space-2)" }}>
         {withSpatial ? "已叠加最短路径距离的空间 bias —— 远的节点分数被压低" : "纯 base QK score,还没有任何图结构信息"}
