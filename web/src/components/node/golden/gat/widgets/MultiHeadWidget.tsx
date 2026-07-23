@@ -61,9 +61,9 @@ export function MultiHeadWidget({ center, mode }: Props) {
         const cellW = (W - PAD.left - PAD.right) / combined.length;
         const x = PAD.left + idx * cellW;
         const y0 = PAD.top + 4 * rowH + 30;
-        const h = Math.min(v * 60 * 3, 55);
+        const h = Math.min(v * 60 * 3, 45);
         return (
-          <rect key={idx} x={x + 3} y={y0 + 40 - h} width={cellW - 6} height={h} fill={mode === "concat" ? headColors[idx % 4] : "#9d174d"} opacity={0.85} />
+          <rect key={idx} x={x + 3} y={y0 + 40 - h} width={cellW - 6} height={h} fill={mode === "concat" ? headColors[Math.floor(idx / neighbors.length) % headColors.length] : "#9d174d"} opacity={0.85} />
         );
       })}
     </svg>
