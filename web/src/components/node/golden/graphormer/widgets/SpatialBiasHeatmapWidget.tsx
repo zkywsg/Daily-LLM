@@ -28,7 +28,11 @@ export function SpatialBiasHeatmapWidget({ withSpatial }: Props) {
 
   return (
     <div>
-      <div style={{ display: "inline-block" }}>
+      <div
+        style={{ display: "inline-block" }}
+        role="img"
+        aria-label={withSpatial ? "6x6 attention score 热力图,已叠加最短路径空间 bias" : "6x6 attention score 热力图,纯 base QK score"}
+      >
         <div style={{ display: "flex", marginLeft: 32 }}>
           {NODES.map((j) => (
             <div key={j} style={{ width: cellSize, textAlign: "center", fontSize: "var(--fs-xs)", color: "var(--ink-muted)" }}>{j}</div>

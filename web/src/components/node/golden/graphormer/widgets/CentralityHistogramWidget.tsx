@@ -30,7 +30,20 @@ export function CentralityHistogramWidget() {
           const x = PAD.left + idx * (barW + gap) + gap / 2;
           const active = selected === n;
           return (
-            <g key={n} onClick={() => setSelected(n)} style={{ cursor: "pointer" }}>
+            <g
+              key={n}
+              onClick={() => setSelected(n)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelected(n);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`节点 ${n},度数 ${d}`}
+              style={{ cursor: "pointer" }}
+            >
               <rect x={x} y={H - PAD.bottom - h} width={barW} height={h} fill={active ? "#ec4899" : "#9ca3af"} rx={3} />
               <text x={x + barW / 2} y={H - PAD.bottom - h - 6} textAnchor="middle" fontSize={11} fontWeight={700} fill="var(--ink-primary)">
                 deg={d}
