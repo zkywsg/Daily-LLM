@@ -10,7 +10,8 @@ export function SampleControlWidget() {
   const [seed, setSeed] = useState(1);
 
   const all = fullNeighbors(center);
-  const sampled = sampleNeighbors(center, k, seed);
+  const effectiveK = Math.min(k, Math.max(all.length, 1));
+  const sampled = sampleNeighbors(center, effectiveK, seed);
 
   return (
     <div>
@@ -34,8 +35,8 @@ export function SampleControlWidget() {
       </div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: "var(--space-4)" }}>
         <label style={{ fontSize: "var(--fs-sm)", color: "var(--ink-secondary)" }}>
-          采样数 k = {k}
-          <input type="range" min={1} max={Math.max(all.length, 1)} value={k} onChange={(e) => setK(Number(e.target.value))} style={{ marginLeft: 8 }} />
+          采样数 k = {effectiveK}
+          <input type="range" min={1} max={Math.max(all.length, 1)} value={effectiveK} onChange={(e) => setK(Number(e.target.value))} style={{ marginLeft: 8 }} />
         </label>
         <button type="button" onClick={() => setSeed((s) => s + 1)} style={{ padding: "4px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--bg-surface)", cursor: "pointer", fontSize: "var(--fs-sm)" }}>
           重新采样
