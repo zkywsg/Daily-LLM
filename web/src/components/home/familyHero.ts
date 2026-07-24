@@ -21,4 +21,5 @@ export const FAMILY_HERO: Record<FamilyId, string> = {
   "15-reasoning-o1-r1": "15-reasoning-o1-r1/03-o1.md",
   "16-world-models": "16-world-models/01-world-models.md",
   "17-graph-neural-networks": "17-graph-neural-networks/01-gcn.md",
+  "18-speech-audio": "18-speech-audio/01-wav2vec2.md",
 };

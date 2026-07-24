@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 620"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="w2v-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="w2v-arr-rose" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#e11d48"/>
+    </marker>
+  </defs>
+
+  <text x="490" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Wav2Vec 2.0 — CNN 特征编码器 + 掩码 Transformer + 量化模块,端到端对比学习
+  </text>
+
+  <!-- raw waveform -->
+  <g transform="translate(20, 65)">
+    <rect x="0" y="0" width="150" height="120" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="75" y="-8" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">原始波形</text>
+    <text x="75" y="20" text-anchor="middle" font-size="9" fill="#92400e" font-weight="700">16kHz 采样</text>
+    <polyline points="12,70 24,50 36,85 48,45 60,90 72,55 84,80 96,40 108,95 120,60 138,75"
+              fill="none" stroke="#b45309" stroke-width="1.8"/>
+    <text x="75" y="108" text-anchor="middle" font-size="8" fill="#92400e">连续、高采样率、冗余度高</text>
+  </g>
+
+  <line x1="170" y1="125" x2="212" y2="125" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#w2v-arr)"/>
+
+  <!-- Mechanism 1: CNN feature encoder -->
+  <g transform="translate(215, 55)">
+    <rect x="0" y="0" width="190" height="140" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="95" y="22" text-anchor="middle" font-size="12" fill="#9d174d" font-weight="700">机制一 · CNN 特征编码器</text>
+    <line x1="14" y1="32" x2="176" y2="32" stroke="#f472b6" stroke-dasharray="3,3"/>
+    <text x="95" y="52" text-anchor="middle" font-size="9.5" fill="#9d174d" font-weight="700">多层 1D 卷积</text>
+    <text x="95" y="70" text-anchor="middle" font-size="8.5" fill="#be185d">压缩到约 50Hz</text>
+    <text x="95" y="85" text-anchor="middle" font-size="8.5" fill="#be185d">(每 20ms 一帧)</text>
+    <rect x="20" y="95" width="14" height="26" fill="#f9a8d4" stroke="#9d174d" stroke-width="1"/>
+    <rect x="40" y="95" width="14" height="26" fill="#f9a8d4" stroke="#9d174d" stroke-width="1"/>
+    <rect x="60" y="95" width="14" height="26" fill="#f9a8d4" stroke="#9d174d" stroke-width="1"/>
+    <rect x="80" y="95" width="14" height="26" fill="#f9a8d4" stroke="#9d174d" stroke-width="1"/>
+    <rect x="100" y="95" width="14" height="26" fill="#f9a8d4" stroke="#9d174d" stroke-width="1"/>
+    <rect x="120" y="95" width="14" height="26" fill="#f9a8d4" stroke="#9d174d" stroke-width="1"/>
+    <rect x="140" y="95" width="14" height="26" fill="#f9a8d4" stroke="#9d174d" stroke-width="1"/>
+    <text x="95" y="132" text-anchor="middle" font-size="8" fill="#9d174d">潜在特征序列 Z</text>
+  </g>
+
+  <line x1="405" y1="125" x2="447" y2="125" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#w2v-arr)"/>
+
+  <!-- Masking -->
+  <g transform="translate(450, 55)">
+    <rect x="0" y="0" width="160" height="140" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2.5"/>
+    <text x="80" y="22" text-anchor="middle" font-size="12" fill="#991b1b" font-weight="700">Span Masking</text>
+    <line x1="14" y1="32" x2="146" y2="32" stroke="#fca5a5" stroke-dasharray="3,3"/>
+    <text x="80" y="50" text-anchor="middle" font-size="8.5" fill="#991b1b">随机选起点,整段</text>
+    <text x="80" y="64" text-anchor="middle" font-size="8.5" fill="#991b1b">连续帧一起遮盖</text>
+    <rect x="15" y="80" width="14" height="26" fill="#fca5a5" stroke="#991b1b" stroke-width="1"/>
+    <rect x="35" y="80" width="14" height="26" fill="#7f1d1d" stroke="#991b1b" stroke-width="1"/>
+    <rect x="55" y="80" width="14" height="26" fill="#7f1d1d" stroke="#991b1b" stroke-width="1"/>
+    <rect x="75" y="80" width="14" height="26" fill="#7f1d1d" stroke="#991b1b" stroke-width="1"/>
+    <rect x="95" y="80" width="14" height="26" fill="#fca5a5" stroke="#991b1b" stroke-width="1"/>
+    <rect x="115" y="80" width="14" height="26" fill="#fca5a5" stroke="#991b1b" stroke-width="1"/>
+    <text x="80" y="122" text-anchor="middle" font-size="8" fill="#991b1b">深色 = 被遮盖(MASK)</text>
+  </g>
+
+  <line x1="610" y1="125" x2="652" y2="125" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#w2v-arr)"/>
+
+  <!-- Mechanism 3: Transformer -->
+  <g transform="translate(655, 55)">
+    <rect x="0" y="0" width="220" height="140" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="110" y="22" text-anchor="middle" font-size="12" fill="#065f46" font-weight="700">机制三 · Transformer</text>
+    <line x1="14" y1="32" x2="206" y2="32" stroke="#86efac" stroke-dasharray="3,3"/>
+    <text x="110" y="52" text-anchor="middle" font-size="9" fill="#047857">双向自注意力聚合上下文</text>
+    <text x="110" y="68" text-anchor="middle" font-size="9" fill="#047857">在被 mask 位置输出</text>
+    <text x="110" y="83" text-anchor="middle" font-size="9" fill="#047857">上下文表征 C</text>
+    <rect x="60" y="95" width="100" height="30" rx="6" fill="#bbf7d0" stroke="#065f46" stroke-width="1.5"/>
+    <text x="110" y="115" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">C(上下文表征)</text>
+  </g>
+
+  <!-- Mechanism 2: Quantizer branch, below CNN output -->
+  <line x1="310" y1="195" x2="310" y2="230" stroke="#2563eb" stroke-width="2.5" marker-end="url(#w2v-arr)"/>
+  <g transform="translate(215, 233)">
+    <rect x="0" y="0" width="220" height="140" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="110" y="22" text-anchor="middle" font-size="12" fill="#1e3a8a" font-weight="700">机制二 · 量化模块</text>
+    <line x1="14" y1="32" x2="206" y2="32" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="110" y="50" text-anchor="middle" font-size="9" fill="#1d4ed8">Gumbel-softmax 乘积量化</text>
+    <text x="110" y="65" text-anchor="middle" font-size="9" fill="#1d4ed8">Z → 离散量化表示 Q</text>
+    <text x="110" y="80" text-anchor="middle" font-size="9" fill="#1d4ed8">(+ 多样性损失,防码本坍缩)</text>
+    <rect x="70" y="95" width="80" height="30" rx="6" fill="#93c5fd" stroke="#1e3a8a" stroke-width="1.5"/>
+    <text x="110" y="115" text-anchor="middle" font-size="10" fill="#1e3a8a" font-weight="700">Q(对比目标)</text>
+  </g>
+
+  <!-- Contrastive loss box -->
+  <g transform="translate(500, 260)">
+    <rect x="0" y="0" width="330" height="90" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="165" y="24" text-anchor="middle" font-size="12" fill="#5b21b6" font-weight="700">对比学习损失</text>
+    <text x="165" y="46" text-anchor="middle" font-size="9.5" fill="#4c1d95">从(真实目标 Q + 干扰项)中,</text>
+    <text x="165" y="63" text-anchor="middle" font-size="9.5" fill="#4c1d95">用 C 挑出真实的量化目标 Q</text>
+    <text x="165" y="80" text-anchor="middle" font-size="8.5" fill="#7c3aed">→ 梯度同时更新 CNN / 量化 / Transformer</text>
+  </g>
+
+  <line x1="765" y1="195" x2="665" y2="260" stroke="#059669" stroke-width="2.2" marker-end="url(#w2v-arr)"/>
+  <line x1="435" y1="303" x2="500" y2="303" stroke="#2563eb" stroke-width="2.2" marker-end="url(#w2v-arr)"/>
+
+  <!-- three-piece synergy note -->
+  <g transform="translate(20, 410)">
+    <rect x="0" y="0" width="940" height="180" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="470" y="26" text-anchor="middle" font-size="12" fill="#9f1239" font-weight="700">三件套协同 — 缺一不可</text>
+    <text x="18" y="52" font-size="10" fill="#881337">只有 CNN 特征编码器(机制一)没有量化模块(机制二):对比学习没有离散稳定的目标,退化成连续空间回归,容易学到平凡解。</text>
+    <text x="18" y="76" font-size="10" fill="#881337">只有量化模块没有 Transformer 掩码预测(机制三):量化码本缺少上下文预测任务的学习压力,容易退化成局部声学特征的简单聚类。</text>
+    <text x="18" y="100" font-size="10" fill="#881337">只有 Transformer 没有前两者:没有合适粒度的特征输入,也没有离散对比目标,无法构造出自监督"完形填空"任务。</text>
+    <text x="18" y="128" font-size="10.5" fill="#e11d48" font-weight="700">三者组合 → CNN 压缩波形 + 量化模块生成离散目标 + Transformer 学习预测,端到端联合训练,取代 vq-wav2vec 的两阶段流水线。</text>
+    <text x="18" y="154" font-size="9.5" fill="#9f1239">下游微调:丢弃量化模块和对比损失,只保留 CNN + Transformer,接线性层用少量标注数据以 CTC 损失微调(10 分钟标注即可有竞争力)。</text>
+  </g>
+</svg>
