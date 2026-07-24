@@ -56,7 +56,7 @@
 
 ### "对话开始" 不必先 invoke `using-superpowers`
 
-之前的"每次对话必须先调 using-superpowers"那条作废。我会在真正需要 `brainstorming` / `writing-plans` / `subagent-driven-development` 的时刻才 invoke 对应 skill；其他时候按上面三档自己判断。
+之前的"每次对话必须先调 using-superpowers"那条作废。真正需要走重型流程的 brainstorm 阶段时,才 invoke `brainstorming` skill;其他时候按上面三档自己判断。写 plan 落盘和派 subagent 串行执行,直接照着 `docs/superpowers/plans/` 里已有文件的格式手写 + 用 Agent 工具逐 task 派发,不依赖额外的 skill 调用。
 
 **边界场景的兜底**：如果我对"这事该走哪一档"拿不准，先一句话问你"这个用重型/中型/轻型"，再开始。如果我判断错了，你直接说"走重型流程"或"直接动手"，我立刻切换。
 
