@@ -82,4 +82,5 @@ export const goldenSamples: Record<
   "17-graph-neural-networks/05-graphormer": lazy(() => import("./graphormer/NodePageGraphormer")),
   "16-world-models/01-world-models": lazy(() => import("./world-models/NodePageWorldModels")),
   "16-world-models/02-video-diffusion-models": lazy(() => import("./video-diffusion-models/NodePageVideoDiffusionModels")),
+  "16-world-models/03-dreamerv3": lazy(() => import("./dreamerv3/NodePageDreamerV3")),
 };
