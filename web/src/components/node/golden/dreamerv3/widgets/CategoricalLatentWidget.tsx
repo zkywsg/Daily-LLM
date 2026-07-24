@@ -12,13 +12,17 @@ export function CategoricalLatentWidget() {
         类别变量组数 = {numCategoricals}(每组 {numClasses} 类)
         <input type="range" min={1} max={8} value={numCategoricals} onChange={(e) => setNumCategoricals(Number(e.target.value))} style={{ display: "block", width: "100%", marginTop: 6 }} />
       </label>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <div
+        style={{ display: "flex", flexDirection: "column", gap: 6 }}
+        role="img"
+        aria-label={`${numCategoricals} 组离散类别分布,每组 ${numClasses} 类`}
+      >
         {dists.map((dist, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ width: 50, fontSize: "var(--fs-xs)", color: "var(--ink-muted)" }}>组 {i}</span>
             <div style={{ display: "flex", gap: 1, flex: 1 }}>
               {dist.map((p, k) => (
-                <div key={k} title={p.toFixed(2)} style={{ height: 20, flex: 1, background: "#d946ef", opacity: 0.2 + p * 3 }} />
+                <div key={k} title={p.toFixed(2)} style={{ height: 20, flex: 1, background: "#d946ef", opacity: 0.15 + p * 0.85 }} />
               ))}
             </div>
           </div>
