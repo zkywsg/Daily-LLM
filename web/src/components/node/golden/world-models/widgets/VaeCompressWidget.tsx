@@ -4,10 +4,10 @@ import { GRID_SIZE, TOY_FRAME, encodeVAE, decodeVAE } from "../lib/data";
 // 8x8 toy 帧 → 可调维度的潜向量 → 重建。潜维度越小重建越模糊,
 // 直观展示 VAE 压缩的信息损失权衡。
 
-function GridSvg({ values, size = 160 }: { values: number[]; size?: number }) {
+function GridSvg({ values, size = 160, label }: { values: number[]; size?: number; label: string }) {
   const cell = size / GRID_SIZE;
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label}>
       {values.map((v, i) => {
         const x = (i % GRID_SIZE) * cell;
         const y = Math.floor(i / GRID_SIZE) * cell;
@@ -32,7 +32,7 @@ export function VaeCompressWidget() {
       <div style={{ display: "flex", gap: "var(--space-6)", alignItems: "center", flexWrap: "wrap" }}>
         <div>
           <div style={{ fontSize: "var(--fs-xs)", color: "var(--ink-muted)", marginBottom: 4 }}>原始帧(8×8)</div>
-          <GridSvg values={TOY_FRAME} />
+          <GridSvg values={TOY_FRAME} label="原始帧" />
         </div>
         <div style={{ fontSize: "var(--fs-2xl)", color: "var(--ink-muted)" }}>→</div>
         <div>
@@ -46,7 +46,7 @@ export function VaeCompressWidget() {
         <div style={{ fontSize: "var(--fs-2xl)", color: "var(--ink-muted)" }}>→</div>
         <div>
           <div style={{ fontSize: "var(--fs-xs)", color: "var(--ink-muted)", marginBottom: 4 }}>重建帧</div>
-          <GridSvg values={recon} />
+          <GridSvg values={recon} label="重建帧" />
         </div>
       </div>
       <p style={{ fontSize: "var(--fs-sm)", color: "var(--ink-muted)", marginTop: "var(--space-3)" }}>

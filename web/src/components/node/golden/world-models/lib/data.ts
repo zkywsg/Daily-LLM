@@ -12,34 +12,37 @@ export const TOY_FRAME: number[] = Array.from({ length: GRID_SIZE * GRID_SIZE },
   return Math.max(0, 1 - d / 4);
 });
 
-/** 用简单哈希把 64 维帧压缩成 latentDim 维潜向量(确定性,模拟 VAE 编码) */
+const N = GRID_SIZE * GRID_SIZE; // 64
+
+/** DCT-II 正交基函数第 d 个基在位置 i 的值(标准正交余弦基,d=0..63) */
+function dctBasis(d: number, i: number): number {
+  const c = d === 0 ? Math.sqrt(1 / N) : Math.sqrt(2 / N);
+  return c * Math.cos((Math.PI * (2 * i + 1) * d) / (2 * N));
+}
+
+/** 用正交余弦基把 64 维帧投影成 latentDim 维系数(截断 DCT,前 latentDim 个低频分量) */
 export function encodeVAE(frame: number[], latentDim: number): number[] {
   const z: number[] = [];
   for (let d = 0; d < latentDim; d++) {
-    let sum = 0;
+    let coeff = 0;
     for (let i = 0; i < frame.length; i++) {
-      const w = Math.sin((i + 1) * (d + 1) * 0.37) * 0.5;
-      sum += frame[i] * w;
+      coeff += frame[i] * dctBasis(d, i);
     }
-    z.push(sum / frame.length);
+    z.push(coeff);
   }
   return z;
 }
 
-/** 从潜向量近似重建帧:latentDim 越小,重建越模糊(信息损失越大) */
+/** 用截断到 latentDim 个系数的正交基重建帧 —— 由于基是正交归一的,
+ * latentDim 越大保留的低频分量越多,重建结果单调收敛到原图(latentDim=64 时完全重建)。 */
 export function decodeVAE(z: number[], latentDim: number): number[] {
-  const recon: number[] = [];
-  for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-    let sum = 0;
-    for (let d = 0; d < latentDim; d++) {
-      const w = Math.sin((i + 1) * (d + 1) * 0.37) * 0.5;
-      sum += z[d] * w;
+  const recon: number[] = new Array(N).fill(0);
+  for (let d = 0; d < latentDim; d++) {
+    for (let i = 0; i < N; i++) {
+      recon[i] += z[d] * dctBasis(d, i);
     }
-    // latentDim 越大,重建越接近原图;用一个模糊系数模拟维度不足的信息损失
-    const fidelity = Math.min(1, latentDim / 16);
-    recon.push(Math.max(0, Math.min(1, sum * fidelity + 0.5 * (1 - fidelity))));
   }
-  return recon;
+  return recon.map((v) => Math.max(0, Math.min(1, v)));
 }
 
 export interface MixtureComponent {
