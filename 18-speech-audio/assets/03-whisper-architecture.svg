@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 700"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="wh-arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="wh-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="wh-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <text x="490" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    Whisper — log-mel 频谱 + Transformer encoder-decoder + 多任务特殊 token
+  </text>
+
+  <!-- raw audio -->
+  <g transform="translate(20, 60)">
+    <rect x="0" y="0" width="140" height="110" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <text x="70" y="-8" text-anchor="middle" font-size="10" fill="#92400e" font-weight="600">原始音频</text>
+    <path d="M 12 55 L 24 30 L 36 75 L 48 20 L 60 65 L 72 40 L 84 60 L 96 35 L 108 55 L 120 45"
+          fill="none" stroke="#b45309" stroke-width="1.5"/>
+    <text x="70" y="95" text-anchor="middle" font-size="8" fill="#92400e">16kHz 原始波形</text>
+  </g>
+
+  <line x1="160" y1="115" x2="200" y2="115" stroke="#d97706" stroke-width="2.5" marker-end="url(#wh-arr-blue)"/>
+
+  <!-- log-mel spectrogram -->
+  <g transform="translate(203, 55)">
+    <rect x="0" y="0" width="150" height="120" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="2.5"/>
+    <text x="75" y="20" text-anchor="middle" font-size="10.5" fill="#92400e" font-weight="700">log-mel 频谱图</text>
+    <rect x="10" y="34" width="12" height="70" fill="#f59e0b" opacity="0.9"/>
+    <rect x="24" y="34" width="12" height="50" fill="#fbbf24" opacity="0.9"/>
+    <rect x="38" y="34" width="12" height="65" fill="#f59e0b" opacity="0.9"/>
+    <rect x="52" y="34" width="12" height="40" fill="#fcd34d" opacity="0.9"/>
+    <rect x="66" y="34" width="12" height="60" fill="#f59e0b" opacity="0.9"/>
+    <rect x="80" y="34" width="12" height="55" fill="#fbbf24" opacity="0.9"/>
+    <rect x="94" y="34" width="12" height="70" fill="#f59e0b" opacity="0.9"/>
+    <rect x="108" y="34" width="12" height="45" fill="#fcd34d" opacity="0.9"/>
+    <rect x="122" y="34" width="12" height="60" fill="#f59e0b" opacity="0.9"/>
+    <text x="75" y="115" text-anchor="middle" font-size="8" fill="#92400e">时频二维表示,固定信号处理变换</text>
+  </g>
+
+  <line x1="353" y1="115" x2="393" y2="115" stroke="#2563eb" stroke-width="2.5" marker-end="url(#wh-arr-blue)"/>
+
+  <!-- Mechanism 1a: encoder -->
+  <g transform="translate(396, 50)">
+    <rect x="0" y="0" width="200" height="130" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="100" y="20" text-anchor="middle" font-size="11.5" fill="#1e3a8a" font-weight="700">机制一 · Transformer Encoder</text>
+    <line x1="12" y1="30" x2="188" y2="30" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="100" y="48" text-anchor="middle" font-size="9" fill="#1d4ed8">标准双向 Transformer</text>
+    <text x="100" y="63" text-anchor="middle" font-size="9" fill="#1d4ed8">无语音专用结构设计</text>
+    <rect x="45" y="76" width="110" height="26" rx="6" fill="#93c5fd" stroke="#1e3a8a" stroke-width="1.5"/>
+    <text x="100" y="94" text-anchor="middle" font-size="9.5" fill="#1e3a8a" font-weight="700">音频表征 (编码)</text>
+    <text x="100" y="118" text-anchor="middle" font-size="8" fill="#1d4ed8">交叉注意力供 decoder 使用</text>
+  </g>
+
+  <!-- data + filtering box feeding into training (mechanism 2) -->
+  <g transform="translate(396, 210)">
+    <rect x="0" y="0" width="200" height="140" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2.5"/>
+    <text x="100" y="20" text-anchor="middle" font-size="11.5" fill="#991b1b" font-weight="700">机制二 · 弱监督数据</text>
+    <line x1="12" y1="30" x2="188" y2="30" stroke="#fca5a5" stroke-dasharray="3,3"/>
+    <text x="100" y="48" text-anchor="middle" font-size="9" fill="#991b1b">68 万小时音频-文本</text>
+    <text x="100" y="62" text-anchor="middle" font-size="9" fill="#991b1b">约 96 种语言,互联网收集</text>
+    <rect x="30" y="74" width="140" height="26" rx="6" fill="#fca5a5" stroke="#991b1b" stroke-width="1.5"/>
+    <text x="100" y="92" text-anchor="middle" font-size="9" fill="#7f1d1d" font-weight="700">启发式规则 + 分类器过滤</text>
+    <text x="100" y="115" text-anchor="middle" font-size="8" fill="#991b1b">剔除疑似机器生成的伪转写</text>
+    <text x="100" y="130" text-anchor="middle" font-size="8" fill="#991b1b">驱动整个端到端训练</text>
+  </g>
+
+  <line x1="496" y1="180" x2="496" y2="206" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#wh-arr)"/>
+
+  <line x1="596" y1="115" x2="636" y2="115" stroke="#059669" stroke-width="2.5" marker-end="url(#wh-arr-green)"/>
+
+  <!-- Mechanism 1b: decoder -->
+  <g transform="translate(639, 50)">
+    <rect x="0" y="0" width="320" height="150" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="160" y="20" text-anchor="middle" font-size="11.5" fill="#065f46" font-weight="700">机制一 · Transformer Decoder</text>
+    <line x1="12" y1="30" x2="308" y2="30" stroke="#86efac" stroke-dasharray="3,3"/>
+    <text x="160" y="48" text-anchor="middle" font-size="9" fill="#047857">自回归生成文本 token</text>
+    <text x="160" y="62" text-anchor="middle" font-size="9" fill="#047857">交叉注意力关注 encoder 音频表征</text>
+    <rect x="20" y="74" width="280" height="26" rx="6" fill="#bbf7d0" stroke="#065f46" stroke-width="1.5"/>
+    <text x="160" y="92" text-anchor="middle" font-size="9" fill="#065f46" font-weight="700">机制三:任务前缀特殊 token</text>
+    <text x="160" y="118" text-anchor="middle" font-size="8.5" fill="#047857">&lt;|transcribe|&gt; · &lt;|translate|&gt; · &lt;|langid|&gt;</text>
+    <text x="160" y="133" text-anchor="middle" font-size="8.5" fill="#047857">决定接下来生成什么样的输出</text>
+  </g>
+
+  <line x1="799" y1="200" x2="799" y2="232" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#wh-arr)"/>
+
+  <!-- multitask outputs -->
+  <g transform="translate(639, 235)">
+    <rect x="0" y="0" width="320" height="115" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="160" y="20" text-anchor="middle" font-size="11.5" fill="#5b21b6" font-weight="700">多任务输出(共享同一套权重)</text>
+    <line x1="12" y1="30" x2="308" y2="30" stroke="#c4b5fd" stroke-dasharray="3,3"/>
+    <text x="80" y="52" text-anchor="middle" font-size="9" fill="#5b21b6">转写</text>
+    <text x="160" y="52" text-anchor="middle" font-size="9" fill="#5b21b6">翻译</text>
+    <text x="240" y="52" text-anchor="middle" font-size="9" fill="#5b21b6">语言识别</text>
+    <text x="80" y="72" text-anchor="middle" font-size="9" fill="#5b21b6">时间戳预测</text>
+    <text x="200" y="72" text-anchor="middle" font-size="9" fill="#5b21b6">语音活动检测</text>
+    <text x="160" y="98" text-anchor="middle" font-size="8.5" fill="#6d28d9" font-weight="600">同一模型 zero-shot 完成多任务,无需微调</text>
+  </g>
+
+  <!-- three-piece synergy note -->
+  <g transform="translate(20, 400)">
+    <rect x="0" y="0" width="940" height="160" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="470" y="26" text-anchor="middle" font-size="12" fill="#9f1239" font-weight="700">三件套协同 — 缺一不可</text>
+    <text x="18" y="52" font-size="10" fill="#881337">只有标准架构(机制一)没有大规模数据(机制二):退化成普通中小规模监督 ASR,遇到分布外场景照样掉分。</text>
+    <text x="18" y="76" font-size="10" fill="#881337">只有大规模数据没有多任务统一格式(机制三):模型只能学转写,翻译/语言识别等多样监督信号被白白浪费。</text>
+    <text x="18" y="100" font-size="10" fill="#881337">只有前两者没有质量过滤流程:大量机器生成的伪转写混入训练集,污染监督信号,削弱最终效果。</text>
+    <text x="18" y="128" font-size="10.5" fill="#e11d48" font-weight="700">三者组合 → 标准架构提供通用容器 + 大规模数据提供鲁棒性 + 多任务格式充分利用数据,zero-shot 即可达到接近监督 SOTA 的鲁棒性。</text>
+  </g>
+
+  <text x="490" y="595" text-anchor="middle" font-size="9" fill="#6b7280">
+    数据流:原始音频 → log-mel 频谱(固定变换)→ Encoder 编码 → Decoder 按任务前缀 token 自回归生成 → 多任务输出
+  </text>
+</svg>
