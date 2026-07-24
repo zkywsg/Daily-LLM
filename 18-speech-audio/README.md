@@ -29,6 +29,8 @@ Wav2Vec 2.0 和 HuBERT 都遵循"自监督预训练 + 下游任务微调"这一 
 | 2022 | **AudioLM** | Borsos et al.(Google)——把音频离散化成语义 token(来自自监督模型,捕捉长程一致性)和声学 token(来自神经编解码器 SoundStream,捕捉音色/说话人细节)两级表示,用语言模型对语义→粗声学→细声学做层级式 next-token 预测,不需要文本条件就能生成语义连贯、说话人一致的语音/钢琴续写 | 此前的神经音频合成(如 WaveNet)擅长生成局部逼真的波形,但缺乏长程语义一致性(几十秒后内容/说话人容易跑偏);自监督表征学习(Wav2Vec2/HuBERT)擅长做理解任务,没人把它系统用于生成 |
 | 2023 | **MusicGen** | Copet et al.(Meta AI)——用 EnCodec 神经编解码器产生的多层残差量化(RVQ)token,配合码本交错(codebook interleaving)技巧,把多个并行码本流摊平成一条序列,单阶段 Transformer decoder 自回归建模,支持文本(T5 编码)和旋律(chromagram)双重条件控制 | AudioLM/MusicLM 这类级联多阶段模型(语义 token → 粗声学 token → 细声学 token 分别用独立模型生成)结构复杂、推理慢、误差会在阶段间累积传播 |
 
+**排序说明**:Whisper 与 AudioLM 均发布于 2022 年,表格按"识别主线先讲完 → 再转向生成主线"的教学顺序排列(Whisper 排在 AudioLM 前),而非严格按论文公开时间(AudioLM 的 arXiv 版本实际早于 Whisper 约 3 个月)。
+
 ## 依赖与延伸
 
 - 前置依赖:[Transformer](../05-transformer/01-transformer.md)(五篇论文全部基于的核心架构)、[GPT-3](../07-gpt-scaling/03-gpt3.md)(AudioLM/MusicGen 直接复用的自回归语言建模范式)
