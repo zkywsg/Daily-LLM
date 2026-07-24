@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { INITIAL_FRAME, ACTION_VECTORS, inferLatentAction, makeFrame } from "../lib/data";
+import { GRID_SIZE, INITIAL_FRAME, ACTION_VECTORS, inferLatentAction, makeFrame } from "../lib/data";
 
-function MiniFrame({ cx, cy }: { cx: number; cy: number }) {
+function MiniFrame({ cx, cy, label }: { cx: number; cy: number; label: string }) {
   const frame = makeFrame(cx, cy);
-  const size = 90, grid = 6, cell = size / grid;
+  const size = 90, grid = GRID_SIZE, cell = size / grid;
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label}>
       {frame.map((v, i) => {
         const x = (i % grid) * cell, y = Math.floor(i / grid) * cell;
         const g = Math.round(v * 255);
@@ -42,12 +42,12 @@ export function LamWidget() {
       <div style={{ display: "flex", gap: "var(--space-4)", alignItems: "center" }}>
         <div>
           <div style={{ fontSize: "var(--fs-xs)", color: "var(--ink-muted)" }}>帧 t</div>
-          <MiniFrame cx={prev.cx} cy={prev.cy} />
+          <MiniFrame cx={prev.cx} cy={prev.cy} label={`帧 t,亮斑位置 (${prev.cx}, ${prev.cy})`} />
         </div>
         <div style={{ fontSize: "var(--fs-xl)", color: "var(--ink-muted)" }}>→</div>
         <div>
           <div style={{ fontSize: "var(--fs-xs)", color: "var(--ink-muted)" }}>帧 t+1</div>
-          <MiniFrame cx={curr.cx} cy={curr.cy} />
+          <MiniFrame cx={curr.cx} cy={curr.cy} label={`帧 t+1,亮斑位置 (${curr.cx}, ${curr.cy})`} />
         </div>
       </div>
       <div style={{ marginTop: "var(--space-3)", padding: "var(--space-3)", border: "1px solid #d946ef", borderRadius: "var(--radius-md)", background: "#fae8ff" }}>

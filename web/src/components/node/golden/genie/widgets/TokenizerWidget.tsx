@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { GRID_SIZE, INITIAL_FRAME, makeFrame, tokenizeFrame } from "../lib/data";
 
-function GridSvg({ values, size = 140 }: { values: number[]; size?: number }) {
+function GridSvg({ values, size = 140, label }: { values: number[]; size?: number; label: string }) {
   const cell = size / GRID_SIZE;
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label}>
       {values.map((v, i) => {
         const x = (i % GRID_SIZE) * cell;
         const y = Math.floor(i / GRID_SIZE) * cell;
@@ -27,7 +27,7 @@ export function TokenizerWidget() {
         <input type="range" min={0} max={5} step={0.5} value={cx} onChange={(e) => setCx(Number(e.target.value))} style={{ display: "block", width: "100%", marginTop: 6 }} />
       </label>
       <div style={{ display: "flex", gap: "var(--space-4)", alignItems: "center" }}>
-        <GridSvg values={frame} />
+        <GridSvg values={frame} label={`tokenizer 输入帧,亮斑位置 (${cx}, ${INITIAL_FRAME.cy})`} />
         <div style={{ fontSize: "var(--fs-2xl)", color: "var(--ink-muted)" }}>→</div>
         <div style={{ padding: "var(--space-4)", border: "1px solid #d946ef", borderRadius: "var(--radius-md)", background: "#fae8ff" }}>
           <div style={{ fontSize: "var(--fs-xs)", color: "var(--ink-muted)" }}>token id</div>
