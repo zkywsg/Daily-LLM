@@ -3,13 +3,15 @@ import { flops3D, flopsFactorized } from "../lib/data";
 
 const W = 680;
 const H = 300;
+const RESOLUTION = 64;
+const FRAMES = 16;
+const CHANNELS = 64;
 
 export function FlopsCompareWidget() {
-  const [resolution, setResolution] = useState(64);
-  const frames = 16, kernel = 3, channels = 64;
+  const [kernel, setKernel] = useState(3);
 
-  const f3d = flops3D(resolution, resolution, frames, kernel, channels);
-  const ffact = flopsFactorized(resolution, resolution, frames, kernel, channels);
+  const f3d = flops3D(RESOLUTION, RESOLUTION, FRAMES, kernel, CHANNELS);
+  const ffact = flopsFactorized(RESOLUTION, RESOLUTION, FRAMES, kernel, CHANNELS);
   const maxF = Math.max(f3d, ffact);
 
   const bar = (x: number, val: number, label: string, color: string) => {
@@ -30,19 +32,19 @@ export function FlopsCompareWidget() {
   return (
     <div>
       <label style={{ display: "block", fontSize: "var(--fs-sm)", color: "var(--ink-secondary)", marginBottom: "var(--space-3)" }}>
-        分辨率 = {resolution}×{resolution}
-        <input type="range" min={32} max={128} step={16} value={resolution} onChange={(e) => setResolution(Number(e.target.value))} style={{ display: "block", width: "100%", marginTop: 6 }} />
+        卷积核大小 k = {kernel}
+        <input type="range" min={1} max={7} step={2} value={kernel} onChange={(e) => setKernel(Number(e.target.value))} style={{ display: "block", width: "100%", marginTop: 6 }} />
       </label>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", fontFamily: "system-ui" }} role="img" aria-label="3D 卷积与时空分解卷积的算力对比">
         <text x={W / 2} y={20} textAnchor="middle" fontSize={12} fontWeight={600} fill="var(--ink-primary)">
-          FLOPs 量级对比(16 帧,{resolution}×{resolution},估算值)
+          FLOPs 量级对比(16 帧,64×64,卷积核 {kernel}×{kernel}×{kernel},估算值)
         </text>
         <line x1={30} y1={H - 50} x2={W - 30} y2={H - 50} stroke="var(--border)" />
         {bar(150, f3d, "完整 3D 卷积", "#9ca3af")}
         {bar(400, ffact, "2D+1D 分解", "#d946ef")}
       </svg>
       <p style={{ fontSize: "var(--fs-sm)", color: "var(--ink-muted)" }}>
-        分辨率越高,3D 卷积的算力开销增长越快;2D+1D 分解把空间和时间维度拆开卷积,复用图像领域已经很成熟的 2D 卷积效率。
+        卷积核越大,3D 卷积相对 2D+1D 分解的算力劣势越明显(比值 ≈ k²/(k+1));分辨率/帧数对两者的影响是同倍数缩放的,不改变这个比例关系。
       </p>
     </div>
   );
