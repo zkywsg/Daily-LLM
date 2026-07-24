@@ -36,11 +36,11 @@ HuBERT 的核心洞察是把"生成离散目标"和"学习上下文表征"这两
 
 训练完第一轮 HuBERT 模型之后,并不是就此结束。第一轮模型的某个中间隐藏层(通常不是最后一层,而是网络中段的某一层)此时已经学到了比原始 MFCC 更贴近语音内容结构的表征,因为它是在"预测伪标签"这个任务的监督下训练出来的,天然会把发音相似的帧聚拢、把不同发音的帧分开。用这个中间层的表征重新做一次 k-means 聚类,得到的新伪标签通常比第一轮直接对 MFCC 聚类的结果更贴近真实音素边界。
 
-用这套质量更高的新伪标签重新训练一版 HuBERT,得到的模型表征质量会进一步提升,理论上又可以再拿去做下一轮聚类。这个"训练模型 → 用模型自身中间层特征重新聚类 → 用新伪标签重新训练"的自举(bootstrap)过程通常进行 2-3 轮,每一轮伪标签的音素区分度都比上一轮更好,模型表征质量也随之提升。
+用这套质量更高的新伪标签重新训练一版 HuBERT,得到的模型表征质量会进一步提升,理论上又可以再拿去做下一轮聚类。这个"训练模型 → 用模型自身中间层特征重新聚类 → 用新伪标签重新训练"的自举(bootstrap)过程论文中通常进行 2 轮,每一轮伪标签的音素区分度都比上一轮更好,模型表征质量也随之提升。
 
 ![HuBERT 架构 — 离线聚类 + 掩码分类 + 迭代重新聚类](assets/02-hubert-architecture.svg)
 
-*图 1:第一轮先对 MFCC 做 k-means 聚类生成初始伪标签,Transformer 在被 mask 的位置做分类预测;训练完成后用模型中间层表征重新聚类,生成更贴近音素边界的新伪标签,再重新训练,如此迭代 2-3 轮。*
+*图 1:第一轮先对 MFCC 做 k-means 聚类生成初始伪标签,Transformer 在被 mask 的位置做分类预测;训练完成后用模型中间层表征重新聚类,生成更贴近音素边界的新伪标签,再重新训练,如此迭代 2 轮。*
 
 ## 三件套协同
 
@@ -121,10 +121,11 @@ def extract_mid_layer_features(model, feats, layer_idx=6):
 # 迭代自举流程(伪代码,实际每轮都是独立的完整训练):
 # round1_labels = generate_pseudo_labels(mfcc_features)                     # 第一轮:对 MFCC 聚类
 # model1 = train(HuBERT(), mfcc_features, round1_labels)                     # 训练第一轮模型
-# mid_feats = extract_mid_layer_features(model1, mfcc_features)              # 提取中间层表征
-# round2_labels = generate_pseudo_labels(mid_feats)                          # 第二轮:对中间层表征重新聚类
+# mid_feats = extract_mid_layer_features(model1, mfcc_features)              # 提取中间层表征,(B, T, dim) torch.Tensor
+# mid_feats_flat = mid_feats.reshape(-1, mid_feats.shape[-1]).detach().cpu().numpy()  # 展平成 (N, D) numpy,供 k-means 使用
+# round2_labels = generate_pseudo_labels(mid_feats_flat)                     # 第二轮:对中间层表征重新聚类
 # model2 = train(HuBERT(), mfcc_features, round2_labels)                     # 用更好的伪标签重新训练
-# 通常迭代 2-3 轮,伪标签质量逐轮提升
+# 论文中通常迭代 2 轮,伪标签质量逐轮提升
 ```
 
 ## 性能数据
