@@ -47,6 +47,7 @@
 | 2020 | **DDPM** | `10-diffusion` | 把 2015 年的 diffusion 思想工程化:U-Net 预测噪声 + 简单 MSE 损失 + 1000 步去噪采样,稳定训练且质量超 GAN | [10-diffusion/01-ddpm.md](10-diffusion/01-ddpm.md) |
 | 2020 | **Learning to Summarize from Human Feedback** | `12-rlhf-alignment` | 用人工偏好比较训练 reward model + PPO 微调 LLM,摘要质量超过监督学习 baseline 和参考摘要,确立 RLHF 在 NLP 上的完整方案 | [12-rlhf-alignment/01-learning-to-summarize.md](12-rlhf-alignment/01-learning-to-summarize.md) |
 | 2020 | **RAG** | `14-rag-agent` | 把 dense retriever(DPR)和 seq2seq 生成器联合训练,把外部知识库接进 LM 输入侧;开放域 QA 不再依赖参数化知识,可以查 | [14-rag-agent/01-rag.md](14-rag-agent/01-rag.md) |
+| 2020 | **Wav2Vec 2.0** | `18-speech-audio` | CNN 特征编码器 + 可学习量化模块生成离散对比目标 + Transformer 掩码预测,用对比学习从原始波形自监督学到可迁移的语音表征,让下游 ASR 只需极少标注数据就能微调 | [18-speech-audio/01-wav2vec2.md](18-speech-audio/01-wav2vec2.md) |
 | 2021 | **RoPE** | `05-transformer` | 把位置信息编码进 Q/K 的旋转里而不是加在 token embedding 上,attention 内积天然只依赖相对位置,长上下文外推显著更好 | [05-transformer/04-rope.md](05-transformer/04-rope.md) |
 | 2021 | **DeiT** | `08-vit` | 用 distillation token + 强增强 + AdamW + 蒸馏让 ViT 在 ImageNet-1K 上从零训练击败 ResNet,不再依赖 JFT-300M,把 ViT 带给学界 | [08-vit/02-deit.md](08-vit/02-deit.md) |
 | 2021 | **Swin Transformer** | `08-vit` | 用 shifted window attention 把复杂度从 O(N²) 降到 O(N) + 层级化下采样产出多尺度特征图,让 ViT 第一次能直接做 detection / segmentation | [08-vit/03-swin.md](08-vit/03-swin.md) |
@@ -55,6 +56,7 @@
 | 2021 | **LoRA** | `11-peft-lora` | 把权重更新 ΔW 分解为低秩矩阵 B·A(r 远小于 d),只训 BA 的 ~0.1% 参数;推理时 W = W₀ + BA 可合并回原权重,零额外延迟;PEFT 时代的工业标准 | [11-peft-lora/03-lora.md](11-peft-lora/03-lora.md) |
 | 2021 | **Switch Transformer** | `13-moe-efficient` | 把 MoE 移植到 Transformer + 简化为 top-1 gating(每 token 只走一个 expert,代替 Shazeer top-K),配 load balancing loss 和 selective precision;首次做到 1.6T 参数模型,T5-XXL 4× 加速同质量 | [13-moe-efficient/02-switch-transformer.md](13-moe-efficient/02-switch-transformer.md) |
 | 2021 | **Graphormer** | `17-graph-neural-networks` | 把标准 Transformer 搬到图上:中心性编码 + 空间编码(最短路径距离)+ 边编码把图结构信息直接注入 attention,用全局注意力替代逐跳消息传递,OGB 大规模分子性质预测挑战赛冠军 | [17-graph-neural-networks/05-graphormer.md](17-graph-neural-networks/05-graphormer.md) |
+| 2021 | **HuBERT** | `18-speech-audio` | 用离线 k-means 聚类对声学特征生成离散伪标签,再做 BERT 式掩码预测(分类而非对比学习),配合迭代式重新聚类不断提纯伪标签的音素区分度,解决 Wav2Vec 2.0 联合学习量化目标带来的训练不稳定问题 | [18-speech-audio/02-hubert.md](18-speech-audio/02-hubert.md) |
 | 2022 | **ConvNeXt** | `01-cnn` | 把 ViT 的所有现代化设计选择（大 kernel·LayerNorm·GELU·强增强）逐项搬回 ResNet，CNN 反超 ViT | [01-cnn/08-convnext.md](01-cnn/08-convnext.md) |
 | 2022 | **FlashAttention** | `05-transformer` | 把 attention 从 HBM 搬到 SRAM 算,分块 + 重计算把 O(N²) 显存压成 O(N) 而结果完全等价,attention 训练/推理快 2-4× 且支持更长序列 | [05-transformer/05-flash-attention.md](05-transformer/05-flash-attention.md) |
 | 2022 | **DiT** | `08-vit` | 把 diffusion 模型的 U-Net backbone 替换成 ViT-style Transformer,展示更好的 scaling 性质,成为 Stable Diffusion 3 / Sora 的基座 | [08-vit/04-dit.md](08-vit/04-dit.md) |
@@ -69,6 +71,8 @@
 | 2022 | **Chain-of-Thought** | `15-reasoning-o1-r1` | 在 prompt 里给 few-shot 例子展示'问题→推理步骤→答案'格式,LLM 模仿后大数学题准确率从 17% 涨到 60%+;开启 LLM 推理能力的新研究方向 | [15-reasoning-o1-r1/01-cot.md](15-reasoning-o1-r1/01-cot.md) |
 | 2022 | **Self-Consistency** | `15-reasoning-o1-r1` | 对同 prompt 采样 N 条 CoT 推理路径,投票选最一致答案;GSM8K 60% → 75%;第一次系统化 test-time compute scaling | [15-reasoning-o1-r1/02-self-consistency.md](15-reasoning-o1-r1/02-self-consistency.md) |
 | 2022 | **Video Diffusion Models** | `16-world-models` | 把 DDPM 的去噪框架从图像推广到视频:用时空分解卷积(2D 空间卷积 + 1D 时间卷积)代替昂贵的 3D 卷积,图像/视频联合训练复用大规模图像数据,是'用 diffusion 生成视频'这条路线的起点 | [16-world-models/02-video-diffusion-models.md](16-world-models/02-video-diffusion-models.md) |
+| 2022 | **Whisper** | `18-speech-audio` | 68 万小时弱监督多语言多任务数据 + 标准 Transformer encoder-decoder,单一模型端到端支持转写/翻译/语言识别,零样本鲁棒性接近或超过针对特定数据集微调的模型,证明'数据规模碾压架构精巧'这条 scaling 经验在语音识别上同样成立 | [18-speech-audio/03-whisper.md](18-speech-audio/03-whisper.md) |
+| 2022 | **AudioLM** | `18-speech-audio` | 把音频离散化成语义 token(捕捉长程一致性)和声学 token(捕捉音色/说话人细节)两级表示,用语言模型对两级 token 做层级式 next-token 预测,不需要文本条件也能生成语义连贯、说话人一致的语音/音乐续写 | [18-speech-audio/04-audiolm.md](18-speech-audio/04-audiolm.md) |
 | 2023 | **GPT-4 / LLaMA** | `07-gpt-scaling` | GPT-4 把 LLM 推到万亿级 + 多模态闭源;LLaMA 给社区第一个工业级开源基础模型;现代 LLM 配方(Pre-RMSNorm + RoPE + GQA + SwiGLU)在两者上同时定型 | [07-gpt-scaling/05-gpt4-llama.md](07-gpt-scaling/05-gpt4-llama.md) |
 | 2023 | **LLaVA** | `09-multimodal-clip` | Visual instruction tuning:用 GPT-4 自动生成视觉指令数据,把 CLIP 视觉特征用单 linear projection 接到 LLaMA,把开源 VLM 范式定型在 GPT-4V 之前 | [09-multimodal-clip/04-llava.md](09-multimodal-clip/04-llava.md) |
 | 2023 | **Flow Matching / Rectified Flow** | `10-diffusion` | 把 diffusion 的 ε-prediction 推广到任意流形的'速度场学习',训练更稳 + 采样路径更直 + 数学更简洁,SD3 / Flux 默认 | [10-diffusion/04-flow-matching.md](10-diffusion/04-flow-matching.md) |
@@ -77,6 +81,7 @@
 | 2023 | **Toolformer** | `14-rag-agent` | 让 LLM 在预训练语料上自监督学习何时何处插入工具调用——给候选位置加 tool call,如果调用后 perplexity 降低就保留;tool use 从 prompt 技巧内化为模型本身能力 | [14-rag-agent/03-toolformer.md](14-rag-agent/03-toolformer.md) |
 | 2023 | **AutoGPT** | `14-rag-agent` | 把 ReAct 推到极限——LLM 拿到高级目标后自己分解为子任务、规划执行步骤、循环调工具直到完成,无人干预;启动自主 agent 范式 | [14-rag-agent/04-autogpt.md](14-rag-agent/04-autogpt.md) |
 | 2023 | **DreamerV3** | `16-world-models` | 把 latent imagination 式的 model-based RL 规模化到跨领域通吃(Atari/DMC/Minecraft 等 150+ 任务),固定同一套超参数不调参就能匹配甚至超过各领域的 model-free SOTA,包括无需人类数据/课程学习拿到 Minecraft 钻石 | [16-world-models/03-dreamerv3.md](16-world-models/03-dreamerv3.md) |
+| 2023 | **MusicGen** | `18-speech-audio` | 单阶段 Transformer decoder + EnCodec 码本交错(codebook interleaving)技巧,把多个残差量化码本流摊平成一条序列自回归生成,支持文本/旋律双重条件控制,把 AudioLM/MusicLM 的多阶段级联简化成单阶段模型 | [18-speech-audio/05-musicgen.md](18-speech-audio/05-musicgen.md) |
 | 2024 | **Mixtral 8×7B** | `13-moe-efficient` | 第一个完全开源的生产级 MoE LLM,8 个 7B expert + top-2 gating,46.7B 总参 / 13B 激活;质量超 LLaMA-2-70B 但推理速度像 13B 模型,开源社区第一次拿到可用 MoE | [13-moe-efficient/03-mixtral.md](13-moe-efficient/03-mixtral.md) |
 | 2024 | **DeepSeek-V3** | `13-moe-efficient` | 671B 总参 / 37B 激活的开源 MoE 旗舰,集成 fine-grained experts(256 细粒度 expert)+ shared experts + aux-loss-free load balancing + MTP(Multi-Token Prediction)等十余项创新;首次让开源 MoE 追上 GPT-4 级闭源模型,也是 DeepSeek-R1 的 base | [13-moe-efficient/04-deepseek-v3.md](13-moe-efficient/04-deepseek-v3.md) |
 | 2024 | **OpenAI o1** | `15-reasoning-o1-r1` | 把长链推理作为训练目标,用 RL 让 LLM 自己学到反思/回溯/自验证;test-time compute 成为继训练算力之后的新 scaling 轴,在数学/科学/代码 benchmark 上击败 GPT-4 多倍 | [15-reasoning-o1-r1/03-o1.md](15-reasoning-o1-r1/03-o1.md) |

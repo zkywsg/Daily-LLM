@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-21T18:11:40.037660+00:00",
+  "generatedAt": "2026-07-24T05:46:16.206551+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -1775,6 +1775,123 @@
           "path": "17-graph-neural-networks/05-graphormer.md",
           "assets": [
             "17-graph-neural-networks/assets/05-graphormer-architecture.svg"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "18-speech-audio",
+      "label": "语音/音频模型(Speech/Audio Models)",
+      "blurb": "把语音识别从\"手工特征 + 声学模型流水线\"推向\"自监督表征 + 大规模弱监督端到端\",再把音频生成从\"波形合成\"推向\"离散 token 序列上的语言建模\"。",
+      "yearRange": [
+        2020,
+        2023
+      ],
+      "colorToken": "--family-18",
+      "nodes": [
+        {
+          "name": "Wav2Vec 2.0",
+          "year": 2020,
+          "family": "18-speech-audio",
+          "order": 1,
+          "paper": "wav2vec 2.0: A Framework for Self-Supervised Learning of Speech Representations",
+          "authors": [
+            "Alexei Baevski",
+            "Henry Zhou",
+            "Abdelrahman Mohamed",
+            "Michael Auli"
+          ],
+          "key_idea": "CNN 特征编码器 + 可学习量化模块生成离散对比目标 + Transformer 掩码预测,用对比学习从原始波形自监督学到可迁移的语音表征,让下游 ASR 只需极少标注数据就能微调",
+          "path": "18-speech-audio/01-wav2vec2.md",
+          "assets": [
+            "18-speech-audio/assets/01-wav2vec2-architecture.svg"
+          ]
+        },
+        {
+          "name": "HuBERT",
+          "year": 2021,
+          "family": "18-speech-audio",
+          "order": 2,
+          "paper": "HuBERT: Self-Supervised Speech Representation Learning by Masked Prediction of Hidden Units",
+          "authors": [
+            "Wei-Ning Hsu",
+            "Benjamin Bolte",
+            "Yao-Hung Hubert Tsai",
+            "Kushal Lakhotia",
+            "Ruslan Salakhutdinov",
+            "Abdelrahman Mohamed"
+          ],
+          "key_idea": "用离线 k-means 聚类对声学特征生成离散伪标签,再做 BERT 式掩码预测(分类而非对比学习),配合迭代式重新聚类不断提纯伪标签的音素区分度,解决 Wav2Vec 2.0 联合学习量化目标带来的训练不稳定问题",
+          "path": "18-speech-audio/02-hubert.md",
+          "assets": [
+            "18-speech-audio/assets/02-hubert-architecture.svg"
+          ]
+        },
+        {
+          "name": "Whisper",
+          "year": 2022,
+          "family": "18-speech-audio",
+          "order": 3,
+          "paper": "Robust Speech Recognition via Large-Scale Weak Supervision",
+          "authors": [
+            "Alec Radford",
+            "Jong Wook Kim",
+            "Tao Xu",
+            "Greg Brockman",
+            "Christine McLeavey",
+            "Ilya Sutskever"
+          ],
+          "key_idea": "68 万小时弱监督多语言多任务数据 + 标准 Transformer encoder-decoder,单一模型端到端支持转写/翻译/语言识别,零样本鲁棒性接近或超过针对特定数据集微调的模型,证明'数据规模碾压架构精巧'这条 scaling 经验在语音识别上同样成立",
+          "path": "18-speech-audio/03-whisper.md",
+          "assets": [
+            "18-speech-audio/assets/03-whisper-architecture.svg"
+          ]
+        },
+        {
+          "name": "AudioLM",
+          "year": 2022,
+          "family": "18-speech-audio",
+          "order": 4,
+          "paper": "AudioLM: a Language Modeling Approach to Audio Generation",
+          "authors": [
+            "Zalán Borsos",
+            "Raphaël Marinier",
+            "Damien Vincent",
+            "Eugene Kharitonov",
+            "Olivier Pietquin",
+            "Matt Sharifi",
+            "Dominik Roblek",
+            "Olivier Teboul",
+            "David Grangier",
+            "Marco Tagliasacchi",
+            "Neil Zeghidour"
+          ],
+          "key_idea": "把音频离散化成语义 token(捕捉长程一致性)和声学 token(捕捉音色/说话人细节)两级表示,用语言模型对两级 token 做层级式 next-token 预测,不需要文本条件也能生成语义连贯、说话人一致的语音/音乐续写",
+          "path": "18-speech-audio/04-audiolm.md",
+          "assets": [
+            "18-speech-audio/assets/04-audiolm-architecture.svg"
+          ]
+        },
+        {
+          "name": "MusicGen",
+          "year": 2023,
+          "family": "18-speech-audio",
+          "order": 5,
+          "paper": "Simple and Controllable Music Generation",
+          "authors": [
+            "Jade Copet",
+            "Felix Kreuk",
+            "Itai Gat",
+            "Tal Remez",
+            "David Kant",
+            "Gabriel Synnaeve",
+            "Yossi Adi",
+            "Alexandre Défossez"
+          ],
+          "key_idea": "单阶段 Transformer decoder + EnCodec 码本交错(codebook interleaving)技巧,把多个残差量化码本流摊平成一条序列自回归生成,支持文本/旋律双重条件控制,把 AudioLM/MusicLM 的多阶段级联简化成单阶段模型",
+          "path": "18-speech-audio/05-musicgen.md",
+          "assets": [
+            "18-speech-audio/assets/05-musicgen-architecture.svg"
           ]
         }
       ]
