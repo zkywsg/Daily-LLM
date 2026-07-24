@@ -84,4 +84,5 @@ export const goldenSamples: Record<
   "16-world-models/02-video-diffusion-models": lazy(() => import("./video-diffusion-models/NodePageVideoDiffusionModels")),
   "16-world-models/03-dreamerv3": lazy(() => import("./dreamerv3/NodePageDreamerV3")),
   "16-world-models/04-sora": lazy(() => import("./sora/NodePageSora")),
+  "16-world-models/05-genie": lazy(() => import("./genie/NodePageGenie")),
 };
