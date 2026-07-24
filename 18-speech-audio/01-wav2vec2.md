@@ -62,18 +62,18 @@ import torch.nn.functional as F
 
 class FeatureEncoder(nn.Module):
     """机制一:多层 1D 卷积,把 16kHz 原始波形降采样到约 50Hz 的潜在特征序列 Z"""
-    def __init__(self, conv_channels=512, num_layers=7):
+    def __init__(self, conv_channels=512, strides=(5, 2, 2, 2, 2, 2, 2)):
         super().__init__()
         layers = []
         in_ch = 1
-        for _ in range(num_layers):
-            layers.append(nn.Conv1d(in_ch, conv_channels, kernel_size=3, stride=2))
+        for stride in strides:                          # 总下采样倍数 = 5*2^6 = 320
+            layers.append(nn.Conv1d(in_ch, conv_channels, kernel_size=3, stride=stride))
             layers.append(nn.GELU())
             in_ch = conv_channels
         self.conv = nn.Sequential(*layers)
 
     def forward(self, waveform):        # waveform: (B, 1, T_raw)
-        return self.conv(waveform).transpose(1, 2)   # -> (B, T, C),约每 20ms 一帧
+        return self.conv(waveform).transpose(1, 2)   # -> (B, T, C),16000Hz / 320 ≈ 每 20ms 一帧(约 50Hz)
 
 
 class GumbelQuantizer(nn.Module):
@@ -90,8 +90,8 @@ class GumbelQuantizer(nn.Module):
         probs = F.gumbel_softmax(logits, tau=tau, hard=True, dim=-1)  # (B, T, num_codebooks, codebook_size)
         q = torch.einsum("btkc,kcd->btkd", probs, self.codebooks)     # 按码本挑条目
         q = q.reshape(*z.shape[:-1], -1)                               # 拼接多个码本 -> 离散目标 Q
-        diversity_loss = -(probs.mean(dim=(0, 1)) * probs.mean(dim=(0, 1)).clamp_min(1e-8).log()).sum()
-        return q, diversity_loss    # 多样性损失鼓励码本条目被均匀使用
+        diversity_loss = (probs.mean(dim=(0, 1)) * probs.mean(dim=(0, 1)).clamp_min(1e-8).log()).sum()
+        return q, diversity_loss    # diversity_loss = -entropy,最小化它等价于最大化熵,鼓励码本条目被均匀使用
 
 
 def span_mask(z, mask_prob=0.065, mask_length=10):
