@@ -33,8 +33,5 @@ export function simulateLossCurve(imageRatio: number): number[] {
  * 返回当前窗口覆盖的帧区间 [start, end) —— 模拟"用后半窗口的已生成帧作为条件,
  * 继续生成下一窗口"这一自回归扩展长度的过程。 */
 export function slidingWindow(windowSize: number, generatedCount: number): { start: number; end: number } {
-  if (generatedCount <= windowSize) return { start: 0, end: generatedCount };
-  const overlap = Math.floor(windowSize / 2);
-  const start = generatedCount - windowSize + overlap - overlap; // 简化:窗口紧跟在已生成序列末尾
   return { start: Math.max(0, generatedCount - windowSize), end: generatedCount };
 }
