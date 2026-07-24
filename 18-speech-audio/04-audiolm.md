@@ -12,7 +12,7 @@ key_idea: "把音频离散化成语义 token(捕捉长程一致性)和声学 tok
 
 [Wav2Vec 2.0](01-wav2vec2.md)、[HuBERT](02-hubert.md)、[Whisper](03-whisper.md) 这条线索走的都是"理解"类任务:Wav2Vec 2.0 和 HuBERT 用自监督预训练学一套可迁移的语音表征,再微调成识别系统;Whisper 干脆放弃自监督预训练,直接用大规模弱监督数据端到端训练出一个鲁棒的转写/翻译模型。三者的共同点是——模型的输出终点都是文本,音频本身从未被当作"生成目标"。
 
-音频"生成"这件事此前主要靠 WaveNet 这类自回归波形合成模型来做:它们逐采样点地对波形建模,在局部能生成非常逼真的音频细节(音色、韵律的精细起伏),但天生缺乏长程语义一致性——生成到几十秒之后,内容或说话人身份经常"跑偏",因为在采样点这个粒度上建模,模型的有效感受野很难覆盖到足以维持句子级、段落级结构的时间跨度。与此同时,Wav2Vec 2.0 和 HuBERT 已经证明自监督语音表征能学到蕴含长程语义结构的离散/连续表示——HuBERT 甚至专门设计了一套离线聚类生成固定离散伪标签的机制,但这套机制此前只被用来给"理解"任务(掩码预测)提供训练目标,没有工作系统性地把这类离散表征反过来用于指导"生成"。Whisper 那篇论文自己也在收尾时把这条演进路线挑明了:识别类任务的重心已经从"把语音转成文字"转向"把语音本身编码成离散 token 序列,再借助语言模型的框架去建模、生成语音"——AudioLM 正是这个转向的第一个代表性节点。
+音频"生成"这件事此前主要靠 WaveNet 这类自回归波形合成模型来做:它们逐采样点地对波形建模,在局部能生成非常逼真的音频细节(音色、韵律的精细起伏),但天生缺乏长程语义一致性——生成到几十秒之后,内容或说话人身份经常"跑偏",因为在采样点这个粒度上建模,模型的有效感受野很难覆盖到足以维持句子级、段落级结构的时间跨度。与此同时,Wav2Vec 2.0 和 HuBERT 已经证明自监督语音表征能学到蕴含长程语义结构的离散/连续表示——HuBERT 甚至专门设计了一套离线聚类生成固定离散伪标签的机制,但这套机制此前只被用来给"理解"任务(掩码预测)提供训练目标,没有工作系统性地把这类离散表征反过来用于指导"生成"。这条从识别到生成的过渡,也正是本仓库上一篇 Whisper 笔记结尾处提出的观察:识别类任务的重心已经从"把语音转成文字"转向"把语音本身编码成离散 token 序列,再借助语言模型的框架去建模、生成语音"——AudioLM 正是这个转向的第一个代表性节点。
 
 ## 核心思想 + 直觉
 
@@ -117,11 +117,17 @@ K_SEM, K_AC = 1024, 1024          # 语义 / 每层声学 token 的词表大小(
 Q_COARSE, Q_FINE = 4, 8            # 12 层 RVQ 拆成粗粒度 4 层 + 精细 8 层(示意性拆分,非论文精确取值)
 
 
-def flatten_acoustic(acoustic_ids, q_start, q_end):
-    """acoustic_ids: (B, T_ac, Q) -> 取 [q_start, q_end) 层,按时间步优先展开成一维序列"""
-    sub = acoustic_ids[:, :, q_start:q_end]              # (B, T_ac, q_end-q_start)
-    B, T_ac, Qn = sub.shape
-    return sub.reshape(B, T_ac * Qn)                        # (B, T_ac*Qn)
+def flatten_acoustic(acoustic_ids, level_start, level_end, base_offset, codebook_size):
+    """acoustic_ids: (B, T_ac, Q) 每个时间步 Q 个并行码本的 id
+    把 [level_start, level_end) 范围内的码本层展平成一条序列,
+    每一层加上不同的 offset(base_offset + 层号 * codebook_size),
+    避免不同码本层的相同 id 被映射到同一个 token id 上。"""
+    B, T_ac, _ = acoustic_ids.shape
+    tokens = []
+    for level in range(level_start, level_end):
+        level_offset = base_offset + (level - level_start) * codebook_size
+        tokens.append(acoustic_ids[:, :, level] + level_offset)  # (B, T_ac)
+    return torch.stack(tokens, dim=-1).reshape(B, -1)  # 按时间步交错展平,(B, (level_end-level_start)*T_ac)
 
 
 # ---------- 阶段一:语义 token 自回归建模 ----------
@@ -136,35 +142,41 @@ def stage1_loss(semantic_ids):
 
 
 # ---------- 阶段二:粗粒度声学 token 建模(以语义 token 为条件前缀) ----------
-# 共享词表:语义 token 用 [0, K_SEM),声学 token 统一偏移 K_SEM 后落在 [K_SEM, K_SEM+K_AC)
-stage2 = CausalTokenLM(vocab_size=K_SEM + K_AC)
+# 共享词表:语义 token 用 [0, K_SEM);4 层粗粒度声学码本各自独占一段 K_AC 大小的区间,
+# 落在 [K_SEM, K_SEM+Q_COARSE*K_AC),避免不同层的相同 id 被映射到同一个 token id 上
+VOCAB_STAGE2 = K_SEM + Q_COARSE * K_AC
+stage2 = CausalTokenLM(vocab_size=VOCAB_STAGE2)
 
 def stage2_loss(semantic_ids, acoustic_ids):
     # semantic_ids: (B, 75);acoustic_ids: (B, 150, 12)
-    coarse = flatten_acoustic(acoustic_ids, 0, Q_COARSE) + K_SEM             # (B, 150*4=600)
+    coarse = flatten_acoustic(acoustic_ids, 0, Q_COARSE, K_SEM, K_AC)          # (B, 150*4=600),id ∈ [1024, 5120)
     seq = torch.cat([semantic_ids, coarse], dim=1)                            # (B, 75+600=675)
-    logits = stage2(seq[:, :-1])                                               # (B, 674, K_SEM+K_AC)
+    logits = stage2(seq[:, :-1])                                               # (B, 674, VOCAB_STAGE2)
     target = seq[:, 1:]                                                         # (B, 674)
     acoustic_start = semantic_ids.size(1) - 1                                   # =74
-    logits_ac = logits[:, acoustic_start:, :]                                   # (B, 600, K_SEM+K_AC)
+    logits_ac = logits[:, acoustic_start:, :]                                   # (B, 600, VOCAB_STAGE2)
     target_ac = target[:, acoustic_start:]                                       # (B, 600)
-    loss = F.cross_entropy(logits_ac.reshape(-1, K_SEM + K_AC), target_ac.reshape(-1))
+    loss = F.cross_entropy(logits_ac.reshape(-1, VOCAB_STAGE2), target_ac.reshape(-1))
     return loss
 
 
 # ---------- 阶段三:精细声学 token 建模(以语义 token + 粗粒度声学 token 为条件前缀) ----------
-stage3 = CausalTokenLM(vocab_size=K_SEM + K_AC)
+# 词表在阶段二的基础上继续扩展:8 层精细声学码本再各自独占一段 K_AC 大小的区间,
+# 紧接在粗粒度区间之后,落在 [K_SEM+Q_COARSE*K_AC, K_SEM+Q_COARSE*K_AC+Q_FINE*K_AC)
+VOCAB_STAGE3 = K_SEM + Q_COARSE * K_AC + Q_FINE * K_AC
+stage3 = CausalTokenLM(vocab_size=VOCAB_STAGE3)
 
 def stage3_loss(semantic_ids, acoustic_ids):
-    coarse = flatten_acoustic(acoustic_ids, 0, Q_COARSE) + K_SEM              # (B, 600)
-    fine = flatten_acoustic(acoustic_ids, Q_COARSE, Q_COARSE + Q_FINE) + K_SEM  # (B, 150*8=1200)
+    coarse = flatten_acoustic(acoustic_ids, 0, Q_COARSE, K_SEM, K_AC)                       # (B, 600),id ∈ [1024, 5120)
+    fine = flatten_acoustic(acoustic_ids, Q_COARSE, Q_COARSE + Q_FINE,
+                             K_SEM + Q_COARSE * K_AC, K_AC)                                    # (B, 150*8=1200),id ∈ [5120, 13312)
     seq = torch.cat([semantic_ids, coarse, fine], dim=1)                        # (B, 75+600+1200=1875)
-    logits = stage3(seq[:, :-1])                                                  # (B, 1874, K_SEM+K_AC)
+    logits = stage3(seq[:, :-1])                                                  # (B, 1874, VOCAB_STAGE3)
     target = seq[:, 1:]                                                            # (B, 1874)
     fine_start = semantic_ids.size(1) + coarse.size(1) - 1                         # =674
-    logits_fine = logits[:, fine_start:, :]                                        # (B, 1200, K_SEM+K_AC)
+    logits_fine = logits[:, fine_start:, :]                                        # (B, 1200, VOCAB_STAGE3)
     target_fine = target[:, fine_start:]                                            # (B, 1200)
-    loss = F.cross_entropy(logits_fine.reshape(-1, K_SEM + K_AC), target_fine.reshape(-1))
+    loss = F.cross_entropy(logits_fine.reshape(-1, VOCAB_STAGE3), target_fine.reshape(-1))
     return loss
 
 
@@ -183,7 +195,7 @@ def stage3_loss(semantic_ids, acoustic_ids):
 
 ## 影响 / 后续
 
-AudioLM 确立了"离散化音频 token(语义 + 声学两级)+ 语言模型自回归生成"这一后续音频/音乐生成工作的主流范式:同年发布的 **MusicLM** 直接基于 AudioLM 的层级 token 框架、加入文本条件做文本到音乐生成,后续的 **MusicGen** 同样受其启发。但 AudioLM 的三阶段级联结构也带来了明显代价——三个独立训练的 Transformer decoder 串行推理,速度慢,而且前一阶段的预测错误会传播、累积到后续阶段,这正是 MusicGen 之后要解决的问题——把多阶段级联简化成单阶段生成。
+AudioLM 确立了"离散化音频 token(语义 + 声学两级)+ 语言模型自回归生成"这一后续音频/音乐生成工作的主流范式:隔年发布的 **MusicLM** 直接基于 AudioLM 的层级 token 框架、加入文本条件做文本到音乐生成,后续的 **MusicGen** 同样受其启发。但 AudioLM 的三阶段级联结构也带来了明显代价——三个独立训练的 Transformer decoder 串行推理,速度慢,而且前一阶段的预测错误会传播、累积到后续阶段,这正是 MusicGen 之后要解决的问题——把多阶段级联简化成单阶段生成。
 
 → [02-hubert.md](02-hubert.md) · 本文语义 token 提取思路的技术源头之一
 → [05-musicgen.md](05-musicgen.md) · 简化本文级联结构为单阶段生成的后续工作
