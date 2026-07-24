@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 760"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="mg-arr-amber" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706"/>
+    </marker>
+    <marker id="mg-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="mg-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="mg-arr-purple" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="mg-arr-gray" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <text x="490" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    MusicGen — EnCodec RVQ + 延迟交错模式 + 单阶段 Transformer decoder + 双重条件控制
+  </text>
+
+  <!-- raw audio -->
+  <g transform="translate(15, 240)">
+    <rect x="0" y="0" width="110" height="100" rx="8" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+    <text x="55" y="-8" text-anchor="middle" font-size="10" fill="#374151" font-weight="600">原始音频</text>
+    <path d="M 8 50 L 20 28 L 32 68 L 44 18 L 56 60 L 68 36 L 80 55 L 92 32 L 100 50"
+          fill="none" stroke="#4b5563" stroke-width="1.5"/>
+    <text x="55" y="85" text-anchor="middle" font-size="8" fill="#374151">32kHz 波形</text>
+  </g>
+
+  <line x1="125" y1="290" x2="168" y2="290" stroke="#d97706" stroke-width="2.2" marker-end="url(#mg-arr-amber)"/>
+
+  <!-- 机制一: EnCodec RVQ -->
+  <g transform="translate(170, 210)">
+    <rect x="0" y="0" width="200" height="160" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+    <text x="100" y="20" text-anchor="middle" font-size="11.5" fill="#92400e" font-weight="700">机制一 · EnCodec RVQ</text>
+    <line x1="10" y1="30" x2="190" y2="30" stroke="#fcd34d" stroke-dasharray="3,3"/>
+    <text x="100" y="46" text-anchor="middle" font-size="9" fill="#b45309">编码器 → 残差向量量化</text>
+    <rect x="15" y="55" width="170" height="20" rx="4" fill="#fde68a" stroke="#92400e" stroke-width="1"/>
+    <text x="100" y="69" text-anchor="middle" font-size="8.5" fill="#92400e">码本 k=0(最粗粒度)</text>
+    <rect x="15" y="79" width="170" height="20" rx="4" fill="#fde68a" stroke="#92400e" stroke-width="1"/>
+    <text x="100" y="93" text-anchor="middle" font-size="8.5" fill="#92400e">码本 k=1</text>
+    <rect x="15" y="103" width="170" height="20" rx="4" fill="#fde68a" stroke="#92400e" stroke-width="1"/>
+    <text x="100" y="117" text-anchor="middle" font-size="8.5" fill="#92400e">码本 k=2</text>
+    <rect x="15" y="127" width="170" height="20" rx="4" fill="#fde68a" stroke="#92400e" stroke-width="1"/>
+    <text x="100" y="141" text-anchor="middle" font-size="8.5" fill="#92400e">码本 k=3(最精细)</text>
+    <text x="100" y="155" text-anchor="middle" font-size="8" fill="#b45309">K=4 层并行,各自独立 id 空间</text>
+  </g>
+
+  <line x1="375" y1="290" x2="418" y2="290" stroke="#d97706" stroke-width="2.2" marker-end="url(#mg-arr-amber)"/>
+
+  <!-- 机制二: delay pattern -->
+  <g transform="translate(420, 195)">
+    <rect x="0" y="0" width="230" height="190" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="115" y="20" text-anchor="middle" font-size="11.5" fill="#1e3a8a" font-weight="700">机制二 · 延迟交错模式</text>
+    <line x1="10" y1="30" x2="220" y2="30" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="115" y="46" text-anchor="middle" font-size="9" fill="#1d4ed8">每层各自延迟 k 步再写入</text>
+    <!-- staircase diagram -->
+    <g transform="translate(15, 58)">
+      <text x="0" y="10" font-size="8" fill="#1e3a8a">k=0</text>
+      <rect x="24" y="0" width="14" height="12" fill="#60a5fa"/>
+      <rect x="40" y="0" width="14" height="12" fill="#60a5fa"/>
+      <rect x="56" y="0" width="14" height="12" fill="#60a5fa"/>
+      <rect x="72" y="0" width="14" height="12" fill="#60a5fa"/>
+      <text x="0" y="28" font-size="8" fill="#1e3a8a">k=1</text>
+      <rect x="24" y="18" width="14" height="12" fill="#bfdbfe" stroke="#93c5fd"/>
+      <rect x="40" y="18" width="14" height="12" fill="#60a5fa"/>
+      <rect x="56" y="18" width="14" height="12" fill="#60a5fa"/>
+      <rect x="72" y="18" width="14" height="12" fill="#60a5fa"/>
+      <text x="0" y="46" font-size="8" fill="#1e3a8a">k=2</text>
+      <rect x="24" y="36" width="14" height="12" fill="#bfdbfe" stroke="#93c5fd"/>
+      <rect x="40" y="36" width="14" height="12" fill="#bfdbfe" stroke="#93c5fd"/>
+      <rect x="56" y="36" width="14" height="12" fill="#60a5fa"/>
+      <rect x="72" y="36" width="14" height="12" fill="#60a5fa"/>
+      <text x="0" y="64" font-size="8" fill="#1e3a8a">k=3</text>
+      <rect x="24" y="54" width="14" height="12" fill="#bfdbfe" stroke="#93c5fd"/>
+      <rect x="40" y="54" width="14" height="12" fill="#bfdbfe" stroke="#93c5fd"/>
+      <rect x="56" y="54" width="14" height="12" fill="#bfdbfe" stroke="#93c5fd"/>
+      <rect x="72" y="54" width="14" height="12" fill="#60a5fa"/>
+      <text x="100" y="40" font-size="8" fill="#1d4ed8">S = T+K-1</text>
+      <text x="30" y="82" font-size="7.5" fill="#93c5fd">浅色 = PAD(该层自己的占位符)</text>
+    </g>
+    <text x="115" y="158" text-anchor="middle" font-size="8.5" fill="#1e3a8a" font-weight="600">只处理时间对齐</text>
+    <text x="115" y="172" text-anchor="middle" font-size="8" fill="#1d4ed8">不触碰 id 空间(各层 id 全程独立)</text>
+  </g>
+
+  <line x1="650" y1="290" x2="693" y2="290" stroke="#2563eb" stroke-width="2.2" marker-end="url(#mg-arr-blue)"/>
+
+  <!-- single-stage transformer decoder -->
+  <g transform="translate(695, 175)">
+    <rect x="0" y="0" width="260" height="230" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="130" y="20" text-anchor="middle" font-size="11.5" fill="#065f46" font-weight="700">单阶段 Transformer Decoder</text>
+    <line x1="10" y1="30" x2="250" y2="30" stroke="#86efac" stroke-dasharray="3,3"/>
+    <text x="130" y="48" text-anchor="middle" font-size="9" fill="#047857">K 个独立 embedding 表求和</text>
+    <text x="130" y="62" text-anchor="middle" font-size="9" fill="#047857">+ 位置编码 + 旋律条件(逐帧相加)</text>
+    <rect x="20" y="72" width="220" height="26" rx="6" fill="#86efac" stroke="#065f46" stroke-width="1.5"/>
+    <text x="130" y="90" text-anchor="middle" font-size="9.5" fill="#065f46" font-weight="700">因果自注意力(单一序列)</text>
+    <rect x="20" y="104" width="220" height="26" rx="6" fill="#a7f3d0" stroke="#065f46" stroke-width="1.5"/>
+    <text x="130" y="122" text-anchor="middle" font-size="9.5" fill="#065f46" font-weight="700">cross-attention → 文本嵌入</text>
+    <text x="130" y="148" text-anchor="middle" font-size="9" fill="#047857">K 个独立输出头</text>
+    <rect x="20" y="156" width="100" height="20" rx="4" fill="#d1fae5" stroke="#059669"/>
+    <text x="70" y="170" text-anchor="middle" font-size="8" fill="#065f46">head_0..3</text>
+    <rect x="140" y="156" width="100" height="20" rx="4" fill="#d1fae5" stroke="#059669"/>
+    <text x="190" y="170" text-anchor="middle" font-size="8" fill="#065f46">各自 vocab</text>
+    <text x="130" y="192" text-anchor="middle" font-size="8" fill="#047857">各层 logits 独立 softmax</text>
+    <text x="130" y="210" text-anchor="middle" font-size="8.5" fill="#065f46" font-weight="600">一次推理生成所有码本层</text>
+  </g>
+
+  <!-- text condition -->
+  <g transform="translate(720, 30)">
+    <rect x="0" y="0" width="210" height="70" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="105" y="20" text-anchor="middle" font-size="11" fill="#5b21b6" font-weight="700">机制三 · 文本条件</text>
+    <text x="105" y="38" text-anchor="middle" font-size="9" fill="#6d28d9">T5 文本编码器</text>
+    <text x="105" y="54" text-anchor="middle" font-size="8.5" fill="#6d28d9">→ cross-attention 注入</text>
+  </g>
+  <line x1="825" y1="100" x2="825" y2="172" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#mg-arr-purple)"/>
+
+  <!-- melody condition -->
+  <g transform="translate(695, 445)">
+    <rect x="0" y="0" width="260" height="70" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="130" y="20" text-anchor="middle" font-size="11" fill="#9d174d" font-weight="700">机制三 · 旋律条件</text>
+    <text x="130" y="38" text-anchor="middle" font-size="9" fill="#be185d">参考音频 → 色度图(chromagram)</text>
+    <text x="130" y="54" text-anchor="middle" font-size="8.5" fill="#be185d">→ 逐帧投影相加(与延迟帧对齐)</text>
+  </g>
+  <line x1="825" y1="445" x2="825" y2="405" stroke="#db2777" stroke-width="2.2" marker-end="url(#mg-arr-gray)"/>
+
+  <!-- output -->
+  <line x1="825" y1="175" x2="825" y2="150" stroke="#059669" stroke-width="0" opacity="0"/>
+  <g transform="translate(760, 545)">
+    <rect x="0" y="0" width="190" height="60" rx="8" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+    <text x="95" y="20" text-anchor="middle" font-size="10" fill="#374151" font-weight="600">EnCodec 解码器</text>
+    <text x="95" y="38" text-anchor="middle" font-size="9" fill="#374151">还原波形</text>
+  </g>
+  <line x1="825" y1="405" x2="855" y2="545" stroke="#059669" stroke-width="2.2" marker-end="url(#mg-arr-green)"/>
+
+  <!-- three-piece synergy note -->
+  <g transform="translate(15, 640)">
+    <rect x="0" y="0" width="950" height="105" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="475" y="22" text-anchor="middle" font-size="12" fill="#9f1239" font-weight="700">三件套协同 — 缺一不可</text>
+    <text x="18" y="44" font-size="9.5" fill="#881337">只有 RVQ 编解码没有码本交错:多层并行 token 无法被单个自回归模型直接建模,退回 AudioLM/MusicLM 式级联。</text>
+    <text x="18" y="64" font-size="9.5" fill="#881337">只有码本交错没有 RVQ 分层残差结构:交错错位安排的对象本身就不存在;只有前两者没有条件控制:只能无条件续写。</text>
+    <text x="18" y="88" font-size="10" fill="#e11d48" font-weight="700">三者组合 → 单阶段模型同时实现生成快、质量高、可控(文本 + 旋律双重条件)。</text>
+  </g>
+
+  <text x="490" y="630" text-anchor="middle" font-size="9" fill="#6b7280">
+    数据流:原始音频 → EnCodec 编码 + RVQ(K 层并行码本)→ 延迟模式重排(时间对齐)→ 单阶段 Transformer decoder(文本 cross-attn + 旋律逐帧条件)→ K 个独立输出头自回归预测 → EnCodec 解码回波形
+  </text>
+</svg>
