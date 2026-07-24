@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 780"
+     preserveAspectRatio="xMidYMid meet"
+     font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="al-arr-amber" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#d97706"/>
+    </marker>
+    <marker id="al-arr-blue" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="al-arr-green" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#059669"/>
+    </marker>
+    <marker id="al-arr-purple" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="al-arr-gray" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <text x="490" y="28" text-anchor="middle" font-size="16"
+        fill="#1f2937" font-weight="600">
+    AudioLM — 语义 token + 声学 token 两级离散化 + 三阶段级联语言模型
+  </text>
+
+  <!-- raw audio -->
+  <g transform="translate(20, 130)">
+    <rect x="0" y="0" width="120" height="110" rx="8" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+    <text x="60" y="-8" text-anchor="middle" font-size="10" fill="#374151" font-weight="600">原始音频</text>
+    <path d="M 10 55 L 22 30 L 34 75 L 46 20 L 58 65 L 70 40 L 82 60 L 94 35 L 106 55"
+          fill="none" stroke="#4b5563" stroke-width="1.5"/>
+    <text x="60" y="95" text-anchor="middle" font-size="8" fill="#374151">16kHz 波形</text>
+  </g>
+
+  <!-- split arrows -->
+  <line x1="140" y1="150" x2="185" y2="90" stroke="#2563eb" stroke-width="2.2" marker-end="url(#al-arr-blue)"/>
+  <line x1="140" y1="210" x2="185" y2="270" stroke="#d97706" stroke-width="2.2" marker-end="url(#al-arr-amber)"/>
+
+  <!-- 机制一: semantic branch -->
+  <g transform="translate(188, 30)">
+    <rect x="0" y="0" width="230" height="120" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="115" y="20" text-anchor="middle" font-size="11.5" fill="#1e3a8a" font-weight="700">机制一 · 语义 token</text>
+    <line x1="12" y1="30" x2="218" y2="30" stroke="#93c5fd" stroke-dasharray="3,3"/>
+    <text x="115" y="48" text-anchor="middle" font-size="9" fill="#1d4ed8">w2v-BERT 中间层表征</text>
+    <text x="115" y="62" text-anchor="middle" font-size="9" fill="#1d4ed8">(不是 HuBERT 本身)</text>
+    <rect x="35" y="74" width="160" height="26" rx="6" fill="#93c5fd" stroke="#1e3a8a" stroke-width="1.5"/>
+    <text x="115" y="92" text-anchor="middle" font-size="9.5" fill="#1e3a8a" font-weight="700">k-means → 语义 token</text>
+    <text x="115" y="112" text-anchor="middle" font-size="8" fill="#1d4ed8">低帧率(~25Hz)· 长程内容/说话人</text>
+  </g>
+
+  <!-- 机制二: acoustic branch -->
+  <g transform="translate(188, 250)">
+    <rect x="0" y="0" width="230" height="120" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+    <text x="115" y="20" text-anchor="middle" font-size="11.5" fill="#92400e" font-weight="700">机制二 · 声学 token</text>
+    <line x1="12" y1="30" x2="218" y2="30" stroke="#fcd34d" stroke-dasharray="3,3"/>
+    <text x="115" y="48" text-anchor="middle" font-size="9" fill="#b45309">SoundStream 编码器</text>
+    <text x="115" y="62" text-anchor="middle" font-size="9" fill="#b45309">神经音频编解码器</text>
+    <rect x="25" y="74" width="180" height="26" rx="6" fill="#fcd34d" stroke="#92400e" stroke-width="1.5"/>
+    <text x="115" y="92" text-anchor="middle" font-size="9.5" fill="#92400e" font-weight="700">残差向量量化(RVQ)</text>
+    <text x="115" y="112" text-anchor="middle" font-size="8" fill="#b45309">高帧率(~50Hz)· 粗层+精细层码本</text>
+  </g>
+
+  <!-- arrows down to stage LMs -->
+  <line x1="303" y1="150" x2="303" y2="195" stroke="#2563eb" stroke-width="2.2" marker-end="url(#al-arr-blue)"/>
+  <text x="330" y="178" font-size="8" fill="#1d4ed8">语义 token 序列</text>
+
+  <line x1="303" y1="250" x2="303" y2="205" stroke="#d97706" stroke-width="2.2" marker-end="url(#al-arr-amber)"/>
+
+  <!-- Stage 1: 语义建模 -->
+  <g transform="translate(450, 30)">
+    <rect x="0" y="0" width="220" height="120" rx="8" fill="#dcfce7" stroke="#059669" stroke-width="2.5"/>
+    <text x="110" y="20" text-anchor="middle" font-size="11.5" fill="#065f46" font-weight="700">阶段一 · 语义建模</text>
+    <line x1="12" y1="30" x2="208" y2="30" stroke="#86efac" stroke-dasharray="3,3"/>
+    <text x="110" y="50" text-anchor="middle" font-size="9" fill="#047857">Transformer decoder</text>
+    <text x="110" y="66" text-anchor="middle" font-size="9" fill="#047857">对语义 token 自回归</text>
+    <text x="110" y="82" text-anchor="middle" font-size="9" fill="#047857">next-token 预测</text>
+    <text x="110" y="104" text-anchor="middle" font-size="8.5" fill="#065f46" font-weight="600">决定"接下来说/演奏什么、是谁"</text>
+  </g>
+
+  <line x1="670" y1="90" x2="710" y2="90" stroke="#059669" stroke-width="2.2" marker-end="url(#al-arr-green)"/>
+
+  <!-- Stage 2: 粗粒度声学建模 -->
+  <g transform="translate(713, 30)">
+    <rect x="0" y="0" width="245" height="120" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>
+    <text x="122" y="20" text-anchor="middle" font-size="11.5" fill="#5b21b6" font-weight="700">阶段二 · 粗粒度声学</text>
+    <line x1="12" y1="30" x2="233" y2="30" stroke="#c4b5fd" stroke-dasharray="3,3"/>
+    <text x="122" y="50" text-anchor="middle" font-size="9" fill="#6d28d9">以语义 token 为条件前缀</text>
+    <text x="122" y="66" text-anchor="middle" font-size="9" fill="#6d28d9">自回归生成粗层声学 token</text>
+    <text x="122" y="104" text-anchor="middle" font-size="8.5" fill="#5b21b6" font-weight="600">决定"大致听起来是什么样"</text>
+  </g>
+
+  <!-- conditioning dashed arrow stage1 -> stage2 label already covered by solid; add dashed from semantic branch box down -->
+  <line x1="835" y1="150" x2="835" y2="195" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#al-arr-purple)"/>
+
+  <!-- Stage 3: 精细声学建模 -->
+  <g transform="translate(450, 250)">
+    <rect x="0" y="0" width="508" height="120" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="2.5"/>
+    <text x="254" y="20" text-anchor="middle" font-size="11.5" fill="#9d174d" font-weight="700">阶段三 · 精细声学建模</text>
+    <line x1="12" y1="30" x2="496" y2="30" stroke="#f9a8d4" stroke-dasharray="3,3"/>
+    <text x="254" y="50" text-anchor="middle" font-size="9" fill="#be185d">以语义 token + 粗层声学 token 为条件前缀,自回归生成精细层声学 token</text>
+    <text x="254" y="70" text-anchor="middle" font-size="9" fill="#be185d">补上局部音色/韵律等声学细节</text>
+    <text x="254" y="94" text-anchor="middle" font-size="8.5" fill="#9d174d" font-weight="600">三个 Transformer decoder 独立训练,推理时按 阶段一→二→三 顺序级联执行</text>
+    <text x="254" y="110" text-anchor="middle" font-size="8" fill="#be185d">输出完整声学 token 序列 → SoundStream 解码器 → 还原波形</text>
+  </g>
+
+  <line x1="835" y1="150" x2="700" y2="250" stroke="#db2777" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#al-arr-gray)"/>
+  <text x="900" y="180" font-size="8" fill="#be185d" text-anchor="middle">条件</text>
+
+  <!-- three-piece synergy note -->
+  <g transform="translate(20, 410)">
+    <rect x="0" y="0" width="940" height="170" rx="8" fill="#fff1f2" stroke="#e11d48" stroke-width="2" stroke-dasharray="6,3"/>
+    <text x="470" y="26" text-anchor="middle" font-size="12" fill="#9f1239" font-weight="700">三件套协同 — 缺一不可</text>
+    <text x="18" y="52" font-size="10" fill="#881337">只有语义 token(机制一)没有声学 token(机制二):能保证长程内容连贯,但粒度太粗,重建不出高保真波形。</text>
+    <text x="18" y="76" font-size="10" fill="#881337">只有声学 token 没有语义 token:局部音质可能逼真,但退化回 WaveNet 类模型的老问题——长时间后内容/说话人漂移。</text>
+    <text x="18" y="100" font-size="10" fill="#881337">只有前两者没有层级式级联(机制三):粗细粒度 token 之间没有条件依赖,模型无法先定"说什么"再定"听起来怎样"。</text>
+    <text x="18" y="128" font-size="10.5" fill="#e11d48" font-weight="700">三者组合 → 语义 token 提供长程骨架 + 声学 token 提供声学细节 + 三阶段级联建立条件依赖,</text>
+    <text x="18" y="146" font-size="10.5" fill="#e11d48" font-weight="700">无需文本条件,仅凭音频提示即可续写出语义连贯、音色一致的语音/音乐。</text>
+  </g>
+
+  <text x="490" y="615" text-anchor="middle" font-size="9" fill="#6b7280">
+    数据流:原始音频 → [w2v-BERT+k-means → 语义 token] 与 [SoundStream+RVQ → 声学 token] 并行离散化 → 阶段一→二→三 级联自回归 → 声学 token 解码回波形
+  </text>
+</svg>
