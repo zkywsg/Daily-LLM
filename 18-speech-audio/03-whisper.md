@@ -24,7 +24,7 @@ Whisper 的核心洞察是反过来走一条路:与其在无标注数据上做�
 
 Whisper 不在原始波形上直接建模,而是先把音频转换成 log-mel 频谱图(log-mel spectrogram)——这是语音处理里的常规特征表示,把时域波形转成时频二维表示,压缩了原始波形的采样点密度,同时保留了对语音识别有用的频谱结构。这一步和 Wav2Vec 2.0 用 CNN 特征编码器直接在原始波形上学习降采样表征的做法不同:Whisper 用的是固定的信号处理变换,不需要额外学习。
 
-频谱特征送入一个标准的 Transformer encoder 做双向编码,decoder 则以自回归的方式逐 token 生成输出文本,和机器翻译里常见的 encoder-decoder 架构没有本质区别。整个模型没有任何语音专用的结构设计——没有 CTC 对齐、没有语音专用的位置编码技巧、没有针对音素或声学单元的特殊建模。这种"平淡无奇"的架构选择是刻意的:如果一个毫无特殊设计的标准架构,单靠数据规模就能打出很强的效果,恰恰说明架构精巧不是语音识别效果的瓶颈,数据才是。
+频谱特征先经过两层 1D 卷积做下采样(第二层 stride=2 把帧数减半,例如 30 秒音频、hop_length=160 时约 3000 帧降到约 1500 帧),再送入一个标准的 Transformer encoder 做双向编码,decoder 则以自回归的方式逐 token 生成输出文本,和机器翻译里常见的 encoder-decoder 架构没有本质区别。整个模型没有任何语音专用的结构设计——没有 CTC 对齐、没有语音专用的位置编码技巧、没有针对音素或声学单元的特殊建模,两层下采样卷积也只是常规的工程处理,不算架构上的"花活"。这种"平淡无奇"的架构选择是刻意的:如果一个毫无特殊设计的标准架构,单靠数据规模就能打出很强的效果,恰恰说明架构精巧不是语音识别效果的瓶颈,数据才是。
 
 ## 机制二:大规模弱监督数据收集与过滤
 
@@ -75,19 +75,28 @@ def log_mel_spectrogram(waveform, sample_rate=16000, n_mels=80, hop_length=160):
 
 
 class WhisperEncoder(nn.Module):
-    """机制一:标准 Transformer encoder,双向编码 log-mel 频谱特征"""
-    def __init__(self, n_mels=80, dim=512, n_layers=6, n_heads=8):
+    """机制一:两层 1D 卷积下采样 + 标准 Transformer encoder,双向编码 log-mel 频谱特征"""
+    def __init__(self, n_mels=80, dim=512, n_layers=6, n_heads=8, max_frames=1500):
         super().__init__()
-        self.input_proj = nn.Linear(n_mels, dim)
-        self.pos_embedding = nn.Parameter(torch.randn(1, 1500, dim))  # 固定最大帧数的位置编码
+        # 两层 Conv1d 把 log-mel 帧数下采样到一半:第一层 stride=1 只做通道投影(n_mels -> dim),
+        # 第二层 stride=2 实际完成降采样,~3000 帧(30s@16kHz, hop_length=160)-> ~1500 帧,
+        # 从而匹配下面固定长度为 max_frames 的位置编码
+        self.conv1 = nn.Conv1d(n_mels, dim, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv1d(dim, dim, kernel_size=3, stride=2, padding=1)
+        # 实际论文里编码器用的是固定(非学习)的正弦位置编码,只有解码器的位置编码是可学习的;
+        # 这里为了代码简洁统一用 nn.Parameter 示意,不是原论文的精确实现
+        self.pos_embedding = nn.Parameter(torch.randn(1, max_frames, dim))
         self.layers = nn.TransformerEncoder(
             nn.TransformerEncoderLayer(d_model=dim, nhead=n_heads, batch_first=True),
             num_layers=n_layers)
 
-    def forward(self, log_mel):          # log_mel: (B, T_frames, n_mels)
-        x = self.input_proj(log_mel)      # (B, T_frames, dim)
+    def forward(self, log_mel):          # log_mel: (B, T_frames≈3000, n_mels)
+        x = log_mel.transpose(1, 2)       # (B, n_mels, T_frames)
+        x = F.gelu(self.conv1(x))          # (B, dim, T_frames)
+        x = F.gelu(self.conv2(x))          # (B, dim, T_frames/2≈1500),stride=2 完成下采样
+        x = x.transpose(1, 2)              # (B, T_frames/2, dim)
         x = x + self.pos_embedding[:, :x.size(1), :]
-        return self.layers(x)              # (B, T_frames, dim) 编码后的音频表征
+        return self.layers(x)              # (B, T_frames/2, dim) 编码后的音频表征
 
 
 class WhisperDecoder(nn.Module):
@@ -119,8 +128,8 @@ class Whisper(nn.Module):
     def forward(self, waveform, token_ids):
         # token_ids 的前几位由机制三决定,例如:
         # [<|startoftranscript|>, <|en|>, <|transcribe|>, <|notimestamps|>, ...实际文本 token...]
-        log_mel = log_mel_spectrogram(waveform)         # (B, T_frames, n_mels)
-        encoder_out = self.encoder(log_mel)               # (B, T_frames, dim)
+        log_mel = log_mel_spectrogram(waveform)         # (B, T_frames≈3000, n_mels)
+        encoder_out = self.encoder(log_mel)               # (B, T_frames/2≈1500, dim),encoder 内部两层卷积完成下采样
         logits = self.decoder(token_ids[:, :-1], encoder_out)  # 用前 T-1 个 token 预测下一个 token
         loss = F.cross_entropy(
             logits.reshape(-1, logits.size(-1)), token_ids[:, 1:].reshape(-1))
