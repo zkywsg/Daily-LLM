@@ -39,9 +39,9 @@ export function NativeResolutionWidget() {
             const active = i === configIdx;
             return (
               <tr key={c.label} style={{ background: active ? "#fce7f3" : "transparent" }}>
-                <td style={{ padding: "4px 8px", fontSize: "var(--fs-sm)", fontWeight: active ? 700 : 400 }}>{c.label}</td>
-                <td style={{ padding: "4px 8px", textAlign: "center", fontSize: "var(--fs-sm)" }}>{c.frames}×{c.height}×{c.width}</td>
-                <td style={{ padding: "4px 8px", textAlign: "center", fontSize: "var(--fs-sm)" }}>{total}</td>
+                <td style={{ padding: "4px 8px", fontSize: "var(--fs-sm)", fontWeight: active ? 700 : 400, color: active ? "#9d174d" : undefined }}>{c.label}</td>
+                <td style={{ padding: "4px 8px", textAlign: "center", fontSize: "var(--fs-sm)", color: active ? "#9d174d" : undefined }}>{c.frames}×{c.height}×{c.width}</td>
+                <td style={{ padding: "4px 8px", textAlign: "center", fontSize: "var(--fs-sm)", color: active ? "#9d174d" : undefined }}>{total}</td>
               </tr>
             );
           })}
