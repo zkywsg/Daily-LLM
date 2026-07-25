@@ -90,4 +90,5 @@ export const goldenSamples: Record<
   "18-speech-audio/02-hubert": lazy(() => import("./hubert/NodePageHuBERT")),
   "18-speech-audio/03-whisper": lazy(() => import("./whisper/NodePageWhisper")),
   "18-speech-audio/04-audiolm": lazy(() => import("./audiolm/NodePageAudioLM")),
+  "18-speech-audio/05-musicgen": lazy(() => import("./musicgen/NodePageMusicGen")),
 };
