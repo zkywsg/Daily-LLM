@@ -27,9 +27,9 @@ export function codebookVector(idx: number): [number, number] {
 
 /** 给定"真实"码本索引,生成一个带小扰动的连续特征 z(扰动幅度远小于码本间距,
  * 保证对比学习任务里真实目标始终是相似度最高的那个,这是本 demo 的设计前提)。 */
-export function frameToContinuousFeature(trueCodeIdx: number, seed: number): [number, number] {
+export function frameToContinuousFeature(trueCodeIdx: number): [number, number] {
   const [cx, cy] = codebookVector(trueCodeIdx);
-  const jitter = (((seed * 977) % 100) / 1000) - 0.05; // [-0.05, 0.05)
+  const jitter = (((trueCodeIdx * 977) % 100) / 1000) - 0.05; // [-0.05, 0.05)
   return [cx + jitter, cy - jitter];
 }
 

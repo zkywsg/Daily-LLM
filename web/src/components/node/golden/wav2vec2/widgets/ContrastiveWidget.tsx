@@ -6,7 +6,7 @@ const H = 300;
 
 export function ContrastiveWidget() {
   const [trueCode, setTrueCode] = useState(2);
-  const z = frameToContinuousFeature(trueCode, trueCode);
+  const z = frameToContinuousFeature(trueCode);
   const scores = contrastiveScores(z);
   const predictedCode = scores.indexOf(Math.max(...scores));
 
@@ -50,13 +50,13 @@ export function ContrastiveWidget() {
         })()}
         {scores.map((s, i) => {
           const x = 320 + (i % 3) * 110;
-          const y = 60 + Math.floor(i / 3) * 100;
+          const y = 110 + Math.floor(i / 3) * 100;
           const h = Math.min(s * 70, 70);
           return (
             <g key={i}>
-              <rect x={x} y={130 - h} width={30} height={h} fill={i === predictedCode ? "#fb7185" : "#9ca3af"} />
-              <text x={x + 15} y={148} textAnchor="middle" fontSize={9} fill="var(--ink-secondary)">码 {i}</text>
-              <text x={x + 15} y={130 - h - 4} textAnchor="middle" fontSize={9} fill="var(--ink-primary)">{s.toFixed(2)}</text>
+              <rect x={x} y={y - h} width={30} height={h} fill={i === predictedCode ? "#fb7185" : "#9ca3af"} />
+              <text x={x + 15} y={y + 18} textAnchor="middle" fontSize={9} fill="var(--ink-secondary)">码 {i}</text>
+              <text x={x + 15} y={y - h - 4} textAnchor="middle" fontSize={9} fill="var(--ink-primary)">{s.toFixed(2)}</text>
             </g>
           );
         })}

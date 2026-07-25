@@ -31,7 +31,7 @@ export function DownsampleWidget() {
         })}
       </svg>
       <p style={{ fontSize: "var(--fs-sm)", color: "var(--ink-muted)" }}>
-        层数越多,帧数越少、每帧覆盖的时间跨度越长——16kHz 原始波形经过约 7 层卷积后,帧率会压缩到真实 wav2vec 2.0 使用的约 50Hz。
+        层数越多,帧数越少、每帧覆盖的时间跨度越长——真实 wav2vec 2.0 用约 7 层非均匀步长的卷积把 16kHz 波形压缩到约 50Hz,这里为了演示简化成均匀 stride=2、可调层数。
       </p>
     </div>
   );
