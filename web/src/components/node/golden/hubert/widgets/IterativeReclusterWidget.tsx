@@ -12,12 +12,20 @@ const PALETTE = ["#fb7185", "#f59e0b", "#8b5cf6"];
 export function IterativeReclusterWidget() {
   const [round, setRound] = useState(0);
   const [centers, setCenters] = useState(initialCenters());
+  const [converged, setConverged] = useState(false);
 
   const assignments = assignClusters(TOY_POINTS, centers);
   const toXY = (p: [number, number]) => [W / 2 + p[0] * 100, H / 2 - p[1] * 100];
 
   const nextRound = () => {
     const newCenters = updateCenters(TOY_POINTS, assignments);
+    const isSame = newCenters.every(
+      (c, k) => Math.abs(c[0] - centers[k][0]) < 1e-9 && Math.abs(c[1] - centers[k][1]) < 1e-9
+    );
+    if (isSame) {
+      setConverged(true);
+      return;
+    }
     setCenters(newCenters);
     setRound((r) => r + 1);
   };
@@ -40,20 +48,22 @@ export function IterativeReclusterWidget() {
       </svg>
       <div style={{ display: "flex", gap: 8, marginTop: "var(--space-2)" }}>
         <button
-          type="button" onClick={nextRound} disabled={round >= 4}
-          style={{ padding: "4px 14px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--bg-surface)", cursor: round >= 4 ? "not-allowed" : "pointer", fontSize: "var(--fs-sm)", opacity: round >= 4 ? 0.5 : 1 }}
+          type="button" onClick={nextRound} disabled={round >= 4 || converged}
+          style={{ padding: "4px 14px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--bg-surface)", cursor: round >= 4 || converged ? "not-allowed" : "pointer", fontSize: "var(--fs-sm)", opacity: round >= 4 || converged ? 0.5 : 1 }}
         >
-          跑下一轮重聚类
+          {converged ? "已收敛,无需继续" : "跑下一轮重聚类"}
         </button>
         <button
-          type="button" onClick={() => { setCenters(initialCenters()); setRound(0); }}
+          type="button" onClick={() => { setCenters(initialCenters()); setRound(0); setConverged(false); }}
           style={{ padding: "4px 14px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--bg-surface)", cursor: "pointer", fontSize: "var(--fs-sm)" }}
         >
           重置
         </button>
       </div>
       <p style={{ fontSize: "var(--fs-sm)", color: "var(--ink-muted)", marginTop: "var(--space-2)" }}>
-        每一轮都用当前分配重新计算聚类中心(移动到各自簇内点的均值),边界逐轮收敛更稳定——这正是 HuBERT 用模型隐藏层特征重新聚类提纯伪标签的过程。
+        {converged
+          ? "聚类中心已不再变化,Lloyd's 算法已收敛——这正是 k-means 的重要性质:迭代重聚类会稳定到一个固定点。"
+          : "每一轮都用当前分配重新计算聚类中心(移动到各自簇内点的均值),边界逐轮收敛更稳定——这正是 HuBERT 用模型隐藏层特征重新聚类提纯伪标签的过程。"}
       </p>
     </div>
   );
