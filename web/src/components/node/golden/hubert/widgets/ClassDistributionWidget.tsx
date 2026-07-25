@@ -9,7 +9,10 @@ export function ClassDistributionWidget() {
   const trueClass = 1;
   const dist = classDistribution(trueClass, sharpness);
 
-  const barW = (W - 80) / NUM_CLUSTERS - 10;
+  const trackStart = 40;
+  const trackWidth = W - 80;
+  const groupWidth = trackWidth / NUM_CLUSTERS;
+  const barW = groupWidth * 0.7;
 
   return (
     <div>
@@ -23,7 +26,7 @@ export function ClassDistributionWidget() {
         </text>
         <line x1={40} y1={H - 40} x2={W - 40} y2={H - 40} stroke="var(--border)" />
         {dist.map((p, k) => {
-          const x = 60 + k * (barW + 30);
+          const x = trackStart + k * groupWidth + (groupWidth - barW) / 2;
           const h = Math.min(p * (H - 100), H - 100);
           return (
             <g key={k}>
