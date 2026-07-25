@@ -89,4 +89,5 @@ export const goldenSamples: Record<
   "18-speech-audio/01-wav2vec2": lazy(() => import("./wav2vec2/NodePageWav2Vec2")),
   "18-speech-audio/02-hubert": lazy(() => import("./hubert/NodePageHuBERT")),
   "18-speech-audio/03-whisper": lazy(() => import("./whisper/NodePageWhisper")),
+  "18-speech-audio/04-audiolm": lazy(() => import("./audiolm/NodePageAudioLM")),
 };
