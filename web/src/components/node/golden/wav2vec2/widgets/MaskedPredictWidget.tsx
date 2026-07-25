@@ -38,6 +38,11 @@ export function MaskedPredictWidget() {
           return (
             <button
               key={i} type="button" onClick={() => toggle(i)} aria-pressed={isMasked}
+              aria-label={
+                isMasked
+                  ? `位置 ${i},已 mask,预测值 ${predicted},${correct ? "预测正确" : "预测错误"}`
+                  : `位置 ${i},未 mask,真实值 ${v},点击可 mask`
+              }
               style={{
                 width: 56, height: 56, borderRadius: "var(--radius-md)",
                 border: `2px solid ${isMasked ? (correct ? "#059669" : "#dc2626") : "var(--border)"}`,
