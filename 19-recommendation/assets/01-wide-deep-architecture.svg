@@ -1,0 +1,66 @@
+<svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" font-family="'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="560" fill="none"/>
+
+  <!-- Title -->
+  <text x="450" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#222">Wide &amp; Deep Learning</text>
+  <text x="450" y="54" text-anchor="middle" font-size="13" fill="#666">Wide(记忆)+ Deep(泛化)联合训练</text>
+
+  <!-- Wide branch -->
+  <g>
+    <rect x="60" y="100" width="330" height="230" rx="10" fill="#fdf3e7" stroke="#d99a3f" stroke-width="1.5"/>
+    <text x="225" y="128" text-anchor="middle" font-size="15" font-weight="bold" fill="#a0641a">Wide 组件(记忆)</text>
+
+    <rect x="90" y="150" width="270" height="44" rx="6" fill="#fff" stroke="#d99a3f"/>
+    <text x="225" y="177" text-anchor="middle" font-size="13" fill="#333">原始特征 x</text>
+
+    <rect x="90" y="210" width="270" height="44" rx="6" fill="#fff" stroke="#d99a3f"/>
+    <text x="225" y="230" text-anchor="middle" font-size="13" fill="#333">人工设计的交叉特征 φ(x)</text>
+    <text x="225" y="246" text-anchor="middle" font-size="10.5" fill="#888">例:安装类别 × 曝光类别</text>
+
+    <rect x="90" y="270" width="270" height="44" rx="6" fill="#f7e2c4" stroke="#a0641a" stroke-width="1.5"/>
+    <text x="225" y="297" text-anchor="middle" font-size="13" font-weight="bold" fill="#7a4c14">线性层  y = wᵀ[x, φ(x)] + b</text>
+  </g>
+
+  <!-- Deep branch -->
+  <g>
+    <rect x="510" y="100" width="330" height="230" rx="10" fill="#e9f1fb" stroke="#3f7fd9" stroke-width="1.5"/>
+    <text x="675" y="128" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a4fa0">Deep 组件(泛化)</text>
+
+    <rect x="540" y="150" width="270" height="44" rx="6" fill="#fff" stroke="#3f7fd9"/>
+    <text x="675" y="177" text-anchor="middle" font-size="13" fill="#333">类别特征 → Embedding</text>
+
+    <rect x="540" y="210" width="270" height="44" rx="6" fill="#fff" stroke="#3f7fd9"/>
+    <text x="675" y="237" text-anchor="middle" font-size="13" fill="#333">拼接后送入多层 MLP(ReLU)</text>
+
+    <rect x="540" y="270" width="270" height="44" rx="6" fill="#c4dbf7" stroke="#1a4fa0" stroke-width="1.5"/>
+    <text x="675" y="297" text-anchor="middle" font-size="13" font-weight="bold" fill="#123a78">最后一层输出 a^(final)</text>
+  </g>
+
+  <!-- Arrows down within branches -->
+  <path d="M225,194 L225,210" stroke="#d99a3f" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M225,254 L225,270" stroke="#d99a3f" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M675,194 L675,210" stroke="#3f7fd9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M675,254 L675,270" stroke="#3f7fd9" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Convergence to joint training -->
+  <path d="M225,314 L225,380 L420,420" stroke="#a0641a" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+  <path d="M675,314 L675,380 L480,420" stroke="#1a4fa0" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Joint training box -->
+  <rect x="330" y="420" width="240" height="52" rx="8" fill="#eee" stroke="#555" stroke-width="1.5"/>
+  <text x="450" y="442" text-anchor="middle" font-size="13" font-weight="bold" fill="#222">加权求和</text>
+  <text x="450" y="460" text-anchor="middle" font-size="11" fill="#555">Wide_logit + Deep_logit</text>
+
+  <path d="M450,472 L450,494" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="360" y="494" width="180" height="40" rx="8" fill="#333"/>
+  <text x="450" y="519" text-anchor="middle" font-size="13" font-weight="bold" fill="#fff">Sigmoid → P(y=1|x)</text>
+
+  <text x="450" y="550" text-anchor="middle" font-size="11" fill="#777">端到端联合训练:Wide 用 FTRL+L1,Deep 用 AdaGrad,共享同一个逻辑损失</text>
+</svg>
