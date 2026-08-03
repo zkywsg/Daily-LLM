@@ -24,7 +24,7 @@ FAMILY_IDS = [
     "08-vit", "09-multimodal-clip", "10-diffusion",
     "11-peft-lora", "12-rlhf-alignment", "13-moe-efficient",
     "14-rag-agent", "15-reasoning-o1-r1", "16-world-models",
-    "17-graph-neural-networks", "18-speech-audio",
+    "17-graph-neural-networks", "18-speech-audio", "19-recommendation",
 ]
 
 

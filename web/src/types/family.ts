@@ -18,7 +18,8 @@ export type FamilyId =
   | "15-reasoning-o1-r1"
   | "16-world-models"
   | "17-graph-neural-networks"
-  | "18-speech-audio";
+  | "18-speech-audio"
+  | "19-recommendation";
 
 export interface NodeData {
   name: string;
