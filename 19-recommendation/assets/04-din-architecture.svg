@@ -1,0 +1,98 @@
+<svg viewBox="0 0 900 680" xmlns="http://www.w3.org/2000/svg" font-family="'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="680" fill="none"/>
+
+  <!-- Title -->
+  <text x="450" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#222">DIN</text>
+  <text x="450" y="54" text-anchor="middle" font-size="13" fill="#666">局部激活单元动态计算历史行为权重,加权求和替代固定池化</text>
+
+  <!-- Candidate ad box -->
+  <rect x="360" y="76" width="180" height="46" rx="8" fill="#f7e2c4" stroke="#a0641a" stroke-width="1.5"/>
+  <text x="450" y="104" text-anchor="middle" font-size="13" font-weight="bold" fill="#7a4c14">候选广告 embedding</text>
+
+  <!-- Historical behavior sequence -->
+  <g>
+    <rect x="60" y="150" width="120" height="48" rx="6" fill="#e9f1fb" stroke="#3f7fd9"/>
+    <text x="120" y="178" text-anchor="middle" font-size="12" fill="#123a78">历史行为 e_1</text>
+
+    <rect x="200" y="150" width="120" height="48" rx="6" fill="#e9f1fb" stroke="#3f7fd9"/>
+    <text x="260" y="178" text-anchor="middle" font-size="12" fill="#123a78">历史行为 e_2</text>
+
+    <text x="400" y="180" text-anchor="middle" font-size="16" fill="#888">...</text>
+
+    <rect x="440" y="150" width="120" height="48" rx="6" fill="#e9f1fb" stroke="#3f7fd9"/>
+    <text x="500" y="178" text-anchor="middle" font-size="12" fill="#123a78">历史行为 e_i</text>
+
+    <rect x="580" y="150" width="120" height="48" rx="6" fill="#e9f1fb" stroke="#3f7fd9"/>
+    <text x="640" y="178" text-anchor="middle" font-size="12" fill="#123a78">历史行为 e_T</text>
+  </g>
+  <text x="120" y="130" text-anchor="middle" font-size="11" fill="#888">用户历史行为序列</text>
+
+  <!-- Arrows from candidate down to each activation unit, and from each hist item up -->
+  <path d="M450,122 L450,140 L120,222" stroke="#a0641a" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M450,122 L450,140 L260,222" stroke="#a0641a" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M450,122 L450,222" stroke="#a0641a" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M450,122 L450,140 L640,222" stroke="#a0641a" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+
+  <path d="M120,198 L120,222" stroke="#3f7fd9" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <path d="M260,198 L260,222" stroke="#3f7fd9" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <path d="M500,198 L500,222" stroke="#3f7fd9" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <path d="M640,198 L640,222" stroke="#3f7fd9" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- Local activation units -->
+  <g>
+    <rect x="60" y="222" width="120" height="54" rx="6" fill="#fdf3e7" stroke="#d99a3f"/>
+    <text x="120" y="245" text-anchor="middle" font-size="10.5" fill="#7a4c14">局部激活单元</text>
+    <text x="120" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#7a4c14">a_1</text>
+
+    <rect x="200" y="222" width="120" height="54" rx="6" fill="#fdf3e7" stroke="#d99a3f"/>
+    <text x="260" y="245" text-anchor="middle" font-size="10.5" fill="#7a4c14">局部激活单元</text>
+    <text x="260" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#7a4c14">a_2</text>
+
+    <rect x="440" y="222" width="120" height="54" rx="6" fill="#fdf3e7" stroke="#d99a3f"/>
+    <text x="500" y="245" text-anchor="middle" font-size="10.5" fill="#7a4c14">局部激活单元</text>
+    <text x="500" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#7a4c14">a_i</text>
+
+    <rect x="580" y="222" width="120" height="54" rx="6" fill="#fdf3e7" stroke="#d99a3f"/>
+    <text x="640" y="245" text-anchor="middle" font-size="10.5" fill="#7a4c14">局部激活单元</text>
+    <text x="640" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#7a4c14">a_T</text>
+  </g>
+  <text x="785" y="253" text-anchor="middle" font-size="11" fill="#666">机制一:候选 +&#10;历史行为 →&#10;相关性权重</text>
+
+  <!-- Arrows down to weighted-sum pooling -->
+  <path d="M120,276 L300,340" stroke="#a0641a" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M260,276 L340,340" stroke="#a0641a" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M500,276 L440,340" stroke="#a0641a" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M640,276 L470,340" stroke="#a0641a" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- Weighted sum pooling box -->
+  <rect x="270" y="340" width="240" height="64" rx="8" fill="#c4dbf7" stroke="#1a4fa0" stroke-width="1.5"/>
+  <text x="390" y="366" text-anchor="middle" font-size="13" font-weight="bold" fill="#123a78">机制二:加权求和池化</text>
+  <text x="390" y="386" text-anchor="middle" font-size="12" fill="#123a78">v_user = Σ a_i · e_hist_i</text>
+
+  <!-- Arrow to combined vector -->
+  <path d="M390,404 L390,440" stroke="#1a4fa0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M450,122 L450,300 L600,440" stroke="#a0641a" stroke-width="1.2" fill="none" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+  <rect x="330" y="440" width="330" height="50" rx="8" fill="#eee" stroke="#555" stroke-width="1.5"/>
+  <text x="495" y="470" text-anchor="middle" font-size="12.5" fill="#333">拼接:v_user(动态兴趣) ⊕ 候选广告 embedding</text>
+
+  <path d="M495,490 L495,520" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- MLP -->
+  <rect x="375" y="520" width="240" height="60" rx="8" fill="#eef0f4" stroke="#555" stroke-width="1.5"/>
+  <text x="495" y="546" text-anchor="middle" font-size="13" font-weight="bold" fill="#222">多层前馈网络(Dice 激活)</text>
+  <text x="495" y="565" text-anchor="middle" font-size="10.5" fill="#666">自适应正则化应对长尾特征分布</text>
+
+  <path d="M495,580 L495,604" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="405" y="604" width="180" height="32" rx="8" fill="#333"/>
+  <text x="495" y="625" text-anchor="middle" font-size="13" font-weight="bold" fill="#fff">Sigmoid → CTR</text>
+
+  <text x="120" y="655" font-size="11" fill="#888">机制三:Dice 激活函数按每层输入分布自适应调整;自适应正则化按特征出现频率调整正则强度——两者共同支撑机制一、二在长尾工业数据上稳定训练。</text>
+</svg>
