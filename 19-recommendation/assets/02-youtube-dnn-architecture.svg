@@ -1,0 +1,80 @@
+<svg viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg" font-family="'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="620" fill="none"/>
+
+  <!-- Title -->
+  <text x="450" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#222">YouTube DNN</text>
+  <text x="450" y="54" text-anchor="middle" font-size="13" fill="#666">候选生成(数亿 → 几百)+ 排序(几百 → 精细排列)两阶段漏斗</text>
+
+  <!-- Candidate generation stage -->
+  <g>
+    <rect x="60" y="90" width="360" height="300" rx="10" fill="#e9f1fb" stroke="#3f7fd9" stroke-width="1.5"/>
+    <text x="240" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a4fa0">机制一:候选生成</text>
+    <text x="240" y="136" text-anchor="middle" font-size="11" fill="#3f6fa8">数亿视频 → 几百个候选</text>
+
+    <rect x="90" y="154" width="300" height="42" rx="6" fill="#fff" stroke="#3f7fd9"/>
+    <text x="240" y="180" text-anchor="middle" font-size="12.5" fill="#333">观看/搜索历史 → Embedding 平均池化</text>
+
+    <rect x="90" y="210" width="300" height="42" rx="6" fill="#fff" stroke="#3f7fd9"/>
+    <text x="240" y="236" text-anchor="middle" font-size="12.5" fill="#333">拼接用户特征 → 多层全连接网络</text>
+
+    <rect x="90" y="266" width="300" height="42" rx="6" fill="#fff" stroke="#3f7fd9"/>
+    <text x="240" y="292" text-anchor="middle" font-size="12.5" fill="#333">用户向量 · 视频 embedding 矩阵</text>
+
+    <rect x="90" y="322" width="300" height="48" rx="6" fill="#c4dbf7" stroke="#1a4fa0" stroke-width="1.5"/>
+    <text x="240" y="343" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#123a78">训练:负采样近似 softmax</text>
+    <text x="240" y="360" text-anchor="middle" font-size="11.5" fill="#123a78">推理:embedding 空间近邻检索</text>
+  </g>
+
+  <!-- Ranking stage -->
+  <g>
+    <rect x="480" y="90" width="360" height="300" rx="10" fill="#fdf3e7" stroke="#d99a3f" stroke-width="1.5"/>
+    <text x="660" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#a0641a">机制二:排序</text>
+    <text x="660" y="136" text-anchor="middle" font-size="11" fill="#a87d3f">几百个候选 → 精细排序</text>
+
+    <rect x="510" y="154" width="300" height="42" rx="6" fill="#fff" stroke="#d99a3f"/>
+    <text x="660" y="180" text-anchor="middle" font-size="12.5" fill="#333">视频特征 + 交互历史特征 + 上下文特征</text>
+
+    <rect x="510" y="210" width="300" height="42" rx="6" fill="#fff" stroke="#d99a3f"/>
+    <text x="660" y="236" text-anchor="middle" font-size="12.5" fill="#333">逐候选送入排序网络算分</text>
+
+    <rect x="510" y="266" width="300" height="42" rx="6" fill="#fff" stroke="#d99a3f"/>
+    <text x="660" y="292" text-anchor="middle" font-size="12.5" fill="#333">加权逻辑回归(正样本权重 = 观看时长)</text>
+
+    <rect x="510" y="322" width="300" height="48" rx="6" fill="#f7e2c4" stroke="#a0641a" stroke-width="1.5"/>
+    <text x="660" y="343" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7a4c14">输出:预测期望观看时长</text>
+    <text x="660" y="360" text-anchor="middle" font-size="11.5" fill="#7a4c14">按分数精细排序展示</text>
+  </g>
+
+  <!-- Arrows within each stage -->
+  <path d="M240,196 L240,210" stroke="#3f7fd9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M240,252 L240,266" stroke="#3f7fd9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M240,308 L240,322" stroke="#3f7fd9" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <path d="M660,196 L660,210" stroke="#d99a3f" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M660,252 L660,266" stroke="#d99a3f" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M660,308 L660,322" stroke="#d99a3f" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Funnel arrow between stages -->
+  <path d="M420,340 L480,340" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="450" y="330" text-anchor="middle" font-size="10.5" fill="#777">几百候选</text>
+
+  <!-- Example age note -->
+  <g>
+    <rect x="180" y="430" width="540" height="80" rx="8" fill="#eee" stroke="#555" stroke-width="1.5"/>
+    <text x="450" y="458" text-anchor="middle" font-size="13" font-weight="bold" fill="#222">机制三:样本年龄(example age)特征</text>
+    <text x="450" y="480" text-anchor="middle" font-size="11.5" fill="#555">显式建模训练样本相对当前时刻的时间差,补偿</text>
+    <text x="450" y="497" text-anchor="middle" font-size="11.5" fill="#555">"新内容近期观看概率更高"的时间偏置,贯穿两阶段训练</text>
+  </g>
+
+  <path d="M240,390 L240,430" stroke="#888" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+  <path d="M660,390 L660,430" stroke="#888" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+  <text x="450" y="545" text-anchor="middle" font-size="11" fill="#777">候选生成用速度换取召回覆盖,排序用丰富特征换取精度;两阶段级联 + 样本年龄修正,构成完整推荐系统</text>
+  <text x="450" y="565" text-anchor="middle" font-size="11" fill="#777">优化目标是期望观看时长而非点击率,更贴近平台真实业务目标</text>
+</svg>
