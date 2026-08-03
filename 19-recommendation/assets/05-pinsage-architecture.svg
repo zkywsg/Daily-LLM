@@ -1,0 +1,106 @@
+<svg viewBox="0 0 900 760" xmlns="http://www.w3.org/2000/svg" font-family="'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#a0641a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="760" fill="none"/>
+
+  <!-- Title -->
+  <text x="450" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#222">PinSAGE</text>
+  <text x="450" y="54" text-anchor="middle" font-size="13" fill="#666">随机游走重要性采样 + 加权聚合,生产者-消费者流水线训练</text>
+
+  <!-- ===== Section 1: random walk importance sampling ===== -->
+  <text x="60" y="86" font-size="13" font-weight="bold" fill="#7a4c14">机制一:基于随机游走的重要性采样</text>
+
+  <!-- target node -->
+  <circle cx="160" cy="160" r="26" fill="#333"/>
+  <text x="160" y="165" text-anchor="middle" font-size="11" fill="#fff">目标</text>
+
+  <!-- neighbors with different visit frequency (importance) -->
+  <circle cx="80" cy="240" r="18" fill="#f7e2c4" stroke="#a0641a" stroke-width="2"/>
+  <text x="80" y="245" text-anchor="middle" font-size="10" fill="#7a4c14">0.42</text>
+
+  <circle cx="180" cy="255" r="14" fill="#fbeed8" stroke="#c98a30" stroke-width="1.5"/>
+  <text x="180" y="259" text-anchor="middle" font-size="9" fill="#7a4c14">0.21</text>
+
+  <circle cx="270" cy="215" r="10" fill="#fdf6ea" stroke="#d9a95a" stroke-width="1"/>
+  <text x="270" y="218" text-anchor="middle" font-size="8" fill="#8a6a3a">0.08</text>
+
+  <circle cx="60" cy="150" r="8" fill="#fdf6ea" stroke="#d9a95a" stroke-width="1"/>
+  <circle cx="250" cy="120" r="7" fill="#fdf6ea" stroke="#d9a95a" stroke-width="1"/>
+
+  <!-- random walk paths -->
+  <path d="M160,160 Q120,200 80,240" stroke="#a0641a" stroke-width="1.3" fill="none" stroke-dasharray="3 2"/>
+  <path d="M160,160 Q170,210 180,255" stroke="#a0641a" stroke-width="1.3" fill="none" stroke-dasharray="3 2"/>
+  <path d="M160,160 Q220,185 270,215" stroke="#c98a30" stroke-width="1" fill="none" stroke-dasharray="3 2"/>
+  <path d="M160,160 Q100,155 60,150" stroke="#d9a95a" stroke-width="0.8" fill="none" stroke-dasharray="2 2"/>
+  <path d="M160,160 Q210,140 250,120" stroke="#d9a95a" stroke-width="0.8" fill="none" stroke-dasharray="2 2"/>
+
+  <text x="160" y="300" text-anchor="middle" font-size="10.5" fill="#666">多次随机游走 → 访问频次归一化 = 重要性得分</text>
+  <text x="160" y="318" text-anchor="middle" font-size="10" fill="#888">采样得分最高的 top-k 邻居(粗圈越大 = 越重要)</text>
+
+  <!-- arrow to weighted aggregation -->
+  <path d="M290,190 L370,190" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Weighted aggregation box -->
+  <rect x="380" y="140" width="220" height="90" rx="8" fill="#c4dbf7" stroke="#1a4fa0" stroke-width="1.5"/>
+  <text x="490" y="168" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#123a78">加权聚合</text>
+  <text x="490" y="190" text-anchor="middle" font-size="11" fill="#123a78">Σ importance_i · e_neighbor_i</text>
+  <text x="490" y="210" text-anchor="middle" font-size="10" fill="#123a78">重要性得分复用为聚合权重</text>
+
+  <path d="M600,185 L660,185" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- concat + update -->
+  <rect x="670" y="140" width="180" height="90" rx="8" fill="#eef0f4" stroke="#555" stroke-width="1.5"/>
+  <text x="760" y="168" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#222">拼接 + 更新</text>
+  <text x="760" y="188" text-anchor="middle" font-size="10" fill="#555">自身表征 ⊕ 邻居聚合</text>
+  <text x="760" y="206" text-anchor="middle" font-size="10" fill="#555">→ 新节点表征</text>
+
+  <!-- ===== Section 2: curriculum learning note ===== -->
+  <rect x="60" y="345" width="790" height="56" rx="8" fill="#fdf3e7" stroke="#d99a3f"/>
+  <text x="455" y="368" text-anchor="middle" font-size="12" font-weight="bold" fill="#7a4c14">机制二:课程学习(curriculum learning)</text>
+  <text x="455" y="388" text-anchor="middle" font-size="10.5" fill="#7a4c14">训练早期用简单负样本,后期逐步换上"有关联但非真正匹配"的困难负样本 → 学会细粒度相关性区分</text>
+
+  <!-- ===== Section 3: producer-consumer pipeline ===== -->
+  <text x="60" y="435" font-size="13" font-weight="bold" fill="#123a78">机制三:生产者-消费者训练流水线 + MapReduce 批量推理</text>
+
+  <!-- producer -->
+  <rect x="60" y="455" width="230" height="90" rx="8" fill="#e9f1fb" stroke="#3f7fd9" stroke-width="1.5"/>
+  <text x="175" y="480" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#123a78">生产者(CPU 集群)</text>
+  <text x="175" y="500" text-anchor="middle" font-size="10.5" fill="#123a78">重要性采样</text>
+  <text x="175" y="518" text-anchor="middle" font-size="10.5" fill="#123a78">组装 minibatch</text>
+
+  <!-- queue -->
+  <rect x="320" y="475" width="90" height="50" rx="6" fill="#eee" stroke="#888"/>
+  <text x="365" y="504" text-anchor="middle" font-size="10.5" fill="#555">队列</text>
+
+  <!-- consumer -->
+  <rect x="440" y="455" width="230" height="90" rx="8" fill="#dceedd" stroke="#2f8f4e" stroke-width="1.5"/>
+  <text x="555" y="480" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1f5c33">消费者(GPU)</text>
+  <text x="555" y="500" text-anchor="middle" font-size="10.5" fill="#1f5c33">前向 + 反向传播</text>
+  <text x="555" y="518" text-anchor="middle" font-size="10.5" fill="#1f5c33">更新参数</text>
+
+  <path d="M290,500 L320,500" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M410,500 L440,500" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="365" y="465" text-anchor="middle" font-size="9.5" fill="#888">两条流水线并行重叠,GPU 不等待采样</text>
+
+  <!-- MapReduce inference -->
+  <rect x="700" y="455" width="150" height="90" rx="8" fill="#f4e9f7" stroke="#8a3fa0" stroke-width="1.5"/>
+  <text x="775" y="480" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#5c1f6b">MapReduce 推理</text>
+  <text x="775" y="500" text-anchor="middle" font-size="9.5" fill="#5c1f6b">全图批量生成 embedding</text>
+  <text x="775" y="518" text-anchor="middle" font-size="9.5" fill="#5c1f6b">中间结果算一次、被复用</text>
+
+  <path d="M670,500 L700,500" stroke="#555" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+  <!-- ===== Bottom: scale banner ===== -->
+  <rect x="60" y="580" width="790" height="50" rx="8" fill="#333"/>
+  <text x="455" y="611" text-anchor="middle" font-size="13" font-weight="bold" fill="#fff">Pinterest 用户-图片-画板二部图:约 30 亿节点 · 180 亿边</text>
+
+  <text x="455" y="660" text-anchor="middle" font-size="11" fill="#888">三件套协同:重要性采样负责"聚合谁",课程学习负责"学到多细的相关性区分",</text>
+  <text x="455" y="678" text-anchor="middle" font-size="11" fill="#888">生产者-消费者流水线与 MapReduce 批量推理负责"能不能在合理时间内训练完、推理完"。</text>
+</svg>
