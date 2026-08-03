@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T05:46:16.206551+00:00",
+  "generatedAt": "2026-08-03T17:27:27.894676+00:00",
   "families": [
     {
       "id": "01-cnn",
@@ -1892,6 +1892,128 @@
           "path": "18-speech-audio/05-musicgen.md",
           "assets": [
             "18-speech-audio/assets/05-musicgen-architecture.svg"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "19-recommendation",
+      "label": "推荐系统(Recommendation Systems)",
+      "blurb": "从\"人工设计特征叉乘做记忆\"到\"用注意力动态建模用户兴趣\",再到\"把用户-物品关系直接建模成图做归纳式表征学习\"——推荐系统这条主线全部由工业界驱动,每一步演化都直接对应生产环境里踩过的真实的坑。",
+      "yearRange": [
+        2016,
+        2018
+      ],
+      "colorToken": "--family-19",
+      "nodes": [
+        {
+          "name": "Wide & Deep",
+          "year": 2016,
+          "family": "19-recommendation",
+          "order": 1,
+          "paper": "Wide & Deep Learning for Recommender Systems",
+          "authors": [
+            "Heng-Tze Cheng",
+            "Levent Koc",
+            "Jeremiah Harmsen",
+            "Tal Shaked",
+            "Tushar Chandra",
+            "Hrishi Aradhye",
+            "Glen Anderson",
+            "Greg Corrado",
+            "Wei Chai",
+            "Mustafa Ispir",
+            "Rohan Anil",
+            "Zakaria Haque",
+            "Lichan Hong",
+            "Vihan Jain",
+            "Xiaobing Liu",
+            "Hemal Shah"
+          ],
+          "key_idea": "把线性模型(Wide,靠特征叉乘记忆共现规律)和深度神经网络(Deep,靠 embedding 泛化到没见过的特征组合)联合训练成一个模型,首次系统性解决记忆与泛化的权衡问题",
+          "path": "19-recommendation/01-wide-deep.md",
+          "assets": [
+            "19-recommendation/assets/01-wide-deep-architecture.svg"
+          ]
+        },
+        {
+          "name": "YouTube DNN",
+          "year": 2016,
+          "family": "19-recommendation",
+          "order": 2,
+          "paper": "Deep Neural Networks for YouTube Recommendations",
+          "authors": [
+            "Paul Covington",
+            "Jay Adams",
+            "Emre Sargin"
+          ],
+          "key_idea": "用'候选生成(candidate generation)+ 排序(ranking)'两阶段深度神经网络架构处理数亿视频规模的推荐,候选生成阶段把推荐建模成极端多分类问题,是工业界大规模深度推荐系统的奠基性架构",
+          "path": "19-recommendation/02-youtube-dnn.md",
+          "assets": [
+            "19-recommendation/assets/02-youtube-dnn-architecture.svg"
+          ]
+        },
+        {
+          "name": "DeepFM",
+          "year": 2017,
+          "family": "19-recommendation",
+          "order": 3,
+          "paper": "DeepFM: A Factorization-Machine based Neural Network for CTR Prediction",
+          "authors": [
+            "Huifeng Guo",
+            "Ruiming Tang",
+            "Yunming Ye",
+            "Zhenguo Li",
+            "Xiuqiang He"
+          ],
+          "key_idea": "用因子分解机(FM)替代 Wide & Deep 里需要人工设计的特征叉乘部分,FM 和 DNN 共享同一套特征 embedding 端到端训练,不再需要特征工程就能同时建模低阶和高阶特征交互",
+          "path": "19-recommendation/03-deepfm.md",
+          "assets": [
+            "19-recommendation/assets/03-deepfm-architecture.svg"
+          ]
+        },
+        {
+          "name": "DIN",
+          "year": 2018,
+          "family": "19-recommendation",
+          "order": 4,
+          "paper": "Deep Interest Network for Click-Through Rate Prediction",
+          "authors": [
+            "Guorui Zhou",
+            "Xiaoqiang Zhu",
+            "Chenru Song",
+            "Ying Fan",
+            "Han Zhu",
+            "Xiao Ma",
+            "Yanghui Yan",
+            "Junqi Jin",
+            "Han Li",
+            "Kun Gai"
+          ],
+          "key_idea": "用注意力机制让模型根据候选广告动态计算用户历史行为序列里每个行为的权重,解决了此前把用户兴趣压缩成单一定长向量、无法表达兴趣多样性的问题",
+          "path": "19-recommendation/04-din.md",
+          "assets": [
+            "19-recommendation/assets/04-din-architecture.svg"
+          ]
+        },
+        {
+          "name": "PinSAGE",
+          "year": 2018,
+          "family": "19-recommendation",
+          "order": 5,
+          "paper": "Graph Convolutional Neural Networks for Web-Scale Recommender Systems",
+          "authors": [
+            "Rex Ying",
+            "Ruining He",
+            "Kaifeng Chen",
+            "Pong Eksombatchai",
+            "William L. Hamilton",
+            "Jure Leskovec"
+          ],
+          "key_idea": "把 GraphSAGE 的归纳式图卷积扩展到 30 亿节点、180 亿边的工业级二部图(用户-物品图),用随机游走采样 + 生产者-消费者流水线训练,是 GNN 在推荐系统里最早的大规模工业落地",
+          "path": "19-recommendation/05-pinsage.md",
+          "assets": [
+            "19-recommendation/assets/05-pinsage-architecture.svg"
           ]
         }
       ]
