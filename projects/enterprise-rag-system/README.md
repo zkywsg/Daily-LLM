@@ -272,9 +272,8 @@ response = requests.post(
 
 ---
 
-## 参考文档
+## 延伸阅读
 
-- [详细架构设计](./docs/architecture.md)
-- [API接口文档](./docs/api.md)
-- [部署与运维指南](./docs/deployment.md)
-- [代码实现详情](./src/)
+- [RAG](../../14-rag-agent/01-rag.md)
+- [ReAct](../../14-rag-agent/02-react.md)
+- [Toolformer](../../14-rag-agent/03-toolformer.md)

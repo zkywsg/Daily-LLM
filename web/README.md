@@ -1,14 +1,15 @@
 # Daily-LLM 网页
 
-Daily-LLM 知识库的独立前端,把 15 个家族 / 67 个节点的演化整理为可浏览的可视化页面。
+Daily-LLM 知识库的公开 Web 前端,把 19 个家族 / 89 个节点整理为可探索、可阅读的可视化页面。
 
 ## 路由结构
 
 - `/` — 主页,两种浏览模式可切换
   - **按时间**:全部节点放在密度感知的横向时间线上(密集年份拉宽、空白年份压缩),hover 显示节点摘要,点击进入节点详情
-  - **按家族**:15 个家族卡片网格,每张卡片显示节点数和年份范围
+  - **按家族**:19 个家族卡片网格,每张卡片显示节点数和年份范围
 - `/families/:familyId` — 家族页,展示该家族子时间线,每个节点配 mini-arch 缩略图
-- `/families/:familyId/:nodeSlug` — 节点页,渲染 markdown 正文;ResNet 已有交互式金标本页(`components/node/golden/resnet/`),其余节点走通用 markdown 渲染
+- `/families/:familyId/:nodeSlug` — 节点页;已注册节点优先使用交互式金标本,其余节点渲染通用 markdown 正文
+- `/foundations` — 横切基础概念列表与正文
 
 ## 技术栈
 
@@ -27,7 +28,7 @@ npm install
 npm run dev
 ```
 
-默认 `http://localhost:5173/`。
+默认预览地址为 `http://127.0.0.1:5173/`;项目约定固定使用 5173 端口。
 
 ## 构建
 

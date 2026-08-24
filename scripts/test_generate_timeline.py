@@ -78,7 +78,7 @@ from pathlib import Path
 
 
 def test_generate_families_json(tmp_path: Path) -> None:
-    """families.json 含 15 个家族 ID，已存在的家族被正确解析，其余为占位。"""
+    """families.json 含 19 个家族 ID，已存在的家族被正确解析，其余为占位。"""
     fam_cnn = tmp_path / "01-cnn"
     fam_cnn.mkdir()
     (fam_cnn / "README.md").write_text(
@@ -115,7 +115,7 @@ def test_generate_families_json(tmp_path: Path) -> None:
     data = json.loads(out_json.read_text(encoding="utf-8"))
     assert "generatedAt" in data
     assert isinstance(data["families"], list)
-    assert len(data["families"]) == 15
+    assert len(data["families"]) == 19
 
     by_id = {f["id"]: f for f in data["families"]}
 
@@ -139,9 +139,9 @@ def test_generate_families_json(tmp_path: Path) -> None:
     assert rnn["nodes"] == []
     assert rnn["colorToken"] == "--family-02"
 
-    # 13 个不存在的家族：仍有 entry，但 label 为 id 保底、blurb "（待补充）"
+    # 17 个不存在的家族：仍有 entry，但 label 为 id 保底、blurb "（待补充）"
     others = [f for f in data["families"] if f["id"] not in ("01-cnn", "02-rnn-lstm")]
-    assert len(others) == 13
+    assert len(others) == 17
     for f in others:
         assert f["nodes"] == []
         assert f["yearRange"] is None

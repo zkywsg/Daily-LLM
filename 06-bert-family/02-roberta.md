@@ -142,7 +142,7 @@ CC-News(英文 CommonCrawl 子集)和 OpenWebText(EleutherAI 复现 OpenAI WebTe
 |------|------|
 | 架构 | **完全同 BERT-large**:24 层, d_model=1024, h=16, d_ff=4096, 355M 参数 |
 | Tokenization | **byte-level BPE 50K** ←(差异:BERT 是 WordPiece 30K) |
-| Masking | 动态(每次重新选)+ 仅 [MASK](去掉 80/10/10,简化) |
+| Masking | 动态(每次重新选)+ 仅 `MASK` token(去掉 80/10/10,简化) |
 | 预训练任务 | **仅 MLM**(去掉 NSP) |
 | 输入 | 单一连续序列,直到填满 512 token |
 | 数据 | 160GB(BookCorpus + CC-News + OpenWebText + Stories)+ Wiki |
@@ -158,7 +158,7 @@ CC-News(英文 CommonCrawl 子集)和 OpenWebText(EleutherAI 复现 OpenAI WebTe
 注意几个工程细节:
 
 - **byte-level BPE 替代 WordPiece**——BPE 可以处理任何 Unicode,不需要 unknown token,后来被 GPT-2 / GPT-3 / LLaMA 沿用
-- **简化 80/10/10 → 仅 [MASK]**——RoBERTa 在消融里发现 80/10/10 的复杂 mask 策略和简单 [MASK] 差异不大,简化能省点 dataloader 复杂度
+- **简化 80/10/10 → 仅 `MASK` token**——RoBERTa 在消融里发现 80/10/10 的复杂 mask 策略和简单 `MASK` token 差异不大,简化能省点 dataloader 复杂度
 - **β2 = 0.98**——和原版 Transformer 一致,大 batch 下更稳定
 
 ## 关键代码

@@ -2,6 +2,7 @@
   padding: var(--space-6) var(--space-4);
   max-width: 800px;
   margin: 0 auto;
+  min-width: 0;
 }
 
 @media (min-width: 768px) {
@@ -13,6 +14,7 @@
 /* TOC + body 双栏:>=1100px 屏才显示侧栏,小屏纯单栏 */
 .bodyWrap {
   display: block;
+  min-width: 0;
 }
 
 .tocColumn {
@@ -71,6 +73,21 @@
   font-family: var(--font-serif);
   font-size: var(--fs-md);
   line-height: 1.7;
+  min-width: 0;
+}
+
+.body :global(pre) {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.body :global(.katex-display) {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .body :global(h1),

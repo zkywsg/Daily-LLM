@@ -1,8 +1,8 @@
-# Phase 06 · Capstone Projects
+# Capstone Projects
 
 [English](README_EN.md) | [中文](README.md)
 
-Assemble knowledge from the previous five phases into real deliverable systems.
+Combine knowledge across architecture families into deliverable systems.
 
 ## Projects
 
@@ -16,6 +16,6 @@ End-to-end LLM fine-tuning engineering from data preparation to production monit
 - Instruction data construction → LoRA/QLoRA fine-tuning → DPO alignment → Evaluation → vLLM deployment → Monitoring
 - Corresponding tech: Phase 04 (PEFT + Alignment) + Phase 05 (Serving + MLOps)
 
-→ Full timeline: [../timeline](../timeline/)
+→ Browse every model by year in [TIMELINE.md](../TIMELINE.md).
 
-**Previous Phase**: [Systems & Production ←](../tracks/systems/)
+→ Return to the [project home](../README_EN.md).

@@ -58,6 +58,34 @@ pre {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+main {
+  min-width: 0;
+}
+
+/* 金标本的 CSS Module grid 子项必须允许收缩，否则长公式会按最小内容宽度撑开整页。 */
+main [class*="_grid_"] > * {
+  min-width: 0;
+}
+
+.markdown-body {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* 长代码和展示公式只能在自身区域滚动，不能把手机端整页撑宽。 */
+.markdown-body pre,
+.katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.markdown-body pre {
+  white-space: pre;
 }
 
 /* markdown 正文里的表格(MarkdownRenderer 输出) */

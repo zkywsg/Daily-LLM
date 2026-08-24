@@ -1,6 +1,6 @@
-# Phase 06 · 实战项目
+# 实战项目
 
-把前五个 Phase 的知识组装成可以真实交付的系统。
+把多个架构家族的知识组装成可以真实交付的系统。
 
 ## 本阶段项目
 
@@ -14,6 +14,6 @@
 - 指令数据构造 → LoRA/QLoRA 微调 → DPO 对齐 → 评估 → vLLM 部署 → 监控
 - 对应技术：Phase 04（PEFT + 对齐）+ Phase 05（服务 + MLOps）
 
-→ 完整时间线见 [../timeline](../timeline/)
+→ 按年份查看全部模型：[TIMELINE.md](../TIMELINE.md)
 
-**上一阶段**: [系统与生产 ←](../tracks/systems/)
+→ 返回[项目主页](../README.md)
