@@ -12,6 +12,9 @@ export function Layout({ children }: { children: ReactNode }) {
           Daily-LLM · 深度学习与大模型
         </Link>
         <div className={styles.headerActions}>
+          <Link to="/market" className={styles.marketLink}>
+            竞品看板
+          </Link>
           <SearchPalette />
           <ThemeToggle />
         </div>

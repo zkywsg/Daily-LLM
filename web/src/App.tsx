@@ -8,6 +8,7 @@ import {
   FoundationsListPage,
   FoundationPage,
 } from "./components/foundations/FoundationsPage";
+import { MarketDashboard } from "./components/market/MarketDashboard";
 
 export function App() {
   return (
@@ -21,6 +22,7 @@ export function App() {
             element={<NodePage />}
           />
           <Route path="/foundations" element={<FoundationsListPage />} />
+          <Route path="/market" element={<MarketDashboard />} />
           <Route
             path="/foundations/:foundationSlug"
             element={<FoundationPage />}

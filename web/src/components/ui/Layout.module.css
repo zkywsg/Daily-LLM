@@ -30,6 +30,16 @@
   gap: var(--space-3);
 }
 
+.marketLink {
+  color: var(--ink-secondary);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+.marketLink:hover {
+  color: var(--ink-primary);
+}
+
 @media (min-width: 768px) {
   .header,
   .footer {
