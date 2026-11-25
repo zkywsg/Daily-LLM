@@ -1,50 +1,44 @@
 <div align="center">
 
-<img src=".github/assets/readme-banner.svg" alt="Daily-LLM banner" width="100%" />
+<img src=".github/assets/learn-cover.png" alt="从零学大模型：注意力系列" width="100%" />
 
-# 深度学习与大模型精通之路
+# Daily-LLM：从零学大模型
 
-### Deep Learning & LLM Mastery
-
-<p>
-  深度学习与大模型的可视化学习路线 —— 从 1986 年 RNN 到 2025 年推理模型，按 19 个架构家族梳理演进脉络。
-</p>
+### 先把注意力吃透：讲解、手算、互动页、TikTok 图卡，一份源码三种出口
 
 <p>
-  <a href="_archive/v1/README_EN.md"><strong>English</strong></a>
+  <a href="https://zkywsg.github.io/Daily-LLM/"><strong>在线读 / 玩</strong></a>
   ·
-  <a href="#learn"><strong>从零学</strong></a>
+  <a href="#topics"><strong>13 个知识点</strong></a>
   ·
-  <a href="#timeline"><strong>时间线</strong></a>
+  <a href="#start"><strong>本地运行</strong></a>
   ·
+  <a href="#archive"><strong>旧版归档</strong></a>
   ·
-  <a href="#modules"><strong>模块索引</strong></a>
-  ·
-  <a href="#quick-start"><strong>快速开始</strong></a>
-  ·
-  <a href="CONTRIBUTING.md"><strong>贡献指南</strong></a>
+  <a href="CONTRIBUTING.md"><strong>贡献</strong></a>
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-0F172A.svg?style=flat-square)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-2563EB.svg?style=flat-square)](https://www.python.org/downloads/)
-[![Phases](https://img.shields.io/badge/Phases-6%2BTimeline-059669.svg?style=flat-square)](./)
-[![Bilingual](https://img.shields.io/badge/Docs-English%20%7C%20%E4%B8%AD%E6%96%87-D97706.svg?style=flat-square)](_archive/v1/README_EN.md)
 
 </div>
 
 ---
 
-<a id="learn"></a>
+## 这是什么
 
-## 从零学：注意力系列
+一个从零开始学机器学习、深度学习、大模型的资料库。目前写完的是**注意力系列**（13 篇）：从“为什么要发明注意力”，到手算、矩阵形状、softmax 梯度、多头、位置编码、NumPy 从零实现、KV cache 与 FlashAttention，最后有 27 道自测题和 5 个小项目。
 
-<img src=".github/assets/learn-cover.png" alt="从零学大模型：注意力系列" width="100%" />
+每个知识点按五层写：一句话 → 白话 → 手算 → 数学推导 → 代码与练习。每篇都配：
 
-先把大模型的核心部件**注意力**吃透。每个知识点按五层写：一句话 → 白话 → 手算 → 数学推导 → 代码与练习，并配可以动手的互动页和 TikTok 竖版图卡。
+- **讲解**：本仓库的 Markdown，GitHub 上直接读，公式可渲染，不依赖任何托管。
+- **互动页**：浏览器里拖一拖、点一点，数字都在页面里实时算。
+- **图卡**：TikTok 竖版 PNG（1080×1920），直接用于发布。
 
-- **在线读 / 玩**：<https://zkywsg.github.io/Daily-LLM/>（启用 GitHub Pages 后可用；没启用时按下面的方法本地打开）
-- **本地打开**：`cd learn && npm ci && cd .. && node learn/build-preview.mjs`，然后打开 `learn/preview.html`（离线可看）
-- **学习顺序与进度**：[learn/README.md](learn/README.md)
+> 例子都是教学用的**玩具模型**，不是训练出来的。真实模型的脚本（`attn-08`）写好了但**没在真实模型上运行过**；文献与配置对照摘要或公开资料核对，来源写在每篇末尾。
+
+<a id="topics"></a>
+
+## 13 个知识点
 
 | 篇 | 内容 | 互动页 |
 |---|---|---|
@@ -64,11 +58,34 @@
 
 > 文献与模型配置已对照摘要或公开资料核对，来源写在各篇末尾。示例模型都是教学用的玩具模型，不是训练出来的。
 
----
+学习顺序、进度与五层路线图见 [learn/README.md](learn/README.md)。
 
-<a id="timeline"></a>
+<a id="start"></a>
 
-## 旧版：19 个家族时间线（已归档，仅供查阅）
+## 本地运行
+
+**只想读**：直接看上表链接，或打开 <https://zkywsg.github.io/Daily-LLM/>。
+
+**离线整页预览**（需要 Node 20+）：
+
+```bash
+cd learn && npm ci && cd ..
+node learn/build-preview.mjs      # 生成 learn/preview.html，双击打开
+node learn/build-site.mjs         # 生成 learn/_site/，与线上站点一致
+```
+
+**跑代码**：`attn-07` 的从零实现只需 `numpy`（`pip install numpy`），测试在该目录的 `code/` 下；`attn-08` 的两个脚本需要 `torch` 与 `transformers`，未在真实模型上运行过。
+
+互动页是纯前端，也可以直接双击 `learn/3-llm/<知识点>/demo/index.html`。
+
+<a id="archive"></a>
+
+## 旧版归档
+
+早期按“19 个架构家族”写的时间线内容（1986–2025）已于 2026-11-26 整体移入 [`_archive/v1/`](_archive/v1/)，只读，不再更新，新内容以 `learn/` 为准。更早的素材在 [`_archive/`](_archive/README.md) 下。
+
+<details>
+<summary>旧版 19 个家族目录</summary>
 
 | # | 家族 | 关键年份 | 一句话定位 |
 |---|------|---------|-----------|
@@ -92,63 +109,14 @@
 | 18 | [语音 / 音频模型](_archive/v1/18-speech-audio/) | 2020– | 从自监督语音表征走向音频 token 生成 |
 | 19 | [推荐系统](_archive/v1/19-recommendation/) | 2016– | 从特征记忆走向兴趣注意力与图表征学习 |
 
-> 按年份速查：[TIMELINE.md](_archive/v1/TIMELINE.md)（自动生成）
-> 横切基础：[foundations/](_archive/v1/foundations/)
-
----
-
-<a id="modules"></a>
-
-## 仓库结构
-
-- `learn/` — **新版从零学内容**（讲解、互动页、TikTok 图卡），当前主体
-- `_archive/v1/` — 旧版 19 个家族、`foundations/`、`projects/`、`TIMELINE.md`、`README_EN.md`、旧时间线网页 `web/`、`scripts/`（只读）
-- `_archive/` 其余 — 更早的 `timeline/`、`tracks/`、`foundations-old/`
-
----
-
-<a id="quick-start"></a>
-
-## 快速开始
-
-### 1. 克隆仓库
-
-```bash
-git clone https://github.com/zkywsg/Daily-LLM.git
-cd Daily-LLM
-```
-
-### 2. 安装依赖
-
-```bash
-pip install -r requirements.txt
-```
-
-<details>
-<summary><strong>按阶段选择性安装依赖</strong></summary>
-
-```bash
-# Phase 00-01（前置 + 视觉线）
-pip install torch numpy scikit-learn matplotlib
-
-# Phase 02-03（语言线 + 规模多模态）
-pip install transformers datasets sentence-transformers
-
-# Phase 04（对齐与微调）
-pip install peft trl
-
-# Phase 05（系统与生产）
-pip install sentence-transformers faiss-cpu chromadb langchain vllm fastapi mlflow wandb
-```
+按年份速查：[TIMELINE.md](_archive/v1/TIMELINE.md) · 横切基础：[foundations/](_archive/v1/foundations/) · 英文版：[README_EN.md](_archive/v1/README_EN.md)
 
 </details>
 
 ---
 
-## 贡献
+## 贡献与许可
 
-欢迎贡献改进内容、补充案例、修正文档或完善结构。提交前请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 许可证
+欢迎指出错误、补充内容。提交前请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)（部分约定针对旧版结构，以 `learn/` 现状为准）。
 
 本项目采用 [MIT License](LICENSE)。
