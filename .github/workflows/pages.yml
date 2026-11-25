@@ -1,0 +1,40 @@
+# 把 learn/ 下的讲解、图卡和互动页发布到 GitHub Pages。
+# 启用方式：仓库 Settings → Pages → Build and deployment → Source 选 “GitHub Actions”。
+name: Deploy learn/ to GitHub Pages
+on:
+  push:
+    branches: [master]
+    paths: ["learn/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: node learn/build-site.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: learn/_site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

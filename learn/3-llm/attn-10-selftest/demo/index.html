@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>注意力系列自测</title><link rel="stylesheet" href="../../_shared/ui.css"></head>
+<body><main>
+<h1>注意力系列 · 自测</h1>
+<p class="sub">27 道单选题，覆盖前 9 篇。每题选完立刻给解释，最后列出错题。讲解：<a href="../README.md">README</a>。</p>
+<section>
+  <h2><span class="step">0</span>选范围</h2>
+  <div class="chips" id="topics"></div>
+  <button class="btn" id="start" type="button">开始（随机顺序）</button>
+</section>
+<section id="box" style="display:none">
+  <h2><span class="step" id="no">1</span><span id="prog"></span></h2>
+  <div id="q" style="font-size:16px;margin:8px 0"></div>
+  <div id="opts"></div>
+  <div id="fb" class="note"></div>
+  <button class="btn" id="next" type="button" style="display:none">下一题 →</button>
+</section>
+<section id="res" style="display:none"><h2>结果</h2><div id="score"></div><div id="wrong"></div><button class="btn" id="again" type="button">再来一次</button></section>
+</main>
+<script src="questions.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i),Q=window.QUESTIONS,esc=(s)=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  const topics=[...new Set(Q.map(x=>x.t))].sort(),on=new Set(topics);
+  const shuffle=(a)=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  function drawTopics(){$("topics").innerHTML=topics.map(t=>`<button class="chip" type="button" aria-pressed="${on.has(t)}" data-t="${esc(t)}">${esc(t)}（${Q.filter(x=>x.t===t).length}）</button>`).join("");
+    document.querySelectorAll("#topics .chip").forEach(b=>b.onclick=()=>{on.has(b.dataset.t)?on.delete(b.dataset.t):on.add(b.dataset.t);drawTopics()})}
+  drawTopics();
+  let list,idx,wrong,right,cur;
+  function start(){list=shuffle(Q.filter(x=>on.has(x.t)));if(!list.length)return;idx=0;wrong=[];right=0;$("res").style.display="none";$("box").style.display="block";show()}
+  function show(){const x=list[idx],opts=shuffle(x.o.map((t,i)=>({t,ok:i===x.a})));cur={x,opts};
+    $("no").textContent=idx+1;$("prog").textContent=`第 ${idx+1} / ${list.length} 题 · ${x.t}`;$("q").textContent=x.q;$("fb").innerHTML="";$("next").style.display="none";
+    $("opts").innerHTML=opts.map((o,i)=>`<button class="btn" type="button" data-i="${i}" style="display:block;width:100%;text-align:left;margin:6px 0">${esc(o.t)}</button>`).join("");
+    document.querySelectorAll("#opts button").forEach(b=>b.onclick=()=>pick(+b.dataset.i))}
+  function pick(i){const ok=cur.opts[i].ok;if(ok)right++;else wrong.push({q:cur.x,pick:cur.opts[i].t});
+    document.querySelectorAll("#opts button").forEach((b,k)=>{b.disabled=true;if(cur.opts[k].ok)b.style.borderColor="#22c55e";else if(k===i)b.style.borderColor="#ef4444"});
+    $("fb").innerHTML=(ok?"<span class='ok'>对了</span>":"<span class='bad'>不对</span>")+"　"+esc(cur.x.e);$("next").style.display="inline-block";$("next").textContent=idx===list.length-1?"看结果":"下一题 →"}
+  $("next").onclick=()=>{if(idx>=list.length-1){finish()}else{idx++;show()}};
+  function finish(){$("box").style.display="none";$("res").style.display="block";$("score").innerHTML=`<div class="cmp"><div>答对<b>${right} / ${list.length}</b></div><div class="on">正确率<b>${Math.round(right/list.length*100)}%</b></div></div>`;
+    $("wrong").innerHTML=wrong.length?`<h3 style="font-size:15px">错题回顾</h3>`+wrong.map(w=>`<p><b>${esc(w.q.t)}</b>　${esc(w.q.q)}<br><span class="bad">你选：${esc(w.pick)}</span><br><span class="ok">正确：${esc(w.q.o[w.q.a])}</span><br><span class="note">${esc(w.q.e)}</span></p>`).join(""):"<p class='ok'>全对。</p>"}
+  $("start").onclick=start;$("again").onclick=()=>{$("res").style.display="none"};
+})();
+</script></body></html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>为什么要发明注意力 · 互动演示</title><link rel="stylesheet" href="../../_shared/ui.css"></head>
+<body><main>
+<h1>为什么要发明注意力 · 互动演示</h1>
+<p class="sub">RNN 的传话游戏 vs 注意力的直接提问。讲解：<a href="../README.md">README</a>。</p>
+
+<section>
+  <h2><span class="step">1</span>信息要走几步？</h2>
+  <div>选一句话，选“信息来源词”和“接收词”。上排是 RNN（一格一格传），下排是注意力（直达）。</div>
+  <div class="chips" id="tk"></div>
+  <div style="margin:6px 0">来源词 j：<b id="jv"></b><input type="range" id="j" min="0" max="9" value="0">　接收词 i：<b id="iv"></b><input type="range" id="i" min="0" max="9" value="9"></div>
+  <div id="p1"></div>
+  <div class="cmp"><div>RNN 经过的步数<b id="s1">-</b></div><div class="on">注意力经过的步数<b id="s2">1</b></div></div>
+</section>
+
+<section>
+  <h2><span class="step">2</span>梯度：第 0 个词对第 T 步还有多大影响？</h2>
+  <div>标量 RNN：h_t = tanh(w·h_(t−1) + x_t)。纵轴是 |∂h_T/∂x_0|（对数刻度），拖动 w：</div>
+  <div style="margin:6px 0">w = <b id="wv"></b><input type="range" id="w" min="0.3" max="1.6" step="0.05" value="0.8"></div>
+  <div id="p2"></div>
+  <p class="note">固定的随机输入序列，只说明趋势：|w| 较小时影响指数级衰减。w 较大时，tanh 饱和（1−h² 很小）会抵消一部分，不一定爆炸。真实 RNN 是向量形式，行为更复杂。</p>
+</section>
+
+<section>
+  <h2><span class="step">3</span>计算量：n 和 d 谁大？</h2>
+  <div>自注意力 n²·d，循环 n·d²。</div>
+  <div style="margin:6px 0">d = <b id="dv"></b><input type="range" id="d" min="64" max="4096" step="64" value="512">　n = <b id="nv"></b><input type="range" id="n" min="1" max="5" step="0.05" value="2"></div>
+  <div class="cmp"><div>自注意力 n²·d<b id="a1">-</b></div><div class="on">循环 n·d²<b id="a2">-</b></div></div>
+  <div id="p3"></div>
+  <p class="note">只比较公式里的主项，忽略常数和实现细节。n 超过 d 以后，注意力那一项开始更大。</p>
+</section>
+</main>
+<script src="../../_shared/engine.js"></script><script src="../../_shared/ui.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i);
+  const toks=Attn.tokenize("小猫没有过马路，因为它太累了").map(t=>t.text);
+  const N=toks.length;$("j").max=$("i").max=N-1;$("i").value=N-1;
+  function p1(){
+    const j=+$("j").value,i=+$("i").value;$("jv").textContent=toks[j];$("iv").textContent=toks[i];
+    $("tk").innerHTML=toks.map((t,k)=>`<span class="chip" aria-pressed="${k===j||k===i}">${t}</span>`).join("");
+    const W=640,x=(k)=>40+k*(W-80)/(N-1);let s=`<svg class="viz" viewBox="0 0 ${W} 190" width="100%" style="max-width:${W}px">`;
+    s+=`<text x="4" y="18" class="vs">RNN</text><text x="4" y="118" class="vs">注意力</text>`;
+    const lo=Math.min(j,i),hi=Math.max(j,i);
+    for(let k=0;k<N;k++){ s+=`<circle cx="${x(k)}" cy="50" r="12" fill="${k===j?'#e5a50a':k===i?'#3b82f6':'#1f1f1f'}" stroke="#2e2e2e"/><text x="${x(k)}" y="54" text-anchor="middle" class="vs" style="fill:#ededed">${toks[k]}</text>`;
+      s+=`<circle cx="${x(k)}" cy="150" r="12" fill="${k===j?'#e5a50a':k===i?'#3b82f6':'#1f1f1f'}" stroke="#2e2e2e"/><text x="${x(k)}" y="154" text-anchor="middle" class="vs" style="fill:#ededed">${toks[k]}</text>`;
+      if(k<N-1)s+=`<line x1="${x(k)+12}" y1="50" x2="${x(k+1)-12}" y2="50" stroke="${(k>=lo&&k<hi)?'#3b82f6':'#2e2e2e'}" stroke-width="${(k>=lo&&k<hi)?2.5:1}"/>`}
+    s+=`<path d="M${x(j)} 138 Q${(x(j)+x(i))/2} ${i===j?138:90} ${x(i)} 138" fill="none" stroke="#3b82f6" stroke-width="2.5"/></svg>`;
+    $("p1").innerHTML=s;$("s1").textContent=Math.abs(i-j);$("s2").textContent=1;
+  }
+  ["j","i"].forEach(k=>$(k).oninput=p1);p1();
+
+  function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  const xs=(()=>{const r=rng(3);return Array.from({length:60},()=>Math.sqrt(-2*Math.log(r()+1e-12))*Math.cos(2*Math.PI*r()))})();
+  function p2(){
+    const w=+$("w").value;$("wv").textContent=w.toFixed(2);
+    let h=0,J=1,out=[];xs.forEach((x,t)=>{h=Math.tanh(w*h+x);const d=1-h*h;J=t===0?d:J*w*d;out.push(Math.abs(J))});
+    const lg=out.map(v=>Math.log10(Math.max(v,1e-30))),lo=-30,hi=2,W=600,H=150;
+    const pts=lg.map((y,i)=>`${(i/59*W).toFixed(1)},${(H-(Math.max(y,lo)-lo)/(hi-lo)*H).toFixed(1)}`).join(" ");
+    let g="";for(let e=-30;e<=0;e+=10)g+=`<line x1="0" y1="${H-(e-lo)/(hi-lo)*H}" x2="${W}" y2="${H-(e-lo)/(hi-lo)*H}" stroke="#1f1f1f"/><text x="${W+4}" y="${H-(e-lo)/(hi-lo)*H+4}" class="vs">1e${e}</text>`;
+    $("p2").innerHTML=`<svg class="viz" viewBox="0 0 ${W+50} ${H+22}" width="100%" style="max-width:${W+50}px">${g}<polyline points="${pts}" fill="none" stroke="#3b82f6" stroke-width="2"/><text x="0" y="${H+16}" class="vs">T=1</text><text x="${W}" y="${H+16}" text-anchor="end" class="vs">T=60</text></svg><div class="mono">T=10：${out[9].toExponential(1)}　T=30：${out[29].toExponential(1)}　T=60：${out[59].toExponential(1)}</div>`;
+  }
+  $("w").oninput=p2;p2();
+
+  const fm=(x)=>x>=1e9?(x/1e9).toFixed(1)+" 十亿":x>=1e6?(x/1e6).toFixed(1)+" 百万":x>=1e3?(x/1e3).toFixed(1)+" 千":Math.round(x)+"";
+  function p3(){
+    const d=+$("d").value,n=Math.round(Math.pow(10,+$("n").value));$("dv").textContent=d;$("nv").textContent=n.toLocaleString("zh-CN");
+    const a=n*n*d,b=n*d*d;$("a1").textContent=fm(a);$("a2").textContent=fm(b);
+    $("p3").innerHTML=`<div class="mono">n ${n>d?">":n<d?"<":"="} d　→　${n>d?"注意力那一项更大（n² d > n d²）":n<d?"循环那一项更大":"两者相同"}　（比值 n/d = ${(n/d).toFixed(2)}）</div>`;
+  }
+  ["d","n"].forEach(k=>$(k).oninput=p3);p3();
+})();
+</script></body></html>

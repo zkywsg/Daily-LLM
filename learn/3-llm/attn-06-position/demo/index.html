@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>位置编码 · 互动演示</title><link rel="stylesheet" href="../../_shared/ui.css"></head>
+<body><main>
+<h1>位置编码 · 互动演示</h1>
+<p class="sub">RoPE 的旋转、距离曲线和 ALiBi 偏置。讲解：<a href="../README.md">README</a>。</p>
+
+<section>
+  <h2><span class="step">1</span>RoPE：旋转 q 和 k</h2>
+  <div>二维一对分量。蓝点 q 旋转 m×θ，橙点 k 旋转 n×θ，点积只看两个角度的差。</div>
+  <div class="twocol" style="margin:8px 0">
+    <div>q 的位置 m：<b id="mv"></b><input type="range" id="m" min="0" max="20" value="5"></div>
+    <div>k 的位置 n：<b id="nv"></b><input type="range" id="n" min="0" max="20" value="2"></div>
+    <div>θ（弧度）：<b id="tv"></b><input type="range" id="t" min="0.05" max="1.2" step="0.05" value="0.5"></div>
+  </div>
+  <div id="r1"></div>
+  <div class="mono" id="r1o"></div>
+  <div id="r1t"></div>
+</section>
+
+<section>
+  <h2><span class="step">2</span>多频率：每一对有自己的转速</h2>
+  <div>d = <b>8</b>，4 对分量，θᵢ = 10000^(−2i/d)。位置越大，各对转过的角度（度，取模 360）：</div>
+  <div style="margin:8px 0">位置 p：<b id="pv"></b><input type="range" id="p" min="0" max="200" value="10"></div>
+  <div id="r2"></div>
+</section>
+
+<section>
+  <h2><span class="step">3</span>分数随距离怎么变（q = k = 全 1 的特殊设定）</h2>
+  <div>score(Δ) = Σᵢ cos(Δ·θᵢ)，用 d = 64 的 32 个频率。横轴是 q 与 k 的距离 Δ。</div>
+  <div id="r3"></div>
+  <p class="note">这是一个特殊设定下的演示，说明“RoPE 的内积是距离的函数，整体有衰减趋势”；真实的 q、k 不是全 1。</p>
+</section>
+
+<section>
+  <h2><span class="step">4</span>ALiBi：分数加一个距离惩罚</h2>
+  <div>
+    头数 h：<b id="hv"></b><input type="range" id="h" min="1" max="16" value="8">　看第 <b id="kv"></b> 个头（斜率 <b id="sv"></b>）<input type="range" id="k" min="1" max="8" value="1">
+  </div>
+  <div class="twocol" style="margin-top:8px">
+    <div><b>偏置矩阵 −m·(i−j)</b><div id="r4a"></div></div>
+    <div><b>加到玩具模型的分数上，再 softmax</b><div id="r4b"></div></div>
+  </div>
+  <div class="mono" id="r4t"></div><p class="note">斜率公式 2^(−8k/h) 对头数为 2 的幂是论文给出的；其他头数只是套用同一个闭式。</p>
+</section>
+</main>
+<script src="../../_shared/engine.js"></script><script src="../../_shared/ui.js"></script><script src="../../_shared/viz.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i);
+  const rot=(v,a)=>[v[0]*Math.cos(a)-v[1]*Math.sin(a),v[0]*Math.sin(a)+v[1]*Math.cos(a)];
+  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1];
+  const q0=[1.6,0.5],k0=[0.9,1.4];
+  function r1(){
+    const m=+$("m").value,n=+$("n").value,th=+$("t").value; $("mv").textContent=m;$("nv").textContent=n;$("tv").textContent=th.toFixed(2);
+    const S=300,C=S/2,U=70,P=(v)=>[C+v[0]*U/1.6*0.9,C-v[1]*U/1.6*0.9];
+    const q=rot(q0,m*th),k=rot(k0,n*th),[qx,qy]=P(q),[kx,ky]=P(k),[q0x,q0y]=P(q0),[k0x,k0y]=P(k0);
+    $("r1").innerHTML=`<svg class="viz drag" viewBox="0 0 ${S} ${S}" width="${S}" height="${S}"><circle cx="${C}" cy="${C}" r="${Math.hypot(...q)*U/1.6*0.9}" fill="none" stroke="#1f1f1f"/><circle cx="${C}" cy="${C}" r="${Math.hypot(...k)*U/1.6*0.9}" fill="none" stroke="#1f1f1f"/>`+
+      `<line x1="${C}" y1="${C}" x2="${q0x}" y2="${q0y}" stroke="#3b82f6" stroke-opacity=".3" stroke-dasharray="3 3"/><line x1="${C}" y1="${C}" x2="${k0x}" y2="${k0y}" stroke="#e5a50a" stroke-opacity=".3" stroke-dasharray="3 3"/>`+
+      `<line x1="${C}" y1="${C}" x2="${qx}" y2="${qy}" stroke="#3b82f6" stroke-width="2"/><line x1="${C}" y1="${C}" x2="${kx}" y2="${ky}" stroke="#e5a50a" stroke-width="2"/><circle cx="${qx}" cy="${qy}" r="6" fill="#3b82f6"/><circle cx="${kx}" cy="${ky}" r="6" fill="#e5a50a"/><text x="${qx+8}" y="${qy-6}" class="vs">q(m=${m})</text><text x="${kx+8}" y="${ky-6}" class="vs">k(n=${n})</text></svg>`;
+    $("r1o").textContent=`q 旋转 m×θ = ${(m*th*180/Math.PI).toFixed(1)}°，k 旋转 n×θ = ${(n*th*180/Math.PI).toFixed(1)}°\n点积 = ${dot(q,k).toFixed(4)}\n距离 m−n = ${m-n}`;
+    const rows=[];for(let s=0;s<5;s++){const mm=m-n+ s*7 + 0, nn=s*7; if(mm<0)continue; rows.push(`<tr><td>(${mm}, ${nn})</td><td>${mm-nn}</td><td>${dot(rot(q0,mm*th),rot(k0,nn*th)).toFixed(4)}</td></tr>`)}
+    $("r1t").innerHTML=`<p class="note">换几组 (m, n)，只要 m−n 相同，点积就相同：</p><table class="mat"><tr><th>(m, n)</th><th>m−n</th><th>点积</th></tr>${rows.join("")}</table>`;
+  }
+  ["m","n","t"].forEach(i=>$(i).oninput=r1); r1();
+
+  function r2(){
+    const p=+$("p").value;$("pv").textContent=p;const d=8;
+    const th=Array.from({length:d/2},(_,i)=>Math.pow(10000,-2*i/d));
+    $("r2").innerHTML=`<table class="mat"><tr><th>第 i 对</th><th>θᵢ</th><th>转过的角度（度）</th><th>表盘</th></tr>`+th.map((t,i)=>{const deg=((p*t*180/Math.PI)%360+360)%360,a=deg*Math.PI/180;
+      return `<tr><th>${i}</th><td>${t.toExponential(2)}</td><td>${deg.toFixed(1)}</td><td><svg class="viz" viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="16" fill="none" stroke="#2e2e2e"/><line x1="20" y1="20" x2="${20+16*Math.cos(a)}" y2="${20-16*Math.sin(a)}" stroke="#3b82f6" stroke-width="2"/></svg></td></tr>`}).join("")+`</table><p class="note">第 0 对转得最快（分辨近距离），第 3 对几乎不动（用来分辨很远的距离）。</p>`;
+  }
+  $("p").oninput=r2;r2();
+
+  (function r3(){
+    const d=64,th=Array.from({length:d/2},(_,i)=>Math.pow(10000,-2*i/d)),N=256,v=[];
+    for(let D=0;D<N;D++)v.push(th.reduce((s,t)=>s+Math.cos(D*t),0));
+    const lo=Math.min(...v),mx=Math.max(...v),W=560,H=140;
+    const pts=v.map((y,i)=>`${(i/(N-1)*W).toFixed(1)},${(H-6-(y-lo)/(mx-lo)*(H-12)).toFixed(1)}`).join(" ");
+    $("r3").innerHTML=`<svg class="viz" viewBox="0 0 ${W+10} ${H+24}" width="100%" style="max-width:${W+10}px"><line x1="0" y1="${H-6-(0-lo)/(mx-lo)*(H-12)}" x2="${W}" y2="${H-6-(0-lo)/(mx-lo)*(H-12)}" stroke="#2e2e2e" stroke-dasharray="3 3"/><polyline points="${pts}" fill="none" stroke="#3b82f6" stroke-width="1.5"/><text x="0" y="${H+16}" class="vs">Δ=0</text><text x="${W}" y="${H+16}" text-anchor="end" class="vs">Δ=${N-1}</text><text x="4" y="14" class="vs">最大 ${mx.toFixed(1)}</text></svg>`;
+  })();
+
+  const toks=Attn.tokenize("小猫没有过马路，因为它太累了").slice(0,10);
+  function r4(){
+    const h=+$("h").value; $("hv").textContent=h; const kmax=h; $("k").max=kmax; if(+$("k").value>kmax)$("k").value=kmax;
+    const k=+$("k").value; $("kv").textContent=k; const m=Math.pow(2,-8*k/h); $("sv").textContent=m<0.01?m.toExponential(2):m.toFixed(4);
+    const n=toks.length,B=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>j<=i?-m*(i-j):0));
+    const lab=toks.map(t=>t.text.slice(0,1));
+    const r=VIZ.heat(B,{cell:28,rows:toks.map(t=>t.text),cols:lab,skip:(i,j)=>j>i,fmt:v=>v.toFixed(1),max:Math.max(1,...B.flat().map(Math.abs))});
+    $("r4a").innerHTML=`<svg class="viz" viewBox="0 0 ${r.w+10} ${r.h+10}" width="100%" style="max-width:${r.w+10}px">${r.svg}</svg>`;
+    const R=Attn.head(Attn.embed(toks),Attn.HEADS[0],{mask:true});
+    const A=R.S.map((row,i)=>{const s=row.map((v,j)=>j<=i?v-m*(i-j):-Infinity),mx=Math.max(...s),e=s.map(v=>Math.exp(v-mx)),z=e.reduce((a,b)=>a+b);return e.map(v=>v/z)});
+    $("r4b").innerHTML=UI.dotGrid(toks,A,{mask:true,cell:30});
+    const last=A[n-1];$("r4t").textContent=`最后一个词“${toks[n-1].text}”：最近 3 个词的权重合计 ${(last.slice(-3).reduce((a,b)=>a+b)*100).toFixed(0)}%（斜率越大越集中在近处）`;
+  }
+  ["h","k"].forEach(i=>$(i).oninput=r4);r4();
+})();
+</script></body></html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>真实模型的注意力 · 查看器</title><link rel="stylesheet" href="../../_shared/ui.css"></head>
+<body><main>
+<h1>真实模型的注意力 · 查看器</h1>
+<p class="sub">把 <code>extract_attention.py</code> 的输出粘贴进来。讲解：<a href="../README.md">README</a>。</p>
+<section>
+  <h2><span class="step">0</span>载入数据</h2>
+  <p class="note warn" id="src">当前显示的是玩具模型的示例数据（来自 _shared/engine.js），不是 GPT-2。粘贴你自己的 JSON 后，这里会变成真实结果。</p>
+  <textarea id="ta" rows="4" style="width:100%;background:#000;color:#ededed;border:1px solid #1f1f1f;border-radius:6px;padding:8px;font:12px var(--mono)" placeholder='{"model":"gpt2","tokens":[...],"layers":[[ [[...]] ]]}'></textarea>
+  <div style="margin:8px 0"><button class="btn" id="go" type="button">载入粘贴的 JSON</button> <input type="file" id="f" accept=".json"> <button class="btn" id="demo" type="button">用玩具示例</button></div>
+  <div class="mono" id="msg"></div>
+</section>
+<section>
+  <h2><span class="step">1</span>选层和头</h2>
+  <div>层：<b id="lv"></b><input type="range" id="l" min="0" max="0" value="0">　头：<b id="hv"></b><input type="range" id="h" min="0" max="0" value="0"></div>
+  <div class="chips"><button class="btn" id="avg" type="button">平均所有头</button></div>
+  <div id="g"></div>
+  <div id="stat"></div>
+</section>
+<section>
+  <h2><span class="step">2</span>一眼找规律</h2>
+  <div>本层每个头的三个指标（越高越“像”）：</div>
+  <div id="tb"></div>
+  <p class="note">“上一个词”= 对角线下一格的平均权重；“第一个 token”= 平均分给第 0 列的权重；“最大权重”= 每行最大值的平均。只是启发式指标，不能代替直接看图。</p>
+</section>
+</main>
+<script src="../../_shared/engine.js"></script><script src="../../_shared/ui.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i);
+  let D=null,avg=false;
+  function toy(){const t=Attn.tokenize("小猫没有过马路，因为它太累了"),M=Attn.multihead(Attn.embed(t));
+    return {model:"toy",tokens:t.map(x=>x.text),layers:[M.heads.map(h=>h.A)]};}
+  function load(d,src){
+    if(!d||!Array.isArray(d.tokens)||!Array.isArray(d.layers)||!d.layers.length)throw new Error("JSON 需要 tokens 和 layers 字段");
+    const n=d.tokens.length;for(const L of d.layers)for(const H of L){if(H.length!==n||H[0].length!==n)throw new Error("注意力矩阵形状应为 n×n，n="+n)}
+    D=d;$("l").max=d.layers.length-1;$("h").max=d.layers[0].length-1;$("l").value=0;$("h").value=0;
+    $("src").textContent=src==="toy"?"当前显示的是玩具模型的示例数据（_shared/engine.js 的两个手设头），不是 GPT-2。":"已载入："+(d.model||"未知模型")+"，"+d.layers.length+" 层 × "+d.layers[0].length+" 头，"+n+" 个 token。";
+    $("msg").textContent="";render();}
+  function render(){
+    const L=+$("l").value,H=+$("h").value;$("lv").textContent=L;$("hv").textContent=avg?"平均":H;
+    const A=avg?D.layers[L][0].map((_,i)=>D.layers[L][0][i].map((_,j)=>D.layers[L].reduce((s,h)=>s+h[i][j],0)/D.layers[L].length)):D.layers[L][H];
+    const toks=D.tokens.map(t=>({text:String(t).trim()||"␣"}));
+    $("g").innerHTML=UI.dotGrid(toks,A,{cell:Math.max(20,Math.min(40,Math.floor(600/toks.length)))});
+    const rows=D.layers[L].map((A,h)=>{const n=A.length;let prev=0,first=0,mx=0;for(let i=0;i<n;i++){if(i>0)prev+=A[i][i-1];first+=A[i][0];mx+=Math.max(...A[i])}
+      return `<tr><th>${h}</th><td>${(prev/Math.max(1,n-1)).toFixed(2)}</td><td>${(first/n).toFixed(2)}</td><td>${(mx/n).toFixed(2)}</td></tr>`}).join("");
+    $("tb").innerHTML=`<table class="mat"><tr><th>头</th><th>上一个词</th><th>第一个 token</th><th>最大权重</th></tr>${rows}</table>`;
+  }
+  $("l").oninput=()=>{avg=false;render()};$("h").oninput=()=>{avg=false;render()};$("avg").onclick=()=>{avg=true;render()};
+  $("go").onclick=()=>{try{load(JSON.parse($("ta").value))}catch(e){$("msg").textContent="载入失败："+e.message}};
+  $("f").onchange=(e)=>{const r=new FileReader();r.onload=()=>{try{load(JSON.parse(r.result))}catch(x){$("msg").textContent="载入失败："+x.message}};if(e.target.files[0])r.readAsText(e.target.files[0])};
+  $("demo").onclick=()=>load(toy(),"toy");
+  load(toy(),"toy");
+})();
+</script></body></html>

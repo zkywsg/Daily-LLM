@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>手算注意力 · 互动手算器</title><link rel="stylesheet" href="../../_shared/ui.css">
+<style>
+.mx{display:inline-block;margin:6px 16px 6px 0;vertical-align:top}.mx b{display:block;font:12px var(--mono);color:var(--mute);font-weight:400;margin-bottom:2px}
+.mx table{border-collapse:collapse}.mx td,.mx th{padding:2px}.mx th{font:11.5px var(--mono);color:var(--mute);font-weight:400;padding:2px 6px}
+.cell{width:66px;padding:5px 4px;text-align:center;border:1px solid var(--line2);border-radius:4px;background:#000;color:var(--ink);font:13px var(--mono)}
+button.cell{cursor:pointer}button.cell:hover{border-color:var(--mute)}.cell.sel{border-color:var(--accent);background:var(--accent-bg);color:#fff;font-weight:600}
+.cell.good{border-color:#22c55e;background:rgba(34,197,94,.14)}.cell.badc{border-color:#ef4444;background:rgba(239,68,68,.14)}
+.nav{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.nav .chip{padding:2px 10px;font:13px var(--mono)}
+.how{font:13.5px/1.8 var(--mono);background:#000;border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:4px;padding:10px 14px;margin-top:10px;white-space:pre-wrap}
+</style></head>
+<body><main>
+<h1>手算注意力 · 互动手算器</h1>
+<p class="sub">3 个词、2 维向量。每一步的每个数字都能点开，看它是怎么算出来的；也可以切到“练习”自己算，再检查。讲解：<a href="../README.md">README</a>。</p>
+
+<section>
+  <h2><span class="step">0</span>输入：可以改任何数字</h2>
+  <div id="inputs"></div>
+  <div class="note">三个词当作 猫 / 追 / 鱼，x 是它们的向量（行）。W 是三个投影矩阵（2×2）。改数字后，下面所有步骤自动重算。d_k = 2，所以缩放用 √2。</div>
+  <button class="btn" id="reset" type="button">恢复默认数字</button>
+</section>
+
+<section>
+  <h2><span class="step" id="stepno">1</span><span id="steptitle"></span></h2>
+  <div class="nav" id="nav"></div>
+  <div id="desc"></div>
+  <div style="margin:10px 0"><label><input type="checkbox" id="practice"> 练习模式：自己填，再检查</label>
+    <button class="btn" id="check" type="button" style="display:none">检查</button> <button class="btn" id="show" type="button" style="display:none">显示答案</button></div>
+  <div id="mats"></div>
+  <div id="mmv"></div><div id="chn"></div>
+  <div class="how" id="how">点结果里的任意一格，看它的算式。</div>
+  <div class="note" id="fb"></div>
+  <div style="margin-top:10px"><button class="btn" id="prev" type="button">← 上一步</button> <button class="btn" id="next" type="button">下一步 →</button></div>
+</section>
+</main>
+<script src="../../_shared/viz.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i);
+  const DEF={X:[[1,0],[0,1],[1,1]],WQ:[[1,0],[1,1]],WK:[[1,1],[0,1]],WV:[[1,0],[0,2]]}, TOK=["猫","追","鱼"];
+  const S0=JSON.parse(JSON.stringify(DEF)); let st=JSON.parse(JSON.stringify(DEF)), step=0, practice=false, sel=[0,0];
+  const mm=(A,B)=>A.map(r=>B[0].map((_,j)=>r.reduce((s,v,k)=>s+v*B[k][j],0)));
+  const T=(A)=>A[0].map((_,j)=>A.map(r=>r[j]));
+  const f=(v)=>(Math.abs(v-Math.round(v))<1e-9?String(Math.round(v)):v.toFixed(3));
+  const f2=(v)=>Math.abs(v-Math.round(v))<1e-9?String(Math.round(v)):v.toFixed(2);
+
+  function compute(){
+    const Q=mm(st.X,st.WQ),K=mm(st.X,st.WK),V=mm(st.X,st.WV),S=mm(Q,T(K)),dv=Math.SQRT2;
+    const Sp=S.map(r=>r.map(v=>v/dv)),E=Sp.map(r=>r.map(Math.exp)),rs=E.map(r=>r.reduce((a,b)=>a+b,0)),A=E.map((r,i)=>r.map(v=>v/rs[i])),O=mm(A,V);
+    return {Q,K,V,S,Sp,E,rs,A,O};
+  }
+  // 每一步：标题、说明、结果矩阵名、行列标签、每格算式
+  const STEPS=[
+   {t:"Q = X · W_Q",d:"每个词的 x 乘 W_Q，得到它的“查询” q（Q 的每一行是一个词的 q）。",key:"Q",rows:TOK,cols:["a","b"],
+    how:(R,i,j)=>`Q[${TOK[i]}][${"ab"[j]}] = x_${TOK[i]} 与 W_Q 第 ${j+1} 列 的点积\n= ${st.X[i][0]}×${st.WQ[0][j]} + ${st.X[i][1]}×${st.WQ[1][j]} = ${f(R.Q[i][j])}`},
+   {t:"K = X · W_K",d:"同样方法，X 乘 W_K，得到每个词的“键” k。",key:"K",rows:TOK,cols:["a","b"],
+    how:(R,i,j)=>`K[${TOK[i]}][${"ab"[j]}] = ${st.X[i][0]}×${st.WK[0][j]} + ${st.X[i][1]}×${st.WK[1][j]} = ${f(R.K[i][j])}`},
+   {t:"V = X · W_V",d:"X 乘 W_V，得到每个词的“值” v。",key:"V",rows:TOK,cols:["a","b"],
+    how:(R,i,j)=>`V[${TOK[i]}][${"ab"[j]}] = ${st.X[i][0]}×${st.WV[0][j]} + ${st.X[i][1]}×${st.WV[1][j]} = ${f(R.V[i][j])}`},
+   {t:"S = Q · Kᵀ（打分）",d:"第 i 行第 j 列 = 第 i 个词的 q 与第 j 个词的 k 的点积。得到 3×3 的分数表。",key:"S",rows:TOK,cols:TOK,
+    how:(R,i,j)=>`S[${TOK[i]}][${TOK[j]}] = q_${TOK[i]} · k_${TOK[j]}\n= ${f(R.Q[i][0])}×${f(R.K[j][0])} + ${f(R.Q[i][1])}×${f(R.K[j][1])} = ${f(R.S[i][j])}`},
+   {t:"S' = S / √d_k（缩放）",d:"每个分数除以 √2 ≈ 1.414。作用见《为什么除以 √d》。",key:"Sp",rows:TOK,cols:TOK,
+    how:(R,i,j)=>`S'[${TOK[i]}][${TOK[j]}] = ${f(R.S[i][j])} / 1.414 = ${f(R.Sp[i][j])}`},
+   {t:"E = exp(S')（取指数）",d:"每个分数取 e 的幂，保证全为正数。每行右边另算出这一行的和。",key:"E",rows:TOK,cols:TOK,extra:"rs",extraName:"行和",
+    how:(R,i,j)=>`E[${TOK[i]}][${TOK[j]}] = e^${f(R.Sp[i][j])} = ${f(R.E[i][j])}\n（第 ${i+1} 行的和 = ${R.E[i].map(f).join(" + ")} = ${f(R.rs[i])}）`},
+   {t:"A = E / 行和（softmax）",d:"每一行除以这一行的和，得到和为 1 的注意力权重。注意是按“行”归一化。",key:"A",rows:TOK,cols:TOK,
+    how:(R,i,j)=>`A[${TOK[i]}][${TOK[j]}] = ${f(R.E[i][j])} / ${f(R.rs[i])} = ${f(R.A[i][j])}`},
+   {t:"O = A · V（取信息）",d:"用权重对所有词的 v 加权求和。第 i 行 = 第 i 个词的新表示。",key:"O",rows:TOK,cols:["a","b"],
+    how:(R,i,j)=>`O[${TOK[i]}][${"ab"[j]}] = ${[0,1,2].map(k=>`${f(R.A[i][k])}×${f(R.V[k][j])}`).join(" + ")} = ${f(R.O[i][j])}`},
+  ];
+
+  function renderInputs(){
+    const mk=(name,label,rows,cols,M)=>`<div class="mx"><b>${label}</b><table>${(rows?`<tr><th></th>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>`:"")}${M.map((r,i)=>`<tr>${rows?`<th>${rows[i]}</th>`:""}${r.map((v,j)=>`<td><input class="cell" type="number" step="1" value="${v}" data-m="${name}" data-i="${i}" data-j="${j}"></td>`).join("")}</tr>`).join("")}</table></div>`;
+    $("inputs").innerHTML=mk("X","X（3×2）",TOK,["a","b"],st.X)+mk("WQ","W_Q（2×2）",["a","b"],["a","b"],st.WQ)+mk("WK","W_K（2×2）",["a","b"],["a","b"],st.WK)+mk("WV","W_V（2×2）",["a","b"],["a","b"],st.WV);
+    document.querySelectorAll("#inputs input").forEach(el=>el.oninput=()=>{const v=parseFloat(el.value);st[el.dataset.m][+el.dataset.i][+el.dataset.j]=isNaN(v)?0:v;renderStep();});
+  }
+  function renderStep(){
+    const R=compute(),s=STEPS[step],M=R[s.key];
+    $("stepno").textContent=step+1;$("steptitle").textContent=s.t;$("desc").textContent=s.d;
+    $("nav").innerHTML=STEPS.map((x,i)=>`<button class="chip" type="button" aria-pressed="${i===step}" data-s="${i}">${i+1}</button>`).join("");
+    document.querySelectorAll("#nav .chip").forEach(b=>b.onclick=()=>{step=+b.dataset.s;sel=[0,0];renderStep();});
+    const head=`<tr><th></th>${s.cols.map(c=>`<th>${c}</th>`).join("")}${s.extra?`<th>${s.extraName}</th>`:""}</tr>`;
+    const body=M.map((r,i)=>`<tr><th>${s.rows[i]}</th>${r.map((v,j)=>practice?`<td><input class="cell ans" type="text" data-i="${i}" data-j="${j}" placeholder="?"></td>`:`<td><button class="cell ${sel[0]===i&&sel[1]===j?"sel":""}" type="button" data-i="${i}" data-j="${j}">${f2(v)}</button></td>`).join("")}${s.extra?`<td><span class="cell" style="display:inline-block">${f2(R[s.extra][i])}</span></td>`:""}</tr>`).join("");
+    $("mats").innerHTML=`<div class="mx"><b>${s.key==="Sp"?"S'":s.key}（${M.length}×${M[0].length}）</b><table>${head}${body}</table></div>`;
+    $("check").style.display=$("show").style.display=practice?"inline-block":"none";$("fb").textContent="";
+    if(!practice){document.querySelectorAll("#mats button.cell").forEach(b=>b.onclick=()=>{sel=[+b.dataset.i,+b.dataset.j];renderStep();});$("how").textContent=s.how(R,sel[0],sel[1]);}
+    else $("how").textContent="自己算每一格（可用计算器，保留 2 位小数即可）。点“检查”，错的格子会显示算式。";
+    const mmArgs=[[st.X,st.WQ,"X","W_Q","Q"],[st.X,st.WK,"X","W_K","K"],[st.X,st.WV,"X","W_V","V"],[R.Q,T(R.K),"Q","Kᵀ","S"],null,null,null,[R.A,R.V,"A","V","O"]][step];
+    $("mmv").innerHTML=mmArgs&&!practice?VIZ.matmul(mmArgs[0],mmArgs[1],sel[0],sel[1],[mmArgs[2],mmArgs[3],mmArgs[4]],TOK,step===3?TOK:["a","b"]):"";
+    $("chn").innerHTML=VIZ.chain(R,st,step,TOK);
+    $("prev").disabled=step===0;$("next").disabled=step===STEPS.length-1;
+  }
+  $("practice").onchange=()=>{practice=$("practice").checked;renderStep();};
+  $("check").onclick=()=>{const R=compute(),s=STEPS[step],M=R[s.key];let ok=0,tot=0,hint="";
+    document.querySelectorAll(".ans").forEach(el=>{const i=+el.dataset.i,j=+el.dataset.j,v=parseFloat(el.value);tot++;const good=!isNaN(v)&&Math.abs(v-M[i][j])<0.02;el.classList.toggle("good",good);el.classList.toggle("badc",!good&&el.value!=="");if(good)ok++;else if(!hint&&el.value!=="")hint=s.how(R,i,j);});
+    $("fb").innerHTML=`正确 ${ok} / ${tot}。`+(hint?"<br>第一个错的格子的算式：<br><code>"+hint.replace(/\n/g,"<br>")+"</code>":"");};
+  $("show").onclick=()=>{const R=compute(),M=R[STEPS[step].key];document.querySelectorAll(".ans").forEach(el=>{el.value=f2(M[+el.dataset.i][+el.dataset.j]);});};
+  $("prev").onclick=()=>{step--;sel=[0,0];renderStep();};$("next").onclick=()=>{step++;sel=[0,0];renderStep();};
+  $("reset").onclick=()=>{st=JSON.parse(JSON.stringify(S0));renderInputs();renderStep();};
+  renderInputs();renderStep();
+})();
+</script></body></html>

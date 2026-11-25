@@ -1,0 +1,20 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>
+:root{--bg:#000000;--ink:#ededed;--mute:#8a8a8a;--line:#242424;--panel:#0a0a0a;--accent:#3b82f6;--dim:#2a2a2a}
+*{box-sizing:border-box;margin:0}
+html,body{width:1080px;height:1920px;background:var(--bg);color:var(--ink);font-family:"PingFang SC","Noto Sans SC",system-ui,sans-serif}
+.card{width:1080px;height:1920px;padding:170px 90px 400px;display:flex;flex-direction:column}
+.main{flex:1;display:flex;flex-direction:column;justify-content:center;margin-top:-40px}
+.tag{font-size:34px;color:var(--accent);letter-spacing:3px;font-weight:700}
+h1{font-size:96px;line-height:1.2;margin-top:34px;font-weight:700}
+h2{font-size:76px;line-height:1.25;margin-top:28px;font-weight:700}
+p{font-size:50px;line-height:1.55;margin-top:34px}
+.mute{color:var(--mute)} .a{color:var(--accent)} .s{font-size:38px}
+.small{font-size:30px;color:var(--mute);margin-top:24px}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:36px 40px;margin-top:40px}
+.row{display:grid;grid-template-columns:170px 1fr 120px;gap:20px;align-items:center;margin:16px 0;font-size:44px}
+.bar{height:44px;background:var(--bg);border:2px solid var(--line);border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.row.me .bar i{background:var(--dim)}.num{text-align:right;color:var(--mute);font-size:40px;font-variant-numeric:tabular-nums}
+.big{font-size:60px;font-weight:700;line-height:1.5}
+svg.viz text{fill:#ededed;font:20px ui-monospace,Menlo,monospace}svg.viz .vs{fill:#8a8a8a;font:20px "PingFang SC",sans-serif}svg.viz .vt{font:700 26px "PingFang SC",sans-serif}svg.viz .vn{fill:#fff;font:19px ui-monospace,Menlo,monospace}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+</style></head><body><div class="card"><div class="main"><div class="tag">回顾</div><h2>两个补丁</h2><div class="panel"><div class="big"><span class="a">掩码</span>：不许看未来<br><span class="a">位置</span>：让它知道顺序</div></div><p class="mute s">没讲到的：现代大模型更常用旋转位置编码（RoPE）等做法，这里只讲最初的正弦版本。</p></div><div class="small">7 / 7 · 掩码与位置</div></div></body></html>

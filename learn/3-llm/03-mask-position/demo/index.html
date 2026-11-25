@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>掩码与位置 · 互动演示</title><link rel="stylesheet" href="../../_shared/ui.css"></head>
+<body><main>
+<h1>掩码与位置 · 互动演示</h1>
+<p class="sub">注意力的两个“补丁”：不许偷看后面的词，以及让它知道词的顺序。讲解：<a href="../README.md">README</a>。</p>
+<section>
+  <h2><span class="step">0</span>输入一句话</h2>
+  <input type="text" id="text" value="小猫没有过马路，因为它太累了" aria-label="输入句子">
+  <p class="note warn">玩具模型（人工设定的矩阵），只用来说明机制。</p>
+</section>
+<section>
+  <h2><span class="step">1</span>因果掩码：不许偷看后面</h2>
+  <div>写文字时，第 i 个词只能看第 1 到 i 个词。把未来位置的分数设为负无穷，softmax 后它们的权重就是 0。</div>
+  <div style="margin:8px 0"><label><input type="checkbox" id="mask" checked> 开启因果掩码</label></div>
+  <div id="mf"></div><div id="g1"></div>
+  <div class="mono" id="train"></div>
+  <p class="note">训练时，模型一次并行预测所有位置的下一个词。没有掩码，位置 i 的 q 能直接看到后面的词（也就是它要预测的答案），预测就成了抄答案。灰色格子是被屏蔽的位置。</p>
+</section>
+<section>
+  <h2><span class="step">2</span>位置：注意力本身不知道词序</h2>
+  <div>打乱词序，看同一对词之间的注意力权重变了多少。</div>
+  <div style="margin:8px 0"><label><input type="checkbox" id="pos"> 加上位置编码</label><button class="btn" id="shuf" type="button">打乱词序</button><button class="btn" id="reset" type="button">还原</button></div>
+  <div>当前顺序：<b id="order"></b></div>
+  <div id="g2"></div>
+  <div class="cmp"><div>同一对词的权重，最大变化<b id="diff">-</b></div><div class="on">结论<b id="verdict" style="font-size:18px">-</b></div></div>
+  <p class="note">没有位置编码时，打乱词序只是把行和列重新排了一遍，每对词的权重一模一样：注意力对词序“看不见”。加上位置编码后，权重会随位置变化。</p>
+  <div id="pw"></div>
+  <details><summary>位置编码长什么样（每行一个位置，每列一个维度）</summary><div id="pe"></div>
+    <div class="note">用的是论文里的正弦/余弦形式 PE(pos, 2j)=sin(pos/base^(2j/d))，PE(pos, 2j+1)=cos(…)。论文取 base=10000；这里为了在 6 维、短句里看得出差异，取 base=100，并乘 0.5 再加到词向量上。</div></details>
+</section>
+</main>
+<script src="../../_shared/engine.js"></script><script src="../../_shared/ui.js"></script><script src="../../_shared/viz.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i); let toks=[], perm=[];
+  function run(){ toks=Attn.tokenize($("text").value).slice(0,10); perm=toks.map((_,i)=>i); render(); }
+  function render(){
+    if(toks.length<2){ $("g1").innerHTML="<p class='note'>请至少输入两个词。</p>"; return; }
+    const mask=$("mask").checked, pos=$("pos").checked;
+    const A1=Attn.head(Attn.embed(toks),Attn.HEADS[0],{mask}).A;
+    const Rp=Attn.head(Attn.embed(toks),Attn.HEADS[0],{}), Rm=Attn.head(Attn.embed(toks),Attn.HEADS[0],{mask});
+    $("mf").innerHTML=VIZ.maskFlow(Rm,Rp,toks,mask);
+    $("g1").innerHTML=UI.dotGrid(toks,A1,{mask,cell:40,numbers:true});
+    // 训练示意
+    $("train").textContent=toks.slice(0,-1).map((t,i)=>{ const seen=toks.slice(0,i+1).map(x=>x.text).join(" "); const leak=!mask?`（还能看到：${toks.slice(i+1).map(x=>x.text).join(" ")} ← 答案已泄露）`:""; return `看到「${seen}」→ 预测「${toks[i+1].text}」${leak}`; }).join("\n");
+    // 位置实验
+    const t2=perm.map(i=>toks[i]); const X2=Attn.embed(t2,{pos}); const A2=Attn.head(X2,Attn.HEADS[0],{}).A;
+    $("order").textContent=t2.map(t=>t.text).join(" ");
+    $("g2").innerHTML=UI.dotGrid(t2,A2,{cell:36});
+    const d=Attn.shuffleDiff(toks,perm,{pos}); $("diff").textContent=d.toFixed(4);
+    const moved=perm.some((v,i)=>v!==i);
+    $("verdict").textContent=!moved?"（先点“打乱词序”）":(d<1e-9?"权重完全没变：词序不可见":"权重变了：词序被编码进来");
+    $("pw").innerHTML=VIZ.peView((i)=>Attn.posEnc(i),24,6);
+    const rows=toks.map((t,i)=>({label:"位置 "+(i+1),vals:Attn.posEnc(i)}));
+    $("pe").innerHTML=UI.table(Attn.FEATURES.map((_,i)=>"维 "+(i+1)),rows);
+  }
+  $("mask").onchange=render; $("pos").onchange=render; $("text").oninput=run;
+  $("shuf").onclick=()=>{ const p=toks.map((_,i)=>i); do{ for(let i=p.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[p[i],p[j]]=[p[j],p[i]];} }while(p.every((v,i)=>v===i)&&p.length>1); perm=p; render(); };
+  $("reset").onclick=()=>{perm=toks.map((_,i)=>i);render();};
+  run();
+})();
+</script></body></html>

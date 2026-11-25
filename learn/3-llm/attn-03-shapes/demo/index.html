@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>形状追踪器 · 互动演示</title><link rel="stylesheet" href="../../_shared/ui.css">
+<style>
+.flow{border-left:1px solid var(--line2);margin:10px 0 0 6px;padding-left:18px}
+.st{position:relative;margin:0 0 8px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:#000}
+.st::before{content:"";position:absolute;left:-23px;top:18px;width:9px;height:9px;border-radius:50%;background:#000;border:2px solid var(--dim)}
+.st.big{border-color:var(--accent);background:var(--accent-bg)}.st.big::before{border-color:var(--accent);background:var(--accent)}
+.st .op{font-size:12px;color:var(--mute)}.st .sh{font:600 16px var(--mono);letter-spacing:-.01em}.st .mem{font-size:12px;color:var(--mute)}
+.row2{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}@media(max-width:640px){.row2{grid-template-columns:1fr 1fr}}
+.row2 div{font-size:13px;color:var(--mute)}.row2 b{font:600 18px var(--mono);color:var(--ink);font-variant-numeric:tabular-nums;display:block}
+</style></head>
+<body><main>
+<h1>形状追踪器 · 互动演示</h1>
+<p class="sub">拖动参数，看注意力每一步的张量形状和内存怎么变。讲解：<a href="../README.md">README</a>。</p>
+<section>
+  <h2><span class="step">0</span>设定参数</h2>
+  <div class="row2">
+    <div>B 批大小<br><b id="Bv"></b><input type="range" id="B" min="1" max="64" value="2"></div>
+    <div>n 序列长度<br><b id="nv"></b><input type="range" id="n" min="1" max="6" step="0.05" value="2.7"></div>
+    <div>d_model<br><b id="dv"></b><input type="range" id="d" min="64" max="12288" step="64" value="768"></div>
+    <div>h 头数<br><b id="hv"></b><input type="range" id="h" min="1" max="96" value="12"></div>
+  </div>
+  <div style="margin:10px 0"><button class="btn" id="gpt2" type="button">GPT-2 small（12 头、768）</button> <button class="btn" id="gpt3" type="button">GPT-3 175B（96 头、12288）</button></div>
+  <div class="note" id="warn"></div>
+</section>
+<section>
+  <h2><span class="step">1</span>一次多头注意力，形状怎么走</h2>
+  <div class="flow" id="flow"></div>
+  <div class="note">“分数表”那一步的内存只按这一张张量算（每个元素 2 字节，fp16）。真实实现里还有各种优化（如 FlashAttention 不把它完整写入显存），所以这是“朴素实现”的开销。</div>
+</section>
+<section>
+  <h2><span class="step">∑</span>谁最占内存</h2>
+  <div id="sb"></div><div id="ac" style="margin-top:12px"></div>
+  <div id="sp2" style="margin-top:12px"></div>
+</section>
+<section class="quiz">
+  <h2><span class="step">?</span>先猜形状</h2>
+  <div id="qz"></div><button class="btn" id="newq" type="button">换一题</button>
+</section>
+</main>
+<script src="../../_shared/viz.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i);
+  const fmtN=(x)=>x.toLocaleString("zh-CN");
+  const mem=(el)=>{const b=el*2;return b>=2**30?(b/2**30).toFixed(1)+" GiB":b>=2**20?(b/2**20).toFixed(1)+" MiB":b>=1024?(b/1024).toFixed(1)+" KiB":b+" B";};
+  function P(){return {B:+$("B").value,n:Math.round(Math.pow(10,+$("n").value)),d:+$("d").value,h:+$("h").value};}
+  function steps(p){const dk=p.d/p.h;return [
+    {op:"输入 X",sh:`[${p.B}, ${p.n}, ${p.d}]`,note:"B 个句子，每句 n 个词，每词 d_model 维",el:p.B*p.n*p.d},
+    {op:"Q = X·W_Q（K、V 同理）",sh:`[${p.B}, ${p.n}, ${p.d}]`,note:`W_Q 是 [${p.d}, ${p.d}]，形状不变`,el:p.B*p.n*p.d},
+    {op:"reshape：拆成 h 个头",sh:`[${p.B}, ${p.n}, ${p.h}, ${dk}]`,note:`最后一维 ${p.d} 拆成 h×d_k = ${p.h}×${dk}`,el:p.B*p.n*p.d},
+    {op:"transpose：把头换到前面",sh:`[${p.B}, ${p.h}, ${p.n}, ${dk}]`,note:"这样每个头可以独立做矩阵乘法",el:p.B*p.n*p.d},
+    {op:"分数 S = Q·Kᵀ / √d_k",sh:`[${p.B}, ${p.h}, ${p.n}, ${p.n}]`,note:`Kᵀ 是 [${p.B}, ${p.h}, ${dk}, ${p.n}]；每个头一张 n×n 表`,el:p.B*p.h*p.n*p.n,big:true},
+    {op:"softmax（沿最后一维）",sh:`[${p.B}, ${p.h}, ${p.n}, ${p.n}]`,note:"形状不变，每行和为 1",el:p.B*p.h*p.n*p.n,big:true},
+    {op:"A·V",sh:`[${p.B}, ${p.h}, ${p.n}, ${dk}]`,note:`[n,n]×[n,${dk}] → [n,${dk}]`,el:p.B*p.n*p.d},
+    {op:"transpose 回来",sh:`[${p.B}, ${p.n}, ${p.h}, ${dk}]`,note:"头换回第三维",el:p.B*p.n*p.d},
+    {op:"reshape：拼接各头",sh:`[${p.B}, ${p.n}, ${p.d}]`,note:`h×d_k = ${p.d}，各头首尾相接`,el:p.B*p.n*p.d},
+    {op:"输出 = 拼接 · W_O",sh:`[${p.B}, ${p.n}, ${p.d}]`,note:`W_O 是 [${p.d}, ${p.d}]；输入输出形状相同，可以堆叠多层`,el:p.B*p.n*p.d},
+  ];}
+  function render(){
+    const p=P();$("Bv").textContent=p.B;$("nv").textContent=fmtN(p.n);$("dv").textContent=p.d;$("hv").textContent=p.h;
+    $("warn").textContent=p.d%p.h?`⚠ d_model=${p.d} 不能被头数 ${p.h} 整除，真实实现要求整除。`:"";
+    if(p.d%p.h)p.h=Math.max(1,Math.floor(p.d/Math.ceil(p.d/p.h)));
+    $("sb").innerHTML=VIZ.shapeBars(steps(p),fmtN,mem); $("ac").innerHTML=VIZ.areaCompare(p); $("sp2").innerHTML=VIZ.splitBar(p.d,p.h);
+    $("flow").innerHTML=steps(p).map(s=>`<div class="st ${s.big?"big":""}"><div class="op">${s.op}</div><div class="sh">${s.sh}</div><div class="mem">${s.note} · ${fmtN(s.el)} 个数，${mem(s.el)}</div></div>`).join("");
+  }
+  ["B","n","d","h"].forEach(i=>$(i).oninput=render);
+  $("gpt2").onclick=()=>{$("d").value=768;$("h").value=12;render();};$("gpt3").onclick=()=>{$("d").value=12288;$("h").value=96;render();};
+  // 猜形状
+  let ans="";
+  function newQ(){
+    const p={B:2+Math.floor(Math.random()*3),n:[8,16,32][Math.floor(Math.random()*3)],d:[64,128,256][Math.floor(Math.random()*3)],h:[2,4,8][Math.floor(Math.random()*3)]};
+    const dk=p.d/p.h, S=steps(p), pick=[2,4,6,7][Math.floor(Math.random()*4)], s=S[pick];
+    const wrong=[`[${p.B}, ${p.n}, ${p.h}, ${dk}]`,`[${p.B}, ${p.h}, ${dk}, ${p.n}]`,`[${p.B}, ${p.h}, ${p.n}, ${p.n}]`,`[${p.B}, ${p.n}, ${p.d}]`,`[${p.B}, ${p.h}, ${p.n}, ${dk}]`].filter(w=>w!==s.sh);
+    const opts=[s.sh,...wrong.sort(()=>Math.random()-.5).slice(0,2)].sort(()=>Math.random()-.5);ans=s.sh;
+    $("qz").innerHTML=`<div>B=${p.B}，n=${p.n}，d_model=${p.d}，h=${p.h}（d_k=${dk}）。<br>这一步“<b>${s.op}</b>”之后，形状是？</div><div class="chips">${opts.map(o=>`<button class="chip opt" type="button">${o}</button>`).join("")}</div><div id="fb" class="note"></div>`;
+    document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{$("fb").innerHTML=(b.textContent===ans?"<span class='ok'>对了</span>":"<span class='bad'>不对</span>")+`。答案：${ans}。${s.note}`;});
+  }
+  $("newq").onclick=newQ;render();newQ();
+})();
+</script></body></html>

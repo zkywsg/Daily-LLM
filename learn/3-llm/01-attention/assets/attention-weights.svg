@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" font-family="system-ui,-apple-system,sans-serif"><rect width="720" height="320" fill="#ffffff"/><text x="360" y="26" text-anchor="middle" font-size="16" font-weight="600" fill="#0f172a">“它”对句中各词的注意力权重（示意）</text>
+  <text x="70" y="71" text-anchor="end" font-size="15" fill="#2a2a2a">小猫</text><rect x="82" y="56" width="193" height="22" rx="3" fill="#2563eb"/><text x="283" y="72" font-size="13" fill="#64748b">37%</text>
+  <text x="70" y="107" text-anchor="end" font-size="15" fill="#2a2a2a">没有</text><rect x="82" y="92" width="43" height="22" rx="3" fill="#2563eb"/><text x="133" y="108" font-size="13" fill="#64748b">8%</text>
+  <text x="70" y="143" text-anchor="end" font-size="15" fill="#2a2a2a">过</text><rect x="82" y="128" width="38" height="22" rx="3" fill="#2563eb"/><text x="128" y="144" font-size="13" fill="#64748b">7%</text>
+  <text x="70" y="179" text-anchor="end" font-size="15" fill="#2a2a2a">马路</text><rect x="82" y="164" width="41" height="22" rx="3" fill="#2563eb"/><text x="131" y="180" font-size="13" fill="#64748b">8%</text>
+  <text x="70" y="215" text-anchor="end" font-size="15" fill="#2a2a2a">因为</text><rect x="82" y="200" width="43" height="22" rx="3" fill="#2563eb"/><text x="133" y="216" font-size="13" fill="#64748b">8%</text>
+  <text x="70" y="251" text-anchor="end" font-size="15" fill="#2a2a2a">它</text><rect x="82" y="236" width="48" height="22" rx="3" fill="#cbd5e1"/><text x="138" y="252" font-size="13" fill="#64748b">9%</text>
+  <text x="70" y="287" text-anchor="end" font-size="15" fill="#2a2a2a">太累了</text><rect x="82" y="272" width="113" height="22" rx="3" fill="#2563eb"/><text x="203" y="288" font-size="13" fill="#64748b">22%</text>
+</svg>

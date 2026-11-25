@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>多头注意力 · 互动演示</title><link rel="stylesheet" href="../../_shared/ui.css"></head>
+<body><main>
+<h1>多头注意力 · 互动演示</h1>
+<p class="sub">同一句话，两个头各算一张注意力表。讲解：<a href="../README.md">README</a>。</p>
+<section>
+  <h2><span class="step">0</span>输入一句话</h2>
+  <input type="text" id="text" value="小猫没有过马路，因为它太累了" aria-label="输入句子">
+  <div class="chips" id="tokens"></div>
+  <p class="note warn">玩具模型：两个头的矩阵都是人工设定的，用来说明“不同头可以关注不同关系”，不是训练出来的。真实模型里每个头学到什么，通常不如这里好解读。</p>
+</section>
+<section>
+  <h2><span class="step">1</span>两个头，两张表</h2>
+  <div>点任意一行选词，两张表同步高亮。试试点“过”和“因为”，对比头 1 与头 2 的差别。</div>
+  <div class="twocol" style="margin-top:10px">
+    <div><b id="n1"></b><div class="note" id="d1"></div><div id="g1"></div></div>
+    <div><b id="n2"></b><div class="note" id="d2"></div><div id="g2"></div></div>
+  </div>
+  <div class="mono" id="detail"></div>
+</section>
+<section>
+  <h2><span class="step">∑</span>两个头各自的完整流水线</h2>
+  <div>同一个 X，每个头用自己的 W_Q/W_K/W_V，各算一遍 Q → S → A → O。对比两条流水线里 A 的差别，虚线是当前选中的词。</div>
+  <h3 style="margin:10px 0 0;font-size:14px">头 1</h3><div id="p1"></div><h3 style="margin:10px 0 0;font-size:14px">头 2</h3><div id="p2"></div>
+</section>
+<section>
+  <h2><span class="step">2</span>拼接：每个词得到 6 维的新表示</h2>
+  <div>“<b id="qn"></b>”在两个头里各得到一个 3 维向量，拼起来再乘输出矩阵 W_O（这里设为单位阵，数值不变）：</div>
+  <div id="catv"></div><div id="cat"></div>
+  <p class="note">多头的意义：一个头只有一套 q/k 的匹配规则，只能表达一种“谁和谁相关”。多个头并行，每个头学自己的规则，最后合并。</p>
+</section>
+<section>
+  <h2><span class="step">?</span>先猜再看</h2><div id="qz"></div><button class="btn" id="newq" type="button">换一题</button>
+</section>
+<section>
+  <h2>注意力层有多少参数</h2>
+  <div id="split"></div>
+  <div>按标准多头公式：每个头有 W_Q、W_K、W_V（各 d_model × d_k），再加一个输出矩阵 W_O（d_model × d_model）。不计偏置。</div>
+  <div style="margin:10px 0"><button class="btn" id="gpt3" type="button">填入 GPT-3 175B 的配置</button></div>
+  <div class="twocol">
+    <div>d_model：<b id="dm"></b><input type="range" id="dmr" min="64" max="16384" step="64" value="12288"></div>
+    <div>头数 h：<b id="hh"></b><input type="range" id="hr" min="1" max="128" value="96"></div>
+    <div>层数：<b id="ll"></b><input type="range" id="lr" min="1" max="128" value="96"></div>
+    <div id="dk" class="note"></div>
+  </div>
+  <div class="cmp"><div>每层注意力参数<b id="pl"></b></div><div class="on">全部层合计<b id="pt"></b></div></div>
+  <p class="note">GPT-3 的配置（d_model=12288、96 层、96 头、d_head=128）来自其论文。合计约 580 亿，约占总参数 1750 亿的三分之一，是按公式推算，不是论文直接给出的数字。</p>
+</section>
+</main>
+<script src="../../_shared/engine.js"></script><script src="../../_shared/ui.js"></script><script src="../../_shared/viz.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i); let toks=[],sel=0,M=null,quiz=null;
+  const f=(v)=>"["+v.map(x=>x.toFixed(2)).join(", ")+"]";
+  function run(){ toks=Attn.tokenize($("text").value).slice(0,12); if(toks.length<2)return; const it=toks.findIndex(t=>t.text==="它"); sel=it>=0?it:Math.min(sel,toks.length-1); render(); newQuiz(); }
+  function render(){
+    M=Attn.multihead(Attn.embed(toks));
+    $("tokens").innerHTML=""; toks.forEach((t,i)=>{const b=document.createElement("button");b.className="chip"+(t.known?"":" unk");b.type="button";b.textContent=t.text;b.setAttribute("aria-pressed",i===sel);b.onclick=()=>{sel=i;render();};$("tokens").appendChild(b);});
+    [1,2].forEach((k)=>{ const h=Attn.HEADS[k-1]; $("n"+k).textContent=h.name; $("d"+k).textContent=h.note; $("g"+k).innerHTML=UI.dotGrid(toks,M.heads[k-1].A,{sel,cell:34}); });
+    document.querySelectorAll(".hit").forEach(r=>r.onclick=()=>{sel=+r.dataset.row;render();});
+    const top=(A)=>A.indexOf(Math.max(...A));
+    const t1=top(M.heads[0].A[sel]), t2=top(M.heads[1].A[sel]);
+    $("detail").textContent=`提问词：${toks[sel].text}\n头 1 最关注：${toks[t1].text}（${(M.heads[0].A[sel][t1]*100).toFixed(0)}%）\n头 2 最关注：${toks[t2].text}（${(M.heads[1].A[sel][t2]*100).toFixed(0)}%）`;
+    const X=Attn.embed(toks); $("p1").innerHTML=VIZ.pipeline(M.heads[0],X,toks,sel); $("p2").innerHTML=VIZ.pipeline(M.heads[1],X,toks,sel); $("catv").innerHTML=VIZ.concatView(M,toks,sel);
+    $("qn").textContent=toks[sel].text;
+    $("cat").innerHTML=`<div class="mono">头 1 的输出 o₁ = ${f(M.heads[0].O[sel])}\n头 2 的输出 o₂ = ${f(M.heads[1].O[sel])}\n拼接后 = ${f(M.concat[sel])}</div>`;
+  }
+  function newQuiz(){
+    const k=Math.random()<.5?0:1, qi=Math.floor(Math.random()*toks.length), A=M.heads[k].A[qi];
+    const order=A.map((w,j)=>[w,j]).filter(([,j])=>j!==qi).sort((a,b)=>b[0]-a[0]); if(order.length<3){$("qz").innerHTML="句子太短";return;}
+    const ans=order[0][1], opts=[ans,...order.slice(1).map(o=>o[1]).sort(()=>Math.random()-.5).slice(0,2)].sort(()=>Math.random()-.5); quiz={k,qi,ans,A};
+    $("qz").innerHTML=`<div>在<b>${Attn.HEADS[k].name}</b>里，“<b>${UI.esc(toks[qi].text)}</b>”最关注哪个词？（不算它自己）</div><div class="chips">${opts.map(j=>`<button class="chip opt" type="button" data-j="${j}">${UI.esc(toks[j].text)}</button>`).join("")}</div><div id="fb" class="note"></div>`;
+    document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{const ok=+b.dataset.j===quiz.ans; $("fb").innerHTML=(ok?"<span class='ok'>对了</span>":"<span class='bad'>不对</span>")+`。答案是“${UI.esc(toks[quiz.ans].text)}”（${(quiz.A[quiz.ans]*100).toFixed(0)}%）。同一个词在另一个头里，关注的可能是别的词。`; sel=quiz.qi; render();});
+  }
+  const t1=(v)=>String(parseFloat(v.toFixed(1))), fmt=(x)=>x>=1e8?t1(x/1e8)+" 亿":x>=1e4?t1(x/1e4)+" 万":Math.round(x).toString();
+  function params(){ const d=+$("dmr").value,h=+$("hr").value,L=+$("lr").value; $("dm").textContent=d;$("hh").textContent=h;$("ll").textContent=L;
+    const dk=d/h; $("dk").textContent=Number.isInteger(dk)?`d_k = d_model / h = ${dk}`:`d_model 不能被头数整除（${dk.toFixed(1)}），真实模型要求能整除`;
+    $("split").innerHTML=VIZ.splitBar(d,h); const per=4*d*d; $("pl").textContent=fmt(per); $("pt").textContent=fmt(per*L); }
+  ["dmr","hr","lr"].forEach(i=>$(i).oninput=params);
+  $("gpt3").onclick=()=>{$("dmr").value=12288;$("hr").value=96;$("lr").value=96;params();};
+  $("text").oninput=run; $("newq").onclick=newQuiz; run(); params();
+})();
+</script></body></html>

@@ -13,6 +13,8 @@
 <p>
   <a href="README_EN.md"><strong>English</strong></a>
   ·
+  <a href="#learn"><strong>从零学</strong></a>
+  ·
   <a href="#timeline"><strong>时间线</strong></a>
   ·
   <a href="#web-timeline"><strong>可视化网页</strong></a>
@@ -30,6 +32,38 @@
 [![Bilingual](https://img.shields.io/badge/Docs-English%20%7C%20%E4%B8%AD%E6%96%87-D97706.svg?style=flat-square)](README_EN.md)
 
 </div>
+
+---
+
+<a id="learn"></a>
+
+## 从零学：注意力系列
+
+<img src=".github/assets/learn-cover.png" alt="从零学大模型：注意力系列" width="100%" />
+
+先把大模型的核心部件**注意力**吃透。每个知识点按五层写：一句话 → 白话 → 手算 → 数学推导 → 代码与练习，并配可以动手的互动页和 TikTok 竖版图卡。
+
+- **在线读 / 玩**：<https://zkywsg.github.io/Daily-LLM/>（启用 GitHub Pages 后可用；没启用时按下面的方法本地打开）
+- **本地打开**：`cd web && npm ci && cd .. && node learn/build-preview.mjs`，然后打开 `learn/preview.html`（离线可看）
+- **学习顺序与进度**：[learn/README.md](learn/README.md)
+
+| 篇 | 内容 | 互动页 |
+|---|---|---|
+| 基础 A | [注意力基础：q/k/v、打分、加权求和](learn/3-llm/01-attention/) | 有 |
+| 基础 B | [多头：并行的多套规则](learn/3-llm/02-multihead/) | 有 |
+| 基础 C | [掩码与位置](learn/3-llm/03-mask-position/) | 有 |
+| 00 | [动机：为什么发明注意力](learn/3-llm/attn-01-motivation/) | 有 |
+| 02 | [手算一遍](learn/3-llm/attn-02-hand-calc/) | 有 |
+| 03 | [矩阵与形状](learn/3-llm/attn-03-shapes/) | 有 |
+| 04 | [softmax 与 √d：梯度推导](learn/3-llm/attn-04-softmax-scale/) | 有 |
+| 05 | [多头的内部：头分解与消融](learn/3-llm/attn-05-multihead-deep/) | 有 |
+| 06 | [位置编码：正弦、RoPE、ALiBi](learn/3-llm/attn-06-position/) | 有 |
+| 07 | [从零实现（NumPy，7 个测试）](learn/3-llm/attn-07-from-scratch/) | — |
+| 08 | [真实模型里的注意力（脚本未在真实模型上运行）](learn/3-llm/attn-08-real-model/) | 查看器 |
+| 09 | [高效注意力：KV cache、GQA、FlashAttention](learn/3-llm/attn-09-efficient/) | 有 |
+| 10 | [综合自测与小项目（27 题）](learn/3-llm/attn-10-selftest/) | 有 |
+
+> 文献与模型配置已对照摘要或公开资料核对，来源写在各篇末尾。示例模型都是教学用的玩具模型，不是训练出来的。
 
 ---
 

@@ -51,3 +51,7 @@ data/
 # Environment variables
 .env
 /node_modules/
+
+# learn/ 生成物（由 node learn/build-preview.mjs / build-site.mjs 生成）
+learn/preview.html
+learn/_site/

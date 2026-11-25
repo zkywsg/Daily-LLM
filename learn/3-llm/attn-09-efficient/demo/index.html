@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>高效注意力 · 互动演示</title><link rel="stylesheet" href="../../_shared/ui.css"></head>
+<body><main>
+<h1>高效注意力 · 互动演示</h1>
+<p class="sub">KV cache 有多大，分块 softmax 怎么得到精确结果。讲解：<a href="../README.md">README</a>。</p>
+
+<section>
+  <h2><span class="step">1</span>KV cache 计算器</h2>
+  <div class="chips"><button class="btn" id="pg" type="button">GPT-3 175B（MHA）</button><button class="btn" id="pl" type="button">LLaMA-2 70B（GQA）</button></div>
+  <p class="note">预设来自公开论文与模型配置（GPT-3：96 层 / 96 头 / 头维 128；LLaMA-2 70B：80 层 / 64 个 q 头 / 8 个 KV 头 / 头维 128）。</p>
+  <div class="twocol">
+    <div>层数 L：<b id="Lv"></b><input type="range" id="L" min="1" max="128" value="96"></div>
+    <div>q 头数 h：<b id="hv"></b><input type="range" id="h" min="1" max="128" value="96"></div>
+    <div>KV 头数 g：<b id="gv"></b><input type="range" id="g" min="1" max="128" value="96"></div>
+    <div>d_head：<b id="dv"></b><input type="range" id="d" min="16" max="256" step="16" value="128"></div>
+    <div>序列长度 n：<b id="nv"></b><input type="range" id="n" min="2" max="6" step="0.05" value="3.3"></div>
+    <div>每个数字节数：<b id="bv"></b><input type="range" id="b" min="1" max="4" step="1" value="2"></div>
+  </div>
+  <div class="cmp"><div>每个词的 KV<b id="o1">-</b></div><div class="on">整个序列的 KV cache<b id="o2">-</b></div></div>
+  <div id="cmp"></div>
+</section>
+
+<section>
+  <h2><span class="step">2</span>生成时：有缓存 vs 无缓存</h2>
+  <div>生成 n 个词，每步每个头的 q·k 次数：</div>
+  <div style="margin:6px 0">n = <b id="gn"></b><input type="range" id="gnr" min="1" max="500" value="100"></div>
+  <div class="cmp"><div>有缓存（Σt）<b id="c1">-</b></div><div class="on">无缓存（Σt²）<b id="c2">-</b></div></div>
+  <div id="gp"></div>
+</section>
+
+<section>
+  <h2><span class="step">3</span>在线 softmax：分块也能得到精确结果</h2>
+  <div>8 个分数和 8 个值（标量）。一块一块读入，维护最大值 m、指数和 ℓ、加权累加 o。</div>
+  <div style="margin:6px 0">块大小：<b id="bsv"></b><input type="range" id="bs" min="1" max="8" value="2"> <button class="btn" id="nx" type="button">读下一块 →</button> <button class="btn" id="rs" type="button">重来</button></div>
+  <div id="os"></div>
+  <div class="cmp"><div>在线结果 o/ℓ<b id="r1">-</b></div><div class="on">普通 softmax 的结果<b id="r2">-</b></div></div>
+</section>
+
+<section>
+  <h2><span class="step">4</span>滑动窗口</h2>
+  <div>窗口 w：<b id="wv"></b><input type="range" id="w" min="1" max="16" value="4">　序列长度固定为 16。</div>
+  <div id="sw"></div>
+  <div class="mono" id="swt"></div>
+</section>
+</main>
+<script src="../../_shared/viz.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i);
+  const fm=(B)=>B>=2**30?(B/2**30).toFixed(2)+" GiB":B>=2**20?(B/2**20).toFixed(2)+" MiB":B>=1024?(B/1024).toFixed(1)+" KiB":B+" B";
+  function kv(){
+    const L=+$("L").value,h=+$("h").value,g=Math.min(+$("g").value,h),d=+$("d").value,n=Math.round(Math.pow(10,+$("n").value)),b=+$("b").value;
+    $("Lv").textContent=L;$("hv").textContent=h;$("gv").textContent=g;$("dv").textContent=d;$("nv").textContent=n.toLocaleString("zh-CN");$("bv").textContent=b;
+    const per=2*L*g*d*b;$("o1").textContent=fm(per);$("o2").textContent=fm(per*n);
+    const mha=2*L*h*d*b*n,gqa=per*n,mqa=2*L*1*d*b*n,mx=mha;
+    const row=(t,v,c)=>`<div class="srow"><span style="width:150px;font-size:12px;color:var(--mute)">${t}</span><div class="stack"><span class="seg" style="width:${(v/mx*100).toFixed(1)}%;background:${c}"></span></div><span class="num" style="width:90px;text-align:right;font-size:12px">${fm(v)}</span></div>`;
+    $("cmp").innerHTML=row("MHA（KV 头 = h）",mha,"#8a8a8a")+row("当前（KV 头 = "+g+"）",gqa,"#3b82f6")+row("MQA（KV 头 = 1）",mqa,"#22c55e")+`<p class="note">同一组 L、d_head、n 下三种头设置的 KV cache 对比。缓存缩小倍数 = h / g = ${(h/g).toFixed(1)}。</p>`;
+  }
+  ["L","h","g","d","n","b"].forEach(i=>$(i).oninput=kv);
+  $("pg").onclick=()=>{$("L").value=96;$("h").value=96;$("g").value=96;$("d").value=128;$("n").value=Math.log10(2048);$("b").value=2;kv()};
+  $("pl").onclick=()=>{$("L").value=80;$("h").value=64;$("g").value=8;$("d").value=128;$("n").value=Math.log10(4096);$("b").value=2;kv()};
+  $("pg").onclick();
+
+  function gen(){const n=+$("gnr").value;$("gn").textContent=n;const a=n*(n+1)/2,b=n*(n+1)*(2*n+1)/6;
+    $("c1").textContent=a.toLocaleString("zh-CN");$("c2").textContent=b.toLocaleString("zh-CN");
+    const N=Math.min(n,12),c=22;let s="";for(let i=0;i<N;i++)for(let j=0;j<=i;j++)s+=`<rect x="${j*c}" y="${i*c}" width="${c-2}" height="${c-2}" rx="2" fill="${j===i||true?"#3b82f6":"#1f1f1f"}" opacity="${i===N-1?1:.25}"/>`;
+    $("gp").innerHTML=`<svg class="viz" viewBox="0 0 ${N*c} ${N*c}" width="${Math.min(360,N*c)}"><rect width="100%" height="100%" fill="none"/>${s}</svg><p class="note">${N<n?"只画前 "+N+" 步。":""}深蓝：最后一步需要算的 q·k（有缓存时只算新词这一行，浅色是以前已经算过的行，无缓存时每步都重算整张表）。</p>`;}
+  $("gnr").oninput=gen;gen();
+
+  // 在线 softmax
+  const S=[2.1,-0.5,3.0,0.7,-1.2,2.6,0.1,1.4],V=[1.0,-2.0,0.5,3.0,-1.5,2.0,0.2,-0.8];
+  const ref=(()=>{const m=Math.max(...S),e=S.map(x=>Math.exp(x-m)),z=e.reduce((a,b)=>a+b);return e.reduce((s,x,j)=>s+x*V[j],0)/z})();
+  let m,l,o,pos,log;
+  function reset(){m=-Infinity;l=0;o=0;pos=0;log=[];draw()}
+  function step(){const bs=+$("bs").value;if(pos>=S.length)return;const sb=S.slice(pos,pos+bs),vb=V.slice(pos,pos+bs),mb=Math.max(...sb),mn=Math.max(m,mb),sc=Math.exp(m-mn);
+    const p=sb.map(x=>Math.exp(x-mn));l=l*sc+p.reduce((a,b)=>a+b,0);o=o*sc+p.reduce((s,x,i)=>s+x*vb[i],0);log.push({a:pos,b:pos+sb.length,mo:m,mn,sc,l,o});m=mn;pos+=sb.length;draw()}
+  function draw(){
+    $("bsv").textContent=$("bs").value;
+    const cells=S.map((s,j)=>`<span class="chip" aria-pressed="${j<pos}">s=${s}</span>`).join("");
+    const rows=log.map(r=>`<tr><td>${r.a+1}–${r.b}</td><td>${isFinite(r.mo)?r.mo.toFixed(2):"−∞"} → ${r.mn.toFixed(2)}</td><td>${r.sc.toFixed(3)}</td><td>${r.l.toFixed(3)}</td><td>${r.o.toFixed(3)}</td></tr>`).join("");
+    $("os").innerHTML=`<div class="chips">${cells}</div><table class="mat"><tr><th>读入第几个</th><th>最大值 m</th><th>旧量缩放 e^(m−m')</th><th>指数和 ℓ</th><th>累加 o</th></tr>${rows||"<tr><td colspan=5>点“读下一块”</td></tr>"}</table>`;
+    $("r1").textContent=pos>=S.length?(o/l).toFixed(6):"（读完才有）";$("r2").textContent=ref.toFixed(6);}
+  $("nx").onclick=step;$("rs").onclick=reset;$("bs").oninput=reset;reset();
+
+  function win(){const w=+$("w").value,n=16;$("wv").textContent=w;let cnt=0;
+    const M=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>{const ok=j<=i&&i-j<w;if(ok)cnt++;return ok?1:0}));
+    const r=VIZ.heat(M,{cell:18,nums:false,max:1,x:0,y:10});$("sw").innerHTML=`<svg class="viz" viewBox="0 0 ${r.w+4} ${r.h+16}" width="100%" style="max-width:${r.w+4}px">${r.svg}</svg>`;
+    $("swt").textContent=`保留的分数：${cnt} / ${n*(n+1)/2}（因果下三角）　全注意力下三角共 ${n*(n+1)/2}，窗口后约 ${(cnt/(n*(n+1)/2)*100).toFixed(0)}%`;}
+  $("w").oninput=win;win();
+})();
+</script></body></html>

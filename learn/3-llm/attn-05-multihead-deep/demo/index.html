@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>多头的内部 · 互动演示</title><link rel="stylesheet" href="../../_shared/ui.css"></head>
+<body><main>
+<h1>多头的内部 · 互动演示</h1>
+<p class="sub">每个头往输出里“写”了什么，关掉一个头会怎样。讲解：<a href="../README.md">README</a>。</p>
+<section>
+  <h2><span class="step">0</span>设置</h2>
+  <input type="text" id="text" value="小猫没有过马路，因为它太累了" aria-label="输入句子">
+  <div style="margin:8px 0"><label><input type="checkbox" id="e1" checked> 头 1（指代）开</label><label><input type="checkbox" id="e2" checked> 头 2（动作-对象）开</label></div>
+  <p class="note warn">玩具模型。为了让“写入输出”有变化，W_O 使用一个固定的 6×6 随机矩阵（种子固定），不是单位阵。</p>
+</section>
+<section>
+  <h2><span class="step">1</span>每个头对输出的贡献（O<sub>i</sub> · W_O 的第 i 块）</h2>
+  <div>总输出 = 头 1 的贡献 + 头 2 的贡献。蓝正橙负，每行是一个词，6 列是输出的 6 个维度。</div>
+  <div id="p1"></div>
+  <div class="cmp"><div>求和写法 与 拼接写法 的最大差<b id="df">-</b></div><div class="on">验证<b id="ok" style="font-size:18px">-</b></div></div>
+</section>
+<section>
+  <h2><span class="step">2</span>关掉头之后</h2>
+  <div>对比“两个头都开”与你当前的开关状态，输出变了多少（每行的相对变化）。</div>
+  <div id="p2"></div>
+</section>
+</main>
+<script src="../../_shared/engine.js"></script><script src="../../_shared/ui.js"></script><script src="../../_shared/viz.js"></script>
+<script>
+(function(){
+  const $=(i)=>document.getElementById(i);
+  function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  const r=rng(5),g=()=>Math.sqrt(-2*Math.log(r()+1e-12))*Math.cos(2*Math.PI*r());
+  const Wo=Array.from({length:6},()=>Array.from({length:6},()=>g()*0.7));
+  const mm=(A,B)=>A.map(r=>B[0].map((_,j)=>r.reduce((s,v,k)=>s+v*B[k][j],0)));
+  function run(){
+    const toks=Attn.tokenize($("text").value).slice(0,8); if(toks.length<2)return;
+    const M=Attn.multihead(Attn.embed(toks)),lab=toks.map(t=>t.text),dim=["1","2","3","4","5","6"];
+    const full=M.heads.map((h,i)=>mm(h.O,Wo.slice(i*3,i*3+3)));
+    const tot=full[0].map((row,i)=>row.map((_,j)=>full[0][i][j]+full[1][i][j]));
+    const cat=mm(M.concat,Wo);
+    $("df").textContent=Math.max(...tot.flat().map((v,k)=>Math.abs(v-cat.flat()[k]))).toExponential(1);
+    $("ok").textContent=parseFloat($("df").textContent)<1e-9?"相等（浮点误差内）":"不相等";
+    const c=26,mx=Math.max(1,...[...full[0].flat(),...full[1].flat(),...tot.flat()].map(Math.abs));let x=10,svg="";
+    const put=(Mx,o)=>{const q=VIZ.heat(Mx,Object.assign({cell:c,x,y:48,cols:dim,fmt:v=>v.toFixed(1),max:mx},o));svg+=q.svg;x+=q.w+46;return q};
+    const lbl=(t)=>`<text x="${x-30}" y="${48+16+toks.length*c/2}" text-anchor="middle" style="font:16px var(--mono)" fill="#8a8a8a">${t}</text>`;
+    put(full[0],{title:"头 1 的贡献",rows:lab});svg+=lbl("+");put(full[1],{title:"头 2 的贡献"});svg+=lbl("=");put(tot,{title:"总输出"});
+    $("p1").innerHTML=`<div class="scroll"><svg class="viz" viewBox="0 0 ${x} ${48+16+toks.length*c+10}" width="${x}" style="max-width:none">${svg}</svg></div>`;
+    const on=[$("e1").checked,$("e2").checked];
+    const cur=tot.map((row,i)=>row.map((_,j)=>(on[0]?full[0][i][j]:0)+(on[1]?full[1][i][j]:0)));
+    const rel=tot.map((row,i)=>Math.hypot(...row.map((v,j)=>v-cur[i][j]))/(Math.hypot(...row)||1));
+    const bars=toks.map((t,i)=>`<div class="row"><span>${UI.esc(t.text)}</span><div class="bar"><i style="width:${Math.min(100,rel[i]*100).toFixed(0)}%"></i></div><span class="num">${(rel[i]*100).toFixed(0)}%</span></div>`).join("");
+    $("p2").innerHTML=(on[0]&&on[1]?`<p class="note">两个头都开，没有变化。关掉一个试试。</p>`:"")+bars;
+  }
+  ["e1","e2"].forEach(i=>$(i).onchange=run);$("text").oninput=run;run();
+})();
+</script></body></html>
