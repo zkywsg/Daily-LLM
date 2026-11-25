@@ -1,14 +1,8 @@
 # 从 0 学机器学习、深度学习与大模型
 
-按五层递进。每个知识点配三样东西：讲解 `README.md`、互动演示 `demo/`、社媒图卡 `cards/`。
+完整骨架（6 层、46 个知识块、每项状态和旧版素材对照）见 **[ROADMAP.md](ROADMAP.md)**，数据源是 [roadmap.json](roadmap.json)，改完后运行 `node learn/build-roadmap.mjs` 重新生成路线图和清单。
 
-| 层 | 内容 | 状态 |
-|---|---|---|
-| 0 数学 | 线性代数、概率、微积分、优化直觉 | 待写 |
-| 1 传统机器学习 | 回归、树、SVM、聚类、评估 | 待写 |
-| 2 深度学习基础 | 神经网络、反向传播、优化、正则化 | 待写 |
-| 3 大模型 | [01 注意力基础](3-llm/01-attention/) · [02 多头](3-llm/02-multihead/) · [03 掩码与位置](3-llm/03-mask-position/) · Transformer · 预训练 · 对齐 · 推理模型 | 进行中（见下：注意力深度系列） |
-| 4 工程 | 训练、量化、推理、部署 | 待写 |
+每个知识点配三样东西：讲解 `README.md`、互动演示 `demo/`、社媒图卡 `cards/`。
 
 设计思路见 [../docs/superpowers/specs/2026-11-23-visual-sharing-design.md](../docs/superpowers/specs/2026-11-23-visual-sharing-design.md)。
 

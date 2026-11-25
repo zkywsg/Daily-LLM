@@ -1,0 +1,37 @@
+{
+  "title": "从零学大模型：完整骨架",
+  "layers": [
+    { "id": 0, "name": "数学基础", "goal": "读得懂公式", "groups": [
+      { "name": "核心", "nodes": [
+        { "t": "线性代数" }, { "t": "概率与统计" }, { "t": "微积分与梯度" }, { "t": "信息论：熵 / 交叉熵 / KL" }, { "t": "优化直觉" } ] } ] },
+    { "id": 1, "name": "机器学习基础", "goal": "学会“学习”这件事", "groups": [
+      { "name": "核心", "nodes": [
+        { "t": "线性 / 逻辑回归" }, { "t": "树与集成" }, { "t": "SVM" }, { "t": "聚类与降维" }, { "t": "评估与过拟合" } ] } ] },
+    { "id": 2, "name": "深度学习基础", "goal": "神经网络怎么训练", "groups": [
+      { "name": "训练基础", "nodes": [
+        { "t": "神经网络与反向传播", "old": "foundations/01" }, { "t": "激活与初始化", "old": "foundations/02,05" }, { "t": "损失函数", "old": "foundations/06" }, { "t": "优化器", "old": "foundations/03" }, { "t": "归一化", "old": "foundations/04" }, { "t": "正则化", "old": "foundations/07" } ] },
+      { "name": "经典结构", "nodes": [
+        { "t": "CNN：LeNet 到 ConvNeXt", "old": "01-cnn" }, { "t": "RNN / LSTM / seq2seq", "old": "02-rnn-lstm" }, { "t": "词向量与分词", "old": "03-word-embedding, foundations/09" } ] } ] },
+    { "id": 3, "name": "大模型核心", "goal": "Transformer 主线：结构 → 预训练 → 对齐", "groups": [
+      { "name": "结构", "nodes": [
+        { "t": "注意力系列", "s": "done", "n": "13 篇", "link": "3-llm/01-attention/" }, { "t": "Transformer 块与完整模型", "old": "05-transformer" }, { "t": "MoE 稀疏专家", "old": "13-moe-efficient" }, { "t": "长上下文", "s": "partial", "n": "位置编码已在注意力系列" } ] },
+      { "name": "训练", "nodes": [
+        { "t": "BERT 系预训练", "old": "06-bert-family" }, { "t": "GPT 与 Scaling Laws", "old": "07-gpt-scaling" }, { "t": "预训练数据与配方" }, { "t": "微调：SFT / LoRA / QLoRA", "old": "11-peft-lora" } ] },
+      { "name": "对齐与推理", "nodes": [
+        { "t": "RLHF / DPO / 奖励模型", "old": "12-rlhf-alignment" }, { "t": "推理模型：CoT / o1 / R1", "old": "15-reasoning-o1-r1" } ] } ] },
+    { "id": 4, "name": "模态与应用", "goal": "把模型用到更多地方", "groups": [
+      { "name": "视觉与生成", "nodes": [
+        { "t": "ViT 视觉 Transformer", "old": "08-vit" }, { "t": "GAN", "old": "04-gan" }, { "t": "扩散模型", "old": "10-diffusion" }, { "t": "世界模型与视频生成", "old": "16-world-models" } ] },
+      { "name": "多模态与语音", "nodes": [
+        { "t": "CLIP / LLaVA 多模态", "old": "09-multimodal-clip" }, { "t": "语音与音频", "old": "18-speech-audio" } ] },
+      { "name": "应用", "nodes": [
+        { "t": "RAG 检索增强", "old": "14-rag-agent" }, { "t": "Agent 与工具调用", "old": "14-rag-agent" } ] },
+      { "name": "旁支", "nodes": [
+        { "t": "图神经网络", "old": "17-graph-neural-networks" }, { "t": "推荐系统", "old": "19-recommendation" } ] } ] },
+    { "id": 5, "name": "工程与系统", "goal": "跑得起来、用得起", "groups": [
+      { "name": "训练与推理", "nodes": [
+        { "t": "分布式训练：数据 / 张量 / 流水线并行、ZeRO" }, { "t": "混合精度与量化" }, { "t": "推理优化", "s": "partial", "n": "KV cache、GQA、FlashAttention 已在注意力系列" }, { "t": "推理服务：vLLM 与批处理" } ] },
+      { "name": "落地", "nodes": [
+        { "t": "评测与观测" }, { "t": "实战：企业 RAG 系统", "old": "projects/enterprise-rag-system" }, { "t": "实战：微调到部署流水线", "old": "projects/finetune-deploy-pipeline" } ] } ] }
+  ]
+}

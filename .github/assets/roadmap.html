@@ -1,35 +1,38 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><style>
 *{box-sizing:border-box;margin:0}
-body{width:1600px;height:900px;background:#000;color:#e8eaed;font:16px/1.4 "PingFang SC","SF Pro Text",-apple-system,sans-serif;padding:56px 64px}
-.k{font:700 15px "SF Mono",Menlo,monospace;letter-spacing:.14em;color:#3b82f6}
-h1{font-size:44px;margin:10px 0 6px;letter-spacing:.01em}
-.sub{color:#8b929c;font-size:19px}
-.leg{position:absolute;right:64px;top:70px;display:flex;gap:22px;color:#8b929c;font-size:15px;align-items:center}
+body{width:1600px;background:#000;color:#e8eaed;font:16px/1.4 "PingFang SC","SF Pro Text",-apple-system,sans-serif;padding:48px 56px 40px}
+.k{font:700 15px Menlo,monospace;letter-spacing:.14em;color:#3b82f6}
+h1{font-size:42px;margin:8px 0 6px}.sub{color:#8b929c;font-size:18px}
+.top{display:flex;justify-content:space-between;align-items:flex-end}
+.leg{display:flex;gap:20px;color:#8b929c;font-size:15px;align-items:center}
 .dot{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:8px;vertical-align:-2px}
-.d1{background:#3b82f6}.d2{border:1.5px dashed #4b5563}
-.rows{margin-top:34px;display:flex;flex-direction:column;gap:14px}
-.row{display:flex;align-items:center;border:1px solid #1f2430;border-radius:14px;padding:0 24px;height:104px}
-.row.on{border-color:#3b82f6;background:#050b18;height:150px}
-.lab{width:230px;flex:none}
-.lab b{display:block;font-size:22px}.lab small{color:#8b929c;font-size:14px}
+.rows{margin-top:26px;display:flex;flex-direction:column;gap:12px}
+.row{display:flex;border:1px solid #1f2430;border-radius:14px;padding:18px 22px;gap:20px}
+.row.on{border-color:#3b82f6;background:#050b18}
+.lab{width:210px;flex:none;padding-top:4px}.lab b{display:block;font-size:21px}.lab small{color:#8b929c;font-size:14px}
 .row.on .lab small{color:#7aa7f0}
-.chips{display:flex;gap:12px;flex-wrap:wrap}
-.c{padding:10px 18px;border-radius:10px;border:1.5px dashed #3a4150;color:#8b929c;font-size:17px}
-.c.ok{background:#3b82f6;border:0;color:#fff;font-weight:700;font-size:19px;padding:14px 22px}
-.c.ok i{font-style:normal;font-weight:400;opacity:.85;margin-left:10px;font-size:15px}
-.arr{position:absolute;left:30px;top:268px;height:540px;width:2px;background:linear-gradient(#1f2430,#3b82f6)}
-.foot{position:absolute;left:64px;bottom:34px;color:#6b7280;font-size:14px}
+.gs{display:flex;flex-direction:column;gap:12px;flex:1}
+.g{display:flex;gap:14px;align-items:flex-start}
+.gn{width:86px;flex:none;color:#5b6472;font-size:13px;padding-top:9px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.c{padding:7px 14px;border-radius:9px;border:1.5px dashed #3a4150;color:#8b929c;font-size:15px}
+.c i{font-style:normal;margin-left:8px;font-size:12px;opacity:.8}
+.c.done{background:#3b82f6;border:0;color:#fff;font-weight:700;padding:8.5px 15.5px}
+.c.partial{border:1.5px solid #3b82f6;color:#9db8ea}
 </style><body>
-<div class="k">DAILY-LLM · ROADMAP</div>
-<h1>从零学大模型：整体路线</h1>
-<div class="sub">五层递进。先把第 3 层的注意力做透，其余按顺序补齐。</div>
-<div class="leg"><span><span class="dot d1"></span>已完成</span><span><span class="dot d2"></span>待写</span></div>
-<div class="rows">
-<div class="row"><div class="lab"><b>0 · 数学</b><small>读得懂公式</small></div><div class="chips"><span class="c">线性代数</span><span class="c">概率与统计</span><span class="c">微积分与梯度</span><span class="c">优化直觉</span></div></div>
-<div class="row"><div class="lab"><b>1 · 传统机器学习</b><small>学会“学习”这件事</small></div><div class="chips"><span class="c">线性 / 逻辑回归</span><span class="c">树与集成</span><span class="c">SVM</span><span class="c">聚类与降维</span><span class="c">评估与过拟合</span></div></div>
-<div class="row"><div class="lab"><b>2 · 深度学习基础</b><small>神经网络怎么训练</small></div><div class="chips"><span class="c">神经网络与反向传播</span><span class="c">优化器</span><span class="c">正则化与归一化</span><span class="c">CNN</span><span class="c">RNN / LSTM</span></div></div>
-<div class="row on"><div class="lab"><b>3 · 大模型</b><small>当前主体</small></div><div class="chips"><span class="c ok">注意力系列<i>13 篇 · 互动页 · 图卡</i></span><span class="c">Transformer 块</span><span class="c">预训练</span><span class="c">微调 · LoRA</span><span class="c">对齐 · RLHF / DPO</span><span class="c">推理模型</span><span class="c">多模态</span></div></div>
-<div class="row"><div class="lab"><b>4 · 工程</b><small>跑得起来、用得起</small></div><div class="chips"><span class="c">分布式训练</span><span class="c">量化</span><span class="c">推理与服务</span><span class="c">部署与评测</span></div></div>
-</div>
-<div class="foot">注意力系列里的 KV cache、FlashAttention 等已涉及第 4 层的一小部分，完整工程内容仍待写。</div>
-</body></html>
+<div class="top"><div><div class="k">DAILY-LLM · ROADMAP</div><h1>从零学大模型：完整骨架</h1>
+<div class="sub">6 层 · 46 个知识块。已完成 1，部分覆盖 2，其余待写。</div></div>
+<div class="leg"><span><span class="dot" style="background:#3b82f6"></span>已完成</span><span><span class="dot" style="border:1.5px solid #3b82f6"></span>部分覆盖</span><span><span class="dot" style="border:1.5px dashed #4b5563"></span>待写</span></div></div>
+<div class="rows"><div class="row">
+<div class="lab"><b>0 · 数学基础</b><small>读得懂公式</small></div>
+<div class="gs"><div class="g"><div class="gn">核心</div><div class="chips"><span class="c planned">线性代数</span><span class="c planned">概率与统计</span><span class="c planned">微积分与梯度</span><span class="c planned">信息论：熵 / 交叉熵 / KL</span><span class="c planned">优化直觉</span></div></div></div></div><div class="row">
+<div class="lab"><b>1 · 机器学习基础</b><small>学会“学习”这件事</small></div>
+<div class="gs"><div class="g"><div class="gn">核心</div><div class="chips"><span class="c planned">线性 / 逻辑回归</span><span class="c planned">树与集成</span><span class="c planned">SVM</span><span class="c planned">聚类与降维</span><span class="c planned">评估与过拟合</span></div></div></div></div><div class="row">
+<div class="lab"><b>2 · 深度学习基础</b><small>神经网络怎么训练</small></div>
+<div class="gs"><div class="g"><div class="gn">训练基础</div><div class="chips"><span class="c planned">神经网络与反向传播</span><span class="c planned">激活与初始化</span><span class="c planned">损失函数</span><span class="c planned">优化器</span><span class="c planned">归一化</span><span class="c planned">正则化</span></div></div><div class="g"><div class="gn">经典结构</div><div class="chips"><span class="c planned">CNN：LeNet 到 ConvNeXt</span><span class="c planned">RNN / LSTM / seq2seq</span><span class="c planned">词向量与分词</span></div></div></div></div><div class="row on">
+<div class="lab"><b>3 · 大模型核心</b><small>Transformer 主线：结构 → 预训练 → 对齐</small></div>
+<div class="gs"><div class="g"><div class="gn">结构</div><div class="chips"><span class="c done">注意力系列<i>13 篇</i></span><span class="c planned">Transformer 块与完整模型</span><span class="c planned">MoE 稀疏专家</span><span class="c partial">长上下文<i>位置编码已在注意力系列</i></span></div></div><div class="g"><div class="gn">训练</div><div class="chips"><span class="c planned">BERT 系预训练</span><span class="c planned">GPT 与 Scaling Laws</span><span class="c planned">预训练数据与配方</span><span class="c planned">微调：SFT / LoRA / QLoRA</span></div></div><div class="g"><div class="gn">对齐与推理</div><div class="chips"><span class="c planned">RLHF / DPO / 奖励模型</span><span class="c planned">推理模型：CoT / o1 / R1</span></div></div></div></div><div class="row">
+<div class="lab"><b>4 · 模态与应用</b><small>把模型用到更多地方</small></div>
+<div class="gs"><div class="g"><div class="gn">视觉与生成</div><div class="chips"><span class="c planned">ViT 视觉 Transformer</span><span class="c planned">GAN</span><span class="c planned">扩散模型</span><span class="c planned">世界模型与视频生成</span></div></div><div class="g"><div class="gn">多模态与语音</div><div class="chips"><span class="c planned">CLIP / LLaVA 多模态</span><span class="c planned">语音与音频</span></div></div><div class="g"><div class="gn">应用</div><div class="chips"><span class="c planned">RAG 检索增强</span><span class="c planned">Agent 与工具调用</span></div></div><div class="g"><div class="gn">旁支</div><div class="chips"><span class="c planned">图神经网络</span><span class="c planned">推荐系统</span></div></div></div></div><div class="row">
+<div class="lab"><b>5 · 工程与系统</b><small>跑得起来、用得起</small></div>
+<div class="gs"><div class="g"><div class="gn">训练与推理</div><div class="chips"><span class="c planned">分布式训练：数据 / 张量 / 流水线并行、ZeRO</span><span class="c planned">混合精度与量化</span><span class="c partial">推理优化<i>KV cache、GQA、FlashAttention 已在注意力系列</i></span><span class="c planned">推理服务：vLLM 与批处理</span></div></div><div class="g"><div class="gn">落地</div><div class="chips"><span class="c planned">评测与观测</span><span class="c planned">实战：企业 RAG 系统</span><span class="c planned">实战：微调到部署流水线</span></div></div></div></div></div></body></html>
