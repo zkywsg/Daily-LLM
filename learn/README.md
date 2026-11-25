@@ -1,6 +1,6 @@
 # 从 0 学机器学习、深度学习与大模型
 
-完整骨架（6 层、46 个知识块、每项状态和旧版素材对照）见 **[ROADMAP.md](ROADMAP.md)**，数据源是 [roadmap.json](roadmap.json)，改完后运行 `node learn/build-roadmap.mjs` 重新生成路线图和清单。
+完整骨架（6 层、45 个知识块、191 个知识点的完整大纲）见 **[ROADMAP.md](ROADMAP.md)**，数据源是 [roadmap.json](roadmap.json)，改完后运行 `node learn/build-roadmap.mjs` 重新生成路线图和清单。
 
 每个知识点配三样东西：讲解 `README.md`、互动演示 `demo/`、社媒图卡 `cards/`。
 
