@@ -17,7 +17,6 @@
   ·
   <a href="#timeline"><strong>时间线</strong></a>
   ·
-  <a href="#web-timeline"><strong>可视化网页</strong></a>
   ·
   <a href="#modules"><strong>模块索引</strong></a>
   ·
@@ -44,7 +43,7 @@
 先把大模型的核心部件**注意力**吃透。每个知识点按五层写：一句话 → 白话 → 手算 → 数学推导 → 代码与练习，并配可以动手的互动页和 TikTok 竖版图卡。
 
 - **在线读 / 玩**：<https://zkywsg.github.io/Daily-LLM/>（启用 GitHub Pages 后可用；没启用时按下面的方法本地打开）
-- **本地打开**：`cd web && npm ci && cd .. && node learn/build-preview.mjs`，然后打开 `learn/preview.html`（离线可看）
+- **本地打开**：`cd learn && npm ci && cd .. && node learn/build-preview.mjs`，然后打开 `learn/preview.html`（离线可看）
 - **学习顺序与进度**：[learn/README.md](learn/README.md)
 
 | 篇 | 内容 | 互动页 |
@@ -98,33 +97,13 @@
 
 ---
 
-<a id="web-timeline"></a>
-
-## 可视化网页
-
-仓库内已提供一个独立的时间线可视化网页，入口在 [web/](web/)。
-
-本地运行：
-
-```bash
-cd web
-npm install
-npm run dev
-```
-
-页面提供按时间与按家族两种浏览方式，节点页结合 Markdown 正文与交互式金标本。当前先作为本地网页维护，公网部署后再补充正式访问地址。
-
----
-
 <a id="modules"></a>
 
 ## 仓库结构
 
 - `learn/` — **新版从零学内容**（讲解、互动页、TikTok 图卡），当前主体
-- `_archive/v1/` — 旧版 19 个家族、`foundations/`、`projects/`、`TIMELINE.md`、`README_EN.md`（只读）
+- `_archive/v1/` — 旧版 19 个家族、`foundations/`、`projects/`、`TIMELINE.md`、`README_EN.md`、旧时间线网页 `web/`、`scripts/`（只读）
 - `_archive/` 其余 — 更早的 `timeline/`、`tracks/`、`foundations-old/`
-- `web/` — 旧时间线网页（读取旧内容，已不再对应；同时提供 `learn/` 构建所需的 marked、katex 依赖）
-- `scripts/` — 旧时间线生成脚本
 
 ---
 

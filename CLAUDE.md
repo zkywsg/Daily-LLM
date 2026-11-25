@@ -65,12 +65,9 @@
 - **仓库**：Daily-LLM，深度学习与大模型的双语学习知识库
 - **主要语言**：中文优先，英文为辅
 - **结构**：
-  - 仓库根下 `01-cnn/` … `15-reasoning-o1-r1/` — 15 个架构/范式家族（按登场时间排序）
-  - `foundations/` — 横切基础（激活、反传、优化器、归一化、注意力机制等）
-  - `TIMELINE.md` — 由 `scripts/generate_timeline.py` 自动生成的按年份速查表
-  - `projects/` — 跨家族实战项目
-  - `web/` — 可视化网页
-  - `_archive/` — 旧 `timeline/` 与 `tracks/` 内容（仅作为家族内容重写时的素材源，请勿在此新增内容）
+  - `learn/` — 新版从零学内容（`learn/<层>/<知识点>/`：README.md、demo/、cards/），当前主体；预览 `node learn/build-preview.mjs`，站点 `node learn/build-site.mjs`（依赖在 `learn/` 下 `npm ci`）
+  - `_archive/v1/` — 旧版 19 个家族、`foundations/`、`projects/`、`TIMELINE.md`、`web/`、`scripts/`（2026-11-26 归档，只读）
+  - `_archive/` 其余 — 更早的历史素材（请勿在此新增内容）
 
 ## 核心原则
 

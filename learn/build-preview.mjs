@@ -7,7 +7,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(join(here, "../web/package.json"));
+const require = createRequire(join(here, "./package.json"));
 const { marked } = require("marked");
 const katex = require("katex");
 

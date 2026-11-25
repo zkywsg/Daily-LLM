@@ -1,5 +1,5 @@
 // 生成可发布到 GitHub Pages 的静态站点：node learn/build-site.mjs  →  learn/_site/
-// 站点 = 预览总页(index.html) + 各知识点的互动页、图卡、共享脚本。需要先 npm ci（见 web/）。
+// 站点 = 预览总页(index.html) + 各知识点的互动页、图卡、共享脚本。需要先在 learn/ 下 npm ci。
 import { execFileSync } from "node:child_process";
 import { cpSync, rmSync, readdirSync, readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";

@@ -4,7 +4,7 @@
 
 包含：
 
-- `v1/` — 2026-11-26 归档的旧版内容：19 个家族目录、`foundations/`、`projects/`、`TIMELINE.md`、`README_EN.md`。目录内部的相对链接未改，按原结构互相可用；`web/` 与 `scripts/` 仍指向旧位置，已失效
+- `v1/` — 2026-11-26 归档的旧版内容：19 个家族目录、`foundations/`、`projects/`、`TIMELINE.md`、`README_EN.md`，以及旧时间线网页 `web/` 和生成脚本 `scripts/`。目录内部的相对链接未改；`web/` 与 `scripts/` 里写的仓库根路径已失效，要运行需先挪回根目录
 
 - `timeline/` — 旧的"按年"目录（已被仓库根下 15 个家族目录 + `TIMELINE.md` 替代）
 - `tracks/` — 旧的"按主题"目录（vision/language/scale-multimodal/alignment/systems，已被家族结构替代）

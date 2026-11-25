@@ -22,9 +22,9 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: web/package-lock.json
+          cache-dependency-path: learn/package-lock.json
       - run: npm ci
-        working-directory: web
+        working-directory: learn
       - run: node learn/build-site.mjs
       - uses: actions/upload-pages-artifact@v3
         with:

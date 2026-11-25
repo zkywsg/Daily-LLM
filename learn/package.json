@@ -1,0 +1,10 @@
+{
+  "name": "daily-llm-learn",
+  "private": true,
+  "type": "module",
+  "description": "learn/ 预览与 Pages 构建所需依赖",
+  "dependencies": {
+    "katex": "0.17.0",
+    "marked": "16.4.2"
+  }
+}
