@@ -1,0 +1,35 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+body{width:1600px;height:900px;background:#000;color:#e8eaed;font:16px/1.4 "PingFang SC","SF Pro Text",-apple-system,sans-serif;padding:56px 64px}
+.k{font:700 15px "SF Mono",Menlo,monospace;letter-spacing:.14em;color:#3b82f6}
+h1{font-size:44px;margin:10px 0 6px;letter-spacing:.01em}
+.sub{color:#8b929c;font-size:19px}
+.leg{position:absolute;right:64px;top:70px;display:flex;gap:22px;color:#8b929c;font-size:15px;align-items:center}
+.dot{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:8px;vertical-align:-2px}
+.d1{background:#3b82f6}.d2{border:1.5px dashed #4b5563}
+.rows{margin-top:34px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;align-items:center;border:1px solid #1f2430;border-radius:14px;padding:0 24px;height:104px}
+.row.on{border-color:#3b82f6;background:#050b18;height:150px}
+.lab{width:230px;flex:none}
+.lab b{display:block;font-size:22px}.lab small{color:#8b929c;font-size:14px}
+.row.on .lab small{color:#7aa7f0}
+.chips{display:flex;gap:12px;flex-wrap:wrap}
+.c{padding:10px 18px;border-radius:10px;border:1.5px dashed #3a4150;color:#8b929c;font-size:17px}
+.c.ok{background:#3b82f6;border:0;color:#fff;font-weight:700;font-size:19px;padding:14px 22px}
+.c.ok i{font-style:normal;font-weight:400;opacity:.85;margin-left:10px;font-size:15px}
+.arr{position:absolute;left:30px;top:268px;height:540px;width:2px;background:linear-gradient(#1f2430,#3b82f6)}
+.foot{position:absolute;left:64px;bottom:34px;color:#6b7280;font-size:14px}
+</style><body>
+<div class="k">DAILY-LLM · ROADMAP</div>
+<h1>从零学大模型：整体路线</h1>
+<div class="sub">五层递进。先把第 3 层的注意力做透，其余按顺序补齐。</div>
+<div class="leg"><span><span class="dot d1"></span>已完成</span><span><span class="dot d2"></span>待写</span></div>
+<div class="rows">
+<div class="row"><div class="lab"><b>0 · 数学</b><small>读得懂公式</small></div><div class="chips"><span class="c">线性代数</span><span class="c">概率与统计</span><span class="c">微积分与梯度</span><span class="c">优化直觉</span></div></div>
+<div class="row"><div class="lab"><b>1 · 传统机器学习</b><small>学会“学习”这件事</small></div><div class="chips"><span class="c">线性 / 逻辑回归</span><span class="c">树与集成</span><span class="c">SVM</span><span class="c">聚类与降维</span><span class="c">评估与过拟合</span></div></div>
+<div class="row"><div class="lab"><b>2 · 深度学习基础</b><small>神经网络怎么训练</small></div><div class="chips"><span class="c">神经网络与反向传播</span><span class="c">优化器</span><span class="c">正则化与归一化</span><span class="c">CNN</span><span class="c">RNN / LSTM</span></div></div>
+<div class="row on"><div class="lab"><b>3 · 大模型</b><small>当前主体</small></div><div class="chips"><span class="c ok">注意力系列<i>13 篇 · 互动页 · 图卡</i></span><span class="c">Transformer 块</span><span class="c">预训练</span><span class="c">微调 · LoRA</span><span class="c">对齐 · RLHF / DPO</span><span class="c">推理模型</span><span class="c">多模态</span></div></div>
+<div class="row"><div class="lab"><b>4 · 工程</b><small>跑得起来、用得起</small></div><div class="chips"><span class="c">分布式训练</span><span class="c">量化</span><span class="c">推理与服务</span><span class="c">部署与评测</span></div></div>
+</div>
+<div class="foot">注意力系列里的 KV cache、FlashAttention 等已涉及第 4 层的一小部分，完整工程内容仍待写。</div>
+</body></html>
