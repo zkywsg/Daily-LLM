@@ -1,7 +1,7 @@
 # 设计文档：学习、TikTok、GitHub 三出口的统一内容流水线
 
 **日期**：2026-11-23
-**状态**：已落地（2026-11-26）。实际目录与本文第 3、4 节的草案不同：新内容放在 `learn/<层>/<知识点>/`（讲解 `README.md`、`demo/`、`cards/`），共享脚本在 `learn/3-llm/_shared/`；注意力系列 13 个知识点已完成。发布用 `learn/build-site.mjs` + `.github/workflows/pages.yml`。旧的 19 个家族与 `foundations/` 暂未归档。
+**状态**：已落地（2026-11-26）。实际目录与本文第 3、4 节的草案不同：新内容放在 `learn/<层>/<知识点>/`（讲解 `README.md`、`demo/`、`cards/`），共享脚本在 `learn/3-llm/_shared/`；注意力系列 13 个知识点已完成。发布用 `learn/build-site.mjs` + `.github/workflows/pages.yml`。旧的 19 个家族与 `foundations/` 已于 2026-11-26 归档到 `_archive/v1/`。
 **影响范围**：新增前置层、新增每知识点的图与图卡、新增 Pages 站点；现有 19 家族与 foundations 不改正文
 
 ## 1. 目标

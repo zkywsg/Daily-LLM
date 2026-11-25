@@ -4,6 +4,8 @@
 
 包含：
 
+- `v1/` — 2026-11-26 归档的旧版内容：19 个家族目录、`foundations/`、`projects/`、`TIMELINE.md`、`README_EN.md`。目录内部的相对链接未改，按原结构互相可用；`web/` 与 `scripts/` 仍指向旧位置，已失效
+
 - `timeline/` — 旧的"按年"目录（已被仓库根下 15 个家族目录 + `TIMELINE.md` 替代）
 - `tracks/` — 旧的"按主题"目录（vision/language/scale-multimodal/alignment/systems，已被家族结构替代）
 - `foundations-old/` — 旧 `foundations/` 子目录（deep-learning/math/representations/structures），等待按新 `foundations/NN-xxx/` 分类重写

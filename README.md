@@ -11,7 +11,7 @@
 </p>
 
 <p>
-  <a href="README_EN.md"><strong>English</strong></a>
+  <a href="_archive/v1/README_EN.md"><strong>English</strong></a>
   ·
   <a href="#learn"><strong>从零学</strong></a>
   ·
@@ -29,7 +29,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-0F172A.svg?style=flat-square)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-2563EB.svg?style=flat-square)](https://www.python.org/downloads/)
 [![Phases](https://img.shields.io/badge/Phases-6%2BTimeline-059669.svg?style=flat-square)](./)
-[![Bilingual](https://img.shields.io/badge/Docs-English%20%7C%20%E4%B8%AD%E6%96%87-D97706.svg?style=flat-square)](README_EN.md)
+[![Bilingual](https://img.shields.io/badge/Docs-English%20%7C%20%E4%B8%AD%E6%96%87-D97706.svg?style=flat-square)](_archive/v1/README_EN.md)
 
 </div>
 
@@ -69,32 +69,32 @@
 
 <a id="timeline"></a>
 
-## 时间线：19 个家族（1986–2025）
+## 旧版：19 个家族时间线（已归档，仅供查阅）
 
 | # | 家族 | 关键年份 | 一句话定位 |
 |---|------|---------|-----------|
-| 01 | [CNN 卷积神经网络](01-cnn/) | 2012– | 把视觉特征从手工设计交给反向传播 |
-| 02 | [RNN / LSTM / GRU](02-rnn-lstm/) | 1997, 2014– | 给神经网络装上"记忆" |
-| 03 | [Word Embedding](03-word-embedding/) | 2013– | 让"词"有了分布式的语义坐标 |
-| 04 | [GAN](04-gan/) | 2014– | 用对抗博弈学会"生成" |
-| 05 | [Transformer](05-transformer/) | 2017 | 用纯注意力替代循环，彻底并行 |
-| 06 | [BERT 系预训练](06-bert-family/) | 2018– | 双向预训练 + 微调成为 NLP 新范式 |
-| 07 | [GPT 系 + Scaling](07-gpt-scaling/) | 2018–2020 | 把规模做到底，涌现 Few-shot |
-| 08 | [视觉 Transformer (ViT)](08-vit/) | 2020– | Transformer 反攻视觉 |
-| 09 | [多模态对齐](09-multimodal-clip/) | 2021– | 让"图"和"文"住进同一个空间 |
-| 10 | [扩散模型](10-diffusion/) | 2020– | 生成的新王，从噪声到图像 |
-| 11 | [PEFT / LoRA](11-peft-lora/) | 2021– | 把大模型微调成本压到普通人能玩 |
-| 12 | [对齐与 RLHF](12-rlhf-alignment/) | 2022– | 把"会答"变成"答得好" |
-| 13 | [MoE 与高效推理](13-moe-efficient/) | 2023– | 大模型在不变贵的前提下变更大 |
-| 14 | [RAG 与 Agent](14-rag-agent/) | 2023– | 把模型接上外部世界 |
-| 15 | [推理模型 (o1/R1)](15-reasoning-o1-r1/) | 2024– | 推理时多想几步，能力再上一个台阶 |
-| 16 | [世界模型 / 视频生成](16-world-models/) | 2018– | 学习环境动态，从想象训练走向可交互视频世界 |
-| 17 | [图神经网络](17-graph-neural-networks/) | 2017– | 把深度学习扩展到任意图结构 |
-| 18 | [语音 / 音频模型](18-speech-audio/) | 2020– | 从自监督语音表征走向音频 token 生成 |
-| 19 | [推荐系统](19-recommendation/) | 2016– | 从特征记忆走向兴趣注意力与图表征学习 |
+| 01 | [CNN 卷积神经网络](_archive/v1/01-cnn/) | 2012– | 把视觉特征从手工设计交给反向传播 |
+| 02 | [RNN / LSTM / GRU](_archive/v1/02-rnn-lstm/) | 1997, 2014– | 给神经网络装上"记忆" |
+| 03 | [Word Embedding](_archive/v1/03-word-embedding/) | 2013– | 让"词"有了分布式的语义坐标 |
+| 04 | [GAN](_archive/v1/04-gan/) | 2014– | 用对抗博弈学会"生成" |
+| 05 | [Transformer](_archive/v1/05-transformer/) | 2017 | 用纯注意力替代循环，彻底并行 |
+| 06 | [BERT 系预训练](_archive/v1/06-bert-family/) | 2018– | 双向预训练 + 微调成为 NLP 新范式 |
+| 07 | [GPT 系 + Scaling](_archive/v1/07-gpt-scaling/) | 2018–2020 | 把规模做到底，涌现 Few-shot |
+| 08 | [视觉 Transformer (ViT)](_archive/v1/08-vit/) | 2020– | Transformer 反攻视觉 |
+| 09 | [多模态对齐](_archive/v1/09-multimodal-clip/) | 2021– | 让"图"和"文"住进同一个空间 |
+| 10 | [扩散模型](_archive/v1/10-diffusion/) | 2020– | 生成的新王，从噪声到图像 |
+| 11 | [PEFT / LoRA](_archive/v1/11-peft-lora/) | 2021– | 把大模型微调成本压到普通人能玩 |
+| 12 | [对齐与 RLHF](_archive/v1/12-rlhf-alignment/) | 2022– | 把"会答"变成"答得好" |
+| 13 | [MoE 与高效推理](_archive/v1/13-moe-efficient/) | 2023– | 大模型在不变贵的前提下变更大 |
+| 14 | [RAG 与 Agent](_archive/v1/14-rag-agent/) | 2023– | 把模型接上外部世界 |
+| 15 | [推理模型 (o1/R1)](_archive/v1/15-reasoning-o1-r1/) | 2024– | 推理时多想几步，能力再上一个台阶 |
+| 16 | [世界模型 / 视频生成](_archive/v1/16-world-models/) | 2018– | 学习环境动态，从想象训练走向可交互视频世界 |
+| 17 | [图神经网络](_archive/v1/17-graph-neural-networks/) | 2017– | 把深度学习扩展到任意图结构 |
+| 18 | [语音 / 音频模型](_archive/v1/18-speech-audio/) | 2020– | 从自监督语音表征走向音频 token 生成 |
+| 19 | [推荐系统](_archive/v1/19-recommendation/) | 2016– | 从特征记忆走向兴趣注意力与图表征学习 |
 
-> 按年份速查：[TIMELINE.md](TIMELINE.md)（自动生成）
-> 横切基础：[foundations/](foundations/)
+> 按年份速查：[TIMELINE.md](_archive/v1/TIMELINE.md)（自动生成）
+> 横切基础：[foundations/](_archive/v1/foundations/)
 
 ---
 
@@ -120,12 +120,11 @@ npm run dev
 
 ## 仓库结构
 
-- `01-cnn/` … `19-recommendation/` — 19 个架构/范式家族
-- `foundations/` — 横切基础（激活、反传、优化器、归一化、注意力机制…）
-- `projects/` — 跨家族实战项目
-- `web/` — 可视化网页
-- `TIMELINE.md` — 自动生成的按年份索引
-- `_archive/` — 旧 `timeline/` 与 `tracks/` 内容，作为家族内容重写时的素材源
+- `learn/` — **新版从零学内容**（讲解、互动页、TikTok 图卡），当前主体
+- `_archive/v1/` — 旧版 19 个家族、`foundations/`、`projects/`、`TIMELINE.md`、`README_EN.md`（只读）
+- `_archive/` 其余 — 更早的 `timeline/`、`tracks/`、`foundations-old/`
+- `web/` — 旧时间线网页（读取旧内容，已不再对应；同时提供 `learn/` 构建所需的 marked、katex 依赖）
+- `scripts/` — 旧时间线生成脚本
 
 ---
 
