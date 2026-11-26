@@ -3,7 +3,7 @@
 // 自动扫描 learn/<层>/<知识点>/README.md，新增知识点后重跑即可。
 import { createRequire } from "node:module";
 import { readdirSync, readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, posix } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -26,6 +26,7 @@ function renderMath(md) {
   }).join("");
 }
 
+const REPO = "https://github.com/zkywsg/Daily-LLM/blob/master/learn/";
 const topics = [];
 for (const layer of readdirSync(here).sort()) {
   const lp = join(here, layer);
@@ -40,6 +41,10 @@ for (const layer of readdirSync(here).sort()) {
     let html = marked.parse(renderMath(md));
     // 指向兄弟知识点目录的链接（../xxx/）改成页内锚点，这样在线站点里也能跳转
     html = html.replace(/href="\.\.\/([^/"]+)\/?"/g, (_, d) => `href="#${d}"`);
+    // 指向图卡文件夹的链接跳到本页图卡区（网页上无法列出文件夹）
+    html = html.replace(/href="cards\/out\/?"/g, `href="#t${topics.length}-cards"`);
+    // 其他 Markdown 文件在网页上打不开或只显示原始文本，改到 GitHub 上看
+    html = html.replace(/href="(?!https?:|#)([^"#]+\.md)(#[^"]*)?"/g, (_, u, h = "") => `href="${REPO}${posix.normalize(`${rel}/${u}`)}${h}"`);
     html = html.replace(/(src|href)="(?!https?:|#|data:)([^"]+)"/g, (_, a, u) => `${a}="${rel}/${u}"`);
     const cardsDir = join(dir, "cards/out");
     const cards = existsSync(cardsDir) ? readdirSync(cardsDir).filter((f) => f.endsWith(".png")).sort() : [];

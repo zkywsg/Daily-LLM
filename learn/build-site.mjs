@@ -19,6 +19,6 @@ writeFileSync(join(out, ".nojekyll"), "");
 for (const t of readdirSync(join(out, "3-llm"))) {
   const f = join(out, "3-llm", t, "demo/index.html");
   if (!existsSync(f) || !statSync(f).isFile()) continue;
-  writeFileSync(f, readFileSync(f, "utf8").replace(/href="\.\.\/README\.md"/g, `href="../../../index.html#${t}"`));
+  writeFileSync(f, readFileSync(f, "utf8").replace(/href="\.\.\/README\.md"/g, `href="../../../index.html#${t}" target="_top"`));
 }
 console.log("site ->", out);
