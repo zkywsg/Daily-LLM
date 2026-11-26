@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>迷你 GPT · 在浏览器里运行</title>
+<link rel="stylesheet" href="../../_shared/ui.css">
+<style>.out{font-size:20px;line-height:2;min-height:64px;background:#000;border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin-top:10px;word-break:break-all}.out .g{color:var(--accent)}.out span{cursor:pointer;border-bottom:2px solid transparent}.out span.sel{border-color:var(--warn)}.heads{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}.heads>div{border:1px solid var(--line);border-radius:6px;padding:6px;cursor:pointer}.heads>div.off{opacity:.35;border-color:var(--warn)}.quiz{display:flex;flex-wrap:wrap;gap:6px}.quiz span{font-size:12.5px;border:1px solid var(--line2);border-radius:4px;padding:2px 8px}.quiz span.bad{border-color:#ef4444;color:#ef4444}</style>
+</head>
+<body>
+<main>
+  <h1>迷你 GPT · 在浏览器里运行</h1>
+  <p class="sub">27,520 个参数，用 NumPy 从零训练，权重已内置。下面每个数字都是页面现场算出来的。对应讲解：<a href="../README.md">README</a>。</p>
+
+  <section>
+    <h2><span class="step">1</span>让它续写</h2>
+    <input type="text" id="prompt" value="熊猫住在" aria-label="开头">
+    <div class="chips" id="presets"></div>
+    <div>温度 <b id="tv"></b><input type="range" id="temp" min="0" max="2" step="0.1" value="0" aria-label="温度"></div>
+    <div>top-k <b id="kv"></b><input type="range" id="topk" min="0" max="10" step="1" value="0" aria-label="top-k"></div>
+    <button class="btn" id="one" type="button">生成 1 个字</button> <button class="btn" id="many" type="button">生成 20 个字</button> <button class="btn" id="reset" type="button">清空重来</button>
+    <div class="out" id="out"></div>
+    <div class="note" id="unk"></div>
+    <h2 style="margin-top:14px">下一个字的概率（前 8）</h2>
+    <div id="probs"></div>
+    <p class="note">它只认识 48 个字，其他字会被忽略。点生成结果里的任意一个字，下面几节会分析“看到它为止”的状态。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">2</span>一层一层地猜</h2>
+    <div>把每一层之后的向量直接送进输出层，看答案是在哪一层出现的。</div>
+    <div id="lens"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">3</span>8 个注意力头在看什么</h2>
+    <div>每个小格是“当前位置”分给前面各字的权重。<b>点一个头可以把它关掉</b>（输出置零），上面的预测和下面的考试会跟着变。</div>
+    <div class="heads" id="heads"></div>
+    <div style="margin-top:12px">选一个头看完整矩阵：<span class="chips" id="pick" style="display:inline-flex"></span></div>
+    <div id="matrix" class="scroll"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">4</span>20 道知识题</h2>
+    <div class="cmp"><div class="on">当前模型<b id="score"></b></div><div>被关掉的头<b id="offs"></b></div></div>
+    <div class="quiz" id="quiz" style="margin-top:12px"></div>
+    <p class="note">红框是答错的题。试着只关 L0H0，再把它打开。关掉一个头后分数下降，只说明它对这些题有用，不等于知道它“负责什么”。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">5</span>训练过程</h2>
+    <div id="curve"></div>
+    <div>拖到某个训练阶段，看它当时怎么续写 <b id="sv"></b><input type="range" id="snap" min="0" step="1" value="0" aria-label="训练阶段"></div>
+    <div class="mono" id="snaptext"></div>
+  </section>
+</main>
+<script src="model.js"></script>
+<script src="../../_shared/minigpt.js"></script>
+<script src="../../_shared/tf-viz.js"></script>
+<script src="../../_shared/viz.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id), M = MODEL, V = TFV, nH = M.cfg.n_heads, nL = M.cfg.n_layers;
+  const base = MiniGPT.load(M);
+  let off = new Set(), model = base, ids = [], prompt = 0, sel = 0, pick = "1.2", R = Math.random;
+  const ch = (i) => M.chars[i];
+  function setPrompt() {
+    const t = $("prompt").value, bad = [...t].filter((c) => !base.has(c));
+    ids = base.encode(t); prompt = ids.length; sel = ids.length - 1;
+    $("unk").textContent = bad.length ? "词表里没有，已忽略：" + bad.join(" ") : "";
+    render();
+  }
+  function step() {
+    if (!ids.length) return;
+    const p = MiniGPT.nextProbs(model.forward(ids).logits, +$("temp").value, +$("topk").value);
+    let r = R(), i = 0; while (i < p.length - 1 && (r -= p[i]) > 0) i++;
+    if (+$("temp").value === 0) i = p.indexOf(1);
+    ids.push(i); sel = ids.length - 1;
+  }
+  function render() {
+    $("tv").textContent = +$("temp").value === 0 ? "0（总选最大）" : (+$("temp").value).toFixed(1); $("kv").textContent = +$("topk").value || "不限";
+    if (!ids.length) { $("out").textContent = "请输入词表里的字，例如“小猫”。"; ["probs", "lens", "heads", "matrix"].forEach((i) => ($(i).innerHTML = "")); return; }
+    $("out").innerHTML = ids.map((id, i) => `<span class="${i >= prompt ? "g" : ""} ${i === sel ? "sel" : ""}" data-i="${i}">${ch(id)}</span>`).join("");
+    $("out").querySelectorAll("span").forEach((s) => (s.onclick = () => { sel = +s.dataset.i; render(); }));
+    const ctx = ids.slice(0, sel + 1), f = model.forward(ctx), t = +$("temp").value;
+    const p = MiniGPT.nextProbs(f.logits, t, +$("topk").value);
+    const top = (a, k) => a.map((v, i) => [v, i]).sort((x, y) => y[0] - x[0]).slice(0, k);
+    $("probs").innerHTML = top(p, 8).map(([v, i]) => `<div class="row" style="grid-template-columns:40px 1fr 60px"><span>${ch(i)}</span><div class="bar"><i style="width:${(v * 100).toFixed(1)}%"></i></div><span class="num">${(v * 100).toFixed(1)}%</span></div>`).join("");
+    $("lens").innerHTML = `<table class="mat"><tr><th>位置</th><th>第一猜</th><th>第二猜</th><th>第三猜</th></tr>${f.lens.map((l, k) => `<tr><th>${k === 0 ? "进入第 1 层前" : "第 " + k + " 层后"}</th>${top(MiniGPT.softmax(l), 3).map(([v, i]) => `<td style="background:rgba(59,130,246,${(v * 0.5).toFixed(2)})">${ch(i)} ${(v * 100).toFixed(1)}%</td>`).join("")}</tr>`).join("")}</table>`;
+    const toks = f.ids.map(ch), n = toks.length;
+    let h = "";
+    for (let l = 0; l < nL; l++) for (let k = 0; k < nH; k++) {
+      const row = f.attn[l][k][n - 1];
+      const key = l + "." + k, isOff = off.has(key);
+      const best = row.indexOf(Math.max(...row));
+      h += `<div role="button" tabindex="0" class="${isOff ? "off" : ""}" data-h="${key}"><b>L${l}H${k}</b> <span class="note">${isOff ? "已关闭" : "最关注 " + toks[best] + " " + (row[best] * 100).toFixed(0) + "%"}</span><div style="display:flex;flex-wrap:wrap;gap:1px;margin-top:4px">${row.map((w, j) => `<span title="${toks[j]} ${(w * 100).toFixed(0)}%" style="font-size:11px;width:17px;text-align:center;border-radius:2px;background:rgba(59,130,246,${Math.min(1, w * 1.3).toFixed(2)})">${toks[j]}</span>`).join("")}</div></div>`;
+    }
+    $("heads").innerHTML = h;
+    $("heads").querySelectorAll("[data-h]").forEach((d) => { d.onclick = () => toggle(d.dataset.h); d.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(d.dataset.h); } }; });
+    const [pl, ph] = pick.split(".").map(Number);
+    const m = VIZ.heat(f.attn[pl][ph], { cell: 24, rows: toks, cols: toks, max: 1, nums: false, gut: 26, skip: (i, j) => j > i });
+    $("matrix").innerHTML = `<svg class="viz" viewBox="0 0 ${m.w + 8} ${m.h + 8}" style="width:${m.w + 8}px">${m.svg}</svg><div class="note">L${pl}H${ph}：行是提问位置，列是被看位置。</div>`;
+  }
+  function exam() {
+    const q = MiniGPT.quiz(model);
+    $("score").textContent = q.filter((x) => x.ok).length + " / " + q.length;
+    $("offs").textContent = off.size ? [...off].sort().map((k) => "L" + k.replace(".", "H")).join(" ") : "无";
+    $("quiz").innerHTML = q.map((x) => `<span class="${x.ok ? "" : "bad"}">${x.head}<b>${x.got}</b></span>`).join("");
+  }
+  function toggle(key) {
+    off.has(key) ? off.delete(key) : off.add(key);
+    model = MiniGPT.load(MiniGPT.ablate(M, [...off].map((k) => { const [layer, head] = k.split(".").map(Number); return { layer, head }; })));
+    render(); exam();
+  }
+  for (let l = 0; l < nL; l++) for (let k = 0; k < nH; k++) { const key = l + "." + k, b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = "L" + l + "H" + k; b.setAttribute("aria-pressed", key === pick); b.onclick = () => { pick = key; $("pick").querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", c === b)); render(); }; $("pick").appendChild(b); }
+  ["熊猫住在", "小猫", "兔子吃了", "小鸟喜欢吃虫子。熊猫喜欢吃"].forEach((t) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.textContent = t; b.onclick = () => { $("prompt").value = t; setPrompt(); }; $("presets").appendChild(b); });
+  $("prompt").oninput = setPrompt; $("reset").onclick = setPrompt;
+  $("one").onclick = () => { step(); render(); }; $("many").onclick = () => { for (let i = 0; i < 20; i++) step(); render(); };
+  $("temp").oninput = render; $("topk").oninput = render;
+  $("curve").innerHTML = V.wrap(V.lines([{ name: "验证损失", color: V.C.blue, pts: M.curve }], { w: 640, h: 260, ymin: 0, ymax: 4, xlabel: "训练步数", ref: { y: M.optimal, label: "最优值 " + M.optimal.toFixed(3) }, noLegend: true }));
+  $("snap").max = M.snapshots.length - 1;
+  function snap() { const s = M.snapshots[+$("snap").value]; $("sv").textContent = "第 " + s.step + " 步 · 损失 " + s.val; $("snaptext").textContent = Object.entries(s.texts).map(([p, t]) => p + " → " + t).join("\n"); }
+  $("snap").oninput = snap;
+  setPrompt(); exam(); snap();
+})();
+</script>
+</body>
+</html>

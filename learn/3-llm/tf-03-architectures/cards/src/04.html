@@ -1,0 +1,22 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>
+:root{--bg:#000000;--ink:#ededed;--mute:#8a8a8a;--line:#242424;--panel:#0a0a0a;--accent:#3b82f6;--dim:#2a2a2a}
+*{box-sizing:border-box;margin:0}
+html,body{width:1080px;height:1920px;background:var(--bg);color:var(--ink);font-family:"PingFang SC","Noto Sans SC",system-ui,sans-serif}
+.card{width:1080px;height:1920px;padding:170px 90px 400px;display:flex;flex-direction:column}
+.main{flex:1;display:flex;flex-direction:column;justify-content:center;margin-top:-40px}
+.tag{font-size:34px;color:var(--accent);letter-spacing:3px;font-weight:700}
+h1{font-size:96px;line-height:1.2;margin-top:34px;font-weight:700}
+h2{font-size:76px;line-height:1.25;margin-top:28px;font-weight:700}
+p{font-size:50px;line-height:1.55;margin-top:34px}
+.mute{color:var(--mute)} .a{color:var(--accent)} .s{font-size:38px}
+.small{font-size:30px;color:var(--mute);margin-top:24px}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:36px 40px;margin-top:40px}
+.row{display:grid;grid-template-columns:170px 1fr 120px;gap:20px;align-items:center;margin:16px 0;font-size:44px}
+.bar{height:44px;background:var(--bg);border:2px solid var(--line);border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.row.me .bar i{background:var(--dim)}.num{text-align:right;color:var(--mute);font-size:40px;font-variant-numeric:tabular-nums}
+.big{font-size:60px;font-weight:700;line-height:1.5}
+svg.viz text{fill:#ededed;font:20px ui-monospace,Menlo,monospace}svg.viz .vs{fill:#8a8a8a;font:20px "PingFang SC",sans-serif}svg.viz .vt{font:700 26px "PingFang SC",sans-serif}svg.viz .vn{fill:#fff;font:19px ui-monospace,Menlo,monospace}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+</style></head><body><div class="card"><div class="main"><div class="tag">编码器 + 解码器 · T5</div><h2>交叉注意力：<br>解码时<span class="a" style="color:#e5a50a">回看源句</span></h2><style>.tfc text{fill:#ededed;font:13px "PingFang SC",sans-serif}.tfc .vs{fill:#8a8a8a;font-size:12.5px}.tfc .vt{font-weight:700;font-size:15px}.tfc{display:block;margin:30px auto 0}
+table.t{border-collapse:collapse;width:100%;margin-top:40px;font-size:36px}table.t td,table.t th{border:2px solid #242424;padding:18px 16px;text-align:right}table.t th{color:#8a8a8a;font-weight:500}table.t td:first-child,table.t th:first-child{text-align:left}table.t tr.on td{background:#0f1c33;color:#fff;font-weight:700}
+.mono{font-family:ui-monospace,Menlo,monospace}</style><svg class="tfc" viewBox="0 0 244 216" width="640" xmlns="http://www.w3.org/2000/svg"><text x="84" y="24" text-anchor="middle" class="vs">我</text><text x="128" y="24" text-anchor="middle" class="vs">喜欢</text><text x="172" y="24" text-anchor="middle" class="vs">那只</text><text x="216" y="24" text-anchor="middle" class="vs">猫</text><text x="54" y="60" text-anchor="end" class="vs">&lt;s&gt;</text><rect x="63" y="35" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="107" y="35" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="151" y="35" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="195" y="35" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><text x="54" y="104" text-anchor="end" class="vs">I</text><rect x="63" y="79" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="107" y="79" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="151" y="79" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="195" y="79" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><text x="54" y="148" text-anchor="end" class="vs">like</text><rect x="63" y="123" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="107" y="123" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="151" y="123" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="195" y="123" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><text x="54" y="192" text-anchor="end" class="vs">cats</text><rect x="63" y="167" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="107" y="167" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="151" y="167" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/><rect x="195" y="167" width="41" height="41" rx="3" fill="#e5a50a" stroke="none"/></svg><p class="s mute">Q 来自解码器，K、V 来自编码器。表是 m × n，源句只需编码一次。</p></div><div class="small">4 / 6 · 三种架构</div></div></body></html>

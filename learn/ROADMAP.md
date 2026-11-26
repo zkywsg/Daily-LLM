@@ -1,6 +1,6 @@
 # 从零学机器学习、深度学习与大模型：完整大纲
 
-> 由 [roadmap.json](roadmap.json) 生成（`node learn/build-roadmap.mjs`）。6 层、45 个知识块、191 个知识点，已完成 13。
+> 由 [roadmap.json](roadmap.json) 生成（`node learn/build-roadmap.mjs`）。6 层、45 个知识块、191 个知识点，已完成 17。
 > 每个知识块的旧版素材位置记录在 roadmap.json 的 `old` 字段（`_archive/v1/` 下，质量未重新核对，写新版时需重写）。
 
 ![](../.github/assets/roadmap.png)
@@ -51,12 +51,12 @@
 
 ### 3 · 大模型
 
-Transformer 主线：结构 → 预训练 → 对齐 → 推理。共 9 个知识块、48 个知识点，已完成 13。
+Transformer 主线：结构 → 预训练 → 对齐 → 推理。共 9 个知识块、48 个知识点，已完成 17。
 
 | 知识块 | 包含的知识点 | 状态 |
 |---|---|---|
 | [**注意力系列**](3-llm/01-attention/) | 动机、基础 A：q/k/v 与加权求和、基础 B：多头、基础 C：掩码与位置、手算一遍、矩阵与形状、softmax 与 √d 梯度推导、多头的内部、位置编码：正弦 / RoPE / ALiBi、从零实现、真实模型里的注意力、高效注意力：KV cache / GQA / FlashAttention、综合自测与小项目 | 已完成 |
-| **Transformer 完整模型** | 残差与 Pre/Post-LN、FFN 与 SwiGLU、Encoder / Decoder / Decoder-only、从零写一个迷你 GPT | 待写 |
+| [**Transformer 完整模型**](3-llm/tf-01-block/) | 残差与 Pre/Post-LN、FFN 与 SwiGLU、Encoder / Decoder / Decoder-only、从零训练迷你 GPT | 已完成 |
 | **现代结构演进** | MoE 稀疏专家、MLA 与 GQA、长上下文与位置外推、状态空间模型与 Mamba、线性注意力 | 待写 |
 | **预训练模型家族** | BERT / RoBERTa、GPT-1/2/3、T5 与统一文本到文本、Scaling Laws 与 Chinchilla | 待写 |
 | **数据与训练配方** | 数据采集、清洗、去重、分词词表设计、批量、学习率与训练稳定性、数据配比与课程学习、合成数据 | 待写 |

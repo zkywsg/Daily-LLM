@@ -29,7 +29,8 @@ function renderMath(md) {
 const topics = [];
 for (const layer of readdirSync(here).sort()) {
   const lp = join(here, layer);
-  if (!statSync(lp).isDirectory()) continue;
+  // 只扫描“数字-名称”的层目录，避开 node_modules、_site、_shared 等
+  if (!/^\d+-/.test(layer) || !statSync(lp).isDirectory()) continue;
   for (const t of readdirSync(lp).sort()) {
     const dir = join(lp, t);
     if (!existsSync(join(dir, "README.md"))) continue;
@@ -47,7 +48,7 @@ for (const layer of readdirSync(here).sort()) {
   }
 }
 
-const short = (t) => t.title.replace(/^注意力 (\d+)：/, "$1 · ").replace(/^基础 ([ABC])：/, "基础 $1 · ");
+const short = (t) => t.title.replace(/^注意力 (\d+)：/, "$1 · ").replace(/^基础 ([ABC])：/, "基础 $1 · ").replace(/^Transformer (\d+)：/, "T$1 · ");
 const side = topics.map((t, i) => `<div class="g"><a class="t" href="#t${i}" data-t="t${i}">${short(t)}</a>
   <div class="sub"><a href="#t${i}-doc">讲解</a><a href="#t${i}-cards">图卡 ${t.cards.length}</a>${t.demo ? `<a href="#t${i}-demo">互动版</a>` : ""}</div></div>`).join("");
 const body = topics.map((t, i) => `
@@ -95,7 +96,7 @@ section{border:1px solid var(--line);border-radius:8px;background:var(--card);pa
 iframe{width:100%;height:1100px;border:1px solid var(--line);border-radius:6px;background:#000;display:block}
 @media(max-width:900px){aside{display:none}main{margin:0;padding:20px 14px 80px}section{padding:18px}}
 </style></head><body>
-<aside><h1>Daily-LLM · 学习资料</h1><div class="meta">${topics.length} 个知识点 · 离线可看</div><div class="grp">3 · 大模型 / 注意力</div>${side}</aside>
+<aside><h1>Daily-LLM · 学习资料</h1><div class="meta">${topics.length} 个知识点 · 离线可看</div><div class="grp">3 · 大模型</div>${side}</aside>
 <main>${body}</main>
 <script>
 (function(){var g=[].slice.call(document.querySelectorAll("aside .g"));var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var id=e.target.id;g.forEach(function(x){x.classList.toggle("on",x.querySelector(".t").dataset.t===id)})}})},{rootMargin:"-10% 0px -80% 0px"});

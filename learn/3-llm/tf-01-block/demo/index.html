@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>残差与 LayerNorm · 互动</title>
+<link rel="stylesheet" href="../../_shared/ui.css">
+</head>
+<body>
+<main>
+  <h1>残差与 LayerNorm · 互动</h1>
+  <p class="sub">所有数字在页面里实时计算。对应讲解：<a href="../README.md">README</a>。</p>
+
+  <section>
+    <h2><span class="step">1</span>一个层长什么样</h2>
+    <div class="chips" id="kind"><button class="chip" data-k="pre" aria-pressed="true" type="button">Pre-LN</button><button class="chip" data-k="post" aria-pressed="false" type="button">Post-LN</button></div>
+    <div id="blk" style="max-width:300px;margin:auto"></div>
+    <div class="mono" id="formula"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">2</span>归一化计算器</h2>
+    <div>拖动 4 个分量，再试试“整体放大”和“整体平移”，看哪种归一化的结果不动。</div>
+    <div id="vec"></div>
+    <div>整体放大 <b id="sv"></b><input type="range" id="scale" min="0.2" max="5" step="0.1" value="1" aria-label="整体放大"></div>
+    <div>整体平移 <b id="tv"></b><input type="range" id="shift" min="-10" max="100" step="1" value="0" aria-label="整体平移"></div>
+    <div id="normOut"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">3</span>叠很多层会发生什么</h2>
+    <div>随机初始化、不训练。每层 f(z) = GELU(Wz)，5 个随机种子取几何平均。纵轴是对数刻度。</div>
+    <div>层数 <b id="lv"></b><input type="range" id="L" min="4" max="48" step="2" value="24" aria-label="层数"></div>
+    <div>放大倍数 gain（W 的初始尺度）<b id="gv"></b><input type="range" id="g" min="0.5" max="2" step="0.1" value="1" aria-label="gain"></div>
+    <div id="grad"></div>
+    <div id="fwd"></div>
+    <div id="tbl"></div>
+    <p class="note">量的是对中间向量的梯度（相对最顶层）。随机网络的结果，不等于训练中的表现。把 gain 调到 1.5 以上，“无残差”会从消失变成爆炸。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">4</span>真的训练一次：去掉残差会怎样</h2>
+    <div class="chips" id="abl"></div>
+    <div id="ablChart"></div>
+    <div class="mono" id="ablText"></div>
+    <p class="note">迷你 GPT（Pre-LN），训练 1500 步。曲线是第 1 个种子；数字是 3 个种子。由 <code>tf-04-mini-gpt/code/train.py --ablate</code> 生成。</p>
+  </section>
+</main>
+<script src="../../_shared/tf-engine.js"></script>
+<script src="../../_shared/tf-viz.js"></script>
+<script src="../../tf-04-mini-gpt/demo/ablation.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id), V = TFV, col = { plain: V.C.red, res: V.C.amber, pre: V.C.blue, post: V.C.green };
+  const press = (box, b) => box.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", c === b));
+  function blk(k) { $("blk").innerHTML = V.wrap(V.block(k)); $("formula").textContent = k === "pre" ? "x ← x + 注意力(LN(x))\nx ← x + FFN(LN(x))\n…最后再做一次 LN" : "x ← LN(x + 注意力(x))\nx ← LN(x + FFN(x))"; }
+  $("kind").querySelectorAll(".chip").forEach((b) => (b.onclick = () => { press($("kind"), b); blk(b.dataset.k); }));
+  const vals = [2, 4, 6, 8];
+  $("vec").innerHTML = vals.map((v, i) => `<div class="srow"><span style="width:56px">x${i + 1} = <b id="x${i}">${v}</b></span><input type="range" id="r${i}" min="-10" max="10" step="1" value="${v}" aria-label="x${i + 1}"></div>`).join("");
+  function norm() {
+    const s = +$("scale").value, t = +$("shift").value; $("sv").textContent = "×" + s.toFixed(1); $("tv").textContent = (t >= 0 ? "+" : "") + t;
+    const x = vals.map((_, i) => { const v = +$("r" + i).value; $("x" + i).textContent = v; return v * s + t; });
+    const l = TF.layerNorm(x), r = TF.rmsNorm(x), row = (n, a, f) => `<tr><th>${n}</th>${a.map((v) => `<td style="background:rgba(${v >= 0 ? "59,130,246" : "229,165,10"},${Math.min(0.5, Math.abs(v) / 4).toFixed(2)})">${v.toFixed(f)}</td>`).join("")}</tr>`;
+    $("normOut").innerHTML = `<div class="scroll"><table class="mat">${row("实际输入", x, 1)}${row("LayerNorm", l.y, 3)}${row("RMSNorm", r.y, 3)}</table></div><div class="note">均值 ${l.mu.toFixed(2)} · 标准差 ${l.s.toFixed(3)} · 均方根 ${r.s.toFixed(3)}</div>`;
+  }
+  ["r0", "r1", "r2", "r3", "scale", "shift"].forEach((i) => ($(i).oninput = norm));
+  function depth() {
+    const L = +$("L").value, g = +$("g").value; $("lv").textContent = L; $("gv").textContent = g.toFixed(1);
+    const R = Object.keys(TF.MODES).map((m) => [m, TF.depthAvg(m, L, g)]);
+    const ch = (k, t) => V.wrap(V.lines(R.map(([m, r]) => ({ name: TF.MODES[m], color: col[m], pts: r[k].map((v, i) => [i, v]) })), { log: true, w: 640, h: 270, title: t, xlabel: "第几层（0 = 输入端）", charW: 12 }));
+    $("grad").innerHTML = ch("grad", "反向：梯度大小（相对最顶层）"); $("fwd").innerHTML = ch("fwd", "前向：向量大小");
+    const f = (v) => (v >= 0.01 && v < 1000 ? v.toPrecision(2) : v.toExponential(1));
+    $("tbl").innerHTML = `<table class="mat"><tr><th>结构</th><th>输入端梯度</th><th>顶层向量大小</th></tr>${R.map(([m, r]) => `<tr><th>${TF.MODES[m]}</th><td>${f(r.grad[0])}</td><td>${f(r.fwd[L])}</td></tr>`).join("")}</table>`;
+  }
+  let t; ["L", "g"].forEach((i) => ($(i).oninput = () => { clearTimeout(t); $("lv").textContent = $("L").value; $("gv").textContent = (+$("g").value).toFixed(1); t = setTimeout(depth, 60); }));
+  function abl(k) {
+    const rows = ABLATION.rows, r = rows[k], base = k >= 4 ? rows[4] : rows[0];
+    const s = [{ name: base.name, color: V.C.gray, pts: base.curve }]; if (r !== base) s.push({ name: r.name, color: V.C.blue, pts: r.curve });
+    $("ablChart").innerHTML = V.wrap(V.lines(s, { w: 640, h: 260, xlabel: "训练步数", ymin: 0, ymax: 4, ref: { y: ABLATION.optimal, label: "最优值" }, charW: 12 }));
+    $("ablText").textContent = `${r.name}\n验证损失（3 个种子平均）${r.val_mean.toFixed(3)}\n知识题 ${r.correct.join(" / ")}（满分 ${r.total}）\n“小猫”续写：${r.sample}`;
+  }
+  ABLATION.rows.forEach((r, i) => { const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = r.name; b.setAttribute("aria-pressed", i === 5); b.onclick = () => { press($("abl"), b); abl(i); }; $("abl").appendChild(b); });
+  blk("pre"); norm(); depth(); abl(5);
+})();
+</script>
+</body>
+</html>

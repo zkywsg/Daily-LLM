@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>三种架构 · 互动</title>
+<link rel="stylesheet" href="../../_shared/ui.css">
+<style>.tok{display:inline-block;border:1px solid var(--line2);border-radius:5px;padding:3px 10px;margin:0 6px 6px 0;font-size:14px}.tok.m{background:var(--accent);border-color:var(--accent);color:#fff}.tok.r{border-color:var(--warn);color:var(--warn)}.tok.s{border-color:#22c55e;color:#22c55e}.tok.hide{color:#444;border-style:dashed}</style>
+</head>
+<body>
+<main>
+  <h1>三种架构 · 互动</h1>
+  <p class="sub">切换架构，看“谁能看谁”。对应讲解：<a href="../README.md">README</a>。</p>
+
+  <section>
+    <h2><span class="step">1</span>选一种架构</h2>
+    <div class="chips" id="arch"></div>
+    <div id="desc" class="mono"></div>
+    <div>点一个词，看它能看到哪些词：</div>
+    <div id="views"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">2</span>掩码语言模型：随机挖空（BERT）</h2>
+    <div>按 15% 挑目标位置，其中 80% 换成 [MASK]、10% 换随机词、10% 不变。句子很短时一次可能只挑中一两个，多点几次。</div>
+    <div style="margin:10px 0"><button class="btn" id="again" type="button">再抽一次</button> <button class="btn" id="many" type="button">模拟 10 万个词</button></div>
+    <div id="mlm"></div><div class="note" id="stat"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">3</span>下一个词（GPT）</h2>
+    <div>位置 <b id="pv"></b><input type="range" id="pos" min="0" max="5" step="1" value="2" aria-label="位置"></div>
+    <div id="next"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">4</span>交叉注意力的形状</h2>
+    <div>源句长度 n <b id="nv"></b><input type="range" id="n" min="1" max="12" value="3" aria-label="源长度"></div>
+    <div>已生成长度 m <b id="mv"></b><input type="range" id="m" min="1" max="12" value="4" aria-label="目标长度"></div>
+    <div id="shape"></div>
+  </section>
+</main>
+<script src="../../_shared/tf-engine.js"></script>
+<script src="../../_shared/tf-viz.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id), V = TFV;
+  const src = ["我", "喜欢", "那只", "小猫"], tgt = ["<s>", "I", "like", "that", "cat"];
+  const ARCH = {
+    enc: { name: "只有编码器", desc: "代表：BERT。每个词看全句。\n训练：猜被遮住的词。", parts: [["编码器自注意力", src, src, () => true, V.C.blue]] },
+    dec: { name: "只有解码器", desc: "代表：GPT、LLaMA。每个词只看自己和左边。\n训练：猜下一个词。", parts: [["因果自注意力", tgt, tgt, (i, j) => j <= i, V.C.blue]] },
+    both: { name: "编码器 + 解码器", desc: "代表：原始 Transformer、T5。\n编码器看全源句；解码器只看左边，再用交叉注意力看源句。", parts: [["① 编码器", src, src, () => true, V.C.blue], ["② 解码器（因果）", tgt, tgt, (i, j) => j <= i, V.C.blue], ["③ 交叉注意力", tgt, src, () => true, V.C.amber]] },
+  };
+  let cur = "both", sel = 2;
+  function views() {
+    const a = ARCH[cur]; $("desc").textContent = a.desc;
+    $("views").innerHTML = a.parts.map(([name, rows, cols, ok, color], p) => {
+      const s = Math.min(sel, rows.length - 1);
+      const chips = rows.map((t, i) => `<button type="button" class="chip q" data-i="${i}" aria-pressed="${i === s}">${t.replace("<", "&lt;")}</button>`).join("");
+      const see = cols.map((t, j) => `<span class="tok ${ok(s, j) ? "m" : "hide"}">${t.replace("<", "&lt;")}</span>`).join("");
+      const m = V.mask(rows, cols, (i, j) => ok(i, j), { cell: 34, color });
+      m.svg += `<rect x="2" y="${34 + s * 34}" width="${m.w - 4}" height="34" fill="none" stroke="#ededed" stroke-dasharray="4 3"/>`;
+      return `<div style="margin-top:14px"><b>${name}</b><div class="chips">${chips}</div><div>能看到：${see}</div><div style="max-width:${m.w}px">${V.wrap(m)}</div></div>`;
+    }).join("");
+    $("views").querySelectorAll(".q").forEach((b) => (b.onclick = () => { sel = +b.dataset.i; views(); }));
+  }
+  Object.entries(ARCH).forEach(([k, a]) => { const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = a.name; b.setAttribute("aria-pressed", k === cur); b.onclick = () => { cur = k; $("arch").querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", c === b)); views(); }; $("arch").appendChild(b); });
+
+  const sent = "小 猫 没 有 过 马 路 ， 因 为 它 太 累 了 ， 就 在 路 边 睡 着 了".split(" ");
+  const R = TF.rng(11), vocab = [...new Set(sent)].concat(["书", "雨", "跑", "天"]);
+  const draw = () => (R() < 0.15 ? (R => (R < 0.8 ? "mask" : R < 0.9 ? "rand" : "same"))(R()) : null);
+  function mlm() {
+    let kinds = sent.map(draw); if (!kinds.some(Boolean)) kinds[Math.floor(R() * sent.length)] = "mask";
+    $("mlm").innerHTML = sent.map((t, i) => { const k = kinds[i]; return k === "mask" ? `<span class="tok m" title="答案：${t}">[MASK]</span>` : k === "rand" ? `<span class="tok r" title="答案：${t}">${vocab[Math.floor(R() * vocab.length)]}</span>` : k === "same" ? `<span class="tok s">${t}</span>` : `<span class="tok">${t}</span>`; }).join("");
+    $("stat").textContent = "蓝 = [MASK]，黄 = 换成随机词，绿 = 保持原样但仍要预测。悬停可看答案。";
+  }
+  $("again").onclick = mlm;
+  $("many").onclick = () => { const N = 100000, c = { mask: 0, rand: 0, same: 0 }; for (let i = 0; i < N; i++) { const k = draw(); if (k) c[k]++; } const t = c.mask + c.rand + c.same, p = (v, d) => (v / d * 100).toFixed(1) + "%"; $("stat").textContent = `10 万个词里挑中 ${t} 个（${p(t, N)}）；其中 [MASK] ${p(c.mask, t)}、随机词 ${p(c.rand, t)}、不变 ${p(c.same, t)}。`; };
+  const seq = ["小猫", "没有", "过", "马路", "，", "因为", "它"];
+  function next() { const i = +$("pos").value; $("pv").textContent = i + 1; $("next").innerHTML = `<div>输入（可见）：${seq.map((t, j) => `<span class="tok ${j <= i ? "m" : "hide"}">${t}</span>`).join("")}</div><div>要猜：<span class="tok s">${seq[i + 1]}</span></div><div class="note">一个 ${seq.length} 个词的序列，一次前向就提供 ${seq.length - 1} 个训练样本。</div>`; }
+  $("pos").oninput = next;
+  function shape() {
+    const n = +$("n").value, m = +$("m").value; $("nv").textContent = n; $("mv").textContent = m;
+    const g = V.mask(Array.from({ length: m }, (_, i) => "目标" + (i + 1)), Array.from({ length: n }, (_, j) => "源" + (j + 1)), () => true, { cell: 34, color: V.C.amber });
+    $("shape").innerHTML = `<div style="max-width:${g.w}px">${V.wrap(g)}</div><div class="mono">Q（来自解码器）${m} × 64\nK、V（来自编码器）${n} × 64\n分数表 ${m} × ${n} = ${m * n} 个分数\n输出 ${m} × 64\n解码器自注意力：${m} × ${m}，可见 ${m * (m + 1) / 2} 个</div>`;
+  }
+  $("n").oninput = shape; $("m").oninput = shape;
+  views(); mlm(); next(); shape();
+})();
+</script>
+</body>
+</html>

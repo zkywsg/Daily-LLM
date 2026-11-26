@@ -1,6 +1,6 @@
 // 生成 README 顶部横幅 .github/assets/banner.png：整体骨架（6 层）+ 已完成部分的真实图卡
 // 用法：node learn/build-banner.mjs（需要 Edge）
-import { writeFileSync, readFileSync, mkdtempSync } from "node:fs";
+import { writeFileSync, readFileSync, mkdtempSync, readdirSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
@@ -13,13 +13,17 @@ const tmp = mkdtempSync(join(tmpdir(), "banner-"));
 const nodes = R.layers.flatMap((l) => l.groups.flatMap((g) => g.nodes));
 const cnt = (xs) => xs.reduce((a, x) => a + x.items.length, 0);
 const total = cnt(nodes), done = cnt(nodes.filter((x) => x.s === "done"));
+const doneNames = nodes.filter((x) => x.s === "done").map((x) => x.t.replace(" 完整模型", "").replace("系列", "")).join("、");
+const dirs = readdirSync(join(here, "3-llm")).filter((d) => !d.startsWith("_"));
+const nCards = dirs.reduce((a, d) => { const o = join(here, "3-llm", d, "cards/out"); return a + (existsSync(o) ? readdirSync(o).filter((f) => f.endsWith(".png")).length : 0); }, 0);
+const nDemos = dirs.filter((d) => existsSync(join(here, "3-llm", d, "demo/index.html"))).length;
 const card = (t, n) => "file://" + join(here, `3-llm/${t}/cards/out/${n}.png`);
 const rows = R.layers.map((l) => {
   const ns = l.groups.flatMap((g) => g.nodes), n = cnt(ns), d = cnt(ns.filter((x) => x.s === "done"));
   const ex = ns.map((x) => x.t).slice(0, 6).join(" · ");
   return `<div class="r${d ? " on" : ""}"><div class="n">${l.id}</div><div class="m"><b>${l.name}</b><span>${ex}</span></div><div class="c"><b>${d ? d + " / " : ""}${n}</b><span>知识点</span><i><u style="width:${Math.round((d / n) * 100)}%"></u></i></div></div>`;
 }).join("");
-const thumbs = [["01-attention", "06"], ["attn-04-softmax-scale", "04"], ["attn-06-position", "05"], ["attn-09-efficient", "03"]]
+const thumbs = [["01-attention", "06"], ["attn-06-position", "05"], ["tf-01-block", "05"], ["tf-04-mini-gpt", "04"]]
   .map(([t, n]) => `<div class="th"><img src="${card(t, n)}"></div>`).join("");
 const html = `<!doctype html><meta charset="utf-8"><style>
 *{box-sizing:border-box;margin:0}
@@ -46,7 +50,7 @@ h2{font-size:40px;line-height:1.2;color:#3b82f6;margin-bottom:18px}
 <h1>从零学</h1><h2>机器学习 · 深度学习 · 大模型</h2>
 <div class="t">把所有知识自己学一遍，并且全部呈现在这个仓库里：每个知识点一篇讲解，配互动页和 TikTok 图卡。</div>
 <div class="st"><div><b>${R.layers.length}</b><span>层</span></div><div><b>${nodes.length}</b><span>个知识块</span></div><div><b>${total}</b><span>个知识点</span></div><div><b>${done}</b><span>已完成</span></div></div>
-<div class="dn">已完成：大模型 · 注意力系列（13 篇，73 张图卡，12 个互动页）</div>
+<div class="dn">已完成：大模型 · ${doneNames}（${done} 篇，${nCards} 张图卡，${nDemos} 个互动页）</div>
 <div class="ths">${thumbs}</div></div>
 <div class="R">${rows}</div></body>`;
 const hp = join(tmp, "banner.html");

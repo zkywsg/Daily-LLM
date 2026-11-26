@@ -8,7 +8,16 @@
 
 预览：运行 `node learn/build-preview.mjs` 生成 `learn/preview.html`，把所有知识点的讲解、图卡、互动版放在一页里。
 
-## 注意力深度系列（进行中）
+## Transformer 完整模型
+
+| 篇 | 内容 | 状态 |
+|---|---|---|
+| T01 | [残差与 LayerNorm](3-llm/tf-01-block/) | 已做 |
+| T02 | [FFN 与 SwiGLU](3-llm/tf-02-ffn/) | 已做 |
+| T03 | [Encoder / Decoder 三种架构](3-llm/tf-03-architectures/) | 已做 |
+| T04 | [从零训练迷你 GPT](3-llm/tf-04-mini-gpt/) | 已做（训练、对照实验、梯度检查都实际运行过） |
+
+## 注意力深度系列
 
 每篇按五层写：一句话 → 白话 → 手算 → 数学推导 → 代码与练习。
 

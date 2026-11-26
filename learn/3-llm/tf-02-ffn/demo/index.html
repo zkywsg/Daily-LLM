@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FFN 与 SwiGLU · 互动</title>
+<link rel="stylesheet" href="../../_shared/ui.css">
+<style>input.cell{width:54px;padding:3px 6px;border:1px solid var(--line2);border-radius:4px;background:#000;color:var(--ink);text-align:right;font:12.5px var(--mono)}.mats{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}</style>
+</head>
+<body>
+<main>
+  <h1>FFN 与 SwiGLU · 互动</h1>
+  <p class="sub">所有数字在页面里实时计算。对应讲解：<a href="../README.md">README</a>。</p>
+
+  <section>
+    <h2><span class="step">1</span>手算一个 FFN（数字都能改）</h2>
+    <div class="mats" id="inputs"></div>
+    <div class="chips" id="act1"></div>
+    <div id="calc"></div>
+    <p class="note">选“无激活”时，下面会同时给出合并成单个矩阵 W₁W₂ 的结果，两者永远相等。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">2</span>激活函数</h2>
+    <div>拖动输入 x <b id="xv"></b><input type="range" id="x" min="-4" max="4" step="0.1" value="-1" aria-label="x"></div>
+    <div id="actChart"></div>
+    <div id="actVals"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">3</span>宽度有什么用：拟合一条曲线</h2>
+    <div class="chips" id="act2"></div>
+    <div>隐藏单元数 <b id="kv"></b><input type="range" id="k" min="1" max="48" step="1" value="6" aria-label="隐藏单元数"></div>
+    <div id="fit"></div>
+    <p class="note">隐藏层权重随机固定，只解输出层（最小二乘）。这是玩具实验，不能用来比较激活函数在大模型里的好坏。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">4</span>SwiGLU 的门</h2>
+    <div>门的输入 xW <b id="av"></b><input type="range" id="ga" min="-5" max="5" step="0.1" value="2" aria-label="门输入"></div>
+    <div>内容 xV <b id="bv"></b><input type="range" id="gb" min="-3" max="3" step="0.1" value="0.5" aria-label="内容"></div>
+    <div class="cmp"><div>SiLU(门输入)<b id="gate"></b></div><div class="on">门 × 内容<b id="gout"></b></div></div>
+  </section>
+
+  <section>
+    <h2><span class="step">5</span>参数都在哪</h2>
+    <div class="chips" id="models"></div>
+    <div>d <b id="dv"></b><input type="range" id="d" min="64" max="8192" step="64" value="768" aria-label="d"></div>
+    <div>层数 <b id="nv"></b><input type="range" id="n" min="1" max="96" step="1" value="12" aria-label="层数"></div>
+    <div>d_ff <b id="fv"></b><input type="range" id="ff" min="64" max="32768" step="16" value="3072" aria-label="d_ff"></div>
+    <label><input type="checkbox" id="swi"> SwiGLU（三个矩阵）</label>
+    <div id="bars"></div>
+    <div class="mono" id="total"></div>
+  </section>
+</main>
+<script src="../../_shared/tf-engine.js"></script>
+<script src="../../_shared/tf-viz.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id), V = TFV;
+  const chips = (id, items, cur, cb) => { const box = $(id); box.innerHTML = ""; items.forEach(([k, name]) => { const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = name; b.dataset.k = k; b.setAttribute("aria-pressed", k === cur); b.onclick = () => { box.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", c === b)); cb(k); }; box.appendChild(b); }); };
+  const init = { x: [[1, -1]], w1: [[1, 0, -1], [0, 1, 1]], w2: [[2, 1], [1, 1], [0, 3]] };
+  $("inputs").innerHTML = [["x", "x"], ["w1", "W₁"], ["w2", "W₂"]].map(([k, n]) => `<div><b>${n}</b><table class="mat">${init[k].map((r, i) => `<tr>${r.map((v, j) => `<td><input class="cell" type="number" id="${k}_${i}_${j}" value="${v}" aria-label="${n} ${i + 1},${j + 1}"></td>`).join("")}</tr>`).join("")}</table></div>`).join("");
+  const read = (k) => init[k].map((r, i) => r.map((_, j) => +$(`${k}_${i}_${j}`).value || 0));
+  const mm = (a, b) => a.map((r) => b[0].map((_, j) => r.reduce((s, v, k) => s + v * b[k][j], 0)));
+  let a1 = "relu", a2 = "relu";
+  const vec = (v) => "[" + v.map((x) => +x.toFixed(3)).join(", ") + "]";
+  function calc() {
+    const x = read("x"), w1 = read("w1"), w2 = read("w2"), u = mm(x, w1), h = [u[0].map(TF.ACT[a1].f)], o = mm(h, w2);
+    let s = `<div class="mono">① 放大 u = x·W₁ = ${vec(u[0])}\n② ${TF.ACT[a1].name} h = ${vec(h[0])}\n③ 缩回 out = h·W₂ = ${vec(o[0])}`;
+    if (a1 === "linear") { const M = mm(w1, w2); s += `\n\nW₁W₂ = [${M.map(vec).join(", ")}]\nx·(W₁W₂) = ${vec(mm(x, M)[0])}  ← 两层等于一层`; }
+    $("calc").innerHTML = s + "</div>";
+  }
+  document.querySelectorAll("input.cell").forEach((i) => (i.oninput = calc));
+  chips("act1", [["relu", "ReLU"], ["gelu", "GELU"], ["silu", "SiLU"], ["linear", "无激活"]], a1, (k) => { a1 = k; calc(); });
+  const AC = [["relu", V.C.gray], ["gelu", V.C.blue], ["silu", V.C.amber]], xs = Array.from({ length: 161 }, (_, i) => -4 + i / 20);
+  function act() {
+    const x = +$("x").value; $("xv").textContent = x.toFixed(1);
+    const series = AC.map(([k, c]) => ({ name: TF.ACT[k].name, color: c, pts: xs.map((v) => [v, TF.ACT[k].f(v)]) }));
+    series.push({ name: "当前 x", color: V.C.red, dash: "4 4", pts: [[x, -0.6], [x, 4]] });
+    $("actChart").innerHTML = V.wrap(V.lines(series, { w: 640, h: 270, ymin: -0.6, ymax: 4, charW: 11 }));
+    $("actVals").innerHTML = `<table class="mat"><tr><th></th><th>输出</th><th>斜率</th></tr>${AC.map(([k]) => `<tr><th>${TF.ACT[k].name}</th><td>${TF.ACT[k].f(x).toFixed(3)}</td><td>${TF.ACT[k].d(x).toFixed(3)}</td></tr>`).join("")}</table>`;
+  }
+  $("x").oninput = act;
+  function fit() {
+    const k = +$("k").value; $("kv").textContent = k; const f = TF.fitFFN(k, a2);
+    $("fit").innerHTML = V.wrap(V.lines([{ name: "目标曲线", color: V.C.gray, dash: "5 4", pts: f.xs.map((x, i) => [x, f.target[i]]) }, { name: "FFN 拟合", color: V.C.blue, pts: f.xs.map((x, i) => [x, f.pred[i]]) }], { w: 640, h: 260, title: "均方误差 " + (f.mse >= 0.001 ? f.mse.toFixed(3) : f.mse.toExponential(1)), ymin: -1.8, ymax: 1.8, xfmt: (v) => v.toFixed(1) }));
+  }
+  $("k").oninput = fit; chips("act2", [["relu", "ReLU"], ["gelu", "GELU"], ["silu", "SiLU"], ["linear", "无激活"]], a2, (k) => { a2 = k; fit(); });
+  function gate() { const a = +$("ga").value, b = +$("gb").value, g = TF.ACT.silu.f(a); $("av").textContent = a.toFixed(1); $("bv").textContent = b.toFixed(1); $("gate").textContent = g.toFixed(3); $("gout").textContent = (g * b).toFixed(3); }
+  $("ga").oninput = gate; $("gb").oninput = gate;
+  let base = TF.MODELS["GPT-2 small"];
+  const fmt = (n) => n.toLocaleString("en-US");
+  function par() {
+    const c = Object.assign({}, base, { d: +$("d").value, layers: +$("n").value, ff: +$("ff").value, swiglu: $("swi").checked }), p = TF.params(c);
+    $("dv").textContent = c.d; $("nv").textContent = c.layers; $("fv").textContent = c.ff + "（" + (c.ff / c.d).toFixed(2) + "×d）";
+    const items = [["FFN（全部层）", p.ffn * c.layers], ["注意力（全部层）", p.attn * c.layers], ["词向量", p.embed], ["输出层", p.head], ["位置 + 归一化", p.pos + p.norm * c.layers + p.finalNorm]], m = Math.max(...items.map((i) => i[1]));
+    $("bars").innerHTML = items.map(([n, v]) => `<div class="row" style="grid-template-columns:120px 1fr 110px"><span>${n}</span><div class="bar"><i style="width:${(v / m * 100).toFixed(1)}%"></i></div><span class="num">${fmt(v)}</span></div>`).join("");
+    $("total").textContent = `总参数 ${fmt(p.total)}\n单层里 FFN 占 ${(p.ffn / p.layer * 100).toFixed(1)}%` + `\n基于 ${base === TF.MODELS["LLaMA 7B"] ? "LLaMA 7B（无偏置、RMSNorm、输出层独立）" : "GPT-2 small（含偏置、LayerNorm、输出层共享）"} 的其余设置`;
+  }
+  ["d", "n", "ff", "swi"].forEach((i) => ($(i).oninput = par));
+  const preset = (k) => { base = TF.MODELS[k]; $("d").value = base.d; $("n").value = base.layers; $("ff").value = base.ff; $("swi").checked = base.swiglu; par(); };
+  chips("models", Object.keys(TF.MODELS).map((k) => [k, k]), "GPT-2 small", preset);
+  calc(); act(); fit(); gate(); preset("GPT-2 small");
+})();
+</script>
+</body>
+</html>

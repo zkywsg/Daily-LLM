@@ -34,9 +34,9 @@
 - **互动页**：浏览器里拖一拖、点一点，数字在页面里实时算。
 - **图卡**：TikTok 竖版图文（1080×1920），用于分享。
 
-**目前进度：191 个知识点里已完成 13 个**，全部在“大模型 → 注意力系列”。其余按大纲顺序逐步补齐；每一项的状态和旧版素材位置都记录在 [learn/roadmap.json](learn/roadmap.json)。
+**目前进度：191 个知识点里已完成 17 个**，都在“大模型”层：注意力系列（13 篇）和 Transformer 完整模型（4 篇）。其余按大纲顺序逐步补齐；每一项的状态和旧版素材位置都记录在 [learn/roadmap.json](learn/roadmap.json)。
 
-> 例子都是教学用的**玩具模型**，不是训练出来的。注意力系列里真实模型的脚本（`attn-08`）写好了但**没在真实模型上运行过**；文献与配置对照摘要或公开资料核对，来源写在每篇末尾。
+> 例子都是教学用的**玩具模型**：注意力系列的权重是人工设定的；迷你 GPT 是真的训练出来的，但只有 2.75 万个参数、语料由规则生成。注意力系列里真实模型的脚本（`attn-08`）写好了但**没在真实模型上运行过**；文献与配置对照摘要或公开资料核对，来源写在每篇末尾。
 
 <a id="framework"></a>
 
@@ -91,12 +91,12 @@
 
 ### 3 · 大模型
 
-Transformer 主线：结构 → 预训练 → 对齐 → 推理。共 9 个知识块、48 个知识点，已完成 13。
+Transformer 主线：结构 → 预训练 → 对齐 → 推理。共 9 个知识块、48 个知识点，已完成 17。
 
 | 知识块 | 包含的知识点 | 状态 |
 |---|---|---|
 | [**注意力系列**](learn/3-llm/01-attention/) | 动机、基础 A：q/k/v 与加权求和、基础 B：多头、基础 C：掩码与位置、手算一遍、矩阵与形状、softmax 与 √d 梯度推导、多头的内部、位置编码：正弦 / RoPE / ALiBi、从零实现、真实模型里的注意力、高效注意力：KV cache / GQA / FlashAttention、综合自测与小项目 | 已完成 |
-| **Transformer 完整模型** | 残差与 Pre/Post-LN、FFN 与 SwiGLU、Encoder / Decoder / Decoder-only、从零写一个迷你 GPT | 待写 |
+| [**Transformer 完整模型**](learn/3-llm/tf-01-block/) | 残差与 Pre/Post-LN、FFN 与 SwiGLU、Encoder / Decoder / Decoder-only、从零训练迷你 GPT | 已完成 |
 | **现代结构演进** | MoE 稀疏专家、MLA 与 GQA、长上下文与位置外推、状态空间模型与 Mamba、线性注意力 | 待写 |
 | **预训练模型家族** | BERT / RoBERTa、GPT-1/2/3、T5 与统一文本到文本、Scaling Laws 与 Chinchilla | 待写 |
 | **数据与训练配方** | 数据采集、清洗、去重、分词词表设计、批量、学习率与训练稳定性、数据配比与课程学习、合成数据 | 待写 |
@@ -136,7 +136,18 @@ Transformer 主线：结构 → 预训练 → 对齐 → 推理。共 9 个知�
 
 <a id="done"></a>
 
-## 已完成：大模型 · 注意力系列（13 篇）
+## 已完成：大模型层（17 篇）
+
+### Transformer 完整模型（4 篇）
+
+| 篇 | 内容 | 互动页 |
+|---|---|---|
+| T01 | [残差与 LayerNorm：为什么能叠几十层](learn/3-llm/tf-01-block/) | 有 |
+| T02 | [FFN 与 SwiGLU：参数大头在哪](learn/3-llm/tf-02-ffn/) | 有 |
+| T03 | [Encoder、Decoder 与三种架构](learn/3-llm/tf-03-architectures/) | 有 |
+| T04 | [从零训练迷你 GPT（NumPy，手写反向传播）](learn/3-llm/tf-04-mini-gpt/) | 浏览器里可续写 |
+
+### 注意力系列（13 篇）
 
 | 篇 | 内容 | 互动页 |
 |---|---|---|
@@ -174,7 +185,7 @@ node learn/build-roadmap.mjs      # 改了 roadmap.json 后，重新生成路线
 node learn/build-banner.mjs       # 重新生成顶部横幅
 ```
 
-**跑代码**：`attn-07` 的从零实现只需 `numpy`（`pip install numpy`）；`attn-08` 的两个脚本需要 `torch` 与 `transformers`，未在真实模型上运行过。互动页是纯前端，也可以直接双击 `learn/3-llm/<知识点>/demo/index.html`。
+**跑代码**：`attn-07` 的从零实现和 `tf-04` 的迷你 GPT 只需 `numpy`（`pip install numpy`）；`attn-08` 的两个脚本需要 `torch` 与 `transformers`，未在真实模型上运行过。互动页是纯前端，也可以直接双击 `learn/3-llm/<知识点>/demo/index.html`。
 
 <a id="archive"></a>
 
