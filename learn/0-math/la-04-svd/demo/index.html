@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SVD 与低秩近似 · 互动</title>
+<link rel="stylesheet" href="../../../3-llm/_shared/ui.css">
+<style>.plane{max-width:100%}.plane svg{max-width:100%;height:auto;display:block}input.cell{width:62px;padding:3px 6px;border:1px solid var(--line2);border-radius:4px;background:#000;color:var(--ink);text-align:right;font:12.5px var(--mono)}.side{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}#paint{display:grid;grid-template-columns:repeat(24,11px);gap:1px;background:#222;padding:1px;width:max-content;touch-action:none;cursor:crosshair;user-select:none}#paint i{width:11px;height:11px;background:#000}#paint i.on{background:#eee}</style>
+</head>
+<body>
+<main>
+  <h1>SVD 与低秩近似 · 互动</h1>
+  <p class="sub">所有数字在页面里实时计算。对应讲解：<a href="../README.md">README</a>。</p>
+
+  <section>
+    <h2><span class="step">1</span>任何矩阵 = 转、拉、再转</h2>
+    <div class="chips" id="preset"></div>
+    <div id="A"></div>
+    <div class="side" id="steps"></div>
+    <div class="mono" id="svdOut"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">2</span>压缩一张图</h2>
+    <div class="chips" id="pics"></div>
+    <div id="paintBox" hidden><p class="note">按住拖动来画（24×24）。</p><div id="paint"></div><button class="btn" type="button" id="clear">清空</button></div>
+    <div>保留的秩 k = <b id="kv"></b><input type="range" id="k" min="1" max="64" step="1" value="4" aria-label="秩 k"></div>
+    <div class="side" id="imgs"></div>
+    <div id="spec"></div>
+    <div class="mono" id="imgStat"></div>
+    <p class="note">下方柱子是奇异值，蓝色表示保留下来的部分。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">3</span>现场压缩迷你 GPT</h2>
+    <p class="note">把两层的 12 个权重矩阵换成秩 k 近似（不重新训练），让它在你的浏览器里答 20 道题。</p>
+    <div>秩 k = <b id="gv"></b><input type="range" id="gk" min="1" max="32" step="1" value="32" aria-label="模型的秩"></div>
+    <div class="cmp"><div class="on">知识题答对<b id="score">…</b></div><div>平均保留能量<b id="energy">…</b></div></div>
+    <div id="answers"></div>
+    <div class="mono" id="gstat"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">4</span>LoRA 省在哪</h2>
+    <div>矩阵边长 d = <b id="dv"></b><input type="range" id="d" min="64" max="8192" step="64" value="4096" aria-label="d"></div>
+    <div>LoRA 的秩 r = <b id="rv"></b><input type="range" id="r" min="1" max="128" step="1" value="8" aria-label="r"></div>
+    <div id="lora"></div>
+    <p class="note">只按参数个数计算：完整矩阵 d²，低秩修改 BA 共 2dr。</p>
+  </section>
+</main>
+<script src="../../_shared/la-engine.js"></script>
+<script src="../../_shared/la-viz.js"></script>
+<script src="../../_shared/la-demo.js"></script>
+<script src="../../../3-llm/_shared/minigpt.js"></script>
+<script src="../../../3-llm/tf-04-mini-gpt/demo/model.js"></script>
+<script>
+(function () {
+  const { $, chips, matInput, f, vec, mat } = D, C = LAV.C;
+  const P = { hand: ["手算例子", [[3, 0], [4, 5]]], sym: ["对称", [[2, 1], [1, 2]]], shear: ["剪切", [[1, 1], [0, 1]]], flip: ["含翻转", [[2, 0], [0, -3]]], flat: ["秩 1", [[1, 2], [2, 4]]] };
+  function one(A) {
+    const r = LA.svd(A);
+    let V = [[r.V[0][0], r.V[1][0]], [r.V[0][1], r.V[1][1]]], U = [[r.U[0][0], r.U[1][0]], [r.U[0][1], r.U[1][1]]];
+    // 秩不足时补一个与另一列垂直的方向
+    if (r.s[1] < 1e-9) { const u = [U[0][0], U[1][0]]; const w = r.s[0] < 1e-9 ? [[1, 0], [0, 1]] : [[u[0], -u[1]], [u[1], u[0]]]; U = w; }
+    const S = [[r.s[0], 0], [0, r.s[1]]], Vt = LA.T(V), R = Math.max(1.8, r.s[0] * 1.15);
+    const st = [["① 单位圆", [[1, 0], [0, 1]]], ["② 乘 Vᵀ", Vt], ["③ 乘 Σ", LA.mm(S, Vt)], ["④ 乘 U = A", LA.mm(U, LA.mm(S, Vt))]];
+    $("steps").innerHTML = st.map(([t, M], i) => `<div class="plane">${LAV.wrap(LAV.plane({ id: "s" + i, title: t, size: 164, range: R, M, circle: true, vectors: [{ v: LA.mv(M, [V[0][0], V[1][0]]), color: C.amber }, { v: LA.mv(M, [V[0][1], V[1][1]]), color: C.green }] }), 164)}</div>`).join("");
+    const A1 = LA.rankK(r, 1), diff = A.map((row, i) => row.map((v, j) => v - A1[i][j]));
+    $("svdOut").textContent = `奇异值 σ = ${vec(r.s, 4)}\nv₁ = ${vec([V[0][0], V[1][0]], 3)}  v₂ = ${vec([V[0][1], V[1][1]], 3)}\nu₁ = ${vec([U[0][0], U[1][0]], 3)}  u₂ = ${vec([U[0][1], U[1][1]], 3)}\n秩 1 近似 = ${mat(A1)}\n误差（F 范数）= ${f(LA.frob(diff), 4)} ，正好等于 σ₂`;
+  }
+  const input = matInput("A", P.hand[1], one);
+  chips("preset", Object.keys(P).map((k) => [k, P[k][0]]), "hand", (k) => input.set(P[k][1]));
+
+  const N = 24, cells = Array.from({ length: N }, () => new Array(N).fill(0));
+  let kind = "demo", img = null, fac = null, painting = null;
+  $("paint").innerHTML = Array.from({ length: N * N }, (_, i) => `<i data-i="${i}"></i>`).join("");
+  const setCell = (i, v) => { cells[Math.floor(i / N)][i % N] = v; $("paint").children[i].classList.toggle("on", !!v); };
+  const at = (e) => { const t = document.elementFromPoint(e.clientX, e.clientY); return t && t.dataset && t.dataset.i !== undefined && t.parentNode === $("paint") ? +t.dataset.i : null; };
+  $("paint").addEventListener("pointerdown", (e) => { const i = +e.target.dataset.i; if (Number.isNaN(i)) return; painting = cells[Math.floor(i / N)][i % N] ? 0 : 1; setCell(i, painting); e.preventDefault(); $("paint").releasePointerCapture && $("paint").hasPointerCapture(e.pointerId) && $("paint").releasePointerCapture(e.pointerId); });
+  $("paint").addEventListener("pointermove", (e) => { if (painting === null) return; const i = at(e); if (i !== null) setCell(i, painting); });
+  window.addEventListener("pointerup", () => { if (painting === null) return; painting = null; load(); });
+  // 默认画一个叉
+  for (let i = 3; i < 21; i++) { setCell(i * N + i, 1); setCell(i * N + (N - 1 - i), 1); }
+  $("clear").onclick = () => { for (let i = 0; i < N * N; i++) setCell(i, 0); load(); };
+  function load() {
+    $("paintBox").hidden = kind !== "draw";
+    img = kind === "draw" ? cells.map((r) => r.slice()) : LA.picture(kind);
+    fac = LA.svd(img); $("k").max = img.length; if (+$("k").value > img.length) $("k").value = img.length;
+    two();
+  }
+  function two() {
+    const k = +$("k").value, n = img.length, R = LA.rankK(fac, k); $("kv").textContent = k;
+    const res = img.map((r, i) => r.map((v, j) => Math.abs(v - R[i][j]))), cell = 192 / n;
+    $("imgs").innerHTML = [["原图", img], ["秩 " + k + " 重建", R], ["丢掉的部分", res]].map(([t, M]) => `<div>${LAV.wrap(LAV.image(M, { title: t, cell }), 192)}</div>`).join("");
+    const total = LA.frob(img), rank = fac.s.filter((v) => v > 1e-8 * Math.max(fac.s[0], 1e-12)).length;
+    $("spec").innerHTML = LAV.wrap(LAV.bars(fac.s, { on: k, w: 640, h: 150, title: "奇异值" }));
+    const store = k * (2 * n + 1);
+    $("imgStat").textContent = total ? `这张图的秩 = ${rank}\n要存 ${store.toLocaleString("en-US")} 个数，原图 ${(n * n).toLocaleString("en-US")} 个（${(store / (n * n) * 100).toFixed(1)}%）\n相对误差 ${(LA.relErr(fac.s, k) * 100).toFixed(1)}%   保留能量 ${((1 - LA.relErr(fac.s, k) ** 2) * 100).toFixed(1)}%` : "画布是空的，画点什么";
+  }
+  chips("pics", [["demo", "示例图"], ["gradient", "纯渐变"], ["checker", "棋盘格"], ["noise", "随机噪声"], ["draw", "自己画"]], kind, (k) => { kind = k; load(); });
+  $("k").oninput = two;
+
+  const parts = LA.gptSVD(MODEL);
+  let timer = null;
+  function gpt() {
+    const k = +$("gk").value, m = k >= 32 ? MODEL : LA.truncateGPT(MODEL, parts, k), model = MiniGPT.load(m), q = MiniGPT.quiz(model);
+    const energy = parts.reduce((a, p) => { const e = p.f.s.map((v) => v * v), t = e.reduce((x, y) => x + y, 0); return a + e.slice(0, k).reduce((x, y) => x + y, 0) / t; }, 0) / parts.length;
+    const stored = parts.reduce((a, p) => a + Math.min(p.r * p.c, k * (p.r + p.c)), 0), full = parts.reduce((a, p) => a + p.r * p.c, 0);
+    $("score").textContent = q.filter((x) => x.ok).length + " / 20"; $("energy").textContent = (energy * 100).toFixed(1) + "%";
+    $("answers").innerHTML = `<table class="mat"><tr><th>开头</th><th>模型续写</th><th></th></tr>${q.filter((_, i) => i % 4 < 2).map((x) => `<tr><th>${x.head}</th><td>${x.got}</td><td class="${x.ok ? "ok" : "bad"}">${x.ok ? "对" : "错"}</td></tr>`).join("")}</table>`;
+    $("gstat").textContent = `按两个小矩阵存：${stored.toLocaleString("en-US")} 个数，原来 ${full.toLocaleString("en-US")} 个（${(stored / full * 100).toFixed(0)}%）\n表里只列出 20 题中的 10 题`;
+  }
+  $("gk").oninput = () => { $("gv").textContent = $("gk").value; clearTimeout(timer); timer = setTimeout(gpt, 120); };
+
+  function four() {
+    const d = +$("d").value, r = +$("r").value, a = d * d, b = 2 * d * r; $("dv").textContent = d; $("rv").textContent = r;
+    const bar = (t, v) => `<div class="row" style="grid-template-columns:110px 1fr 130px"><span>${t}</span><div class="bar"><i style="width:${Math.max(0.4, Math.min(100, v / a * 100)).toFixed(2)}%"></i></div><span class="num">${v.toLocaleString("en-US")}</span></div>`;
+    $("lora").innerHTML = bar("完整矩阵", a) + bar("LoRA 的 BA", b) + `<p class="note">占 ${(b / a * 100).toFixed(2)}%${b >= a ? "（r 这么大时已经不省了）" : ""}</p>`;
+  }
+  $("d").oninput = four; $("r").oninput = four;
+  input.set(P.hand[1]); load(); $("gv").textContent = 32; gpt(); four();
+})();
+</script>
+</body>
+</html>

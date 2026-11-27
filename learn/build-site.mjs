@@ -9,15 +9,16 @@ const here = dirname(fileURLToPath(import.meta.url)), out = join(here, "_site");
 execFileSync("node", [join(here, "build-preview.mjs")], { stdio: "inherit" });
 rmSync(out, { recursive: true, force: true });
 // 复制内容，跳过图卡源 HTML（只发布 PNG）、Python 缓存
-cpSync(join(here, "3-llm"), join(out, "3-llm"), {
+const layers = readdirSync(here).filter((d) => /^\d+-/.test(d) && statSync(join(here, d)).isDirectory());
+for (const l of layers) cpSync(join(here, l), join(out, l), {
   recursive: true,
   filter: (src) => !/[\\/]cards[\\/]src(?:[\\/]|$)|__pycache__|\.DS_Store/.test(src),
 });
 cpSync(join(here, "preview.html"), join(out, "index.html"));
 writeFileSync(join(out, ".nojekyll"), "");
 // 互动页里的“讲解”链接指向 README.md，在站点里改成指向总页对应位置
-for (const t of readdirSync(join(out, "3-llm"))) {
-  const f = join(out, "3-llm", t, "demo/index.html");
+for (const l of layers) for (const t of readdirSync(join(out, l))) {
+  const f = join(out, l, t, "demo/index.html");
   if (!existsSync(f) || !statSync(f).isFile()) continue;
   writeFileSync(f, readFileSync(f, "utf8").replace(/href="\.\.\/README\.md"/g, `href="../../../index.html#${t}" target="_top"`));
 }

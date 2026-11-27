@@ -41,6 +41,7 @@ for (const layer of readdirSync(here).sort()) {
     let html = marked.parse(renderMath(md));
     // 指向兄弟知识点目录的链接（../xxx/）改成页内锚点，这样在线站点里也能跳转
     html = html.replace(/href="\.\.\/([^/"]+)\/?"/g, (_, d) => `href="#${d}"`);
+    html = html.replace(/href="\.\.\/\.\.\/\d+-[^/"]+\/([^/"]+)\/?"/g, (_, d) => `href="#${d}"`); // 跨层链接
     // 指向图卡文件夹的链接跳到本页图卡区（网页上无法列出文件夹）
     html = html.replace(/href="cards\/out\/?"/g, `href="#t${topics.length}-cards"`);
     // 其他 Markdown 文件在网页上打不开或只显示原始文本，改到 GitHub 上看
@@ -53,8 +54,10 @@ for (const layer of readdirSync(here).sort()) {
   }
 }
 
-const short = (t) => t.title.replace(/^注意力 (\d+)：/, "$1 · ").replace(/^基础 ([ABC])：/, "基础 $1 · ").replace(/^Transformer (\d+)：/, "T$1 · ");
-const side = topics.map((t, i) => `<div class="g"><a class="t" href="#t${i}" data-t="t${i}">${short(t)}</a>
+const LAYERS = JSON.parse(readFileSync(join(here, "roadmap.json"), "utf8")).layers;
+const layerName = (rel) => { const l = LAYERS.find((x) => x.id === parseInt(rel, 10)); return l ? `${l.id} · ${l.name}` : rel.split("/")[0]; };
+const short = (t) => t.title.replace(/^线性代数 (\d+)：/, "线代 $1 · ").replace(/^注意力 (\d+)：/, "$1 · ").replace(/^基础 ([ABC])：/, "基础 $1 · ").replace(/^Transformer (\d+)：/, "T$1 · ");
+const side = topics.map((t, i) => `${i === 0 || layerName(topics[i - 1].rel) !== layerName(t.rel) ? `<div class="grp">${layerName(t.rel)}</div>` : ""}<div class="g"><a class="t" href="#t${i}" data-t="t${i}">${short(t)}</a>
   <div class="sub"><a href="#t${i}-doc">讲解</a><a href="#t${i}-cards">图卡 ${t.cards.length}</a>${t.demo ? `<a href="#t${i}-demo">互动版</a>` : ""}</div></div>`).join("");
 const body = topics.map((t, i) => `
 <article id="t${i}"><a id="${t.rel.split("/")[1]}"></a>
@@ -78,7 +81,7 @@ body{margin:0;background:#000;color:var(--ink);font:15px/1.75 var(--sans);-webki
 a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 aside{position:fixed;inset:0 auto 0 0;width:248px;border-right:1px solid var(--line);padding:22px 18px;overflow-y:auto;background:#000}
 aside h1{font-size:14px;margin:0;font-weight:700;letter-spacing:-.01em}aside .meta{font:11.5px var(--mono);color:var(--mute);margin:4px 0 22px}
-aside .grp{font:600 11px var(--mono);color:var(--mute);letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px}
+aside .grp{font:600 11px var(--mono);color:var(--mute);letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px}aside .g+.grp{margin-top:18px}
 aside .g{margin-bottom:6px;padding-left:10px;border-left:1px solid var(--line)}aside .g.on{border-left-color:var(--accent)}
 aside .t{display:block;color:var(--ink);font-size:13.5px;line-height:1.5;padding:3px 0}aside .g.on .t{color:var(--accent)}
 aside .sub{display:flex;gap:12px;padding-bottom:6px}aside .sub a{font-size:12px;color:var(--mute)}aside .sub a:hover{color:var(--ink);text-decoration:none}
@@ -101,7 +104,7 @@ section{border:1px solid var(--line);border-radius:8px;background:var(--card);pa
 iframe{width:100%;height:1100px;border:1px solid var(--line);border-radius:6px;background:#000;display:block}
 @media(max-width:900px){aside{display:none}main{margin:0;padding:20px 14px 80px}section{padding:18px}}
 </style></head><body>
-<aside><h1>Daily-LLM · 学习资料</h1><div class="meta">${topics.length} 个知识点 · 离线可看</div><div class="grp">3 · 大模型</div>${side}</aside>
+<aside><h1>Daily-LLM · 学习资料</h1><div class="meta">${topics.length} 个知识点 · 离线可看</div>${side}</aside>
 <main>${body}</main>
 <script>
 (function(){var g=[].slice.call(document.querySelectorAll("aside .g"));var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var id=e.target.id;g.forEach(function(x){x.classList.toggle("on",x.querySelector(".t").dataset.t===id)})}})},{rootMargin:"-10% 0px -80% 0px"});

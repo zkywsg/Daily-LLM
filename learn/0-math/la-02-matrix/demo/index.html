@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>矩阵与线性变换 · 互动</title>
+<link rel="stylesheet" href="../../../3-llm/_shared/ui.css">
+<style>.plane{max-width:100%;touch-action:none}.plane svg{max-width:100%;height:auto;display:block}input.cell{width:62px;padding:3px 6px;border:1px solid var(--line2);border-radius:4px;background:#000;color:var(--ink);text-align:right;font:12.5px var(--mono)}.side{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}</style>
+</head>
+<body>
+<main>
+  <h1>矩阵与线性变换 · 互动</h1>
+  <p class="sub">所有数字在页面里实时计算。对应讲解：<a href="../README.md">README</a>。</p>
+
+  <section>
+    <h2><span class="step">1</span>矩阵把网格搬到哪里</h2>
+    <div class="chips" id="preset"></div>
+    <div class="side"><div><b>矩阵 A</b><div id="A"></div></div><div class="plane" id="p1"></div></div>
+    <div class="mono" id="calc"></div>
+    <p class="note">拖蓝点（第 1 列）和绿点（第 2 列），或直接改数字。蓝色网格是变形后的网格，黄色是单位正方形。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">2</span>先后顺序</h2>
+    <div>变换 A</div><div class="chips" id="oa"></div>
+    <div>变换 B</div><div class="chips" id="ob"></div>
+    <div class="side"><div class="plane" id="ab"></div><div class="plane" id="ba"></div></div>
+    <div class="mono" id="order"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">3</span>旋转和位置编码</h2>
+    <div>q 的位置 m = <b id="mv"></b><input type="range" id="m" min="0" max="40" step="1" value="2" aria-label="位置 m"></div>
+    <div>k 的位置 n = <b id="nv"></b><input type="range" id="n" min="0" max="40" step="1" value="5" aria-label="位置 n"></div>
+    <div>两者一起平移 <b id="sv"></b><input type="range" id="shift" min="0" max="40" step="1" value="0" aria-label="平移"></div>
+    <div class="plane" id="p3"></div>
+    <div class="mono" id="rope"></div>
+    <p class="note">拖“平移”：两支箭头一起转，点积纹丝不动。只改 m 或 n，点积才变。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">4</span>括号放哪里：(AB)x 还是 A(Bx)</h2>
+    <div>矩阵边长 n = <b id="kv"></b><input type="range" id="size" min="10" max="4000" step="10" value="1000" aria-label="n"></div>
+    <div id="cost"></div>
+    <button class="btn" type="button" id="run">在你的浏览器里实测（n = 300）</button>
+    <div class="mono" id="timed">点按钮开始</div>
+  </section>
+</main>
+<script src="../../_shared/la-engine.js"></script>
+<script src="../../_shared/la-viz.js"></script>
+<script src="../../_shared/la-demo.js"></script>
+<script>
+(function () {
+  const { $, chips, dragPlane, matInput, f, vec, mat } = D, C = LAV.C;
+  let A = [[2, 1], [0, 1]];
+  const P = { id: ["单位", [[1, 0], [0, 1]]], shear: ["斜切拉伸", [[2, 1], [0, 1]]], rot: ["旋转 45°", LA.rot(Math.PI / 4)], scale: ["缩放", [[1.5, 0], [0, 0.5]]], flip: ["翻转", [[0, 1], [1, 0]]], flat: ["压扁", [[1, 2], [0.5, 1]]] };
+  const input = matInput("A", A, (M) => { A = M; one(); });
+  const d1 = dragPlane("p1", (k, v) => { const j = +k; const M = A.map((r) => r.slice()); M[0][j] = v[0]; M[1][j] = v[1]; input.set(M); });
+  function one() {
+    const x = [1, 2], det = LA.det2(A), c1 = [A[0][0], A[1][0]], c2 = [A[0][1], A[1][1]], rank = Math.abs(det) > 1e-9 ? 2 : A.flat().some((v) => Math.abs(v) > 1e-9) ? 1 : 0;
+    d1({ size: 340, range: 4, M: A, square: true, vectors: [{ v: c1, color: C.blue, label: "第1列", dy: 18 }, { v: c2, color: C.green, label: "第2列", dx: -42 }], dots: [{ p: c1, color: C.blue, drag: "0", r: 8 }, { p: c2, color: C.green, drag: "1", r: 8 }] });
+    $("calc").textContent = `行列式 = ${f(A[0][0])}×${f(A[1][1])} − ${f(A[0][1])}×${f(A[1][0])} = ${f(det)}（面积变为 ${f(Math.abs(det))} 倍${det < -1e-9 ? "，且翻了面" : ""}）\n秩 = ${rank}${rank < 2 ? "：平面被压扁了，不可逆" : ""}\n` +
+      `x = [1, 2]：Ax = 1×${vec(c1)} + 2×${vec(c2)} = ${vec(LA.mv(A, x))}`;
+  }
+  chips("preset", Object.keys(P).map((k) => [k, P[k][0]]), "shear", (k) => input.set(P[k][1]));
+
+  const T = { R: ["旋转 90°", [[0, -1], [1, 0]]], S: ["横向拉 2 倍", [[2, 0], [0, 1]]], H: ["斜切", [[1, 1], [0, 1]]], F: ["沿对角线翻转", [[0, 1], [1, 0]]], Q: ["旋转 45°", LA.rot(Math.PI / 4)] };
+  let oa = "S", ob = "R";
+  function two() {
+    const A2 = T[oa][1], B = T[ob][1], AB = LA.mm(A2, B), BA = LA.mm(B, A2), e = [1, 0];
+    const draw = (id, M, title) => ($(id).innerHTML = LAV.wrap(LAV.plane({ id, title, size: 300, range: 3.5, M, square: true, vectors: [{ v: LA.mv(M, e), color: C.amber, label: "结果" }] }), 300));
+    draw("ab", AB, "先 B 后 A（AB）"); draw("ba", BA, "先 A 后 B（BA）");
+    const same = AB.flat().every((v, i) => Math.abs(v - BA.flat()[i]) < 1e-9);
+    $("order").textContent = `AB = ${mat(AB)}\nBA = ${mat(BA)}\n起点 [1,0] → AB 得 ${vec(LA.mv(AB, e))}，BA 得 ${vec(LA.mv(BA, e))}\n${same ? "这一对恰好可以交换" : "两个结果不同：顺序不能换"}`;
+  }
+  const items = Object.keys(T).map((k) => [k, T[k][0]]);
+  chips("oa", items, oa, (k) => { oa = k; two(); }); chips("ob", items, ob, (k) => { ob = k; two(); });
+
+  const q = [1.6, 0.4], k = [1.0, 1.2], w = 0.3;
+  function three() {
+    const s = +$("shift").value, m = +$("m").value + s, n = +$("n").value + s; $("mv").textContent = m; $("nv").textContent = n; $("sv").textContent = "+" + s;
+    const qr = LA.mv(LA.rot(m * w), q), kr = LA.mv(LA.rot(n * w), k);
+    $("p3").innerHTML = LAV.wrap(LAV.plane({ id: "p3", size: 320, range: 2.4, vectors: [{ v: q, color: "#1e3a66", dash: "4 4" }, { v: k, color: "#5c4308", dash: "4 4" }, { v: qr, color: C.blue, label: "q" }, { v: kr, color: C.amber, label: "k" }] }), 320);
+    $("rope").textContent = `每个位置多转 ω = ${w} 弧度\n位置差 n − m = ${n - m}\n旋转后的点积 = ${LA.dot(qr, kr).toFixed(6)}\n长度 |q| = ${LA.norm(qr).toFixed(4)}（旋转不改变长度）`;
+  }
+  ["m", "n", "shift"].forEach((i) => ($(i).oninput = three));
+
+  function four() {
+    const n = +$("size").value; $("kv").textContent = n;
+    const a = n ** 3 + n ** 2, b = 2 * n * n;
+    const bar = (t, v) => `<div class="row" style="grid-template-columns:80px 1fr 150px"><span>${t}</span><div class="bar"><i style="width:${Math.max(0.5, (v / a) * 100).toFixed(2)}%"></i></div><span class="num">${v.toLocaleString("en-US")}</span></div>`;
+    $("cost").innerHTML = bar("(AB)x", a) + bar("A(Bx)", b) + `<p class="note">乘法次数相差 ${(a / b).toFixed(0)} 倍。</p>`;
+  }
+  $("size").oninput = four;
+  $("run").onclick = () => {
+    $("timed").textContent = "计算中…";
+    setTimeout(() => {
+      const n = 300, r = LA.rng(1), M = () => Array.from({ length: n }, () => Float64Array.from({ length: n }, () => r() - 0.5)), A3 = M(), B3 = M(), x = Float64Array.from({ length: n }, () => r() - 0.5);
+      const mvf = (A, v) => { const o = new Float64Array(n); for (let i = 0; i < n; i++) { let s = 0; const row = A[i]; for (let j = 0; j < n; j++) s += row[j] * v[j]; o[i] = s; } return o; };
+      const mmf = (A, B) => { const o = []; for (let i = 0; i < n; i++) { const row = new Float64Array(n); for (let t = 0; t < n; t++) { const a = A[i][t], Bt = B[t]; for (let j = 0; j < n; j++) row[j] += a * Bt[j]; } o.push(row); } return o; };
+      let t = performance.now(); const r1 = mvf(mmf(A3, B3), x); const t1 = performance.now() - t;
+      t = performance.now(); let r2; for (let i = 0; i < 100; i++) r2 = mvf(A3, mvf(B3, x)); const t2 = (performance.now() - t) / 100;
+      const diff = Math.max(...r1.map((v, i) => Math.abs(v - r2[i])));
+      $("timed").textContent = `(AB)x ≈ ${t1.toFixed(1)} ms\nA(Bx) ≈ ${t2.toFixed(3)} ms（跑 100 次取平均）\n两个结果最大差 ${diff.toExponential(1)}\n时间随浏览器和机器变化`;
+    }, 30);
+  };
+  input.set(A); two(); three(); four();
+})();
+</script>
+</body>
+</html>

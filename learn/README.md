@@ -8,6 +8,17 @@
 
 预览：运行 `node learn/build-preview.mjs` 生成 `learn/preview.html`，把所有知识点的讲解、图卡、互动版放在一页里。
 
+## 数学基础：线性代数
+
+| 篇 | 内容 | 状态 |
+|---|---|---|
+| L01 | [向量、内积与范数](0-math/la-01-vectors/) | 已做 |
+| L02 | [矩阵与线性变换](0-math/la-02-matrix/) | 已做 |
+| L03 | [特征值与特征分解](0-math/la-03-eigen/) | 已做 |
+| L04 | [SVD 与低秩近似](0-math/la-04-svd/) | 已做 |
+
+每篇的脚本都实际运行过（只需 NumPy）。耗时数字随机器变化；Eckart–Young 定理按标准结论引用，原论文全文没有读。
+
 ## Transformer 完整模型
 
 | 篇 | 内容 | 状态 |

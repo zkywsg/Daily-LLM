@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>向量、内积与范数 · 互动</title>
+<link rel="stylesheet" href="../../../3-llm/_shared/ui.css">
+<style>.plane{max-width:100%;touch-action:none}.plane svg{max-width:100%;height:auto;display:block}input.cell{width:62px;padding:3px 6px;border:1px solid var(--line2);border-radius:4px;background:#000;color:var(--ink);text-align:right;font:12.5px var(--mono)}</style>
+</head>
+<body>
+<main>
+  <h1>向量、内积与范数 · 互动</h1>
+  <p class="sub">所有数字在页面里实时计算。对应讲解：<a href="../README.md">README</a>。</p>
+
+  <section>
+    <h2><span class="step">1</span>拖动两个向量</h2>
+    <div class="plane" id="p1"></div>
+    <div class="mono" id="calc"></div>
+    <p class="note">拖蓝点和黄点。绿色是 a 在 b 方向上的投影。垂直时点积为 0，反向时为负。</p>
+    <div class="chips" id="preset"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">2</span>范数：换一种量长度的办法</h2>
+    <div>p = <b id="pv"></b><input type="range" id="pp" min="1" max="8" step="0.1" value="2" aria-label="p"></div>
+    <label><input type="checkbox" id="inf"> p = ∞（取最大绝对值）</label>
+    <div class="plane" id="p2"></div>
+    <div class="mono" id="norms"></div>
+    <p class="note">蓝色边界上的点，Lp 长度都等于 1。拖动黄点，看同一个向量的几种长度。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">3</span>高维里的随机方向</h2>
+    <div>维度 d = <b id="dv"></b><input type="range" id="d" min="1" max="10" step="1" value="2" aria-label="维度"></div>
+    <div id="hist"></div>
+    <div class="mono" id="hstat"></div>
+    <p class="note">随机生成 3000 对向量，画出夹角余弦的分布。维度越高越集中在 0（垂直）附近。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">4</span>迷你 GPT 觉得哪些字相似</h2>
+    <div class="chips" id="chars"></div>
+    <div id="sim"></div>
+    <div id="grid"></div>
+    <p class="note">词向量来自 <a href="../../../3-llm/tf-04-mini-gpt/demo/index.html">迷你 GPT</a> 训练后的权重。相近反映的是在语料里用法相近。</p>
+  </section>
+</main>
+<script src="../../_shared/la-engine.js"></script>
+<script src="../../_shared/la-viz.js"></script>
+<script src="../../_shared/la-demo.js"></script>
+<script src="../../../3-llm/_shared/tf-viz.js"></script>
+<script src="../../../3-llm/tf-04-mini-gpt/demo/model.js"></script>
+<script>
+(function () {
+  const { $, chips, dragPlane, f, vec } = D, C = LAV.C;
+  let a = [3, 4], b = [4, 3];
+  const d1 = dragPlane("p1", (k, v) => { if (k === "a") a = v; else b = v; one(); });
+  function one() {
+    const p = LA.project(a, b), dt = LA.dot(a, b), na = LA.norm(a), nb = LA.norm(b), zero = !na || !nb;
+    d1({ size: 340, range: 6, vectors: [{ v: a, color: C.blue, label: "a" }, { v: b, color: C.amber, label: "b", dy: 14 }, { v: p, color: C.green, w: 4 }], segments: [{ a, b: p, color: C.gray, dash: "4 4" }], dots: [{ p: a, color: C.blue, drag: "a", r: 8 }, { p: b, color: C.amber, drag: "b", r: 8 }] });
+    $("calc").textContent = `a = ${vec(a, 1)}   b = ${vec(b, 1)}\n点积 a·b = ${f(a[0], 1)}×${f(b[0], 1)} + ${f(a[1], 1)}×${f(b[1], 1)} = ${f(dt)}\n|a| = ${f(na, 3)}   |b| = ${f(nb, 3)}\n` +
+      (zero ? "有一个向量长度为 0，夹角没有定义" : `cos = ${f(LA.cos(a, b), 3)}   夹角 = ${f(LA.angle(a, b), 1)}°   |a−b| = ${f(LA.norm([a[0] - b[0], a[1] - b[1]]), 3)}\n投影 = ${vec(p)}`);
+  }
+  const PRE = { near: [[3, 4], [4, 3]], same: [[2, 2], [4, 4]], orth: [[3, 1], [-1, 3]], opp: [[3, 2], [-3, -2]] };
+  chips("preset", [["near", "接近"], ["same", "同向"], ["orth", "垂直"], ["opp", "反向"]], "near", (k) => { [a, b] = PRE[k].map((v) => v.slice()); one(); });
+
+  let x = [0.6, 0.9];
+  const d2 = dragPlane("p2", (k, v) => { x = v; two(); });
+  function two() {
+    const inf = $("inf").checked, p = inf ? Infinity : +$("pp").value; $("pv").textContent = inf ? "∞" : p.toFixed(1); $("pp").disabled = inf;
+    const ball = Array.from({ length: 241 }, (_, i) => { const t = (i * Math.PI) / 120, v = [Math.cos(t), Math.sin(t)], n = LA.norm(v, p); return [v[0] / n, v[1] / n]; });
+    d2({ size: 300, range: 1.6, paths: [{ color: C.blue, pts: ball, fill: "rgba(59,130,246,.16)" }], vectors: [{ v: x, color: C.amber, label: "x" }], dots: [{ p: x, color: C.amber, drag: "x", r: 8 }] });
+    $("norms").textContent = `x = ${vec(x, 1)}\nL1 = ${f(LA.norm(x, 1), 3)}   L2 = ${f(LA.norm(x, 2), 3)}   L∞ = ${f(LA.norm(x, Infinity), 3)}\n当前 L${inf ? "∞" : p.toFixed(1)} = ${f(LA.norm(x, p), 3)}（${LA.norm(x, p) > 1 ? "在蓝色区域外" : "在蓝色区域内"}）`;
+  }
+  $("pp").oninput = two; $("inf").onchange = two; $("inf").oninput = two;
+
+  const DS = [1, 2, 3, 5, 10, 20, 50, 100, 300, 1000];
+  function three() {
+    const d = DS[+$("d").value - 1] === 1 ? 2 : DS[+$("d").value - 1]; $("dv").textContent = d;
+    const r = LA.cosSample(d, 3000);
+    $("hist").innerHTML = TFV.wrap(TFV.lines([{ name: "比例", color: C.blue, pts: LA.histogram(r.values) }], { w: 640, h: 240, ymin: 0, noLegend: true, xfmt: (v) => v.toFixed(1), yfmt: (v) => Math.round(v * 100) + "%", xlabel: "夹角余弦" }));
+    $("hstat").textContent = `余弦的标准差 ${r.std.toFixed(3)}   理论值 1/√d = ${(1 / Math.sqrt(d)).toFixed(3)}\n夹角在 80°–100° 之间的比例 ${(r.near * 100).toFixed(1)}%`;
+  }
+  $("d").min = 2; $("d").value = 2; $("d").oninput = three;
+
+  const E = MODEL.chars, G = [..."猫狗鸟兔熊住喜最吃"];
+  function four(c) {
+    const s = LA.embeddingSim(MODEL, E)[E.indexOf(c)], order = E.map((_, i) => i).filter((i) => E[i] !== c).sort((i, j) => s[j] - s[i]);
+    const row = (i) => `<div class="row"><span>${E[i]}</span><div class="bar"><i style="width:${(Math.abs(s[i]) * 100).toFixed(1)}%;background:${s[i] >= 0 ? C.blue : C.amber}"></i></div><span class="num">${s[i].toFixed(2)}</span></div>`;
+    $("sim").innerHTML = `<h2>和“${c}”最像</h2>${order.slice(0, 6).map(row).join("")}<h2>最不像</h2>${order.slice(-3).reverse().map(row).join("")}`;
+  }
+  chips("chars", E.map((c) => [c, c]), "猫", four);
+  $("grid").innerHTML = TFV.wrap(LAV.heat(LA.embeddingSim(MODEL, G), { rows: G, cols: G, cell: 42 }));
+  one(); two(); three(); four("猫");
+})();
+</script>
+</body>
+</html>

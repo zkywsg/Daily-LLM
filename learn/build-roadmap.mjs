@@ -18,8 +18,8 @@ const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 export const stats = { layers: R.layers.length, nodes: nodes.length, items: totalItems, doneItems };
 
 // 路线图 PNG：只画“知识块”
-const chip = (x) => `<span class="c ${st(x)}">${esc(x.t)}<i>${st(x) === "done" ? x.items.length + " 篇" : x.items.length}</i></span>`;
-const rows = R.layers.map((l) => `<div class="row${l.id === 3 ? " on" : ""}">
+const chip = (x) => `<span class="c ${st(x)}">${esc(x.t)}<i>${x.items.length}</i></span>`;
+const rows = R.layers.map((l) => `<div class="row${l.groups.some((g) => g.nodes.some((x) => st(x) === "done")) ? " on" : ""}">
 <div class="lab"><b>${l.id} · ${esc(l.name)}</b><small>${esc(l.goal)}</small></div>
 <div class="gs">${l.groups.map((g) => `<div class="g"><div class="gn">${esc(g.name)}</div><div class="chips">${g.nodes.map(chip).join("")}</div></div>`).join("")}</div></div>`).join("");
 const html = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><style>

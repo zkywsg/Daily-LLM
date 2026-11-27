@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>特征值与特征分解 · 互动</title>
+<link rel="stylesheet" href="../../../3-llm/_shared/ui.css">
+<style>.plane{max-width:100%;touch-action:none}.plane svg{max-width:100%;height:auto;display:block}input.cell{width:62px;padding:3px 6px;border:1px solid var(--line2);border-radius:4px;background:#000;color:var(--ink);text-align:right;font:12.5px var(--mono)}.side{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}</style>
+</head>
+<body>
+<main>
+  <h1>特征值与特征分解 · 互动</h1>
+  <p class="sub">所有数字在页面里实时计算。对应讲解：<a href="../README.md">README</a>。</p>
+
+  <section>
+    <h2><span class="step">1</span>找不改方向的向量</h2>
+    <div class="chips" id="preset"></div>
+    <div class="side"><div><b>矩阵 A</b><div id="A"></div></div><div class="plane" id="p1"></div></div>
+    <div>探针 u 的角度 <b id="tv"></b><input type="range" id="theta" min="0" max="180" step="1" value="0" aria-label="探针角度"></div>
+    <div class="mono" id="eig"></div>
+    <p class="note">灰色是探针 u，白色是 Au。转动 u，当两支箭头在同一条直线上时，u 就是特征向量（黄色虚线）。</p>
+  </section>
+
+  <section>
+    <h2><span class="step">2</span>幂迭代：反复乘 A</h2>
+    <p class="note">用上面的矩阵 A。</p>
+    <div>起点角度 <b id="sv"></b><input type="range" id="start" min="-180" max="180" step="1" value="0" aria-label="起点角度"></div>
+    <button class="btn" type="button" id="step">乘一次</button> <button class="btn" type="button" id="ten">乘 10 次</button> <button class="btn" type="button" id="reset">重来</button>
+    <div class="plane" id="p2"></div>
+    <div id="iters"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">3</span>随机游走：A→B、C，B→C，C→A</h2>
+    <div class="chips" id="from"></div>
+    <div>随机跳到任意页面的概率 <b id="jv"></b><input type="range" id="jump" min="0" max="0.5" step="0.05" value="0" aria-label="随机跳转概率"></div>
+    <button class="btn" type="button" id="walk">走一步</button> <button class="btn" type="button" id="walk10">走 10 步</button> <button class="btn" type="button" id="again">重来</button>
+    <div id="pages"></div>
+    <div class="mono" id="walkInfo"></div>
+  </section>
+
+  <section>
+    <h2><span class="step">4</span>特征值小于 1 也能先涨</h2>
+    <div>特征值 λ = <b id="lv"></b><input type="range" id="lam" min="0.5" max="1.1" step="0.01" value="0.9" aria-label="特征值"></div>
+    <div>右上角元素 c = <b id="cv"></b><input type="range" id="c" min="0" max="10" step="0.1" value="5" aria-label="非对角元素"></div>
+    <div id="growth"></div>
+    <div class="mono" id="gstat"></div>
+  </section>
+</main>
+<script src="../../_shared/la-engine.js"></script>
+<script src="../../_shared/la-viz.js"></script>
+<script src="../../_shared/la-demo.js"></script>
+<script src="../../../3-llm/_shared/tf-viz.js"></script>
+<script>
+(function () {
+  const { $, chips, matInput, f, vec } = D, C = LAV.C;
+  let A = [[2, 1], [1, 2]], hist = [];
+  const P = { sym: ["对称", [[2, 1], [1, 2]]], diag: ["对角", [[2, 0], [0, 0.5]]], tri: ["上三角", [[1.5, 1], [0, 0.5]]], rot: ["旋转 90°", [[0, -1], [1, 0]]], shear: ["剪切", [[1, 1], [0, 1]]], iso: ["3 倍单位阵", [[3, 0], [0, 3]]] };
+  const input = matInput("A", A, (M) => { A = M; one(); resetIt(); });
+  function one() {
+    const t = (+$("theta").value * Math.PI) / 180, u = [Math.cos(t), Math.sin(t)], Au = LA.mv(A, u), e = LA.eig2(A);
+    $("tv").textContent = $("theta").value + "°";
+    const R = Math.max(2.5, ...A.map((r) => Math.hypot(...r) * 1.15));
+    const lines = e.all || e.complex ? [] : e.vecs.map((v) => ({ a: [-v[0] * 20, -v[1] * 20], b: [v[0] * 20, v[1] * 20], color: C.amber, dash: "5 5" }));
+    $("p1").innerHTML = LAV.wrap(LAV.plane({ id: "p1", size: 340, range: Math.min(8, R), circle: true, M: A, segments: lines, vectors: [{ v: Au, color: C.ink, label: "Au" }, { v: u, color: C.gray, label: "u", dy: 14 }] }), 340);
+    let s;
+    if (e.complex) s = `特征值是复数 ${f(e.re)} ± ${f(e.im)}i\n实数范围内没有任何方向保持不变`;
+    else if (e.all) s = `特征值 ${f(e.vals[0])}（二重）\n每个方向都是特征向量`;
+    else if (e.defective) s = `特征值 ${f(e.vals[0])}（二重）\n只有一个独立特征向量 ${vec(e.vecs[0], 3)}，无法对角化`;
+    else s = e.vals.map((v, i) => `λ${i + 1} = ${f(v, 3)}   v${i + 1} = ${vec(e.vecs[i], 3)}`).join("\n") + `\n和 = ${f(e.vals[0] + e.vals[1], 3)}（对角线之和 ${f(A[0][0] + A[1][1], 3)}）  积 = ${f(e.vals[0] * e.vals[1], 3)}（行列式 ${f(LA.det2(A), 3)}）`;
+    const n = LA.norm(Au);
+    if (n > 1e-9) { const cs = LA.cos(u, Au), aligned = Math.abs(cs) > 0.99995; s += `\n\nAu = ${vec(Au, 3)}   和 u 的夹角 ${f(LA.angle(u, Au), 1)}°${aligned ? "  ← 在同一直线上，λ ≈ " + f(cs * n, 3) : ""}`; }
+    else s += "\n\nAu = 0：u 对应特征值 0";
+    $("eig").textContent = s;
+  }
+  chips("preset", Object.keys(P).map((k) => [k, P[k][0]]), "sym", (k) => input.set(P[k][1]));
+  $("theta").oninput = one;
+
+  function resetIt() { const t = (+$("start").value * Math.PI) / 180; $("sv").textContent = $("start").value + "°"; hist = [[Math.cos(t), Math.sin(t)]]; two(); }
+  function stepIt(n) { for (let i = 0; i < n; i++) { const v = hist[hist.length - 1], w = LA.mv(A, v), l = LA.norm(w); if (l < 1e-12) break; hist.push(w.map((x) => x / l)); } two(); }
+  function two() {
+    const e = LA.eig2(A), last = hist.slice(-6), base = hist.length - last.length;
+    $("p2").innerHTML = LAV.wrap(LAV.plane({ id: "p2", size: 300, range: 1.3, circle: true, segments: e.complex || e.all ? [] : e.vecs.slice(0, 1).map((v) => ({ a: [-v[0] * 2, -v[1] * 2], b: [v[0] * 2, v[1] * 2], color: C.amber, dash: "5 5" })), vectors: last.map((v, i) => ({ v, color: `rgba(59,130,246,${(0.25 + (0.75 * (i + 1)) / last.length).toFixed(2)})`, label: i === last.length - 1 ? "k=" + (base + i) : "" })) }), 300);
+    $("iters").innerHTML = `<table class="mat"><tr><th>步数</th><th>向量</th><th>vᵀAv</th></tr>${last.map((v, i) => `<tr><th>${base + i}</th><td>${vec(v, 4)}</td><td>${LA.dot(v, LA.mv(A, v)).toFixed(5)}</td></tr>`).join("")}</table>` +
+      `<p class="note">${e.complex ? "特征值是复数：向量一直在转，不会收敛。" : "黄线是最大特征值对应的方向。"}</p>`;
+  }
+  $("start").oninput = resetIt; $("step").onclick = () => stepIt(1); $("ten").onclick = () => stepIt(10); $("reset").onclick = resetIt;
+
+  const BASE = [[0, 0, 1], [0.5, 0, 0], [0.5, 1, 0]], NAMES = ["A", "B", "C"];
+  let p = [1, 0, 0], k = 0, from = "0";
+  const trans = () => { const j = +$("jump").value; return BASE.map((r) => r.map((v) => (1 - j) * v + j / 3)); };
+  function three() {
+    $("jv").textContent = (+$("jump").value).toFixed(2);
+    let s = [1 / 3, 1 / 3, 1 / 3]; const M = trans(); for (let i = 0; i < 500; i++) s = LA.mv(M, s);
+    $("pages").innerHTML = p.map((v, i) => `<div class="row" style="grid-template-columns:40px 1fr 70px"><span>${NAMES[i]}</span><div class="bar"><i style="width:${(v * 100).toFixed(1)}%"></i></div><span class="num">${v.toFixed(4)}</span></div>`).join("");
+    $("walkInfo").textContent = `已走 ${k} 步\n稳定分布（特征值 1 的特征向量）= ${vec(s, 4)}\n和当前分布的最大差距 = ${Math.max(...p.map((v, i) => Math.abs(v - s[i]))).toFixed(4)}`;
+  }
+  const restart = () => { p = [0, 0, 0]; p[+from] = 1; k = 0; three(); };
+  const go = (n) => { const M = trans(); for (let i = 0; i < n; i++) { p = LA.mv(M, p); k++; } three(); };
+  chips("from", NAMES.map((n, i) => [String(i), "从 " + n + " 出发"]), "0", (v) => { from = v; restart(); });
+  $("walk").onclick = () => go(1); $("walk10").onclick = () => go(10); $("again").onclick = restart; $("jump").oninput = three;
+
+  function four() {
+    const l = +$("lam").value, c = +$("c").value; $("lv").textContent = l.toFixed(2); $("cv").textContent = c.toFixed(1);
+    const M = [[l, c], [0, l]], g = LA.growth(M, [0, 1], 80), peak = g.indexOf(Math.max(...g));
+    $("growth").innerHTML = TFV.wrap(TFV.lines([{ name: "向量长度 |Aᵏx|", color: C.blue, pts: g.map((v, i) => [i, v]) }, { name: "只看特征值 λᵏ", color: C.gray, dash: "5 4", pts: g.map((_, i) => [i, l ** i]) }], { w: 640, h: 270, ymin: 0, xlabel: "连乘次数 k" }));
+    $("gstat").textContent = `A = [[${l.toFixed(2)}, ${c.toFixed(1)}], [0, ${l.toFixed(2)}]]，x = [0, 1]\n两个特征值都是 ${l.toFixed(2)}；最大奇异值（单步最大放大）= ${LA.svd(M).s[0].toFixed(3)}\n80 步内峰值 ${g[peak].toFixed(2)}，出现在 k = ${peak}；k = 80 时 ${g[80].toPrecision(3)}`;
+  }
+  $("lam").oninput = four; $("c").oninput = four;
+  input.set(A); three(); four();
+})();
+</script>
+</body>
+</html>
